@@ -1,4 +1,12 @@
 cc_binary(
-    name = "example",
-    srcs = ["main.cc"],
+    name = "router",
+    srcs = [
+        "main.cc",
+        "router.cc",
+        "router.h",
+    ],
+    deps = [
+        "//core",
+        "@untar"
+    ],
 )
