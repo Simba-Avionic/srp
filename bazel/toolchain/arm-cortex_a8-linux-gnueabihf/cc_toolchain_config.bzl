@@ -77,6 +77,7 @@ def _impl(ctx):
                             "-D__DATE__=\"redacted\"",
                             "-D__TIMESTAMP__=\"redacted\"",
                             "-D__TIME__=\"redacted\"",
+                            "-std=c++20",
                         ],
                     ),
                 ],

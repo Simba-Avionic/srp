@@ -39,6 +39,7 @@ cc_toolchain_suite(
     name = "gcc_toolchain",
     toolchains = {
         "armv7": "//bazel/toolchain/arm-cortex_a8-linux-gnueabihf:armv7_toolchain",
+        "k8": "//bazel/toolchain/arm-cortex_a8-linux-gnueabihf:armv7_toolchain",
     },
     tags = ["manual"]
 )

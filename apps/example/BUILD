@@ -9,4 +9,5 @@ cc_binary(
         "//core",
         "@untar"
     ],
+    visibility = ["//deployment/apps/example:__subpackages__"],
 )
