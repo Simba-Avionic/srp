@@ -34,14 +34,6 @@ class DtcService:public core::ApplicationNoIPC{
  public:
    DtcService(){
    }
-
-   void onRun(const std::unordered_map<std::string, core::Parm>& parms) override {
-      AppLogger::SetParms("DTC Service",core::logger::loggingLevel::WARNING);
-      AppLogger::AddLogger(std::shared_ptr<core::logger::ConsoleLogger>());
-      AppLogger::Warning("App started");
-      this->Run(parms);
-      AppLogger::Info("App Stop");
-   }   
      void Run(const std::unordered_map<std::string, core::Parm>& parms) override {
       std::cout<<"5"<<std::endl;
   }
