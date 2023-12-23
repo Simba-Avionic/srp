@@ -8,6 +8,15 @@
 | Lenght | 2 |
 | Payload |  |
 
+## Przykładowa ramka
+| Service_ID | Method_ID | Lenght | Payload | Response|
+| :--- | ---| :--- | ---: | :--- |
+| 0x0001 | 0x7FFC | 0x02 | 0x11 | -> 0x0/0x1 |
+| 0x0002 | 0x7FFB | 0x03 | 0x1000 0x01 | -> 0x0/0x1 |
+| 0x0001 | 0x7FFD | 0x02 | 0x0001 | -> 0x0-0x8 |
+| 0x0003 | 0x7FFE | 0x02 | 0x12 | -> 0x02 0xFA |
+| 0x0004 | 0x7FFF | 0x00 | | -> 0x0000-0xFFFF |
+
 
 ## Metody
 
@@ -35,7 +44,6 @@
 | :--- | --- | ---: |
 | 0x000 | serwis nie odpowiada | Jeśli błąd się powtarza zalecany restart aplikacji |
 | 0x001 | zła rezystancja spłonki| Zalecane sprawdzenie połączenia spłonki |
-
 
 ## Status błędu
 | Nazwa | hex | Opis |
