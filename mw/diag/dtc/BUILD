@@ -18,3 +18,9 @@ cc_library(
     hdrs = ["dtc_header.hpp"],
     visibility = ["//srp/mw/dtc:__subpackages__"],
 )
+
+cc_binary(
+    name = "dtc_service",
+    deps = [":dtc_msg_factory",":dtc_header"],
+    srcs = ["dtcService.cpp","dtcService.hpp","IDtcService.hpp"],
+)
