@@ -2,9 +2,6 @@ name: 'Submodules Sync'
 
 on:
   workflow_call:
-    secrets:
-      SOME_SECRET:
-        required: true
   # Allows you to run this workflow manually from the Actions tab or through HTTP API
 permissions: write-all
 jobs:
