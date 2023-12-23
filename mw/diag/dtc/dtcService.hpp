@@ -34,9 +34,25 @@ class DtcService:public core::ApplicationNoIPC{
  public:
    DtcService(){
    }
-     void Run(const std::unordered_map<std::string, core::Parm>& parms) override {
-      std::cout<<"5"<<std::endl;
-  }
+    void RxCallback(const std::string& ip, const std::uint16_t& port, std::vector<std::uint8_t> data) {
+        AppLogger::Debug("Received data");
+        std::cout << "Received data size: " << sizeof(this->data) << std::endl;
+    }
+
+    void Run(const std::unordered_map<std::string, core::Parm>& parms) {
+        this->sock_.Init(com::soc::SocketConfig("simba/engine/dtc", 0, 0));
+        this->sock_.SetRXCallback(std::bind(&DtcService::RxCallback, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+        this->sock_.StartRXThread();
+
+        while (true) {
+          if(this->sock_.Transmit("simba/engine/dtc", 0,std::vector<uint8_t>{0,1,2,3})!=core::ErrorCode::kOk){
+            AppLogger::Warning("error");
+          }
+          
+            std::this_thread::sleep_for(std::chrono::seconds{2});
+            AppLogger::Debug("wtf");
+        }
+    }
   
 };
 
