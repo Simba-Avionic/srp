@@ -16,7 +16,7 @@ namespace mw{
 namespace dtc{
 
 DtcDatabaseElement::DtcDatabaseElement(uint16_t service_id,std::string details,
-            DtcErrorStatus_t status=DtcErrorStatus_t::kCreated)
+            DtcErrorStatus_t status)
     : service_id_{service_id},details_{details},status_{status}{
     }
 

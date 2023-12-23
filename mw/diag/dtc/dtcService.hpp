@@ -27,23 +27,23 @@ namespace dtc{
 
 
 class DtcService:public core::ApplicationNoIPC{
- proteceted:
-   std::shared_ptr<core::logger::ILogger> logger_;
+ protected:
    com::soc::IpcSocket sock_{};
    DtcDatabase db_{};
 
  public:
-   DtcService(const com::soc::SocketConfig& config);
+   DtcService(){
+   }
 
-   void onRun(const std::unordered_map<std::string, Parm>& parms) override {
-      AppLogger::SetParms("DTC Service");
-      AppLogger::AddLogger(std::make_shared<core::logger::ConsoleLogger());
-      AppLogger::Info("App started");
+   void onRun(const std::unordered_map<std::string, core::Parm>& parms) override {
+      AppLogger::SetParms("DTC Service",core::logger::loggingLevel::WARNING);
+      AppLogger::AddLogger(std::shared_ptr<core::logger::ConsoleLogger>());
+      AppLogger::Warning("App started");
       this->Run(parms);
       AppLogger::Info("App Stop");
    }   
-     void Run(const std::unordered_map<std::string, Parm>& parms) override {
-      logger_->Error("Application function: Run is not implemented: ");
+     void Run(const std::unordered_map<std::string, core::Parm>& parms) override {
+      std::cout<<"5"<<std::endl;
   }
   
 };

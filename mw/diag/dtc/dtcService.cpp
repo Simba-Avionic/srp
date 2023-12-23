@@ -16,11 +16,6 @@ namespace mw{
 namespace dtc{
 
 
-DtcService::DtcService(const com::soc::SocketConfig& config){
-    this->sock_.Init(config);
-    this->sock_.SetRXCallback(std::bind(RxCallback_));
-}
-
 
 } // dtc
 } // mw

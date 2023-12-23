@@ -5,7 +5,7 @@ namespace mw{
 namespace dtc{
 
 DtcHeader::DtcHeader(uint16_t &service_id,uint16_t &method_id)
-            :method_id_(method_id),service_id_(service_id){
+            :service_id_(service_id),method_id_(method_id){
                 this->lenght_=0x06;
     }
 DtcHeader::DtcHeader(){};

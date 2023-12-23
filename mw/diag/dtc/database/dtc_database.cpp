@@ -11,7 +11,7 @@ DtcDatabase::DtcDatabase(){
     //TODO init logger
 }
 core::ErrorCode DtcDatabase::AddError(uint16_t service_id,uint16_t error_id,
-                std::string details,DtcErrorStatus_t status=DtcErrorStatus_t::kCreated){
+                std::string details,DtcErrorStatus_t status){
     this->errors_.insert({error_id,DtcDatabaseElement(service_id,details,status)});
     this->active_errors+=1;
     return core::ErrorCode::kOk;
