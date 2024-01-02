@@ -16,16 +16,23 @@ namespace diag {
 namespace data {
 
 DataStructure::DataStructure(const std::uint16_t service_id,
-                             const std::uint8_t diag_id,
-                             const std::uint16_t sender_id)
-    : service_id_{service_id}, sender_id_{sender_id}, diag_id_{diag_id} {}
+                             const std::uint16_t diag_id,
+                             const std::uint16_t sender_id,
+                             const std::uint16_t transfer_id)
+    : service_id_{service_id},
+      sender_id_{sender_id},
+      diag_id_{diag_id},
+      transfer_id_{transfer_id} {}
 void DataStructure::SetPayload(const std::vector<uint8_t>& payload) {
   std::copy(payload.begin(), payload.end(), std::back_inserter(payload_));
 }
 std::vector<uint8_t> DataStructure::GetPayload() const { return payload_; }
 const std::uint16_t DataStructure::GetServiceID() const { return service_id_; }
-const std::uint8_t DataStructure::GetDiagID() const { return diag_id_; }
+const std::uint16_t DataStructure::GetDiagID() const { return diag_id_; }
 const std::uint16_t DataStructure::GetSenderID() const { return sender_id_; }
+const std::uint16_t DataStructure::GetTransferID() const {
+  return transfer_id_;
+}
 }  // namespace data
 }  // namespace diag
 }  // namespace simba

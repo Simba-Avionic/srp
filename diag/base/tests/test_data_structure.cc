@@ -4,7 +4,7 @@
 
 TEST(DATA_STRUCTURE, CONSTRUCTOR_CHECK) {
   const std::vector<uint8_t> elements{0x10, 0x11, 0x12, 0x13};
-  simba::diag::data::DataStructure sut{0x1111, 0x01,0x02};
+  simba::diag::data::DataStructure sut{0x1111, 0x01,0x02,0x00};
   EXPECT_EQ(0x1111, sut.GetServiceID());
   EXPECT_EQ(0x01, sut.GetDiagID());
   sut.SetPayload(elements);

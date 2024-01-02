@@ -26,14 +26,14 @@ class DiagDataFactory {
       const std::uint16_t service_id, const std::uint16_t diag_id,
       const std::uint16_t sender_id, const std::uint16_t transfer_id,
       const std::vector<uint8_t>& payload);
-  static simba::core::Result<data::DataStructure> CreatRequestNoResponse(
-      const std::uint16_t service_id, const std::uint16_t diag_id,
-      const std::uint16_t sender_id, const std::uint16_t transfer_id,
-      const std::vector<uint8_t>& payload);
   static simba::core::Result<data::DataStructure> CreatResponse(
       const std::uint16_t service_id, const std::uint16_t diag_id,
       const std::uint16_t sender_id, const std::uint16_t transfer_id,
       const std::vector<uint8_t>& payload);
+  static simba::core::Result<data::DataStructure> CreatError(
+      const std::uint16_t service_id, const std::uint16_t diag_id,
+      const std::uint16_t sender_id, const std::uint16_t transfer_id,
+      const std::vector<uint8_t>& payload, const uint8_t error_code);
 };
 }  // namespace diag
 }  // namespace simba
