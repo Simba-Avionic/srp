@@ -8,31 +8,33 @@ namespace dtc{
 
 DtcDatabase::DtcDatabase(){
     this->active_errors=0;
+    this->last_ID=0;
     //TODO init logger
 }
-core::ErrorCode DtcDatabase::AddError(uint16_t service_id,uint16_t error_id,
+uint16_t DtcDatabase::AddError(uint16_t service_id,uint16_t error_code,
                 std::string details,DtcErrorStatus_t status){
-    this->errors_.insert({error_id,DtcDatabaseElement(service_id,details,status)});
+    this->last_ID+=1;
+    this->errors_.insert({this->last_ID,DtcDatabaseElement(service_id,error_code,details,status)});
     this->active_errors+=1;
-    return core::ErrorCode::kOk;
+    return this->last_ID;
 }
-core::ErrorCode DtcDatabase::ManResetError(uint16_t error_id){
+uint16_t DtcDatabase::ManResetError(uint16_t error_id){
     auto error=this->errors_.find(error_id);
     if (error==this->errors_.end()){
-        return core::ErrorCode::kNotDefine;
+        return 0;
     }
     error->second.SetStatus(DtcErrorStatus_t::kManReset);
     this->active_errors-=1;
-    return core::ErrorCode::kOk;
+    return error->first;
 }
-core::ErrorCode DtcDatabase::AutoResetError(uint16_t error_id){
+uint16_t DtcDatabase::AutoResetError(uint16_t error_id){
     auto error=this->errors_.find(error_id);
     if (error==this->errors_.end()){
-        return core::ErrorCode::kNotDefine;
+        return 0;
     }
     this->active_errors-=1;
     error->second.SetStatus(DtcErrorStatus_t::kAutoReset);
-    return core::ErrorCode::kOk;
+    return error->first;
 }
 uint16_t DtcDatabase::ErrorNum(){
     return this->active_errors;

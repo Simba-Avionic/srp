@@ -14,6 +14,7 @@
 
 #include <chrono>
 #include "communication-core/network-data/network_data_structure.h"
+#include "communication-core/network-data/network_data_type.h"
 
 namespace simba{
 namespace mw{
@@ -21,9 +22,10 @@ namespace dtc{
 
 class DtcHeader: public com::core::network::NetworkDataStructure{
  private:
-    uint16_t service_id_;
-    uint16_t method_id_;
-    uint16_t lenght_;
+    com::core::network::uint16_t service_id_;
+    com::core::network::uint16_t method_id_;
+    com::core::network::uint16_t lenght_;
+    void SetData();
  public:
    DtcHeader(uint16_t &service_id,uint16_t &method_id);
    DtcHeader();

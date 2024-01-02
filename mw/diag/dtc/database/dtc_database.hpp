@@ -27,13 +27,14 @@ class DtcDatabase{
   std::unordered_map<uint16_t,DtcDatabaseElement> errors_{};
   core::logger::Logger logger_;
   uint16_t active_errors;
+  uint16_t last_ID;
 
  public:
   DtcDatabase();
-  core::ErrorCode AddError(uint16_t service_id,uint16_t error_id,
+  uint16_t AddError(uint16_t service_id,uint16_t error_code,
                         std::string details,DtcErrorStatus_t status=DtcErrorStatus_t::kCreated);
-  core::ErrorCode ManResetError(uint16_t error_id);
-  core::ErrorCode AutoResetError(uint16_t error_id);
+  uint16_t ManResetError(uint16_t error_id);
+  uint16_t AutoResetError(uint16_t error_id);
   uint16_t ErrorNum();
   std::string GetErrorDetails(uint16_t error_id);
 

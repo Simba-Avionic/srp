@@ -1,0 +1,13 @@
+{
+    "dtc-service":{
+        "ipc":"dtc"
+    },
+    "dtc-client":{
+        "service_id":"0x0101"
+    },
+    "methods":{
+        "register":{
+            "method_id":"0x7F00"
+        }
+    }
+}

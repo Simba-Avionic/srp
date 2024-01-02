@@ -14,9 +14,10 @@ namespace simba{
 namespace mw{
 namespace dtc{
 
-std::vector<uint8_t> DtcMsgFactory::GetBuffer(std::shared_ptr<DtcHeader> header,std::vector<uint8_t> payload){
-    std::vector<std::uint8_t> res{header->GetBuffor()};
-    std::copy(payload.begin(), payload.end(), std::back_inserter(res));
+std::vector<uint8_t> DtcMsgFactory::GetBuffer(std::shared_ptr<DtcHeader> header, std::vector<uint8_t> payload) {
+    header->SetLength(payload.size());
+    std::vector<uint8_t> res{header->GetBuffor()};
+    res.insert(res.begin()+0x06, payload.begin(), payload.end());
     return res;
 }
 
@@ -28,7 +29,8 @@ std::shared_ptr<DtcHeader> DtcMsgFactory::GetHeader(std::vector<uint8_t> raw_dat
 
 std::vector<uint8_t> DtcMsgFactory::GetPayload(std::vector<uint8_t> raw_data){
     std::vector<uint8_t> payload{};
-    std::copy(raw_data.begin() + 0x10, raw_data.end(), std::back_inserter(payload));
+
+    std::copy(raw_data.begin()+0x06, raw_data.end(), std::back_inserter(payload));
     return payload;
 }
 

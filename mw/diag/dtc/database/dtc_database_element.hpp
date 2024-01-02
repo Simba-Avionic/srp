@@ -30,19 +30,22 @@ enum DtcErrorStatus_t{
 class DtcDatabaseElement:public com::core::network::NetworkDataStructure{
  private:
     uint16_t service_id_;
+    uint16_t error_code;
     std::string details_;
     DtcErrorStatus_t status_;
  public:
-    DtcDatabaseElement(uint16_t service_id_,std::string details_,
+    DtcDatabaseElement(uint16_t service_id_,uint16_t error_code,std::string details_,
             DtcErrorStatus_t status_=DtcErrorStatus_t::kCreated);
 
     void SetService_id(const uint16_t& service_id);
     void SetDetails(const std::string& details);
     void SetStatus(const DtcErrorStatus_t& status);
+    void SetErrorCode(const uint16_t& errorCode);
 
     uint16_t GetService_id();
     std::string GetDetails();
     DtcErrorStatus_t GetStatus();
+    uint16_t GetErrorCode();
 
 };
 

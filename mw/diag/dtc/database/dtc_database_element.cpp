@@ -15,9 +15,9 @@ namespace simba{
 namespace mw{
 namespace dtc{
 
-DtcDatabaseElement::DtcDatabaseElement(uint16_t service_id,std::string details,
+DtcDatabaseElement::DtcDatabaseElement(uint16_t service_id,uint16_t error_code,std::string details,
             DtcErrorStatus_t status)
-    : service_id_{service_id},details_{details},status_{status}{
+    : service_id_{service_id},error_code{error_code},details_{details},status_{status}{
     }
 
 void DtcDatabaseElement::SetService_id(const uint16_t& service_id){
@@ -30,6 +30,9 @@ void DtcDatabaseElement::SetDetails(const std::string& details){
 void DtcDatabaseElement::SetStatus(const DtcErrorStatus_t& status){
     this->status_=status;
 }
+void DtcDatabaseElement::SetErrorCode(const uint16_t& error_code){
+    this->error_code=error_code;
+}
 
 uint16_t DtcDatabaseElement::GetService_id(){
     return this->service_id_;
@@ -40,6 +43,9 @@ std::string DtcDatabaseElement::GetDetails(){
 }
 DtcErrorStatus_t DtcDatabaseElement::GetStatus(){
     return this->status_;
+}
+uint16_t DtcDatabaseElement::GetErrorCode(){
+    return this->error_code;
 }
 
 }

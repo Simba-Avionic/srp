@@ -9,7 +9,7 @@
  * 
  */
 
-#include "mw/diag/dtc/dtcService.hpp"
+#include "mw/diag/dtc/service/dtcService.hpp"
 
 namespace simba{
 namespace mw{

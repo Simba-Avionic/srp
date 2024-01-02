@@ -39,12 +39,13 @@ cc_library(
         ":dtc_database",
         "//communication-core:communication_core"
         ],
-    srcs = ["dtcService.cpp"],
-    hdrs = ["dtcService.hpp","IDtcService.hpp"],
+    srcs = ["service/dtcService.cpp"],
+    hdrs = ["service/dtcService.hpp","service/IDtcService.hpp"],
     visibility = ["//srp/mw/dtc:__subpackages__"]
 )
 cc_binary(
     name = "dtc_service",
     deps = [":dtc_app"],
-    srcs = ["main.cpp"],
+    srcs = ["mainDtcService.cpp"],
+    data = ["//mw/diag/dtc:config.json"]
 )
