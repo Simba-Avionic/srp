@@ -1,4 +1,4 @@
-#include "diag_dtc/data/dtc_header.hpp"
+#include "diag/dtc/data/dtc_header.hpp"
 
 namespace simba{
 namespace mw{
