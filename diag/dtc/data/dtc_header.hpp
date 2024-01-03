@@ -20,7 +20,7 @@
 #include <chrono>
 
 namespace simba{
-namespace mw{
+namespace diag{
 namespace dtc{
 
 class DtcHeader : public com::core::network::NetworkDataStructure {
@@ -30,24 +30,23 @@ class DtcHeader : public com::core::network::NetworkDataStructure {
     // flagi błędu
     uint8_t dtc_status_;
     uint8_t lenght_;
-    std::vector<uint8_t> payload;
  public:
-   DtcHeader(uint16_t &dtc_id,uint16_t &dtc_status);
+   DtcHeader(uint16_t &dtc_id,uint8_t &dtc_status);
    DtcHeader();
 
    uint16_t GetDtcID();
-   uint16_t GetDtcStatus();
-   uint16_t GetLength();
+   uint8_t GetDtcStatus();
+   uint8_t GetLength();
 
    void SetDtcID(const uint16_t& value);
-   void SetDtcStatus(const uint16_t& value);
+   void SetDtcStatus(const uint8_t& value);
 
-  /**
-   * @brief Set the Length object
-   *
-   * @param value  (set only lenght of payload )
-   */
-  void SetLength(const uint16_t& value);
+   /**
+    * @brief Set the Length object
+    * 
+    * @param value  (set only lenght of payload )
+    */
+   void SetLength(const uint8_t& value);
 };
 
 }  // namespace dtc

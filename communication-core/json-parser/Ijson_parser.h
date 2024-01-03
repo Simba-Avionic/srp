@@ -13,7 +13,7 @@
 #include <fstream>
 #include <string>
 
-#include "database/app_element.h"
+#include "communication-core/database/app_element.h"
 #include "nlohmann/json.hpp"
 #include "unordered_map"
 

@@ -12,6 +12,11 @@
 #define COMMUNICATION_CORE_DATABASE_APP_ELEMENT_H_
 
 #include <iostream>
+
+#include "communication-core/database/net_interface_element.h"
+#include "communication-core/database/method_element.h"
+#include "communication-core/database/event_element.h"
+#include "communication-core/database/req_event_element.h"
 #include <string>
 
 #include "database/event_element.h"

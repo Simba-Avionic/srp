@@ -1,5 +1,24 @@
 # DTC Service
 
+## SIMBA.DIAG.DTC
+
+ Do nadawania nowej wartości dla kodu DTC. Jest to komunikacja typu UDP bez informacji zwrotnej.
+
+Funkcjonalność ta jest dostarczona do aplikacji która będzię zgodna z interfejsem iapplication. Dokładnie dla każdej aplikacji która nie dziedziczy po Application_no_IPC.
+
+ ### Frame
+ | Nazwa | rozmiar [bajty] | Opis |
+|-------|---------|------|
+| DTC_id | 2 | Numer błędu |
+| DTC_status | 1 | flagi błędu |
+| length | 1 | Długość pola "payload" [bajty] |
+| payload | 0-255 | dodatkowe dane opcjonalnie w celu przekazania jakiś danych |
+
+W polu payload przekazujemy tylko i wyłącznie jakieś wartości typu dane z sensora przy których powstał błąd
+
+
+# OLD
+
 ## ramka IPC
 | Pole | długość w Bajtach |
 | :--- | :---: |
@@ -36,7 +55,8 @@
 | 0x1 | E | silnik | zła rezystancja spłonki, zaklinowany zawór |
 | 0x2| R | odzysk | zaklinowany zawór |
 | 0x3| C | comunication | serwis nie znaleziony, timeout error |
-| 0x4| A | avionics | zwarcie na lini 12V (stage 2) |
+| 0x4| B | batery | zwarcie na lini 12V (stage 2) |
+| 0x5| A | avionics | |
 
 
 ### TODO przemyśleć kody błędów
@@ -48,16 +68,14 @@
 ## Status błędu
 | Nazwa | hex | Opis |
 | :--- | --- | ---: |
-| kCreate | 0x01 | Zarejestrowano błąd |
-| kAutoReset | 0x02 | Zresetowano automatycznie |
-| kManReset | 0x03 | Zresetowano ręcznie |
+| kCreate | 0x0 | Zarejestrowano błąd |
+| kAutoReset | 0x1 | Zresetowano automatycznie |
+| kManReset | 0x2 | Zresetowano ręcznie |
 
 
 ## Baza danych 
 | Opis | Typ |
 | :--- | --- |
 | error_id | uint16_t |
-| service_id | uint16_t |
-| kod błędu | uint16_t |
-| szczegóły błędu | std::string |
-| zresetowany | uint8_t |
+| error_code | uint16_t |
+| error_details | std::string |
