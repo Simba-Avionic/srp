@@ -4,7 +4,7 @@
 #include "nlohmann/json.hpp"
 #include <string>
 #include "unordered_map"
-#include "database/app_element.h"
+#include "communication-core/database/app_element.h"
 
 namespace simba {
 namespace database {

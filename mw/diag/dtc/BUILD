@@ -1,26 +1,9 @@
-
-cc_library(
-    name = "dtc_msg_factory",
-    deps = [
-        "//communication-core/network-data:network_data_structure"
-        ],
-    srcs = ["dtc_msg_factory.cpp"],
-    hdrs = ["dtc_msg_factory.hpp"],
-    visibility = ["//srp/mw/dtc:__subpackages__"],
-)
-
-cc_library(
-    name = "dtc_header",
-    deps = [
-        "//communication-core/network-data:network_data_structure"
-        ],
-    srcs = ["dtc_header.cpp"],
-    hdrs = ["dtc_header.hpp"],
-    visibility = ["//srp/mw/dtc:__subpackages__"],
-)
-
 cc_binary(
-    name = "dtc_service",
-    deps = [":dtc_msg_factory",":dtc_header"],
-    srcs = ["dtcService.cpp","dtcService.hpp","IDtcService.hpp"],
+    name = "mw_dtc_service",
+    deps = [
+        "//mw/diag/dtc/service:dtc_service_lib",
+        ],
+    srcs = ["main.cpp"],
+    visibility = ["//visibility:public"],
+    data = ["//mw/diag/dtc:config.json"],
 )

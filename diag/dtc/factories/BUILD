@@ -5,6 +5,6 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         "//core/results:results_lib",
-        "//diag/dtc/data:diag_dtc_data_structure",
+        "//diag/dtc/data:diag_dtc_data_structure"
     ],
 )
