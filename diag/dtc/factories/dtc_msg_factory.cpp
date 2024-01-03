@@ -8,7 +8,7 @@
  * @copyright Copyright (c) 2023
  *
  */
-#include "diag_dtc/factories/dtc_msg_factory.hpp"
+#include "diag/dtc/factories/dtc_msg_factory.hpp"
 
 #include <algorithm>
 namespace simba {

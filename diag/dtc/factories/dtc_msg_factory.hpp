@@ -15,7 +15,7 @@
 #include <memory>
 #include <vector>
 
-#include "diag_dtc/data/dtc_header.hpp"
+#include "diag/dtc/data/dtc_header.hpp"
 #include <vector>
 #include <memory>
 
