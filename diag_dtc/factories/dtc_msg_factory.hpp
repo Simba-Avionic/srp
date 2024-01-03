@@ -15,7 +15,9 @@
 #include <memory>
 #include <vector>
 
-#include "mw/diag/dtc/msg/dtc_header.hpp"
+#include "diag_dtc/data/dtc_header.hpp"
+#include <vector>
+#include <memory>
 
 namespace simba {
 namespace mw {
