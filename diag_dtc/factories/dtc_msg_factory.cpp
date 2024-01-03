@@ -8,7 +8,7 @@
  * @copyright Copyright (c) 2023
  * 
  */
-#include "mw/diag/dtc/msg/dtc_msg_factory.hpp"
+#include "diag_dtc/factories/dtc_msg_factory.hpp"
 
 namespace simba{
 namespace mw{
@@ -28,7 +28,7 @@ std::shared_ptr<DtcHeader> DtcMsgFactory::GetHeader(std::vector<uint8_t> raw_dat
 
 std::vector<uint8_t> DtcMsgFactory::GetPayload(std::vector<uint8_t> raw_data){
     std::vector<uint8_t> payload{};
-    std::copy(raw_data.begin() + 0x10, raw_data.end(), std::back_inserter(payload));
+    std::copy(raw_data.begin() + 0x4, raw_data.end(), std::back_inserter(payload));
     return payload;
 }
 
