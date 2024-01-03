@@ -12,7 +12,7 @@
 #ifndef _MW_DTC_Msg_FACTORY_HPP_
 #define _MW_DTC_Msg_FACTORY_HPP_
 
-#include "mw/diag/dtc/msg/dtc_header.hpp"
+#include "diag_dtc/data/dtc_header.hpp"
 #include <vector>
 #include <memory>
 

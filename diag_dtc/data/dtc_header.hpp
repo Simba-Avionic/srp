@@ -12,8 +12,10 @@
 #ifndef _SRP_DTC_HEADER_HPP_
 #define _SRP_DTC_HEADER_HPP_
 
-#include <chrono>
 #include "communication-core/network-data/network_data_structure.h"
+
+#include <vector>
+#include <chrono>
 
 namespace simba{
 namespace mw{
@@ -21,19 +23,22 @@ namespace dtc{
 
 class DtcHeader: public com::core::network::NetworkDataStructure{
  private:
-    uint16_t service_id_;
-    uint16_t method_id_;
-    uint16_t lenght_;
+    //numer błędu
+    uint16_t dtc_id_;
+    // flagi błędu
+    uint8_t dtc_status_;
+    uint8_t lenght_;
+    std::vector<uint8_t> payload;
  public:
-   DtcHeader(uint16_t &service_id,uint16_t &method_id);
+   DtcHeader(uint16_t &dtc_id,uint16_t &dtc_status);
    DtcHeader();
 
-   uint16_t GetServiceID();
-   uint16_t GetMethodID();
+   uint16_t GetDtcID();
+   uint16_t GetDtcStatus();
    uint16_t GetLength();
 
-   void SetServiceID(const uint16_t& value);
-   void SetMethodID(const uint16_t& value);
+   void SetDtcID(const uint16_t& value);
+   void SetDtcStatus(const uint16_t& value);
 
    /**
     * @brief Set the Length object
