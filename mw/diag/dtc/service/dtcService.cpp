@@ -9,17 +9,12 @@
  * 
  */
 
-#include "mw/diag/dtc/dtcService.hpp"
+#include "mw/diag/dtc/service/dtcService.hpp"
 
 namespace simba{
 namespace mw{
 namespace dtc{
 
-
-DtcService::DtcService(const com::soc::SocketConfig& config){
-    this->sock_.Init(config);
-    this->sock_.SetRXCallback(std::bind(RxCallback_));
-}
 
 
 } // dtc

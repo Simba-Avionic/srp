@@ -1,6 +1,6 @@
 #ifndef ROUTER_COMUNICATION_CORE_JSON_PARSER_JSON_PARSER_H_
 #define ROUTER_COMUNICATION_CORE_JSON_PARSER_JSON_PARSER_H_
-#include "json-parser/Ijson_parser.h"
+#include "communication-core/json-parser/Ijson_parser.h"
 
 namespace simba {
 namespace database {

@@ -3,10 +3,10 @@
 
 #include <iostream>
 
-#include "database/net_interface_element.h"
-#include "database/method_element.h"
-#include "database/event_element.h"
-#include "database/req_event_element.h"
+#include "communication-core/database/net_interface_element.h"
+#include "communication-core/database/method_element.h"
+#include "communication-core/database/event_element.h"
+#include "communication-core/database/req_event_element.h"
 #include <string>
 #include "unordered_map"
 

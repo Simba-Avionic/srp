@@ -4,6 +4,7 @@ cc_library(
     visibility = [
         "//core:__subpackages__",
         "//diag/base:__subpackages__",
+        "//mw/diag/dtc:__subpackages__",
     ],
 )
 
