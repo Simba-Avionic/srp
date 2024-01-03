@@ -196,7 +196,7 @@ void SomeIpController::Response(
     return;
   }
   AppLogger::Info("Response data size: " + std::to_string(data.size()));
-  obj->get()->SetResponsed(data);
+  obj->get()->SetResponse(data);
   AppLogger::Info("Response done!");
 }
 void SomeIpController::UknowReqeust(

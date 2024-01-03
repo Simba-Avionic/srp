@@ -18,22 +18,22 @@ namespace simba {
 namespace diag {
 class DiagDataFactory {
  public:
-  static simba::core::Result<data::DataStructure> CreatRequest(
-      const std::uint16_t service_id, const std::uint16_t diag_id,
+  static simba::core::Result<data::DataStructure> CreateReadRequest(
+      const std::uint16_t service_id, const std::uint8_t diag_id,
       const std::uint16_t sender_id, const std::uint16_t transfer_id,
       const std::vector<uint8_t>& payload);
-  static simba::core::Result<data::DataStructure> CreatRequestNoResponse(
-      const std::uint16_t service_id, const std::uint16_t diag_id,
+  static simba::core::Result<data::DataStructure> CreateWriteRequest(
+      const std::uint16_t service_id, const std::uint8_t diag_id,
       const std::uint16_t sender_id, const std::uint16_t transfer_id,
       const std::vector<uint8_t>& payload);
-  static simba::core::Result<data::DataStructure> CreatResponse(
-      const std::uint16_t service_id, const std::uint16_t diag_id,
+  static simba::core::Result<data::DataStructure> CreateResponse(
+      const std::uint16_t service_id, const std::uint8_t diag_id,
       const std::uint16_t sender_id, const std::uint16_t transfer_id,
       const std::vector<uint8_t>& payload);
-  static simba::core::Result<data::DataStructure> CreatError(
-      const std::uint16_t service_id, const std::uint16_t diag_id,
+  static simba::core::Result<data::DataStructure> CreateJobRequest(
+      const std::uint16_t service_id, const std::uint8_t diag_id,
       const std::uint16_t sender_id, const std::uint16_t transfer_id,
-      const std::vector<uint8_t>& payload, const uint8_t error_code);
+      const std::vector<uint8_t>& payload);
 };
 }  // namespace diag
 }  // namespace simba

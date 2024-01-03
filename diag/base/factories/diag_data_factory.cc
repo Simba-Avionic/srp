@@ -14,14 +14,14 @@
 #include <cassert>
 namespace simba {
 namespace diag {
-simba::core::Result<data::DataStructure> DiagDataFactory::CreatRequest(
-    const std::uint16_t service_id, const std::uint16_t diag_id,
+simba::core::Result<data::DataStructure> DiagDataFactory::CreateReadRequest(
+    const std::uint16_t service_id, const std::uint8_t diag_id,
     const std::uint16_t sender_id, const std::uint16_t transfer_id,
     const std::vector<uint8_t>& payload) {
-  if (diag_id > 0xFFF) {
+  if (diag_id > 0x3F) {
     return simba::core::Result<data::DataStructure>{};
   }
-  data::DataStructure res{service_id, static_cast<uint16_t>(((diag_id & 0xFFF) << 0x04) | static_cast<uint16_t>(0x00U)),
+  data::DataStructure res{service_id, static_cast<uint8_t>(((diag_id & 0x3F) << 0x02) | static_cast<uint8_t>(0x01U)),
                           sender_id, transfer_id};
   res.SetPayload(payload);
 
@@ -29,47 +29,44 @@ simba::core::Result<data::DataStructure> DiagDataFactory::CreatRequest(
 }
 
 simba::core::Result<data::DataStructure>
-DiagDataFactory::CreatRequestNoResponse(const std::uint16_t service_id,
-                                        const std::uint16_t diag_id,
+DiagDataFactory::CreateWriteRequest(const std::uint16_t service_id,
+                                        const std::uint8_t diag_id,
                                         const std::uint16_t sender_id,
                                         const std::uint16_t transfer_id,
                                         const std::vector<uint8_t>& payload) {
-  if (diag_id > 0xFFF) {
+  if (diag_id > 0x3F) {
     return simba::core::Result<data::DataStructure>{};
   }
-  data::DataStructure res{service_id, static_cast<uint16_t>(((diag_id & 0xFFF) << 0x04) | static_cast<uint16_t>(0x02U)),
+  data::DataStructure res{service_id, static_cast<uint8_t>(((diag_id & 0x3F) << 0x02) | static_cast<uint8_t>(0x00U)),
                           sender_id, transfer_id};
   res.SetPayload(payload);
 
   return simba::core::Result{res};
 }
 
-simba::core::Result<data::DataStructure> DiagDataFactory::CreatResponse(
-    const std::uint16_t service_id, const std::uint16_t diag_id,
+simba::core::Result<data::DataStructure> DiagDataFactory::CreateResponse(
+    const std::uint16_t service_id, const std::uint8_t diag_id,
     const std::uint16_t sender_id, const std::uint16_t transfer_id,
     const std::vector<uint8_t>& payload) {
-  if (diag_id > 0xFFF) {
+  if (diag_id > 0x3F) {
     return simba::core::Result<data::DataStructure>{};
   }
-  data::DataStructure res{service_id, static_cast<uint16_t>(((diag_id & 0xFFF) << 0x04) | static_cast<uint16_t>(0x01U)),
+  data::DataStructure res{service_id, static_cast<uint8_t>(((diag_id & 0x3F) << 0x02) | static_cast<uint8_t>(0x03U)),
                           sender_id, transfer_id};
   res.SetPayload(payload);
 
   return simba::core::Result{res};
 }
 
-simba::core::Result<data::DataStructure> DiagDataFactory::CreatError(
-    const std::uint16_t service_id, const std::uint16_t diag_id,
+simba::core::Result<data::DataStructure> DiagDataFactory::CreateJobRequest(
+    const std::uint16_t service_id, const std::uint8_t diag_id,
     const std::uint16_t sender_id, const std::uint16_t transfer_id,
-    const std::vector<uint8_t>& payload, const uint8_t error_code) {
-  if (diag_id > 0xFFF) {
-    return simba::core::Result<data::DataStructure>{};
-  }
-  if (error_code < 0x3 || error_code > 0xf) {
+    const std::vector<uint8_t>& payload) {
+  if (diag_id > 0x3F) {
     return simba::core::Result<data::DataStructure>{};
   }
 
-  data::DataStructure res{service_id, static_cast<uint16_t>(((diag_id & 0xFFF) << 0x04) | static_cast<uint16_t>(0x01U)),
+  data::DataStructure res{service_id, static_cast<uint8_t>(((diag_id & 0x3F) << 0x02) | static_cast<uint8_t>(0x02U)),
                           sender_id, transfer_id};
   res.SetPayload(payload);
 

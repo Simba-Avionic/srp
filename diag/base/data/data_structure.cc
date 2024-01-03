@@ -16,7 +16,7 @@ namespace diag {
 namespace data {
 
 DataStructure::DataStructure(const std::uint16_t service_id,
-                             const std::uint16_t diag_id,
+                             const std::uint8_t diag_id,
                              const std::uint16_t sender_id,
                              const std::uint16_t transfer_id)
     : service_id_{service_id},
@@ -28,11 +28,19 @@ void DataStructure::SetPayload(const std::vector<uint8_t>& payload) {
 }
 std::vector<uint8_t> DataStructure::GetPayload() const { return payload_; }
 const std::uint16_t DataStructure::GetServiceID() const { return service_id_; }
-const std::uint16_t DataStructure::GetDiagID() const { return diag_id_; }
+const std::uint8_t DataStructure::GetDiagID() const { return diag_id_; }
 const std::uint16_t DataStructure::GetSenderID() const { return sender_id_; }
 const std::uint16_t DataStructure::GetTransferID() const {
   return transfer_id_;
 }
+
+const bool DataStructure::isWrite() const { return (diag_id_ & 0x03) == 0x00; }
+const bool DataStructure::isRead() const { return (diag_id_ & 0x03) == 0x01; }
+const bool DataStructure::isJob() const { return (diag_id_ & 0x03) == 0x02; }
+const bool DataStructure::isResponse() const {
+  return (diag_id_ & 0x03) == 0x03;
+}
+
 }  // namespace data
 }  // namespace diag
 }  // namespace simba

@@ -13,11 +13,20 @@ cc_library(
 )
 
 cc_library(
+    name = "transfer_lib",
+    hdrs = ["transfer.h"],
+    visibility = [
+        "//core:__subpackages__",
+        "//diag:__subpackages__",
+    ],
+    deps = ["//core/results:results_lib"],
+)
+
+cc_library(
     name = "someip_controller",
     srcs = ["someip_controller.cc"],
     hdrs = [
         "someip_controller.h",
-        "transfer.h",
     ],
     visibility = ["//communication-core:__subpackages__"],
     deps = [
@@ -30,5 +39,6 @@ cc_library(
         "//communication-core/someip/factory:someip_header_factory",
         "//communication-core/someip/factory:someip_message_factory",
         "//core",
+        "//communication-core/someip-controller:transfer_lib",
     ],
 )

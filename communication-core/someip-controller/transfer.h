@@ -24,31 +24,31 @@ namespace com {
 namespace someip {
 namespace data {
 class Transfer {
- private:
-  std::vector<uint8_t> respons{};
-  std::atomic_bool responsed{false};
+ protected:
+  std::vector<uint8_t> response{};
+  std::atomic_bool responded{false};
   std::condition_variable cv{};
   const uint16_t transfer_id_;
   std::mutex cv_m;
 
  public:
   const uint16_t GetTransferID() const { return transfer_id_; }
-  const bool IsRespond() const { return responsed; }
+  const bool IsRespond() const { return responded; }
   explicit Transfer(const uint16_t transfer_id) : transfer_id_{transfer_id} {}
-  void SetResponsed(std::vector<uint8_t> payload) {
-    std::copy(payload.begin(), payload.end(), std::back_inserter(respons));
-    responsed = true;
+  void SetResponse(std::vector<uint8_t> payload) {
+    std::copy(payload.begin(), payload.end(), std::back_inserter(response));
+    responded = true;
     cv.notify_one();
   }
 
-  std::vector<uint8_t> GetPayload() const { return this->respons; }
+  std::vector<uint8_t> GetPayload() const { return this->response; }
   simba::core::Result<std::vector<uint8_t>> GetPayloadAsc() {
     std::unique_lock<std::mutex> lk(cv_m);
     if (!cv.wait_for(lk, std::chrono::seconds{2},
                      [this]() { return this->IsRespond(); })) {
       return simba::core::Result<std::vector<uint8_t>>{};
     }
-    return simba::core::Result<std::vector<uint8_t>>{respons};
+    return simba::core::Result<std::vector<uint8_t>>{response};
   }
 
   simba::core::Result<bool> GetACK() {
@@ -60,6 +60,7 @@ class Transfer {
       return simba::core::Result<bool>{true};
     }
   }
+  virtual ~Transfer() {}
 };
 }  // namespace data
 }  // namespace someip

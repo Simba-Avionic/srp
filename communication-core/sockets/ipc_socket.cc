@@ -9,7 +9,6 @@
  *
  */
 #include "communication-core/sockets/ipc_socket.h"
-
 #include <unistd.h>
 
 #include <algorithm>

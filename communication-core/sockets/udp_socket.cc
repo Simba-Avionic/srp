@@ -76,7 +76,6 @@ void UdpSocket::StartRXThread() {
 }
 
 void UdpSocket::Loop() {
-
   while (true) {
     std::array<char, 256 * 2> buffor;
     bytes_rec = recvfrom(server_sock, reinterpret_cast<char*>(&buffor), 256 * 2,
