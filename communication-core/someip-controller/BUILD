@@ -23,7 +23,7 @@ cc_library(
     deps = [
         ":someip_interface",
         "//communication-core/database:DatabaseLib",
-        "//communication-core/json-parser:JsonParser",
+        # "//communication-core/json-parser:JsonParser",
         "//communication-core/sockets:socket_interface",
         "//communication-core/someip:someip_header",
         "//communication-core/someip:someip_types",

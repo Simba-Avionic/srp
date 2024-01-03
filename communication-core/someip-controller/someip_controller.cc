@@ -12,7 +12,7 @@
 
 #include <string>
 
-#include "communication-core/json-parser/database_json_parser.h"
+// #include "communication-core/json-parser/database_json_parser.h"
 #include "communication-core/someip/message_code.h"
 #include "communication-core/someip/message_type.h"
 #include "communication-core/someip/someip_header.h"
@@ -148,7 +148,7 @@ SomeIpController::SomeIpController(const uint16_t service_id,
 
 simba::core::ErrorCode SomeIpController::LoadServiceList(
     const std::string& path) {
-  database::json::DatabaseJsonParser::LoadJson(this->db_, path);
+  // database::json::DatabaseJsonParser::LoadJson(this->db_, path);
   AppLogger::Info("[SOMEIPCONTROLLER] loaded config file with services");
   return simba::core::ErrorCode::kOk;
 }
