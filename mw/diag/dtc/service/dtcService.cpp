@@ -11,9 +11,9 @@
 
 #include "mw/diag/dtc/service/dtcService.hpp"
 
-namespace simba {
-namespace mw {
-namespace dtc {
+namespace simba{
+namespace mw{
+namespace dtc{
 
 
 

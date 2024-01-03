@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 /**
  * @file json_parser.h
  * @author Bartosz Snieg (snieg45@gmail.com)
@@ -14,6 +15,11 @@
 #include <unordered_map>
 
 #include "json-parser/Ijson_parser.h"
+=======
+#ifndef ROUTER_COMUNICATION_CORE_JSON_PARSER_JSON_PARSER_H_
+#define ROUTER_COMUNICATION_CORE_JSON_PARSER_JSON_PARSER_H_
+#include "communication-core/json-parser/Ijson_parser.h"
+>>>>>>> 138e134 (fix structure and create DtcService without diag communication)
 
 namespace simba {
 namespace database {

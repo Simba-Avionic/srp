@@ -16,6 +16,7 @@
 #include "communication-core/database/app_element.h"
 #include "nlohmann/json.hpp"
 #include "unordered_map"
+#include "communication-core/database/app_element.h"
 
 namespace simba {
 namespace database {

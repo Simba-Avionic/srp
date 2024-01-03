@@ -16,6 +16,31 @@ Funkcjonalność ta jest dostarczona do aplikacji która będzię zgodna z inter
 
 W polu payload przekazujemy tylko i wyłącznie jakieś wartości typu dane z sensora przy których powstał błąd
 
+
+# OLD
+
+## ramka IPC
+| Pole | długość w Bajtach |
+| :--- | :---: |
+| Service_ID | 2 |
+| Method_ID |2 |  
+| Lenght | 2 |
+| Payload |  |
+
+ Do nadawania nowej wartości dla kodu DTC. Jest to komunikacja typu UDP bez informacji zwrotnej.
+
+Funkcjonalność ta jest dostarczona do aplikacji która będzię zgodna z interfejsem iapplication. Dokładnie dla każdej aplikacji która nie dziedziczy po Application_no_IPC.
+
+ ### Frame
+ | Nazwa | rozmiar [bajty] | Opis |
+|-------|---------|------|
+| DTC_id | 2 | Numer błędu |
+| DTC_status | 1 | flagi błędu |
+| length | 1 | Długość pola "payload" [bajty] |
+| payload | 0-255 | dodatkowe dane opcjonalnie w celu przekazania jakiś danych |
+
+W polu payload przekazujemy tylko i wyłącznie jakieś wartości typu dane z sensora przy których powstał błąd
+
 ## wstepny zamysł
 
 ### error_code
