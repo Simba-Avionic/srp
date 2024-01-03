@@ -5,7 +5,7 @@ cc_library(
         "socket_config.h",
     ],
     deps = ["//core"],
-    visibility = ["//communication-core:__subpackages__"],
+    visibility = ["//communication-core:__subpackages__","//mw/diag/dtc:__subpackages__"],
 )
 
 cc_library(
@@ -16,7 +16,7 @@ cc_library(
     hdrs = [
         "ipc_socket.h",
     ],
-    visibility = ["//communication-core:__subpackages__"],
+    visibility = ["//communication-core:__subpackages__","//mw/diag/dtc:__subpackages__"],
     deps = [":socket_interface"],
 )
 

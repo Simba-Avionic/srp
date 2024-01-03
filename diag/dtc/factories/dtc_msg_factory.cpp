@@ -11,7 +11,7 @@
 #include "diag/dtc/factories/dtc_msg_factory.hpp"
 
 namespace simba{
-namespace mw{
+namespace diag{
 namespace dtc{
 
 std::vector<uint8_t> DtcMsgFactory::GetBuffer(std::shared_ptr<DtcHeader> header,std::vector<uint8_t> payload){

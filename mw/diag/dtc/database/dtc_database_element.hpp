@@ -21,28 +21,23 @@ namespace simba{
 namespace mw{
 namespace dtc{
 
-enum DtcErrorStatus_t{
-    kAutoReset,
-    kCreated,
-    kManReset
-};
 
 class DtcDatabaseElement:public com::core::network::NetworkDataStructure{
  private:
-    uint16_t service_id_;
+    uint16_t dtc_error_code_;
     std::string details_;
-    DtcErrorStatus_t status_;
+    uint8_t status_;
  public:
-    DtcDatabaseElement(uint16_t service_id_,std::string details_,
-            DtcErrorStatus_t status_=DtcErrorStatus_t::kCreated);
+    DtcDatabaseElement(uint16_t dtc_error_code_,std::string details_,
+            uint8_t status_=0x0);
 
-    void SetService_id(const uint16_t& service_id);
+    void SetDtcErrorCode(const uint16_t& dtc_error_code_);
     void SetDetails(const std::string& details);
-    void SetStatus(const DtcErrorStatus_t& status);
+    void SetStatus(const uint8_t& status);
 
-    uint16_t GetService_id();
+    uint16_t GetDtcErrorCode();
     std::string GetDetails();
-    DtcErrorStatus_t GetStatus();
+    uint8_t GetStatus();
 
 };
 

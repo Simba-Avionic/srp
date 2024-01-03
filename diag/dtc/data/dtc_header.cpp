@@ -1,10 +1,10 @@
 #include "diag/dtc/data/dtc_header.hpp"
 
 namespace simba{
-namespace mw{
+namespace diag{
 namespace dtc{
 
-DtcHeader::DtcHeader(uint16_t &dtc_id,uint16_t &dtc_status)
+DtcHeader::DtcHeader(uint16_t &dtc_id,uint8_t &dtc_status)
             :dtc_id_(dtc_id),dtc_status_(dtc_status){
                 this->lenght_=0x04;
     }
@@ -23,7 +23,7 @@ uint8_t DtcHeader::GetLength(){
 void DtcHeader::SetDtcID(const uint16_t& value){
     this->dtc_id_=value;
 };
-void DtcHeader::SetMethodID(const uint8_t& value){
+void DtcHeader::SetDtcStatus(const uint8_t& value){
     this->dtc_status_=value;
 };
 void DtcHeader::SetLength(const uint8_t& value){

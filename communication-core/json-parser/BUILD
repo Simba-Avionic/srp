@@ -6,4 +6,5 @@ cc_library(
         "//communication-core/database:DatabaseLib",
         "@com_json//:json",
     ],
+    visibility = ["//communication-core/someip-controller:__subpackages__"],
 )

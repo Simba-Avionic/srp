@@ -17,7 +17,7 @@
 #include <memory>
 
 namespace simba{
-namespace mw{
+namespace diag{
 namespace dtc{
 
 class DtcMsgFactory{
