@@ -36,7 +36,7 @@ class DataStructure {
    * @brief Diagnostic method ID
    *
    */
-  const std::uint16_t diag_id_;
+  const std::uint8_t diag_id_;
   /**
    * @brief Transfer id
    *
@@ -49,14 +49,18 @@ class DataStructure {
   std::vector<uint8_t> payload_{};
 
  public:
-  DataStructure(const std::uint16_t service_id, const std::uint16_t diag_id,
+  DataStructure(const std::uint16_t service_id, const std::uint8_t diag_id,
                 const std::uint16_t sender_id, const std::uint16_t transfer_id);
   void SetPayload(const std::vector<uint8_t>& payload);
   std::vector<uint8_t> GetPayload() const;
   const std::uint16_t GetServiceID() const;
   const std::uint16_t GetSenderID() const;
-  const std::uint16_t GetDiagID() const;
+  const std::uint8_t GetDiagID() const;
   const std::uint16_t GetTransferID() const;
+  const bool isWrite() const;
+  const bool isRead() const;
+  const bool isJob() const;
+  const bool isResponse() const;
 };
 }  // namespace data
 }  // namespace diag

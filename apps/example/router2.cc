@@ -8,11 +8,9 @@
  * @copyright Copyright (c) 2023
  *
  */
-#include "apps/example/router.h"
-
 #include <memory>
-#include <vector>
 
+#include "apps/example/router.h"
 #include "communication-core/sockets/ipc_socket.h"
 #include "core/logger/Logger.h"
 #include "diag/base/controller/diag_controller.h"
@@ -20,21 +18,24 @@ namespace simba {
 namespace router {
 
 void Router::Run(const std::unordered_map<std::string, core::Parm>& parms) {
-  diag::DiagController diag_controller{0x00001,
+  diag::DiagController diag_controller{0x00002,
                                        std::make_unique<com::soc::IpcSocket>()};
-  diag_controller.AddMethod(
-      0x01,
-      [this](const std::vector<uint8_t> payload) {
-        std::string pp = "";
-        for (auto a : payload) {
-          pp += std::to_string(a) + ",";
-        }
-        AppLogger::Debug("Diag job 1 payload: " + pp);
-        // return core::Result<std::vector<uint8_t>>{{0x01,0x02}};
-        return core::Result<std::vector<uint8_t>>{};
-      },
-      diag::DiagMethodType::WRITE);
   diag_controller.Init();
+  const auto res = diag_controller.Write(0x0001, 0x01, {0x10, 0x01});
+  if (res == core::ErrorCode::kOk) {
+    AppLogger::Info("OK");
+  } else {
+    AppLogger::Error("NOK");
+  }
+  //   if(res.HasValue()){
+  //     std::string pp = "";
+  //     auto res_p = res.Value();
+  //     for(auto a : res_p){
+  //         pp+=std::to_string(a)+",";
+  //     }
+  //     AppLogger::Debug("Payload: "+pp);
+  //   }
+
   AppLogger::Debug("Router started");
   this->SleepMainThred();
   // this->logger_->Debug("Router started");

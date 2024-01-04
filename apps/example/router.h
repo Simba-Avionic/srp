@@ -12,7 +12,6 @@
 #define APPS_EXAMPLE_ROUTER_H_
 #include <string>
 #include <unordered_map>
-
 #include "core/application/application_no_ipc.h"
 #include "core/application/parm.h"
 namespace simba {
