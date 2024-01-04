@@ -15,13 +15,9 @@
 
 namespace simba {
 namespace core {
+namespace gpio{
 
 GpioDigitalDriver::GpioDigitalDriver() {
-    this->path = "/sys/class/gpio/gpio";
-}
-
-GpioDigitalDriver::GpioDigitalDriver(std::string path) {
-    this->path = path;
 }
 
 std::string GpioDigitalDriver::getEndpointPath
@@ -29,26 +25,26 @@ std::string GpioDigitalDriver::getEndpointPath
     return this->path+std::to_string(pinNumber)+"/"+endpoint;
 }
 
-gpio_error_t GpioDigitalDriver::setValue(uint8_t pinNumber , uint8_t value) {
+core::ErrorCode GpioDigitalDriver::setValue(uint8_t pinNumber , uint8_t value) {
     std::ofstream file;
     file.open(this->getEndpointPath(pinNumber, "value"));
     if (!file.is_open()) {
-        return FILE_NOT_FOUND;
+        return core::ErrorCode::kError;
     }
     if (this->getDirection(pinNumber) != OUT) {
-        return PIN_NOT_SET_TO_OUTPUT;
+        return core::ErrorCode::kConnectionError;
     }
     file << value;
     file.close();
-    return OK;
+    return core::ErrorCode::kOk;
 }
 
-gpio_error_t GpioDigitalDriver::setDirection
+core::ErrorCode GpioDigitalDriver::setDirection
 (uint8_t pinNumber , direction_t direction) {
     std::ofstream file;
     file.open(this->getEndpointPath(pinNumber, "direction"));
     if (!file.is_open()) {
-        return FILE_NOT_FOUND;
+        return core::ErrorCode::kInitializeError;
     }
     if (direction == IN) {
         file << "in";
@@ -58,14 +54,14 @@ gpio_error_t GpioDigitalDriver::setDirection
     file.close();
 }
 
-gpio_error_t GpioDigitalDriver::setActivePinLow(uint8_t pinNumber, bool value) {
+core::ErrorCode GpioDigitalDriver::setActivePinLow(uint8_t pinNumber, bool value) {
     std::ofstream file;
     file.open(this->getEndpointPath(pinNumber, "active_low"));
     if (!file.is_open()) {
-        return FILE_NOT_FOUND;
+        return core::ErrorCode::kInitializeError;
     }
     if (this->getDirection(pinNumber) != IN) {
-        return PIN_NOT_SET_TO_OUTPUT;
+        return core::ErrorCode::kConnectionError;
     }
     file << value;
     file.close();
@@ -107,6 +103,6 @@ bool GpioDigitalDriver::getActivePinLow(uint8_t pinNumber) {
     return active;
 }
 
-
+}  // namespace gpio
 }  // namespace core
 }  // namespace simba
