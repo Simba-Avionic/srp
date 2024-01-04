@@ -21,10 +21,14 @@
 #include "core/application/application_factory.h"
 #include "core/logger/ILogger.h"
 #include "diag/dtc/factories/dtc_msg_factory.hpp"
+#include "diag/base/data/data_structure.h"
+#include "diag/base/data/parser.h"
+#include "diag/base/factories/diag_data_factory.h"
 
 #include <fstream>
 #include <memory>
 #include <string>
+#include <bitset>
 
 namespace simba{
 namespace mw{
@@ -65,9 +69,13 @@ class Converter{
 class DtcService:public core::ApplicationNoIPC{
  protected:
    com::soc::IpcSocket dtc_sock_{};
-   com::soc::IpcSocket diag_sock_{}; //TODO
+   com::soc::IpcSocket diag_sock_{};
    DtcDatabase db_{};
    Converter conv_{};
+   diag::Parser diag_parser_{};
+   diag::DiagDataFactory diag_factory_{};
+   uint32_t transfer_id=0;
+
 
  public:
    DtcService(){
@@ -80,15 +88,42 @@ class DtcService:public core::ApplicationNoIPC{
     * @param data 
     */
     void DiagRxCallback(const std::string& ip, const std::uint16_t& port,const std::vector<std::uint8_t> data) {
-
+      auto hdr=this->diag_parser_.GetStructure(data);
+      if (!hdr.HasValue()){
+        AppLogger::Warning("Brak danych w DiagRXCallback");
+      }
+      std::bitset<16> diagId{hdr.Value().GetDiagID()};
+      std::bitset<4> status(diagId.to_ulong()>>4);
+      switch(status.to_ulong()){
+        case 0x0:
+         //TODO WRITE METHODS
+        break;
+        case 0x1:
+         //TODO READ METHODS
+        break;
+        case 0x2:
+        //TODO JOB METHODS
+        break;
+        case 0x3:
+         //TODO RESPONSE IGNORE??
+        break;
+      }
     }
+    /**
+     * @brief Callback for dtc interface
+     * 
+     * @param ip 
+     * @param port 
+     * @param data 
+     */
     void DtcRxCallback(const std::string& ip, const std::uint16_t& port,const std::vector<std::uint8_t> data) {
         diag::dtc::DtcMsgFactory factory;
         auto hdr=factory.GetHeader(data);
         std::vector<uint8_t> payload=factory.GetPayload(data);
         this->db_.AddError(hdr->GetDtcID(),this->conv_.convertVecToString(payload,0));
-        AppLogger::Debug(std::to_string(static_cast<int>(this->db_.ErrorNum())));
-        //TODO add callback to diagService 
+        AppLogger::Debug("Zarejestrowano błąd "+std::to_string(static_cast<int>(hdr->GetDtcID())));
+        //TOFIX poprawa generowania ramek, i wysylanie na diag interfejs informacji o błędzie
+        this->diag_factory_.CreatError(this->data["dtc"],this->data["dtc-diag"],this->data["dtc"],this->transfer_id,{},hdr->GetDtcID());
     }
     void Run(const std::unordered_map<std::string, core::Parm>& parms) {
         std::ifstream f("mw/diag/dtc/config.json");
@@ -106,7 +141,7 @@ class DtcService:public core::ApplicationNoIPC{
         this->dtc_sock_.StartRXThread();
         while(true){
           this->dtc_sock_.Transmit("0x0101.dtc",0,{0,1,2,3,4,5,6});
-          this->dtc_sock_.Transmit("0x0101.diag",0,{0,1,2,3,4,5,6});
+          this->diag_sock_.Transmit("0x0101.diag",0,{0,1,2,3,4,5,6});
         }
     }
   
