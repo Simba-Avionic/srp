@@ -6,7 +6,10 @@ cc_library(
         "//core/logger:Logger",
         "//diag/dtc/factories:diag_dtc_msg_factory",
         "//communication-core/sockets:socket_interface",
-        "//communication-core/sockets:socket_ipc"
+        "//communication-core/sockets:socket_ipc",
+        "//diag/base/data:diag_data_structure",
+        "//diag/base/data:diag_parser",
+        "//diag/base/factories:diag_data_factory",
         ],
     srcs = ["dtcService.cpp"],
     hdrs = ["dtcService.hpp","IDtcService.hpp"],
