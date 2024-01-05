@@ -9,7 +9,7 @@ cc_library(
     name = "network_data_structure",
     srcs = ["network_data_structure.cc"],
     hdrs = ["network_data_structure.h"],
-    visibility = ["//communication-core:__subpackages__"],
+    visibility = ["//communication-core:__subpackages__","//diag/dtc/data:__subpackages__","//mw/diag/dtc:__subpackages__"],
     deps = [":interfaces"],
 )
 

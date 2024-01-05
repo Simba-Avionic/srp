@@ -15,30 +15,30 @@ namespace simba{
 namespace mw{
 namespace dtc{
 
-DtcDatabaseElement::DtcDatabaseElement(uint16_t service_id,std::string details,
-            DtcErrorStatus_t status=DtcErrorStatus_t::kCreated)
-    : service_id_{service_id},details_{details},status_{status}{
+DtcDatabaseElement::DtcDatabaseElement(uint16_t dtc_error_code,std::string details,
+            uint8_t status)
+    : dtc_error_code_{dtc_error_code},details_{details},status_{status}{
     }
 
-void DtcDatabaseElement::SetService_id(const uint16_t& service_id){
-    this->service_id_=service_id;
+void DtcDatabaseElement::SetDtcErrorCode(const uint16_t& dtc_error_code){
+    this->dtc_error_code_=dtc_error_code;
 }
 
 void DtcDatabaseElement::SetDetails(const std::string& details){
     this->details_=details;
 }
-void DtcDatabaseElement::SetStatus(const DtcErrorStatus_t& status){
+void DtcDatabaseElement::SetStatus(const uint8_t& status){
     this->status_=status;
 }
 
-uint16_t DtcDatabaseElement::GetService_id(){
-    return this->service_id_;
+uint16_t DtcDatabaseElement::GetDtcErrorCode(){
+    return this->dtc_error_code_;
 }
 
 std::string DtcDatabaseElement::GetDetails(){
     return this->details_;
 }
-DtcErrorStatus_t DtcDatabaseElement::GetStatus(){
+uint8_t DtcDatabaseElement::GetStatus(){
     return this->status_;
 }
 
