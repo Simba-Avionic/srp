@@ -10,6 +10,7 @@ cc_library(
         "//diag/base/data:diag_data_structure",
         "//diag/base/data:diag_parser",
         "//diag/base/factories:diag_data_factory",
+        "//diag/base/controller:diag_controller"
         ],
     srcs = ["dtcService.cpp"],
     hdrs = ["dtcService.hpp","IDtcService.hpp"],

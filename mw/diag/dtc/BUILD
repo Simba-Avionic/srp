@@ -5,5 +5,4 @@ cc_binary(
         ],
     srcs = ["main.cpp"],
     visibility = ["//visibility:public"],
-    data = ["//mw/diag/dtc:config.json"],
 )

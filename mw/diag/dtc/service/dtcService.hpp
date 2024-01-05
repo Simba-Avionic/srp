@@ -24,6 +24,7 @@
 #include "diag/base/data/data_structure.h"
 #include "diag/base/data/parser.h"
 #include "diag/base/factories/diag_data_factory.h"
+#include "diag/base/controller/diag_controller.h"
 
 #include <fstream>
 #include <memory>
@@ -68,51 +69,25 @@ class Converter{
 
 class DtcService:public core::ApplicationNoIPC{
  protected:
-   com::soc::IpcSocket dtc_sock_{};
-   com::soc::IpcSocket diag_sock_{};
-   DtcDatabase db_{};
-   Converter conv_{};
-   diag::Parser diag_parser_{};
+   std::unique_ptr<diag::DiagController> diag_controller_;
    diag::DiagDataFactory diag_factory_{};
-   uint32_t transfer_id=0;
+
+   com::soc::IpcSocket dtc_sock_{};
+   DtcDatabase db_{};
+
+   Converter conv_{};
 
 
  public:
    DtcService(){
+
+        std::unique_ptr<com::soc::ISocket> diag_sock_=std::make_unique<com::soc::ISocket>(com::soc::IpcSocket{});
+        diag_sock_->Init(com::soc::SocketConfig("0x0101",0,0));
+        this->diag_controller_ = std::make_unique<diag::DiagController>(diag::DiagController(0x0101,std::make_unique<com::soc::ISocket>(diag_sock_)));
+        this->diag_controller_->Init();
+        // TODO dodanie obsługi metod diagnostycznych
+        // this->diag_controller_->AddMethod()
    }
-   /**
-    * @brief callback for diag.dtc communication
-    * 
-    * @param ip 
-    * @param port 
-    * @param data 
-    */
-    void DiagRxCallback(const std::string& ip, const std::uint16_t& port,const std::vector<std::uint8_t> data) {
-      auto hdr=this->diag_parser_.GetStructure(data);
-      if (!hdr.HasValue()){
-        AppLogger::Warning("Brak danych w DiagRXCallback");
-        return;
-      }
-      AppLogger::Debug("Otrzymano DiagRx");
-      std::bitset<16> diagId{hdr.Value().GetDiagID()};
-      std::bitset<4> status(diagId.to_ulong() >> 0);
-      std::bitset<12> diagMethod(diagId.to_ulong() >> 4);
-      AppLogger::Info(std::to_string(static_cast<int>(diagMethod.to_ulong())));
-      switch(status.to_ulong()){
-        case 0x0:
-         //TODO WRITE METHODS
-        break;
-        case 0x1:
-         //TODO READ METHODS
-        break;
-        case 0x2:
-        //TODO JOB METHODS
-        break;
-        case 0x3:
-         //TODO RESPONSE IGNORE??
-        break;
-      }
-    }
     /**
      * @brief Callback for dtc interface
      * 
@@ -126,28 +101,13 @@ class DtcService:public core::ApplicationNoIPC{
         std::vector<uint8_t> payload=factory.GetPayload(data);
         this->db_.AddError(hdr->GetDtcID(),this->conv_.convertVecToString(payload,0));
         AppLogger::Debug("Zarejestrowano błąd "+std::to_string(static_cast<int>(hdr->GetDtcID())));
-        auto error=this->diag_factory_.CreatError(this->data["diag_service"],this->data["dtc"]["diag_methods"]["error_notyfication"],this->data["dtc"]["diag_ipc"],this->transfer_id,{},hdr->GetDtcID());
-        this->transfer_id+=1;
-        this->diag_sock_.Transmit(this->data["diag_service"],0,this->diag_parser_.GetBuffer(error.Value()).Value());
+        //TODO dodaj wysylanie informacji o wystąpieniu błędu
+        this->diag_controller_->Write(0x0100,0x0001,this->conv_.convertUint16ToVector(hdr->GetDtcID()));
     }
     void Run(const std::unordered_map<std::string, core::Parm>& parms) {
-        std::ifstream f("mw/diag/dtc/config.json");
-        if(f.is_open()){
-        this->data=nlohmann::json::parse(f);
-        }else{
-          AppLogger::Error("File not found");
-          exit(1);
-        }
-        this->diag_sock_.Init(com::soc::SocketConfig(this->data["dtc"]["diag_ipc"],0,0));
-        this->dtc_sock_.Init(com::soc::SocketConfig(this->data["dtc"]["dtc_ipc"], 0, 0));
-        this->diag_sock_.SetRXCallback(std::bind(&DtcService::DiagRxCallback, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+        this->dtc_sock_.Init(com::soc::SocketConfig("0x0101", 0, 0));
         this->dtc_sock_.SetRXCallback(std::bind(&DtcService::DtcRxCallback, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
-        this->diag_sock_.StartRXThread();
         this->dtc_sock_.StartRXThread();
-        while(true){
-          //this->dtc_sock_.Transmit("0x0101.dtc",0,{0,1,2,3,4,5,6});
-          this->diag_sock_.Transmit(this->data["dtc"]["diag_ipc"],0,this->diag_parser_.GetBuffer(diag::data::DataStructure(0x0010,0xFF01,0x0101,0x0001)).Value());
-        }
     }
   
 };
