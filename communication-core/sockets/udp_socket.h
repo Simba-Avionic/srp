@@ -35,8 +35,8 @@ class UdpSocket : public ISocket {
   int bytes_rec = 0;
   struct sockaddr_in server_sockaddr, peer_sock;
 
-  std::unique_ptr<std::thread> rx_thread;
-  void Loop();
+  std::unique_ptr<std::jthread> rx_thread;
+  void Loop(std::stop_token stoken);
   RXCallback callback_;
 
  public:

@@ -3,12 +3,13 @@ cc_library(
     hdrs = [
         "Iapplication.h",
         "application_factory.h",
+        "application_mw.h",
         "application_no_ipc.h",
         "parm.h",
     ],
     visibility = ["//core:__subpackages__"],
     deps = [
-        "@com_json//:json",
         "//core/logger:console_logger",
+        "@com_json//:json",
     ],
 )
