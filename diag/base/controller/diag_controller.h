@@ -74,6 +74,7 @@ class DiagController : public IDiagController {
   DiagController(const uint16_t service_id,
                  std::unique_ptr<com::soc::ISocket> soc);
   ~DiagController() { this->callback_list.erase(this->callback_list.begin(), this->callback_list.end());}
+
 };
 }  // namespace diag
 }  // namespace simba
