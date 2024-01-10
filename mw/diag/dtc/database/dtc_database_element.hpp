@@ -38,7 +38,6 @@ class DtcDatabaseElement : public com::core::network::NetworkDataStructure {
     uint16_t GetDtcErrorCode() const;
     std::string GetDetails() const;
     uint8_t GetStatus() const;
-
 };
 
 }  // namespace dtc

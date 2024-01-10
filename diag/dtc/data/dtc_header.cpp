@@ -24,19 +24,19 @@ DtcHeader::DtcHeader(const uint16_t &dtc_id, const uint8_t &dtc_status)
     }
 DtcHeader::DtcHeader():dtc_id_{0}, dtc_status_{0} {};
 
-uint16_t DtcHeader::GetDtcID(){
+uint16_t DtcHeader::GetDtcID() {
     return this->dtc_id_;
-};
-uint8_t DtcHeader::GetDtcStatus(){
+}
+uint8_t DtcHeader::GetDtcStatus() {
     return this->dtc_status_;
-};
-uint8_t DtcHeader::GetLength(){
+}
+uint8_t DtcHeader::GetLength() {
     return this->lenght_;
-};
+}
 
-void DtcHeader::SetLength(const uint8_t& value){
+void DtcHeader::SetLength(const uint8_t& value) {
     this->lenght_ = value + hdrSize;
-};
+}
 
 }  // namespace dtc
 }  // namespace diag
