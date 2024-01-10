@@ -28,17 +28,16 @@ class DtcDatabaseElement : public com::core::network::NetworkDataStructure {
     std::string details_;
     uint8_t status_;
  public:
-    DtcDatabaseElement(uint16_t dtc_error_code_,std::string details_,
-            uint8_t status_=0x0);
+    DtcDatabaseElement(uint16_t dtc_error_code_, std::string details_,
+            uint8_t status_ = 0x0);
 
     void SetDtcErrorCode(const uint16_t& dtc_error_code_);
     void SetDetails(const std::string& details);
     void SetStatus(const uint8_t& status);
 
-    uint16_t GetDtcErrorCode()const ;
-    std::string GetDetails()const ;
-    uint8_t GetStatus()const;
-
+    uint16_t GetDtcErrorCode() const;
+    std::string GetDetails() const;
+    uint8_t GetStatus() const;
 };
 
 }  // namespace dtc

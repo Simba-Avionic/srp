@@ -11,21 +11,25 @@
 #include "diag/dtc/controller/dtc_controller.hpp"
 #include "diag/dtc/data/dtc_header.hpp"
 
+#include <vector>
 
-namespace simba{
-namespace diag{
-namespace dtc{
+namespace simba {
+namespace diag {
+namespace dtc {
 
-void DtcController::Init(std::shared_ptr<com::soc::SocketConfig> config){
+void DtcController::Init(
+    std::shared_ptr<com::soc::SocketConfig> config) {
     this->sock_.Init(*config.get());
-};
-
-core::ErrorCode DtcController::RegisterError(const uint16_t &dtc_error_id,const uint8_t &dtc_status,const std::vector<uint8_t> &payload){
-    DtcHeader hdr{dtc_error_id,dtc_status};
-    std::vector<uint8_t> data=this->factory_.GetBuffer(std::make_shared<DtcHeader>(hdr),payload);
-    return this->sock_.Transmit("0x0101",0,data);
 }
 
-} // dtc
-} // diag
-} // simba
+core::ErrorCode DtcController::RegisterError(const uint16_t &dtc_error_id,
+const uint8_t &dtc_status, const std::vector<uint8_t> &payload) {
+    DtcHeader hdr{dtc_error_id, dtc_status};
+    std::vector<uint8_t> data = this->factory_.GetBuffer(
+            std::make_shared<DtcHeader>(hdr), payload);
+    return this->sock_.Transmit("0x0101", 0, data);
+}
+
+}  // namespace dtc
+}  // namespace diag
+}  // namespace simba

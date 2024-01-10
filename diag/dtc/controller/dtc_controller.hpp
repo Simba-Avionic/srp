@@ -9,17 +9,19 @@
  * 
  */
 
-#ifndef DTC_CONTROLLER_DTC_DTC_CONTROLLER_HPP_
-#define DTC_CONTROLLER_DTC_DTC_CONTROLLER_HPP_
+#ifndef DIAG_DTC_CONTROLLER_DTC_CONTROLLER_HPP_
+#define DIAG_DTC_CONTROLLER_DTC_CONTROLLER_HPP_
+
+#include <memory>
+#include <vector>
 
 #include "diag/dtc/controller/I_dtc_controller.hpp"
 #include "communication-core/sockets/ipc_socket.h"
 #include "diag/dtc/factories/dtc_msg_factory.hpp"
 
-
-namespace simba{
-namespace diag{
-namespace dtc{
+namespace simba {
+namespace diag {
+namespace dtc {
 
 class DtcController:public IDtcController{
  public:
@@ -31,7 +33,8 @@ class DtcController:public IDtcController{
   * @param payload dodatkowe dane
   * @return core::ErrorCode 
   */
-  core::ErrorCode RegisterError(const uint16_t &dtc_error_id,const uint8_t &dtc_status,const std::vector<uint8_t> &payload) override;
+  core::ErrorCode RegisterError(const uint16_t &dtc_error_id,
+  const uint8_t &dtc_status, const std::vector<uint8_t> &payload) override;
   void Init(std::shared_ptr<com::soc::SocketConfig> config) override;
 
  private:
@@ -40,10 +43,10 @@ class DtcController:public IDtcController{
 };
 
 
-} // dtc
-} // diag
-} // simba
+}  // namespace dtc
+}  // namespace diag
+}  // namespace simba
 
 
 
-#endif // DTC_CONTROLLER_DTC_DTC_CONTROLLER_HPP_
+#endif  // DIAG_DTC_CONTROLLER_DTC_CONTROLLER_HPP_

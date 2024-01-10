@@ -9,8 +9,8 @@
  * 
  */
 
-#ifndef _MW_DTC_Msg_FACTORY_HPP_
-#define _MW_DTC_Msg_FACTORY_HPP_
+#ifndef DIAG_DTC_FACTORIES_DTC_MSG_FACTORY_HPP_
+#define DIAG_DTC_FACTORIES_DTC_MSG_FACTORY_HPP_
 
 #include "diag/dtc/data/dtc_header.hpp"
 #include <vector>
@@ -38,7 +38,8 @@ class DtcMsgFactory {
    * @param raw_data
    * @return std::shared_ptr<DtcHeader>
    */
-  std::shared_ptr<diag::dtc::DtcHeader> GetHeader(std::vector<uint8_t> raw_data);
+  std::shared_ptr<diag::dtc::DtcHeader> GetHeader(
+    std::vector<uint8_t> raw_data);
 
   /**
    * @brief Get payload from raw data
@@ -50,7 +51,7 @@ class DtcMsgFactory {
 };
 
 }  // namespace dtc
-}  // namespace mw
+}  // namespace diag
 }  // namespace simba
 
-#endif  // MW_DIAG_DTC_MSG_DTC_MSG_FACTORY_HPP_
+#endif  // DIAG_DTC_FACTORIES_DTC_MSG_FACTORY_HPP_

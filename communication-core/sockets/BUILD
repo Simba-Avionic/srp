@@ -4,7 +4,11 @@ cc_library(
         "Isocket.h",
         "socket_config.h",
     ],
-    visibility = ["//communication-core:__subpackages__"],
+    visibility = [
+        "//communication-core:__subpackages__",
+        "//mw:__subpackages__",
+        "//diag:__subpackages__"
+        ],
     deps = ["//core"],
 )
 
@@ -20,6 +24,7 @@ cc_library(
         "//apps:__subpackages__",
         "//mw:__subpackages__",
         "//communication-core:__subpackages__",
+        "//diag:__subpackages__"
     ],
     deps = [":socket_interface"],
 )

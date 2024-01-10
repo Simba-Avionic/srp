@@ -15,20 +15,20 @@ namespace simba {
 namespace mw {
 namespace dtc {
 
-DtcDatabaseElement::DtcDatabaseElement(uint16_t dtc_error_code,std::string details,
-            uint8_t status)
-    : dtc_error_code_{dtc_error_code},details_{details},status_{status}{
+DtcDatabaseElement::DtcDatabaseElement(uint16_t dtc_error_code,
+std::string details, uint8_t status)
+    : dtc_error_code_{dtc_error_code}, details_{details}, status_{status} {
     }
 
-void DtcDatabaseElement::SetDtcErrorCode(const uint16_t& dtc_error_code){
-    this->dtc_error_code_=dtc_error_code;
+void DtcDatabaseElement::SetDtcErrorCode(const uint16_t& dtc_error_code) {
+    this->dtc_error_code_ = dtc_error_code;
 }
 
 void DtcDatabaseElement::SetDetails(const std::string& details) {
   this->details_ = details;
 }
-void DtcDatabaseElement::SetStatus(const uint8_t& status){
-    this->status_=status;
+void DtcDatabaseElement::SetStatus(const uint8_t& status) {
+    this->status_ = status;
 }
 
 uint16_t DtcDatabaseElement::GetDtcErrorCode()const {
@@ -38,7 +38,7 @@ uint16_t DtcDatabaseElement::GetDtcErrorCode()const {
 std::string DtcDatabaseElement::GetDetails()const {
     return this->details_;
 }
-uint8_t DtcDatabaseElement::GetStatus() const{
+uint8_t DtcDatabaseElement::GetStatus() const {
     return this->status_;
 }
 
