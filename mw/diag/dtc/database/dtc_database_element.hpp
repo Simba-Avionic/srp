@@ -7,7 +7,7 @@
  *
  * @copyright Copyright (c) 2023
  *
- */
+ **/
 
 #ifndef MW_DIAG_DTC_DATABASE_DTC_DATABASE_ELEMENT_HPP_
 #define MW_DIAG_DTC_DATABASE_DTC_DATABASE_ELEMENT_HPP_

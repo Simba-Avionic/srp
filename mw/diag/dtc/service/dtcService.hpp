@@ -96,7 +96,7 @@ class DtcService:public core::ApplicationNoIPC{
      * @param data 
      */
     void DtcRxCallback(const std::string& ip, const std::uint16_t& port,const std::vector<std::uint8_t> data) {
-        diag::dtc::DtcMsgFactory factory;
+        mw::dtc::DtcMsgFactory factory;
         auto hdr=factory.GetHeader(data);
         std::vector<uint8_t> payload=factory.GetPayload(data);
         this->db_.AddError(hdr->GetDtcID(),this->conv_.convertVecToString(payload,0));
