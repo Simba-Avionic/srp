@@ -34,8 +34,8 @@ class IpcSocket : public ISocket {
   struct sockaddr_un server_sockaddr, peer_sock;
   char buf[256 * 2];
 
-  std::unique_ptr<std::thread> rx_thred;
-  void Loop();
+  std::unique_ptr<std::jthread> rx_thred;
+  void Loop(std::stop_token stoken);
   RXCallback callback_;
 
  public:
@@ -60,8 +60,9 @@ class IpcSocket : public ISocket {
    * @param payload payload to send
    * @return simba::core::ErrorCode status
    */
-  simba::core::ErrorCode Transmit(const std::string& ip, const std::uint16_t port,
-                           std::vector<std::uint8_t> payload) override;
+  simba::core::ErrorCode Transmit(const std::string& ip,
+                                  const std::uint16_t port,
+                                  std::vector<std::uint8_t> payload) override;
   /**
    * @brief This function start RX thread
    *
