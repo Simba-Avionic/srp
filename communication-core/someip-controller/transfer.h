@@ -12,10 +12,10 @@
 #define COMMUNICATION_CORE_SOMEIP_CONTROLLER_TRANSFER_H_
 #include <algorithm>
 #include <atomic>
-#include <chrono>
-#include <condition_variable>
+#include <chrono>              // NOLINT
+#include <condition_variable>  // NOLINT
 #include <cstdint>
-#include <mutex>
+#include <mutex>  // NOLINT
 #include <vector>
 
 #include "core/results/result.h"

@@ -24,10 +24,10 @@ jobs:
           total_errors=0
           for file in $cpp_files; do
             errors=$(cpplint --filter=-build/include_subdir --extensions=cc,cpp,h,hpp --linelength=120 --recursive --repository=. --root=src $file | wc -l)
-            total_errors=$((total_errors + errors))
+            total_errors=$((total_errors + errors -  1))
           done
           
-          if [[ $total_errors -gt 10 ]]; then
+          if [[ $total_errors -gt 0 ]]; then
             echo "Too many errors ($total_errors), failing the build."
             exit 1
           else

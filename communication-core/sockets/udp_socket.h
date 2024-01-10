@@ -22,7 +22,7 @@
 
 #include <memory>
 #include <string>
-#include <thread>
+#include <thread>  // NOLINT
 #include <vector>
 
 #include "communication-core/sockets/Isocket.h"

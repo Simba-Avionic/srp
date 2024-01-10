@@ -10,9 +10,9 @@
  */
 #ifndef CORE_APPLICATION_IAPPLICATION_H_
 #define CORE_APPLICATION_IAPPLICATION_H_
-#include <chrono>
+#include <chrono>  // NOLINT
 #include <string>
-#include <thread>
+#include <thread>  // NOLINT
 #include <unordered_map>
 
 #include "core/application/parm.h"
