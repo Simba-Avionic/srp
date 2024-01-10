@@ -9,10 +9,7 @@ cc_library(
     name = "Logger",
     srcs = ["Logger.cpp"],
     hdrs = ["Logger.h"],
-    visibility = [
-         "//core:__subpackages__",
-         "//mw/diag/dtc:__subpackages__",
-    ],
+    visibility = ["//core:__subpackages__"],
     deps = [
         ":logger_interface",
         "//core/common:common_types",

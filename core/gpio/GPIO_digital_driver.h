@@ -18,64 +18,24 @@
 
 namespace simba {
 namespace core {
-namespace gpio{
 
 class GpioDigitalDriver:IgpioDigitalDriver{
  public:
   GpioDigitalDriver();
+  explicit GpioDigitalDriver(std::string path);
 
-  /**
-   * @brief Set the pin Value 
-   * 
-   * @param pinNumber 
-   * @param value 
-   * @return core::ErrorCode 
-   */
-  core::ErrorCode setValue(uint8_t pinNumber , uint8_t value) override;
-  /**
-   * @brief Set the pin Direction
-   * 
-   * @param pinNumber 
-   * @param direction 
-   * @return core::ErrorCode 
-   */
-  core::ErrorCode setDirection(uint8_t pinNumber, direction_t direction) override;
-  /**
-   * @brief Set the Active Pin Low
-   * 
-   * @param pinNumber 
-   * @param value 
-   * @return core::ErrorCode 
-   */
-  core::ErrorCode setActivePinLow(uint8_t pinNumber, bool value) override;
-  /**
-   * @brief Get the pin Value 
-   * 
-   * @param pinNumber 
-   * @return uint8_t 
-   */
+  gpio_error_t setValue(uint8_t pinNumber , uint8_t value) override;
+  gpio_error_t setDirection(uint8_t pinNumber, direction_t direction) override;
+  gpio_error_t setActivePinLow(uint8_t pinNumber, bool value) override;
   uint8_t getValue(uint8_t pinNumber) override;
-  /**
-   * @brief Get the pin Direction
-   * 
-   * @param pinNumber 
-   * @return direction_t 
-   */
   direction_t getDirection(uint8_t pinNumber) override;
-  /**
-   * @brief Get the Active Pin Low
-   * 
-   * @param pinNumber 
-   * @return true 
-   * @return false 
-   */
   bool getActivePinLow(uint8_t pinNumber) override;
  private:
   std::string getEndpointPath(uint8_t pinNumber, std::string endpoint);
 
-  const std::string path="/sys/class/gpio/gpio";
+  std::string path;
 };
-}  // nammespace gpio
+
 }  // namespace core
 }  // namespace simba
 

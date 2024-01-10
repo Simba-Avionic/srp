@@ -12,17 +12,19 @@
 #ifndef CORE_GPIO_IGPIO_DIGITAL_DRIVER_H_
 #define CORE_GPIO_IGPIO_DIGITAL_DRIVER_H_
 
-#include "core/common/error_code.h"
-
 #include <stdint.h>
 
 namespace simba {
 namespace core {
-namespace gpio{
 
 enum direction_t{
     IN,
     OUT,
+};
+enum gpio_error_t{
+    FILE_NOT_FOUND,
+    PIN_NOT_SET_TO_OUTPUT,
+    OK
 };
 
 class IgpioDigitalDriver{
@@ -35,7 +37,7 @@ class IgpioDigitalDriver{
      * @param pinNumber 
      * @param value 
      */
-    virtual core::ErrorCode setValue(uint8_t pinNumber , uint8_t value) = 0;
+    virtual gpio_error_t setValue(uint8_t pinNumber , uint8_t value) = 0;
 
     /**
      * @brief Set the Pin direction (Pin direction must be set to output)
@@ -43,7 +45,7 @@ class IgpioDigitalDriver{
      * @param pinNumber 
      * @param direction 
      */
-    virtual core::ErrorCode setDirection(uint8_t pinNumber, direction_t direction) = 0;
+    virtual gpio_error_t setDirection(uint8_t pinNumber, direction_t direction) = 0;
 
     /**
      * @brief Set the base value Pin to activate
@@ -51,7 +53,7 @@ class IgpioDigitalDriver{
      * @param pinNumber 
      * @param value 
      */
-    virtual core::ErrorCode setActivePinLow(uint8_t pinNumber, bool value) = 0;
+    virtual gpio_error_t setActivePinLow(uint8_t pinNumber, bool value) = 0;
 
     /**
      * @brief read Pin Value
@@ -69,7 +71,6 @@ class IgpioDigitalDriver{
     virtual direction_t getDirection(uint8_t pinNumber) = 0;
     virtual bool getActivePinLow(uint8_t pinNumber) = 0;
 };
-}  // namespace gpio
 }  // namespace core
 }  // namespace simba
 
