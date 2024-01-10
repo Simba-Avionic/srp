@@ -1,6 +1,6 @@
 /**
  * @file main.cpp
- * @author Bartosz Snieg (snieg45@gmail.com)
+ * @author Mateusz Krajewski (matikrajek42@gmaill.com)
  * @brief 
  * @version 0.1
  * @date 2024-01-10
@@ -9,7 +9,7 @@
  * 
  */
 #include "core/application/application_factory.h"
-#include "mw/diag/dtc/dtcService.hpp"
+#include "mw/diag/dtc/service/dtcService.hpp"
 
 int main(int argc, char const *argv[]) {
   simba::core::ApplicationFactory<simba::mw::dtc::DtcService>::Start(argc,

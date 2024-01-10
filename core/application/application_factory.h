@@ -20,15 +20,10 @@
 #include "core/application/Iapplication.h"
 namespace simba {
 namespace core {
-namespace {   // NOLINT
+namespace {                                         // NOLINT
 static std::unique_ptr<IApplication> app{nullptr};  // NOLINT
-}   // NOLINT
-void signal_callback_handler(int signum) {
-  if (app != nullptr) {
-    app->StopApp();
-  }
-  exit(signum);
-}
+}  // namespace
+void signal_callback_handler(int signum);
 
 template <class APP>
 class ApplicationFactory {
