@@ -21,7 +21,7 @@ namespace simba {
 namespace core {
 class ApplicationMW : public IApplication {
  protected:
- std::string app_name{"NONE"};
+  std::string app_name{"NONE"};
   void Run(const std::unordered_map<std::string, Parm>& parms) override {
     AppLogger::Warning("Application function: Run is not implemented");
   }
