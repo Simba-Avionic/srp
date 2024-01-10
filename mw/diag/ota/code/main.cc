@@ -10,8 +10,7 @@
  */
 #include "core/application/application_factory.h"
 #include "mw/diag/ota/code/service/ota_service.h"
-int main(int argc, char const *argv[])
-{
-    simba::core::ApplicationFactory<simba::mw::ota::OtaService>::Start(argc,argv);
+int main(int argc, char const *argv[]) {
+    simba::core::ApplicationFactory<simba::mw::ota::OtaService>::Start(argc, argv);
     return 0;
 }
