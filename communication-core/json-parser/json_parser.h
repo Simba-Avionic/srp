@@ -19,7 +19,10 @@
 #ifndef ROUTER_COMUNICATION_CORE_JSON_PARSER_JSON_PARSER_H_
 #define ROUTER_COMUNICATION_CORE_JSON_PARSER_JSON_PARSER_H_
 #include "communication-core/json-parser/Ijson_parser.h"
+<<<<<<< HEAD
 >>>>>>> 138e134 (fix structure and create DtcService without diag communication)
+=======
+>>>>>>> e74fb50a2127a25e8fd1f624ba4823088e10a74c
 
 namespace simba {
 namespace database {

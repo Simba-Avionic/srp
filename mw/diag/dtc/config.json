@@ -1,0 +1,10 @@
+{
+    "dtc":{
+        "dtc_ipc":"0x0101.dtc",
+        "diag_ipc":"0x0101.diag",
+        "diag_methods":{
+            "error_notyfication":"0x0000"
+        }
+    },
+    "diag_service":"0x0100"
+}
