@@ -34,8 +34,8 @@ class IpcSocket : public ISocket {
   struct sockaddr_un server_sockaddr, peer_sock;
   char buf[256 * 2];
 
-  std::unique_ptr<std::thread> rx_thred;
-  void Loop();
+  std::unique_ptr<std::jthread> rx_thred;
+  void Loop(std::stop_token stoken);
   RXCallback callback_;
 
  public:

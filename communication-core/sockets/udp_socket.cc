@@ -14,6 +14,7 @@
 #include <algorithm>
 #include <string>
 #include <vector>
+
 #include "iostream"
 #include "unistd.h"
 
@@ -44,8 +45,8 @@ void UdpSocket::SetRXCallback(RXCallback callback) {
 }
 
 simba::core::ErrorCode UdpSocket::Transmit(const std::string& ip,
-                                    const std::uint16_t port,
-                                    std::vector<std::uint8_t> payload) {
+                                           const std::uint16_t port,
+                                           std::vector<std::uint8_t> payload) {
   int client_socket, rc;
   struct sockaddr_in remote;
   memset(&remote, 0, sizeof(struct sockaddr_in));
@@ -72,14 +73,19 @@ void UdpSocket::StartRXThread() {
   if (rx_thread != nullptr) {
     return;
   }
-  this->rx_thread = std::make_unique<std::thread>([&]() { this->Loop(); });
+  this->rx_thread = std::make_unique<std::jthread>([&](std::stop_token stoken) { this->Loop(stoken); });
 }
 
-void UdpSocket::Loop() {
+void UdpSocket::Loop(std::stop_token stoken) {
+  struct timeval tv;
+  tv.tv_sec = 2;
+  tv.tv_usec = 0;
+  setsockopt(server_sock, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
   while (true) {
     std::array<char, 256 * 2> buffor;
-    bytes_rec = recvfrom(server_sock, reinterpret_cast<char*>(&buffor), 256 * 2,
-                         0, (struct sockaddr*)&peer_sock, (socklen_t*)&len);  // NOLINT
+    bytes_rec =
+        recvfrom(server_sock, reinterpret_cast<char*>(&buffor), 256 * 2, 0,
+                 (struct sockaddr*)&peer_sock, (socklen_t*)&len);  // NOLINT
     if (bytes_rec >= 0) {
       if (this->callback_) {
         this->callback_(

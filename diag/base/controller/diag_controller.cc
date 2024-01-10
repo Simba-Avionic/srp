@@ -254,7 +254,9 @@ simba::core::Result<std::vector<uint8_t>> DiagController::Job(
 
 DiagController::DiagController(const uint16_t service_id,
                                std::unique_ptr<com::soc::ISocket> soc)
-    : service_id_{service_id}, socket_driver{std::move(soc)} {}
+    : service_id_{service_id}, socket_driver{std::move(soc)} {
+
+    }
 
 const uint16_t DiagController::GetTransferId() { return this->transfer_id++; }
 

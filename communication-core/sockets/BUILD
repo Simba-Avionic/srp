@@ -18,6 +18,7 @@ cc_library(
     ],
     visibility = [
         "//apps:__subpackages__",
+        "//mw:__subpackages__",
         "//communication-core:__subpackages__",
     ],
     deps = [":socket_interface"],

@@ -37,6 +37,7 @@ class IDiagController {
   virtual simba::core::Result<std::vector<uint8_t>> Job(
       const uint16_t service_id, const uint8_t diag_id,
       const std::vector<uint8_t> payload) = 0;
+  virtual ~IDiagController() {}
 };
 }  // namespace diag
 }  // namespace simba

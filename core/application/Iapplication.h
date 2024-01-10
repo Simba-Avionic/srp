@@ -56,6 +56,7 @@ class IApplication {
     }
 
     onRun(parms);
+    parms.clear();
   }
 };
 }  // namespace core

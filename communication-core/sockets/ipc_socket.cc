@@ -9,11 +9,11 @@
  *
  */
 #include "communication-core/sockets/ipc_socket.h"
+
 #include <unistd.h>
 
 #include <algorithm>
 #include <array>
-
 #include <vector>
 namespace simba {
 namespace com {
@@ -36,8 +36,8 @@ void IpcSocket::SetRXCallback(RXCallback callback) {
 }
 
 simba::core::ErrorCode IpcSocket::Transmit(const std::string& ip,
-                                    const std::uint16_t port,
-                                    std::vector<std::uint8_t> payload) {
+                                           const std::uint16_t port,
+                                           std::vector<std::uint8_t> payload) {
   int client_socket, rc;
   struct sockaddr_un remote;
   memset(&remote, 0, sizeof(struct sockaddr_un));
@@ -53,8 +53,8 @@ simba::core::ErrorCode IpcSocket::Transmit(const std::string& ip,
   std::uint8_t* buffor = new std::uint8_t[payload.size()];
   std::copy(payload.begin(), payload.end(), buffor);
 
-  rc = sendto(client_socket, buffor, payload.size(), 0, (struct sockaddr*)&remote,
-              sizeof(remote));
+  rc = sendto(client_socket, buffor, payload.size(), 0,
+              (struct sockaddr*)&remote, sizeof(remote));
   delete[] buffor;
   if (rc == -1) {
     return simba::core::ErrorCode::kError;
@@ -68,27 +68,38 @@ void IpcSocket::StartRXThread() {
   if (rx_thred != nullptr) {
     return;
   }
-  this->rx_thred = std::make_unique<std::thread>([&]() { this->Loop(); });
+  this->rx_thred = std::make_unique<std::jthread>(
+      [&](std::stop_token stoken) { this->Loop(stoken); });
 }
 
-void IpcSocket::Loop() {
+void IpcSocket::Loop(std::stop_token stoken) {
+  struct timeval tv;
+  tv.tv_sec = 2;
+  tv.tv_usec = 0;
+  setsockopt(server_sock, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
   rc = bind(server_sock, (struct sockaddr*)&server_sockaddr, len);
   if (rc == -1) {
     return;
   }
   while (true) {
     std::array<char, 256 * 2> buffor;
-    bytes_rec = recvfrom(server_sock, reinterpret_cast<char*>(&buffor), 256 * 2,
-                         0, (struct sockaddr*)&peer_sock, (socklen_t*)&len);  // NOLINT
+    bytes_rec =
+        recvfrom(server_sock, reinterpret_cast<char*>(&buffor), 256 * 2, 0,
+                 (struct sockaddr*)&peer_sock, (socklen_t*)&len);  // NOLINT
     if (bytes_rec >= 0) {
       if (this->callback_) {
-        this->callback_(
-            "IPC", 0,
-            std::vector<uint8_t>{buffor.begin(), buffor.begin() + bytes_rec});
+        if (buffor.size() > 0) {
+          this->callback_(
+              "IPC", 0,
+              std::vector<uint8_t>{buffor.begin(), buffor.begin() + bytes_rec});
+        }
       }
     }
+    if (stoken.stop_requested()) {
+      break;
+    }
   }
-  close(server_sock);
+  // close(server_sock);
 }
 }  // namespace soc
 }  // namespace com
