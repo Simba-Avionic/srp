@@ -16,8 +16,10 @@ namespace mw{
 namespace dtc{
 
    DtcService::DtcService(){
-        this->diag_controller_ = std::make_unique<diag::DiagController>(diag::DiagController(0x0101,std::make_unique<com::soc::ISocket>(com::soc::IpcSocket{})));
-        this->diag_controller_->Init();
+        this->app_name="DTC-Service";
+          this->diag_controller_ = std::make_unique<diag::DiagController>(
+            0x0100, std::make_unique<com::soc::IpcSocket>());
+            diag_controller_->Init();
         // TODO dodanie obsługi metod diagnostycznych
         // this->diag_controller_->AddMethod()
    }
@@ -29,18 +31,19 @@ namespace dtc{
      * @param data 
      */
     void DtcService::DtcRxCallback(const std::string& ip, const std::uint16_t& port,const std::vector<std::uint8_t> data) {
-        diag::dtc::DtcMsgFactory factory;
-        auto hdr=factory.GetHeader(data);
-        std::vector<uint8_t> payload=factory.GetPayload(data);
-        this->db_.AddError(hdr->GetDtcID(),this->conv_.convertVecToString(payload,0));
-        AppLogger::Debug("Zarejestrowano błąd "+std::to_string(static_cast<int>(hdr->GetDtcID())));
-        //TODO dodaj wysylanie informacji o wystąpieniu błędu
-        this->diag_controller_->Write(0x0100,0x0001,this->conv_.convertUint16ToVector(hdr->GetDtcID()));
+    //    diag::dtc::DtcMsgFactory factory;
+    //   auto hdr=factory.GetHeader(data);
+    //    std::vector<uint8_t> payload=factory.GetPayload(data);
+    //    this->db_.AddError(hdr->GetDtcID(),this->conv_.convertVecToString(payload,0));
+    //    AppLogger::Debug("Zarejestrowano błąd "+std::to_string(static_cast<int>(hdr->GetDtcID())));
+    //    //TODO dodaj wysylanie informacji o wystąpieniu błędu
+    //    this->diag_controller_->Write(0x0100,0x0001,this->conv_.convertUint16ToVector(hdr->GetDtcID()));
     }
     void DtcService::Run(const std::unordered_map<std::string, core::Parm>& parms) {
-        this->dtc_sock_.Init(com::soc::SocketConfig("0x0101", 0, 0));
-        this->dtc_sock_.SetRXCallback(std::bind(&DtcService::DtcRxCallback, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
-        this->dtc_sock_.StartRXThread();
+     //   this->dtc_sock_.Init(com::soc::SocketConfig("0x0101", 0, 0));
+     //   this->dtc_sock_.SetRXCallback(std::bind(&DtcService::DtcRxCallback, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+     //   this->dtc_sock_.StartRXThread();
+     std::this_thread::sleep_for(std::chrono::seconds(100));
     }
 
 

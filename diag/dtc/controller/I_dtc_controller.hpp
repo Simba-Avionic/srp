@@ -17,6 +17,7 @@
 #include "communication-core/sockets/socket_config.h"
 
 #include <vector>
+#include <memory>
 
 namespace simba{
 namespace diag{

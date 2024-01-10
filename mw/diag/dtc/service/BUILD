@@ -3,7 +3,7 @@ cc_library(
     deps = [
         "//mw/diag/dtc/database:dtc_db",
         "//mw/diag/dtc/database:dtc_db_element",
-        "//core/logger:Logger",
+        "//core",
         "//diag/dtc/factories:diag_dtc_msg_factory",
         "//communication-core/sockets:socket_interface",
         "//communication-core/sockets:socket_ipc",
@@ -13,6 +13,6 @@ cc_library(
         "//diag/base/controller:diag_controller"
         ],
     srcs = ["dtcService.cpp"],
-    hdrs = ["dtcService.hpp","IDtcService.hpp"],
+    hdrs = ["dtcService.hpp"],
     visibility = ["//visibility:public"],
 )

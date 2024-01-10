@@ -12,12 +12,12 @@
 #ifndef _MW_DTC_SERVICE_HPP_
 #define _MW_DTC_SERVICE_HPP_
 
-#include "mw/diag/dtc/service/IDtcService.hpp"
+
 #include "mw/diag/dtc/database/dtc_database.hpp"
 #include "mw/diag/dtc/database/dtc_database_element.hpp"
 #include "communication-core/sockets/ipc_socket.h"
 #include "communication-core/sockets/socket_config.h"
-#include "core/application/application_no_ipc.h"
+#include "core/application/application_mw.h"
 #include "core/application/application_factory.h"
 #include "core/logger/ILogger.h"
 #include "diag/dtc/factories/dtc_msg_factory.hpp"
@@ -25,6 +25,7 @@
 #include "diag/base/data/parser.h"
 #include "diag/base/factories/diag_data_factory.h"
 #include "diag/base/controller/diag_controller.h"
+
 
 #include <fstream>
 #include <memory>
@@ -67,7 +68,7 @@ class Converter{
 }
 };
 
-class DtcService:public core::ApplicationNoIPC{
+class DtcService:public core::ApplicationMW{
  protected:
    std::unique_ptr<diag::DiagController> diag_controller_;
    diag::DiagDataFactory diag_factory_{};
@@ -88,7 +89,7 @@ class DtcService:public core::ApplicationNoIPC{
      * @param data 
      */
     void DtcRxCallback(const std::string& ip, const std::uint16_t& port,const std::vector<std::uint8_t> data);
-    
+
     void Run(const std::unordered_map<std::string, core::Parm>& parms);
 };
 
