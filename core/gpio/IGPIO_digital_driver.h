@@ -12,13 +12,14 @@
 #ifndef CORE_GPIO_IGPIO_DIGITAL_DRIVER_H_
 #define CORE_GPIO_IGPIO_DIGITAL_DRIVER_H_
 
+#include <stdint.h>
+
 #include "core/common/error_code.h"
 
-#include <stdint.h>
 
 namespace simba {
 namespace core {
-namespace gpio{
+namespace gpio {
 
 enum direction_t{
     IN,
@@ -43,7 +44,8 @@ class IgpioDigitalDriver{
      * @param pinNumber 
      * @param direction 
      */
-    virtual core::ErrorCode setDirection(uint8_t pinNumber, direction_t direction) = 0;
+    virtual core::ErrorCode setDirection(uint8_t pinNumber,
+                                direction_t direction) = 0;
 
     /**
      * @brief Set the base value Pin to activate

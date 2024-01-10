@@ -9,45 +9,43 @@
  *
  */
 
-#ifndef MW_DIAG_DTC_MSG_DTC_HEADER_HPP_
-#define MW_DIAG_DTC_MSG_DTC_HEADER_HPP_
+#ifndef DIAG_DTC_DATA_DTC_HEADER_HPP_
+#define DIAG_DTC_DATA_DTC_HEADER_HPP_
 
 #include <chrono>  // NOLINT
+#include <vector>
 
 #include "communication-core/network-data/network_data_structure.h"
 
-#include <vector>
-#include <chrono>
-
-namespace simba{
-namespace diag{
-namespace dtc{
+namespace simba {
+namespace diag {
+namespace dtc {
 
 class DtcHeader : public com::core::network::NetworkDataStructure {
  private:
-    //numer błędu
+  // numer błędu
     const uint16_t dtc_id_;
     // flagi błędu
     const uint8_t dtc_status_;
     uint8_t lenght_;
  public:
-   DtcHeader(const uint16_t &dtc_id,const uint8_t &dtc_status);
-   DtcHeader();
+  DtcHeader(const uint16_t &dtc_id, const uint8_t &dtc_status);
+  DtcHeader();
 
-   uint16_t GetDtcID();
-   uint8_t GetDtcStatus();
-   uint8_t GetLength();
+  uint16_t GetDtcID();
+  uint8_t GetDtcStatus();
+  uint8_t GetLength();
 
    /**
     * @brief Set the Length object
     * 
     * @param value  (set only lenght of payload )
     */
-   void SetLength(const uint8_t& value);
+  void SetLength(const uint8_t& value);
 };
 
 }  // namespace dtc
-}  // namespace mw
+}  // namespace diag
 }  // namespace simba
 
-#endif  // MW_DIAG_DTC_MSG_DTC_HEADER_HPP_
+#endif  // DIAG_DTC_DATA_DTC_HEADER_HPP_

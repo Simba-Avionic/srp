@@ -15,7 +15,7 @@
 
 namespace simba {
 namespace core {
-namespace gpio{
+namespace gpio {
 
 GpioDigitalDriver::GpioDigitalDriver() {
 }
@@ -54,7 +54,8 @@ core::ErrorCode GpioDigitalDriver::setDirection
     file.close();
 }
 
-core::ErrorCode GpioDigitalDriver::setActivePinLow(uint8_t pinNumber, bool value) {
+core::ErrorCode GpioDigitalDriver::setActivePinLow(uint8_t pinNumber,
+                                 bool value) {
     std::ofstream file;
     file.open(this->getEndpointPath(pinNumber, "active_low"));
     if (!file.is_open()) {

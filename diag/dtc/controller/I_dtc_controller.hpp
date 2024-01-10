@@ -10,30 +10,30 @@
  */
 
 
-#ifndef DTC_CONTROLLER_DTC_I_DTC_CONTROLLER_HPP_
-#define DTC_CONTROLLER_DTC_I_DTC_CONTROLLER_HPP_
-
-#include "core/common/error_code.h"
-#include "communication-core/sockets/socket_config.h"
+#ifndef DIAG_DTC_CONTROLLER_I_DTC_CONTROLLER_HPP_
+#define DIAG_DTC_CONTROLLER_I_DTC_CONTROLLER_HPP_
 
 #include <vector>
 #include <memory>
 
-namespace simba{
-namespace diag{
-namespace dtc{
+#include "core/common/error_code.h"
+#include "communication-core/sockets/socket_config.h"
+
+namespace simba {
+namespace diag {
+namespace dtc {
 
 class IDtcController{
-public:
- virtual void Init(std::shared_ptr<com::soc::SocketConfig> config)=0;
+ public:
+  virtual void Init(std::shared_ptr<com::soc::SocketConfig> config) = 0;
 
- virtual core::ErrorCode RegisterError(const uint16_t &dtc_error_id,const uint8_t &dtc_status,const std::vector<uint8_t> &payload)=0;
-
+  virtual core::ErrorCode RegisterError(const uint16_t &dtc_error_id,
+  const uint8_t &dtc_status, const std::vector<uint8_t> &payload) = 0;
 };
 
-} // dtc
-} // diag
-} // simba
+}  // namespace dtc
+}  // namespace diag
+}  // namespace simba
 
 
-#endif // DTC_CONTROLLER_DTC_I_DTC_CONTROLLER_HPP_
+#endif  // DIAG_DTC_CONTROLLER_I_DTC_CONTROLLER_HPP_

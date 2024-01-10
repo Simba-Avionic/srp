@@ -29,15 +29,15 @@ class DtcDatabase {
   * @brief kluczem jest id błędu
   * 
   */
-  std::unordered_map<uint16_t,DtcDatabaseElement> errors_{};
+  std::unordered_map<uint16_t, DtcDatabaseElement> errors_{};
   core::logger::Logger logger_;
   uint16_t error_id;
   uint16_t active_errors;
 
  public:
   DtcDatabase();
-  core::ErrorCode AddError(uint16_t dtc_error_code_,std::string details_,
-                            uint8_t status_=0x0);
+  core::ErrorCode AddError(uint16_t dtc_error_code_, std::string details_,
+                            uint8_t status_ = 0x0);
   core::ErrorCode ManResetError(uint16_t error_id);
   core::ErrorCode AutoResetError(uint16_t error_id);
   uint16_t ErrorNum();

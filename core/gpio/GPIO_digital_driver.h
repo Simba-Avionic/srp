@@ -11,14 +11,14 @@
 #ifndef CORE_GPIO_GPIO_DIGITAL_DRIVER_H_
 #define CORE_GPIO_GPIO_DIGITAL_DRIVER_H_
 
+#include "IGPIO_digital_driver.h"
+
 #include <stdint.h>
 #include <string>
 
-#include "IGPIO_digital_driver.h"
-
 namespace simba {
 namespace core {
-namespace gpio{
+namespace gpio {
 
 class GpioDigitalDriver:IgpioDigitalDriver{
  public:
@@ -39,7 +39,8 @@ class GpioDigitalDriver:IgpioDigitalDriver{
    * @param direction 
    * @return core::ErrorCode 
    */
-  core::ErrorCode setDirection(uint8_t pinNumber, direction_t direction) override;
+  core::ErrorCode setDirection(uint8_t pinNumber,
+               direction_t direction) override;
   /**
    * @brief Set the Active Pin Low
    * 
@@ -70,12 +71,13 @@ class GpioDigitalDriver:IgpioDigitalDriver{
    * @return false 
    */
   bool getActivePinLow(uint8_t pinNumber) override;
+
  private:
   std::string getEndpointPath(uint8_t pinNumber, std::string endpoint);
 
-  const std::string path="/sys/class/gpio/gpio";
+  const std::string path = "/sys/class/gpio/gpio";
 };
-}  // nammespace gpio
+}  // namespace gpio
 }  // namespace core
 }  // namespace simba
 

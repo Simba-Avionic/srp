@@ -9,9 +9,14 @@
  * 
  */
 
-#ifndef _MW_DTC_SERVICE_HPP_
-#define _MW_DTC_SERVICE_HPP_
+#ifndef MW_DIAG_DTC_SERVICE_DTCSERVICE_HPP_
+#define MW_DIAG_DTC_SERVICE_DTCSERVICE_HPP_
 
+#include <fstream>
+#include <memory>
+#include <string>
+#include <vector>
+#include <unordered_map>
 
 #include "mw/diag/dtc/database/dtc_database.hpp"
 #include "mw/diag/dtc/database/dtc_database_element.hpp"
@@ -26,27 +31,23 @@
 #include "diag/base/factories/diag_data_factory.h"
 #include "diag/base/controller/diag_controller.h"
 
-
-#include <fstream>
-#include <memory>
-#include <string>
-#include <bitset>
-
-namespace simba{
-namespace mw{
-namespace dtc{
+namespace simba {
+namespace mw {
+namespace dtc {
 
 
 class Converter{
-  public:
-   uint16_t convertVecToUint16(std::vector<uint8_t> data,uint8_t start_index=0){
-      uint16_t d=(static_cast<std::uint16_t>(data[start_index]) << 8) |
+ public:
+  uint16_t convertVecToUint16(std::vector<uint8_t> data,
+   uint8_t start_index = 0) {
+      uint16_t d = (static_cast<std::uint16_t>(data[start_index]) << 8) |
       static_cast<std::uint16_t>(data[start_index+1]) |
       (static_cast<std::uint16_t>(data[start_index+2]) << 8) |
       static_cast<std::uint16_t>(data[start_index+3]);
       return d;
-   }
-    std::string convertVecToString(std::vector<uint8_t> data,uint8_t start_index){
+}
+    std::string convertVecToString(std::vector<uint8_t> data,
+    uint8_t start_index) {
       return std::string(data.begin() + start_index, data.end());
     }
     std::vector<uint8_t> convertUint16ToVector(uint16_t value) {
@@ -70,17 +71,17 @@ class Converter{
 
 class DtcService:public core::ApplicationMW{
  protected:
-   std::unique_ptr<diag::DiagController> diag_controller_;
-   diag::DiagDataFactory diag_factory_{};
+  std::unique_ptr<diag::DiagController> diag_controller_;
+  diag::DiagDataFactory diag_factory_{};
 
-   com::soc::IpcSocket dtc_sock_{};
-   DtcDatabase db_{};
+  com::soc::IpcSocket dtc_sock_{};
+  DtcDatabase db_{};
 
-   Converter conv_{};
+  Converter conv_{};
 
 
  public:
-   DtcService();
+  DtcService();
     /**
      * @brief Callback for dtc interface
      * 
@@ -88,14 +89,16 @@ class DtcService:public core::ApplicationMW{
      * @param port 
      * @param data 
      */
-    void DtcRxCallback(const std::string& ip, const std::uint16_t& port,const std::vector<std::uint8_t> data);
+  void DtcRxCallback(const std::string& ip, const std::uint16_t& port,
+  const std::vector<std::uint8_t> data);
 
-    void Run(const std::unordered_map<std::string, core::Parm>& parms);
+  void Run(const std::unordered_map<std::string,
+  core::Parm>& parms);
 };
 
-} // dtc
-} // mw
-} // simba
+}  // namespace dtc
+}  // namespace mw
+}  // namespace simba
 
 
-#endif // _MW_DTC_SERVICE_HPP_
+#endif  // MW_DIAG_DTC_SERVICE_DTCSERVICE_HPP_
