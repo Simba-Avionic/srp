@@ -11,27 +11,27 @@
 #ifndef COMMUNICATION_CORE_SOMEIP_CONTROLLER_SOMEIP_CONTROLLER_H_
 #define COMMUNICATION_CORE_SOMEIP_CONTROLLER_SOMEIP_CONTROLLER_H_
 #include <atomic>
-#include <chrono>
-#include <condition_variable>
+#include <chrono>              // NOLINT
+#include <condition_variable>  // NOLINT
 #include <functional>
 #include <iostream>
 #include <string>
-#include <thread>
+#include <thread>  // NOLINT
 #include <unordered_map>
 #include <utility>
 #include <vector>
 
-#include "core/common/error_code.h"
 #include "communication-core/database/database.h"
-#include "core/logger/Logger.h"
-#include "memory"
-#include "core/results/result.h"
 #include "communication-core/sockets/Isocket.h"
 #include "communication-core/sockets/socket_config.h"
 #include "communication-core/someip-controller/Isomeip_controller.h"
 #include "communication-core/someip-controller/transfer.h"
 #include "communication-core/someip/factory/someip_header_factory.h"
 #include "communication-core/someip/factory/someip_message_factory.h"
+#include "core/common/error_code.h"
+#include "core/logger/Logger.h"
+#include "core/results/result.h"
+#include "memory"
 
 namespace simba {
 namespace com {

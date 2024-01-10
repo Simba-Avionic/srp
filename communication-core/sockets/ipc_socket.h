@@ -20,7 +20,7 @@
 
 #include <memory>
 #include <string>
-#include <thread>
+#include <thread>  // NOLINT
 #include <vector>
 
 #include "communication-core/sockets/Isocket.h"
@@ -60,8 +60,9 @@ class IpcSocket : public ISocket {
    * @param payload payload to send
    * @return simba::core::ErrorCode status
    */
-  simba::core::ErrorCode Transmit(const std::string& ip, const std::uint16_t port,
-                           std::vector<std::uint8_t> payload) override;
+  simba::core::ErrorCode Transmit(const std::string& ip,
+                                  const std::uint16_t port,
+                                  std::vector<std::uint8_t> payload) override;
   /**
    * @brief This function start RX thread
    *

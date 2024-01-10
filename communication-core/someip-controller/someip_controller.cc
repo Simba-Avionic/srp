@@ -110,7 +110,7 @@ simba::core::ErrorCode SomeIpController::AddEventValue(
 simba::core::ErrorCode SomeIpController::Init() {
   AppLogger::Info("[SOMEIPCONTROLLER] Socket starting");
   /// TODO: Do this better with config or config
-  if (this->socket_->Init(this->config_) == simba::core::ErrorCode::kOk) { 
+  if (this->socket_->Init(this->config_) == simba::core::ErrorCode::kOk) {
     this->socket_->StartRXThread();
     AppLogger::Info("[SOMEIPCONTROLLER] Socket started RX Thhread");
   }
