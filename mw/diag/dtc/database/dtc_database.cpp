@@ -17,7 +17,6 @@ namespace mw {
 namespace dtc {
 
 DtcDatabase::DtcDatabase():error_id{0}, active_errors{0} {
-    //TODO init logger
 }
 core::ErrorCode DtcDatabase::AddError(uint16_t dtc_error_code_,
         std::string details_, uint8_t status_) {
