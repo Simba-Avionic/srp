@@ -13,8 +13,8 @@
 #include <tuple>
 #include <vector>
 
-#include "common/endianess_converter.h"
-#include "common/error_code.h"
+#include "core/common/endianess_converter.h"
+#include "core/common/error_code.h"
 
 class ErrorCodeToStringConversionTest
     : public testing::TestWithParam<
@@ -37,7 +37,7 @@ INSTANTIATE_TEST_SUITE_P(
                     std::make_tuple(simba::core::ErrorCode::kInitializeError,
                                     "kInitializeError"),
                     std::make_tuple(simba::core::ErrorCode::kBadVariableSize,
-                                    "kBadVariableSize")))
+                                    "kBadVariableSize")));
 
 TEST(EndianessConverter, testEndianessConverter) {
   simba::core::converter::EndianessConverter ec;
