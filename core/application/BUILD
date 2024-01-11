@@ -7,6 +7,7 @@ cc_library(
         "application_no_ipc.h",
         "parm.h",
     ],
+    srcs = ["application_factory.cc"],
     visibility = ["//core:__subpackages__"],
     deps = [
         "//core/logger:console_logger",
