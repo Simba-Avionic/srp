@@ -12,7 +12,7 @@
 
 #include <vector>
 
-#include "logger/console_logger.h"
+#include "core/logger/console_logger.h"
 
 TEST(Logger, printTest) {
   simba::core::logger::ConsoleLogger logger{};
