@@ -24,7 +24,7 @@ def include_spdlog():
         name = "com_json",
         strip_prefix = "json-develop",
         urls = ["https://github.com/nlohmann/json/archive/refs/heads/develop.zip"],
-        sha256 = "a8ed2882a9d5a2f300cf9f6d706cfba58a33c2d3faedd4394e3fba4a4c409d8c"
+        sha256 = "bd8a9cf30c1a62e6a5255f66658cf7181e302d32e07293bfde094b5d18d0fc76"
     )
     http_archive(
         name = "untar",
