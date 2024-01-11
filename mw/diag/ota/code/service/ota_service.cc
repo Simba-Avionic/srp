@@ -11,8 +11,6 @@
 
 #include "mw/diag/ota/code/service/ota_service.h"
 
-#include <vector>
-
 #include "communication-core/sockets/ipc_socket.h"
 #include "core/results/result.h"
 #include "diag/base/controller/diag_controller.h"

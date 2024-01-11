@@ -12,7 +12,6 @@ cc_library(
 cc_library(
     name = "idiag_controller",
     hdrs = ["idiag_controller.h"],
-    visibility = [],
     deps = [
         "//core/common:common_types",
         "//core/results:results_lib",
