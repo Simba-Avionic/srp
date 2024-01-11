@@ -4,7 +4,7 @@ cc_library(
     visibility = [
         "//core:__subpackages__",
         "//diag/base:__subpackages__",
-        "//mw:__subpackages__"
+        "//mw:__subpackages__",
     ],
 )
 
@@ -12,4 +12,11 @@ cc_library(
     name = "common_converter",
     hdrs = ["endianess_converter.h"],
     visibility = ["//core:__subpackages__"],
+)
+
+cc_library(
+    name = "crc_lib",
+    srcs = ["crc_16.cc"],
+    hdrs = ["crc_16.h"],
+    visibility = ["//core/common/test:__subpackages__"],
 )
