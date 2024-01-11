@@ -18,8 +18,8 @@ namespace simba {
 namespace mw {
 namespace dtc {
 
-namespace{
-static constexpr uint16_t dtc_id=0x101;
+namespace {
+static constexpr uint16_t dtc_id = 0x101;
 }
 
 

@@ -16,7 +16,7 @@ namespace mw {
 namespace dtc {
 
 DtcDatabaseElement::DtcDatabaseElement(uint16_t dtc_error_code,
-std::string details, uint8_t status)
+                            std::string details, uint8_t status)
     : dtc_error_code_{dtc_error_code}, details_{details}, status_{status} {
     }
 
