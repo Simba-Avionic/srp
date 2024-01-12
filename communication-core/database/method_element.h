@@ -12,23 +12,19 @@
 #define COMMUNICATION_CORE_DATABASE_METHOD_ELEMENT_H_
 #include <stdint.h>
 
-#include <vector>
-
-#include "database/service_element.h"
-
 namespace simba {
 namespace database {
 namespace objects {
 class MethodElement {
  private:
   const uint16_t method_id_;
-  const ServiceElement service_;
+  const uint16_t service_id_;
 
  public:
-  MethodElement(const uint16_t& method_id, const ServiceElement& service)
-      : method_id_{method_id}, service_{service} {}
+  MethodElement(const uint16_t& method_id, const uint16_t& service)
+      : method_id_{method_id}, service_id_{service} {}
   uint16_t GetMethodId() const { return method_id_; }
-  ServiceElement GetService() const { return service_; }
+  uint16_t GetService() const { return service_id_; }
 };
 }  // namespace objects
 }  // namespace database
