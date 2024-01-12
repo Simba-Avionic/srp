@@ -17,7 +17,7 @@ namespace diag {
 namespace {
 static constexpr size_t base_header_size = 0x08;
 }
-core::Result<data::DataStructure> Parser::GetStructure(
+std::optional<data::DataStructure> Parser::GetStructure(
     const std::vector<uint8_t>& buffer) {
   if (buffer.size() >= base_header_size) {
     const uint16_t s_id = (buffer[0] << 8) + buffer[1];
@@ -27,12 +27,12 @@ core::Result<data::DataStructure> Parser::GetStructure(
     data::DataStructure res{s_id, diag_id, send_id, transfer_id};
     res.SetPayload(
         std::vector<uint8_t>{buffer.begin() + base_header_size, buffer.end()});
-    return core::Result{res};
+    return res;
   } else {
-    return core::Result<data::DataStructure>{};
+    return {};
   }
 }
-core::Result<std::vector<uint8_t>> Parser::GetBuffer(
+std::optional<std::vector<uint8_t>> Parser::GetBuffer(
     const data::DataStructure& data) {
   std::vector<uint8_t> res{};
   res.push_back(static_cast<uint8_t>((data.GetServiceID() & 0XFF00) >> 8));
@@ -46,9 +46,9 @@ core::Result<std::vector<uint8_t>> Parser::GetBuffer(
   const auto vec = data.GetPayload();
   res.insert(res.end(), vec.begin(), vec.end());
   if (res.size() < 260) {
-    return core::Result{res};
+    return res;
   } else {
-    return core::Result<std::vector<uint8_t>>{};
+    return {};
   }
 }
 

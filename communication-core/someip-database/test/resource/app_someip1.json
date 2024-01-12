@@ -1,0 +1,33 @@
+{
+  "service_id": 258,
+  "interface": [
+    {
+      "ip": "SIMBA.SOMEIP.258",
+      "port": 0
+    },
+    {
+      "ip": "192.168.10.101",
+      "port": 1011
+    }
+  ],
+  "pub_methods": {},
+  "pub_event": {},
+  "req_methods": {
+    "ExampleApp/exampleMethod": {
+      "service_id": 15,
+      "method_id": 10
+    }
+  },
+  "req_events": {
+    "ExampleApp/exampleEvent": {
+      "service_id": 15,
+      "event_id": 32769
+    }
+  },
+  "db": {
+    "15": {
+      "ip": "SIMBA.SOMEIP.15",
+      "port": 0
+    }
+  }
+}

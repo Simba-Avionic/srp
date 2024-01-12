@@ -8,7 +8,7 @@
  * @copyright Copyright (c) 2024
  * 
  */
-#include "json_parser.h"
+#include "communication-core/json-parser/json_parser.h"
 
 #include <fstream>
 #include <string>
