@@ -11,17 +11,17 @@
 #ifndef DIAG_BASE_DATA_PARSER_H_
 #define DIAG_BASE_DATA_PARSER_H_
 #include <cstdint>
+#include <optional>
 #include <vector>
 
-#include "core/results/result.h"
 #include "diag/base/data/data_structure.h"
 namespace simba {
 namespace diag {
 class Parser {
  public:
-  static core::Result<data::DataStructure> GetStructure(
+  static std::optional<data::DataStructure> GetStructure(
       const std::vector<uint8_t>& buffer);
-  static core::Result<std::vector<uint8_t>> GetBuffer(
+  static std::optional<std::vector<uint8_t>> GetBuffer(
       const data::DataStructure& data);
 };
 }  // namespace diag

@@ -13,7 +13,7 @@
 #include <string>
 #include <unordered_map>
 
-#include "json-parser/Ijson_parser.h"
+#include "communication-core/json-parser/Ijson_parser.h"
 
 namespace simba {
 namespace database {
