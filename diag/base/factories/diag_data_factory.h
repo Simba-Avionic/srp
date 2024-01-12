@@ -11,26 +11,26 @@
 #ifndef DIAG_BASE_FACTORIES_DIAG_DATA_FACTORY_H_
 #define DIAG_BASE_FACTORIES_DIAG_DATA_FACTORY_H_
 #include <vector>
+#include <optional>
 
-#include "core/results/result.h"
 #include "diag/base/data/data_structure.h"
 namespace simba {
 namespace diag {
 class DiagDataFactory {
  public:
-  static simba::core::Result<data::DataStructure> CreateReadRequest(
+  static std::optional<data::DataStructure> CreateReadRequest(
       const std::uint16_t service_id, const std::uint8_t diag_id,
       const std::uint16_t sender_id, const std::uint16_t transfer_id,
       const std::vector<uint8_t>& payload);
-  static simba::core::Result<data::DataStructure> CreateWriteRequest(
+  static std::optional<data::DataStructure> CreateWriteRequest(
       const std::uint16_t service_id, const std::uint8_t diag_id,
       const std::uint16_t sender_id, const std::uint16_t transfer_id,
       const std::vector<uint8_t>& payload);
-  static simba::core::Result<data::DataStructure> CreateResponse(
+  static std::optional<data::DataStructure> CreateResponse(
       const std::uint16_t service_id, const std::uint8_t diag_id,
       const std::uint16_t sender_id, const std::uint16_t transfer_id,
       const std::vector<uint8_t>& payload);
-  static simba::core::Result<data::DataStructure> CreateJobRequest(
+  static std::optional<data::DataStructure> CreateJobRequest(
       const std::uint16_t service_id, const std::uint8_t diag_id,
       const std::uint16_t sender_id, const std::uint16_t transfer_id,
       const std::vector<uint8_t>& payload);

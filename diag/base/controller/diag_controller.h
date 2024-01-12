@@ -12,13 +12,13 @@
 #define DIAG_BASE_CONTROLLER_DIAG_CONTROLLER_H_
 #include <atomic>
 #include <memory>
+#include <optional>
 #include <string>
 #include <unordered_map>
 #include <vector>
 
 #include "communication-core/sockets/Isocket.h"
 #include "core/common/error_code.h"
-#include "core/results/result.h"
 #include "diag/base/controller/diag_transfer.h"
 #include "diag/base/controller/idiag_controller.h"
 #include "diag/base/data/data_structure.h"
@@ -64,17 +64,19 @@ class DiagController : public IDiagController {
   simba::core::ErrorCode AddMethod(const uint8_t diag_id, DiagMethod callback,
                                    const DiagMethodType method_type) override;
   simba::core::ErrorCode Init() override;
-  simba::core::Result<std::vector<uint8_t>> Read(
+  std::optional<std::vector<uint8_t>> Read(
       const uint16_t service_id, const uint8_t diag_id) override;
   simba::core::ErrorCode Write(const uint16_t service_id, const uint8_t diag_id,
                                const std::vector<uint8_t> payload) override;
-  simba::core::Result<std::vector<uint8_t>> Job(
+  std::optional<std::vector<uint8_t>> Job(
       const uint16_t service_id, const uint8_t diag_id,
       const std::vector<uint8_t> payload) override;
   DiagController(const uint16_t service_id,
                  std::unique_ptr<com::soc::ISocket> soc);
-  ~DiagController() { this->callback_list.erase(this->callback_list.begin(),
-  this->callback_list.end());}
+  ~DiagController() {
+    this->callback_list.erase(this->callback_list.begin(),
+                              this->callback_list.end());
+  }
 };
 }  // namespace diag
 }  // namespace simba
