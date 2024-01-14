@@ -29,7 +29,7 @@ inline __s32 I2C::i2c_smbus_read_byte_data(int file, __u8 command) {
     }
     return 0xFF & data.byte;
 }
- inline __s32 I2C::i2c_smbus_write_byte_data(int file, __u8 command, __u8 value) {
+inline __s32 I2C::i2c_smbus_write_byte_data(int file, __u8 command, __u8 value) {
     union i2c_smbus_data data;
     data.byte = value;
 
@@ -49,7 +49,7 @@ int I2C::init(const char * path) {
 }
 uint8_t I2C::read(uint8_t address, uint8_t reg) {
     if (address != this->slaveAddress) {
-        if (ioctl(file,I2C_SLAVE,address)<0) {
+        if (ioctl(file, I2C_SLAVE,address) < 0) {
         return -1;
     }
     this->slaveAddress = address;
@@ -62,8 +62,8 @@ uint8_t I2C::read(uint8_t address, uint8_t reg) {
     return data;
 }
 int I2C::write(uint8_t address, uint8_t reg, uint8_t data) {
-    if (address != this->slaveAddress){
-        if(ioctl(file,I2C_SLAVE,address)<0){
+    if (address != this->slaveAddress) {
+        if (ioctl(file, I2C_SLAVE, address) < 0){
         return -1;
     }
     this->slaveAddress = address;
