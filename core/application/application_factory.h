@@ -31,7 +31,7 @@ class ApplicationFactory {
  public:
   static void Start(int argc, char const *argv[]) {
     app = std::make_unique<APP>();
-    signal(SIGINT, signal_callback_handler);
+    // signal(SIGINT, signal_callback_handler);
     app->RunApp(argc, argv);
   }
   static void Stop() {}
