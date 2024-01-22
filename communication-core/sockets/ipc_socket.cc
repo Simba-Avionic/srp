@@ -10,22 +10,35 @@
  */
 #include "communication-core/sockets/ipc_socket.h"
 
+#include <sys/stat.h>
 #include <unistd.h>
 
 #include <algorithm>
 #include <array>
+#include <cstdio>
+#include <fstream>
 #include <vector>
 namespace simba {
 namespace com {
 namespace soc {
+bool IpcSocket::SocketExist(const std::string path) {
+  struct stat buffer;
+  return (stat(path.c_str(), &buffer) == 0);
+}
+
 simba::core::ErrorCode IpcSocket::Init(const SocketConfig& config) {
   memset(&server_sockaddr, 0, sizeof(struct sockaddr_un));
   server_sock = socket(AF_UNIX, SOCK_DGRAM, 0);
   if (server_sock == -1) {
     return simba::core::ErrorCode::kInitializeError;
   }
+  umask(0);
   server_sockaddr.sun_family = AF_UNIX;
-  strcpy(server_sockaddr.sun_path, config.GetIp().c_str());  // NOLINT
+  if (SocketExist("/run/" + config.GetIp())) {
+    remove(("/run/" + config.GetIp()).c_str());
+  }
+  strcpy(server_sockaddr.sun_path,             // NOLINT
+         ("/run/" + config.GetIp()).c_str());  // NOLINT
   len = sizeof(server_sockaddr);
   unlink(config.GetIp().c_str());
   return simba::core::ErrorCode::kOk;
