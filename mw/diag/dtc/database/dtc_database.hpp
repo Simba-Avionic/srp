@@ -37,7 +37,7 @@ class DtcDatabase {
  public:
   DtcDatabase();
   core::ErrorCode AddError(uint16_t dtc_error_code_, std::string details_,
-                            uint8_t status_ = 0x0);
+                            uint8_t status_);
   core::ErrorCode ManResetError(uint16_t error_id);
   core::ErrorCode AutoResetError(uint16_t error_id);
   uint16_t ErrorNum();
