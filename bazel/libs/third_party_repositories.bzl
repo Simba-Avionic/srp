@@ -22,9 +22,9 @@ def include_spdlog():
 
     http_archive(
         name = "com_json",
-        strip_prefix = "json-develop",
-        urls = ["https://github.com/nlohmann/json/archive/refs/heads/develop.zip"],
-        sha256 = "bd8a9cf30c1a62e6a5255f66658cf7181e302d32e07293bfde094b5d18d0fc76"
+        strip_prefix = "json-3.11.3",
+        urls = ["https://github.com/nlohmann/json/archive/refs/tags/v3.11.3.zip"],
+        sha256 = "04022b05d806eb5ff73023c280b68697d12b93e1b7267a0b22a1a39ec7578069"
     )
     http_archive(
         name = "untar",
