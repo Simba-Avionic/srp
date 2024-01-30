@@ -11,6 +11,15 @@ load("//bazel/libs:third_party_repositories.bzl", "include_spdlog")
 include_spdlog()
 
 http_archive(
+    name = "com_github_nelhage_rules_boost",
+    url = "https://github.com/nelhage/rules_boost/archive/be96ab4146e5b1d1db52a69482845dab883c4781.tar.gz",
+    strip_prefix = "rules_boost-be96ab4146e5b1d1db52a69482845dab883c4781",
+    integrity = "sha256-C7k9y8AqUBOzpQr3FkXTqiEyyaAaMhhK3z3NXUZUtYY=",
+)
+load("@com_github_nelhage_rules_boost//:boost/boost.bzl", "boost_deps")
+boost_deps()
+
+http_archive(
     name = "com_google_benchmark",
     sha256 = "bdefa4b03c32d1a27bd50e37ca466d8127c1688d834800c38f3c587a396188ee",
     strip_prefix = "benchmark-1.5.3",
