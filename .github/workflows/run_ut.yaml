@@ -17,12 +17,16 @@ jobs:
       - name: Install bazel
         run: |
           sudo apt install apt-transport-https curl gnupg
+          sudo add-apt-repository ppa:ubuntu-toolchain-r/ppa -y
+          sudo apt update
+          sudo apt install g++-13 gcc-13
           curl -fsSL https://bazel.build/bazel-release.pub.gpg | gpg --dearmor > bazel.gpg
           sudo mv bazel.gpg /etc/apt/trusted.gpg.d/
           echo "deb [arch=amd64] https://storage.googleapis.com/bazel-apt stable jdk1.8" | sudo tee /etc/apt/sources.list.d/bazel.list
-          sudo apt update && sudo apt install bazel
+          sudo apt update && sudo apt install bazel-5.4.1
       - name: Run ut
         run: |
+          gcc --version
           bazel test  `bazel query 'kind(cc_.*, tests(//...))'`
   
   

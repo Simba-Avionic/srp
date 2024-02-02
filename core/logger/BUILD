@@ -7,17 +7,24 @@ cc_library(
 
 cc_library(
     name = "Logger",
-    srcs = ["Logger.cpp"],
-    hdrs = ["Logger.h"],
-    visibility = [
-         "//core:__subpackages__",
-         "//mw/diag/dtc:__subpackages__",
+    srcs = [
+        "Logger.cpp",
+        "logger_factory.cc",
     ],
-    deps = [
-        ":logger_interface",
-        "//core/common:common_types",
+    hdrs = [
+        "Logger.h",
+        "logger_factory.h",
     ],
     copts = ["-std=c++20"],
+    visibility = [
+        "//visibility:public",
+    ],
+    deps = [
+        ":console_logger",
+        ":logger_interface",
+        "//core/common:common_types",
+        "//core/results:results_lib",
+    ],
 )
 
 cc_library(
@@ -28,6 +35,6 @@ cc_library(
     deps = [
         ":logger_interface",
         "//core/common:common_types",
-        "@com_github_gabime_spdlog//:spdlog"
+        "@com_github_gabime_spdlog//:spdlog",
     ],
 )
