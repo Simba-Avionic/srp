@@ -38,7 +38,7 @@ class Logger {
       const std::source_location& location = std::source_location::current());
   static void SetParms(const std::string& appName, loggingLevel lvl = WARNING);
   static void AddLogger(std::shared_ptr<ILogger> logger);
-
+  static loggingLevel ConvertStringToLogLevel(const std::string& val);
  private:
   static std::string GetLogMsg(const std::string& log,
                                const std::source_location& location);
