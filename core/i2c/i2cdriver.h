@@ -19,6 +19,7 @@
 #include <vector>
 #include "core/common/error_code.h"
 #include "core/results/result.h"
+#include <string>
 namespace simba {
 namespace core {
 class I2C{
