@@ -21,7 +21,11 @@ namespace logger {
 enum loggingLevel { DEBUG, INFO, WARNING, ERROR, OFF };
 
 class ILogger {
+ protected:
+  std::string app_name{"NONE"};
+
  public:
+  void SetAppName(const std::string& app_name) { this->app_name = app_name; }
   virtual simba::core::ErrorCode Debug(const std::string& log) = 0;
   virtual simba::core::ErrorCode Info(const std::string& log) = 0;
   virtual simba::core::ErrorCode Warning(const std::string& log) = 0;

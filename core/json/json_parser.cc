@@ -38,7 +38,7 @@ Result<std::string> JsonParser::GetString(
     } else {
       return Result<std::string>{};
     }
-  } catch (std::exception) {
+  } catch (std::exception&) {
     return Result<std::string>{};
   }
 }

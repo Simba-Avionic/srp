@@ -15,7 +15,14 @@ namespace simba {
 namespace router {
 
 core::ErrorCode Router::Run(std::stop_token token) {
-  this->SleepMainThread();
+  while (true) {
+    AppLogger::Debug("AppLogger::Debug");
+    AppLogger::Info("AppLogger::Info");
+    AppLogger::Warning("AppLogger::Warning");
+    AppLogger::Error("AppLogger::Error");
+    std::this_thread::sleep_for(std::chrono::seconds{1});
+  }
+
   return core::ErrorCode::kOk;
 }
 

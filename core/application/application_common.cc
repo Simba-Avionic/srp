@@ -45,7 +45,7 @@ void ApplicationCommon::RunApp(int argc, char const* argv[]) {
 
 void ApplicationCommon::SleepMainThread() {
   while (true) {
-    std::this_thread::sleep_for(std::chrono::seconds::max());
+    std::this_thread::sleep_for(std::chrono::hours{30});
   }
 }
 
@@ -54,7 +54,9 @@ void ApplicationCommon::onRun(
   if (this->CommonConfig(parms) != ErrorCode::kOk) {
     std::abort();
   }
+  AppLogger::Info("Application initialize");
   this->Initialize(parms);
+  AppLogger::Info("Application running");
   this->Run(this->source.get_token());
 }
 

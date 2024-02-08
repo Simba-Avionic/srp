@@ -1,5 +1,5 @@
 /**
- * @file udp_socket.h
+ * @file udp_multicast_socket.h
  * @author Bartosz Snieg (snieg45@gmail.com)
  * @brief
  * @version 0.1
@@ -8,8 +8,8 @@
  * @copyright Copyright (c) 2023
  *
  */
-#ifndef COMMUNICATION_CORE_SOCKETS_UDP_SOCKET_H_
-#define COMMUNICATION_CORE_SOCKETS_UDP_SOCKET_H_
+#ifndef COMMUNICATION_CORE_SOCKETS_UDP_MULTICAST_SOCKET_H_
+#define COMMUNICATION_CORE_SOCKETS_UDP_MULTICAST_SOCKET_H_
 #include <arpa/inet.h>
 #include <errno.h>
 #include <netinet/in.h>
@@ -29,15 +29,18 @@
 namespace simba {
 namespace com {
 namespace soc {
-class UdpSocket : public ISocket {
+class UdpMulticastSocket : public ISocket {
  private:
-  int server_sock, len;
-  int bytes_rec = 0;
-  struct sockaddr_in server_sockaddr, peer_sock;
+  struct in_addr localInterface;
+  struct sockaddr_in groupSock;
+  int sd;
+  //   int server_sock, len;
+  //   int bytes_rec = 0;
+  //   struct sockaddr_in server_sockaddr, peer_sock;
 
-  std::unique_ptr<std::jthread> rx_thread;
+  //   std::unique_ptr<std::jthread> rx_thread;
   void Loop(std::stop_token stoken);
-  RXCallback callback_;
+  //   RXCallback callback_;
 
  public:
   /**
@@ -69,9 +72,10 @@ class UdpSocket : public ISocket {
    *
    */
   void StartRXThread() override;
+  UdpMulticastSocket() = default;
 };
 }  // namespace soc
 }  // namespace com
 }  // namespace simba
 
-#endif  // COMMUNICATION_CORE_SOCKETS_UDP_SOCKET_H_
+#endif  // COMMUNICATION_CORE_SOCKETS_UDP_MULTICAST_SOCKET_H_
