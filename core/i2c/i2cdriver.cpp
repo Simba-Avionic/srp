@@ -19,7 +19,7 @@ int32_t I2C::i2c_smbus_access(char read_write, uint8_t command, int size, union 
     args.data = data;
     return ioctl(this->file, I2C_SMBUS, &args);
 }
-Result<uint8_t> I2C::i2c_smbus_read_byte_data(uint8_t command) {
+Result<uint8_t> I2C::i2c_smbus_read_byte_data(const uint8_t command) {
     union i2c_smbus_data data;
     if (i2c_smbus_access(I2C_SMBUS_READ, command, I2C_SMBUS_BYTE_DATA, &data) != 0) {
         return Result<uint8_t>{};
@@ -29,32 +29,33 @@ Result<uint8_t> I2C::i2c_smbus_read_byte_data(uint8_t command) {
 ErrorCode I2C::init(const std::string&  path) {
     this->file = open(path.c_str(), O_RDWR);
     if (this->file < 0) {
-        return kError;
+        return ErrorCode::kError;
     }
-    return kOk;
+    return ErrorCode::kOk;
 }
-ErrorCode I2C::read(const uint8_t address, const uint8_t reg, std::vector<uint8_t>& result) {
+Result<std::vector<uint8_t>> I2C::Read(const uint8_t address, const uint8_t reg) {
+    std::vector<uint8_t> result;
     if (ioctl(this->file, I2C_SLAVE, address) < 0) {
-        return kInitializeError;
+        return Result<std::vector<uint8_t>>{};
     }
     Result<uint8_t> data = i2c_smbus_read_byte_data(reg);
     if (!data.HasValue()) {
-        return kError;
+        return Result<std::vector<uint8_t>>{};
     }
     while (data.Value() >= 0) {
         result.push_back(data.Value());
         data = i2c_smbus_read_byte_data(reg);
     }
-    return kOk;
+    return Result<std::vector<uint8_t>>{result};
 }
 ErrorCode I2C::Write(const uint8_t address, const uint8_t reg, std::vector<uint8_t> data) {
     if (ioctl(this->file, I2C_SLAVE, address) < 0) {
-        return kInitializeError;
+        return ErrorCode::kInitializeError;
     }
     if (write(file, data.data(), data.size()) != data.size()) {
-        return kError;
+        return ErrorCode::kError;
     }
-    return kOk;
+    return ErrorCode::kOk;
 }
 }  // namespace core
 }  // namespace simba
