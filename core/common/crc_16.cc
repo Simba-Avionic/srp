@@ -57,7 +57,7 @@ const std::uint16_t CRC16::calculate(const uint8_t& data) {
 const std::uint16_t CRC16::calculate(const std::vector<uint8_t>& data) {
   uint16_t remainder = 0xFFFF;
   uint8_t byte;
-  for (size_t i = 0; i < data.size(); i++) {
+  for (std::size_t i = 0; i < data.size(); i++) {
     byte = data.at(i);
     byte = byte ^ (remainder >> (16 - 8));
     remainder = lookup[byte] ^ (remainder << 8);
