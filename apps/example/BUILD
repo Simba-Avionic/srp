@@ -1,5 +1,5 @@
 cc_binary(
-    name = "router",
+    name = "example",
     srcs = [
         "main.cc",
         "router.cc",

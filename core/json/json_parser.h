@@ -42,7 +42,7 @@ class JsonParser {
       } else {
         return Result<T>{};
       }
-    } catch (std::exception) {
+    } catch (std::exception&) {
       return Result<T>{};
     }
   }

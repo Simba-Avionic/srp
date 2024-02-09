@@ -35,6 +35,9 @@ loggingLevel Logger::ConvertStringToLogLevel(const std::string& val) {
 void Logger::SetParms(const std::string& appName, loggingLevel lvl) {
   Logger::appName = appName;
   Logger::level = lvl;
+  for (auto logger : Logger::loggers) {
+    logger->SetAppName(Logger::appName);
+  }
 }
 void Logger::Debug(const std::string& log,
                    const std::source_location& location) {
@@ -70,6 +73,7 @@ void Logger::Error(const std::string& log,
 }
 
 void Logger::AddLogger(std::shared_ptr<ILogger> logger) {
+  logger->SetAppName(Logger::appName);
   loggers.push_back(logger);
 }
 std::string Logger::GetLogMsg(const std::string& log,

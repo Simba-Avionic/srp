@@ -2,9 +2,7 @@ cc_library(
     name = "common_types",
     hdrs = ["error_code.h"],
     visibility = [
-        "//core:__subpackages__",
-        "//diag/base:__subpackages__",
-        "//mw:__subpackages__",
+        "//visibility:public",
     ],
 )
 
@@ -19,4 +17,10 @@ cc_library(
     srcs = ["crc_16.cc"],
     hdrs = ["crc_16.h"],
     visibility = ["//core/common/test:__subpackages__"],
+)
+
+cc_library(
+    name = "wait_queue",
+    hdrs = ["wait_queue.h"],
+    visibility = ["//visibility:public"],
 )
