@@ -13,6 +13,6 @@ cc_library(
         "//diag/base/controller:diag_controller"
         ],
     srcs = ["dtcService.cpp"],
-    hdrs = ["dtcService.hpp"],
+    hdrs = ["dtcService.h"],
     visibility = ["//visibility:public"],
 )

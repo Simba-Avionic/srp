@@ -21,7 +21,7 @@ cc_library(
 
 cc_library(
     name = "simba_application",
-    srcs = ["application_factory.cc"],
+    srcs = ["application_factory.cc","application_mw.cc"],
     hdrs = [
         "Iapplication.h",
         "application_factory.h",
@@ -32,6 +32,8 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         ":application",
-        # "@boost//:iostreams",
+        "//communication-core/sockets:socket_ipc",
+        "//core/json:simba_json",
+        "//diag/base/controller:diag_controller",
     ],
 )
