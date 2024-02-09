@@ -31,7 +31,7 @@ class DltService final : public core::ApplicationMW {
   uint16_t tx_port;
   std::string ec_name;
 
-  core::WaitQueue<std::shared_ptr<simba::dlt::data::IDLTFrame>, 30> logs{};
+  core::WaitQueue<std::shared_ptr<simba::dlt::data::IDLTFrame>, 200> logs{};
   /**
    * @brief This function is called to launch the application
    *

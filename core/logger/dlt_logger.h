@@ -29,8 +29,9 @@ class DltLogger final : public ILogger {
   std::unique_ptr<std::jthread> thread;
   void Loop(std::stop_token token);
   core::WaitQueue<std::vector<uint8_t>, 20> q{};
-
+  uint32_t last{0};
  public:
+  uint32_t GetTimeStamp() noexcept;
   simba::core::ErrorCode Debug(const std::string& log) override;
   simba::core::ErrorCode Info(const std::string& log) override;
   simba::core::ErrorCode Warning(const std::string& log) override;

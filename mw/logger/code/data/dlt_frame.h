@@ -28,7 +28,7 @@ class DltFrame final : public IDLTFrame {
    * @brief Header type
    *
    */
-  const uint8_t HTYP{0x27};
+  const uint8_t HTYP{0x37};
   /**
    * @brief Message Counter
    *
@@ -38,12 +38,17 @@ class DltFrame final : public IDLTFrame {
    * @brief Length
    *
    */
-  uint16_t LEN{0x12};
+  uint16_t LEN{0x16};
   /**
    * @brief ECU ID
    *
    */
   std::string ECU{};
+  /**
+   * @brief Timestamp
+   *
+   */
+  const uint32_t TMSP;
   /**
    * @brief Message Info
    *
@@ -67,9 +72,9 @@ class DltFrame final : public IDLTFrame {
   const T payload{"test"};
 
  public:
-  DltFrame(const std::string& ecu_id, const std::string& app_id,
-           const DLTLogType type, const T& payload_)
-      : payload{payload_} {
+  DltFrame(const uint32_t timestamp, const std::string& ecu_id,
+           const std::string& app_id, const DLTLogType type, const T& payload_)
+      : TMSP{timestamp}, payload{payload_} {
     ECU = ecu_id;
     APID = app_id;
     MSIN = type;
@@ -79,6 +84,11 @@ class DltFrame final : public IDLTFrame {
     std::vector<uint8_t> res{HTYP, MCNT, static_cast<uint8_t>(LEN >> 8U),
                              static_cast<uint8_t>(LEN & 0xFFU)};
     std::copy(this->ECU.begin(), this->ECU.end(), std::back_inserter(res));
+    const uint8_t* vp = reinterpret_cast<const uint8_t*>(&TMSP);
+    res.push_back(vp[3]);
+    res.push_back(vp[2]);
+    res.push_back(vp[1]);
+    res.push_back(vp[0]);
     res.push_back(MSIN);
     res.push_back(NOAR);
     std::copy(this->APID.begin(), this->APID.end(), std::back_inserter(res));
