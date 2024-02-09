@@ -1,5 +1,5 @@
 /**
- * @file dtcService.hpp
+ * @file dtcService.h
  * @author Mateusz Krajewski (matikrajek42@gmail.com)
  * @brief 
  * @version 0.1
@@ -9,8 +9,8 @@
  * 
  */
 
-#ifndef MW_DIAG_DTC_SERVICE_DTCSERVICE_HPP_
-#define MW_DIAG_DTC_SERVICE_DTCSERVICE_HPP_
+#ifndef MW_DIAG_DTC_SERVICE_DTCSERVICE_H_
+#define MW_DIAG_DTC_SERVICE_DTCSERVICE_H_
 
 #include <stdio.h>
 #include <inttypes.h>
@@ -78,7 +78,6 @@ class Converter{
 
 class DtcService:public core::ApplicationMW{
  protected:
-  std::unique_ptr<diag::DiagController> diag_controller_;
   diag::DiagDataFactory diag_factory_{};
 
   com::soc::IpcSocket dtc_sock_{};
@@ -99,8 +98,19 @@ class DtcService:public core::ApplicationMW{
   void DtcRxCallback(const std::string& ip, const std::uint16_t& port,
   const std::vector<std::uint8_t> data);
 
-  void Run(const std::unordered_map<std::string,
-  core::Parm>& parms);
+  /**
+   * @brief This function is called to launch the application
+   *
+   * @param token stop token
+   */
+  core::ErrorCode Run(std::stop_token token) final;
+  /**
+   * @brief This function is called to initialize the application
+   *
+   * @param parms map with parms
+   */
+  core::ErrorCode Initialize(
+      const std::unordered_map<std::string, std::string>& parms) final;
 };
 
 }  // namespace dtc
@@ -108,4 +118,4 @@ class DtcService:public core::ApplicationMW{
 }  // namespace simba
 
 
-#endif  // MW_DIAG_DTC_SERVICE_DTCSERVICE_HPP_
+#endif  // MW_DIAG_DTC_SERVICE_DTCSERVICE_H_

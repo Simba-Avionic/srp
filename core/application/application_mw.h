@@ -10,10 +10,21 @@
  */
 #ifndef CORE_APPLICATION_APPLICATION_MW_H_
 #define CORE_APPLICATION_APPLICATION_MW_H_
+#include <memory>
+#include <string>
+#include <unordered_map>
+
 #include "core/application/application_common.h"
+#include "core/common/error_code.h"
+#include "diag/base/controller/idiag_controller.h"
 namespace simba {
 namespace core {
 class ApplicationMW : public ApplicationCommon {
+ protected:
+  std::unique_ptr<diag::IDiagController> diag_controller;
+  void onRun(const std::unordered_map<std::string, std::string>& parms) final;
+  ErrorCode MwConfig(const std::unordered_map<std::string, std::string>& parms);
+
  public:
   virtual ~ApplicationMW() = default;
 };
