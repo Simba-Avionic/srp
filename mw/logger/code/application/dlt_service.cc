@@ -25,6 +25,7 @@ namespace mw {
 namespace dlt {
 
 core::ErrorCode DltService::Run(std::stop_token token) {
+  std::this_thread::sleep_for(std::chrono::seconds{5});
   while (!token.stop_requested()) {
     auto res_v = this->logs.GetWithoutRemove();
     auto res = res_v->ParseFrame();
@@ -108,11 +109,13 @@ void DltService::InitIPC() noexcept {
         default:
           break;
       }
-      const std::string app_id{payload.begin() + 1, payload.begin() + 5};
-      const std::string log_content{payload.begin() + 5, payload.end()};
+      uint32_t timestamp{0};
+      std::memcpy(&timestamp, (payload.data() + 1), sizeof(uint32_t));
+      const std::string app_id{payload.begin() + 5, payload.begin() + 9};
+      const std::string log_content{payload.begin() + 9, payload.end()};
       auto r = std::make_shared<
           simba::dlt::data::DltFrame<simba::dlt::data::DltString>>(
-          this->ec_name, app_id, types,
+          timestamp, this->ec_name, app_id, types,
           simba::dlt::data::DltString{log_content});
       if (!this->logs.push(r)) {
         AppLogger::Error("DLT msg dropped in TX queue!!");
