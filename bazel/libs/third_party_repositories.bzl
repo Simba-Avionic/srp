@@ -32,5 +32,5 @@ def include_spdlog():
         build_file = "//bazel/libs:untar.BUILD",
         urls = ["https://codeload.github.com/AlexisTM/untar/zip/refs/heads/main"],
         type = "zip",
-        sha256 = "24233864931415fa661dc2ff036028659d66ef6dffdb0e32afe455f4f36a3294",
+        sha256 = "5b69c01e44ca184bf36d7fa4a19b7bb50d8014a256456e74177f221610865028",
     )
