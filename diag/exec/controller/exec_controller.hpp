@@ -41,7 +41,7 @@ class ExecController {
     com::soc::IpcSocket sock_;
     std::jthread thread_;
     std::atomic<Status> status_;
-    void thread_func();
+    void thread_func(std::stop_token token);
 
  public:
     explicit ExecController(u_int16_t service_id);

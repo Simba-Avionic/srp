@@ -27,9 +27,9 @@ const uint8_t &dtc_status, const std::vector<uint8_t> &payload) {
     DtcHeader hdr{dtc_error_id, dtc_status};
     std::vector<uint8_t> data = this->factory_.GetBuffer(
             std::make_shared<DtcHeader>(hdr), payload);
-    return this->sock_.Transmit(
-        "SIMBA.DIAG."+std::to_string(this->service_id), 0, data);
+    return this->sock_.Transmit("SIMBA.DIAG.DTC", 0, data);
 }
+
 
 }  // namespace dtc
 }  // namespace diag

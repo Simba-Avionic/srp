@@ -33,9 +33,9 @@ class ExecHeader : public com::core::network::NetworkDataStructure {
   const uint16_t &time_stamp, uint8_t flags);
   ExecHeader();
 
-  uint16_t GetServiceID();
-  uint16_t GetTimestamp();
-  uint8_t GetFlags();
+  uint16_t GetServiceID() const;
+  uint16_t GetTimestamp() const;
+  uint8_t GetFlags() const;
   void IncrementTimeStamp();
 };
 

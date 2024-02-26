@@ -19,13 +19,13 @@ ExecHeader::ExecHeader(const uint16_t &service_id,
         :service_id_(service_id), time_stamp_(time_stamp), flags_(flags) {}
 ExecHeader::ExecHeader():service_id_{0}, time_stamp_{0} {};
 
-uint16_t ExecHeader::GetServiceID() {
+uint16_t ExecHeader::GetServiceID() const {
     return this->service_id_;
 }
-uint16_t ExecHeader::GetTimestamp() {
+uint16_t ExecHeader::GetTimestamp() const {
     return this->time_stamp_;
 }
-uint8_t ExecHeader::GetFlags() {
+uint8_t ExecHeader::GetFlags() const {
     return this->flags_;
 }
 void ExecHeader::IncrementTimeStamp() {
