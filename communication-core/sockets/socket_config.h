@@ -28,6 +28,9 @@ class SocketConfig {
       : ip_{ip}, rx_port_{rx_port}, tx_port_{tx_port} {}
   SocketConfig(const SocketConfig& other)
       : ip_{other.ip_}, rx_port_{other.rx_port_}, tx_port_{other.tx_port_} {}
+  SocketConfig operator=(const simba::com::soc::SocketConfig& other) {
+    return SocketConfig{other};
+  }
   const std::string GetIp() const { return this->ip_; }
   const std::uint16_t GetRxPort() const { return this->rx_port_; }
 };

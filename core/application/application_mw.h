@@ -14,28 +14,16 @@
 #include <string>
 #include <unordered_map>
 
-#include "core/application/Iapplication.h"
-#include "core/logger/Logger.h"
-#include "core/logger/console_logger.h"
+#include "core/application/application_common.h"
+#include "core/common/error_code.h"
+#include "diag/base/controller/idiag_controller.h"
 namespace simba {
 namespace core {
-class ApplicationMW : public IApplication {
+class ApplicationMW : public ApplicationCommon {
  protected:
-  std::string app_name{"NONE"};
-  void Run(const std::unordered_map<std::string, Parm>& parms) override {
-    AppLogger::Warning("Application function: Run is not implemented");
-  }
-  void Stop() {
-    AppLogger::Info("Application stopped unexpected");
-    AppLogger::Warning("Application function: Stop is not implemented");
-  }
-  void onRun(const std::unordered_map<std::string, Parm>& parms) override {
-    AppLogger::SetParms(app_name, logger::loggingLevel::DEBUG);
-    AppLogger::AddLogger(std::make_shared<logger::ConsoleLogger>());
-    AppLogger::Info("Application starting");
-    this->Run(parms);
-    AppLogger::Info("Application stopped");
-  }
+  std::unique_ptr<diag::IDiagController> diag_controller;
+  void onRun(const std::unordered_map<std::string, std::string>& parms) final;
+  ErrorCode MwConfig(const std::unordered_map<std::string, std::string>& parms);
 
  public:
   virtual ~ApplicationMW() = default;

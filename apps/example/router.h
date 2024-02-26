@@ -12,14 +12,25 @@
 #define APPS_EXAMPLE_ROUTER_H_
 #include <string>
 #include <unordered_map>
+
 #include "core/application/application_no_ipc.h"
-#include "core/application/parm.h"
 namespace simba {
 namespace router {
-class Router : public core::ApplicationNoIPC {
+class Router : public core::ApplicationNoIPC{
  protected:
-  void Run(const std::unordered_map<std::string, core::Parm>& parms) override;
-  void Stop() override;
+  /**
+   * @brief This function is called to launch the application
+   *
+   * @param token stop token
+   */
+  core::ErrorCode Run(std::stop_token token) final;
+  /**
+   * @brief This function is called to initialiaze the application
+   *
+   * @param parms map with parms
+   */
+  core::ErrorCode Initialize(
+      const std::unordered_map<std::string, std::string>& parms) final;
 
  public:
   ~Router() = default;

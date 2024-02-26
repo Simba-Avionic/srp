@@ -9,7 +9,7 @@
  * 
  */
 #include "core/application/application_factory.h"
-#include "mw/diag/dtc/service/dtcService.hpp"
+#include "mw/diag/dtc/service/dtcService.h"
 
 int main(int argc, char const *argv[]) {
   simba::core::ApplicationFactory<simba::mw::dtc::DtcService>::Start(argc,
