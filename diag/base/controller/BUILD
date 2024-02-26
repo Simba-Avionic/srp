@@ -22,10 +22,15 @@ cc_library(
     name = "diag_controller",
     srcs = ["diag_controller.cc"],
     hdrs = ["diag_controller.h"],
-    visibility = ["//mw:__subpackages__","//apps:__subpackages__"],
+    visibility = [
+        "//apps:__subpackages__",
+        "//core:__subpackages__",
+        "//mw:__subpackages__",
+    ],
     deps = [
-        "//communication-core/sockets:socket_udp",
+        "//communication-core/sockets:socket_interface",
         "//core/common:common_types",
+        "//core/logger:Logger",
         "//core/results:results_lib",
         "//diag/base/controller:diag_transfer",
         "//diag/base/controller:idiag_controller",

@@ -61,7 +61,7 @@ simba::core::ErrorCode IpcSocket::Transmit(const std::string& ip,
   }
 
   remote.sun_family = AF_UNIX;
-  strcpy(remote.sun_path, ip.c_str());  // NOLINT
+  strcpy(remote.sun_path, ("/run/" +ip).c_str());  // NOLINT
 
   std::uint8_t* buffor = new std::uint8_t[payload.size()];
   std::copy(payload.begin(), payload.end(), buffor);

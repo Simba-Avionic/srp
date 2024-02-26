@@ -3,6 +3,7 @@ cc_library(
     hdrs = ["result.h"],
     visibility = [
         "//core:__subpackages__",
+        "//mw:__subpackages__",
         "//diag:__subpackages__",
         "//communication-core:__subpackages__", 
     ],

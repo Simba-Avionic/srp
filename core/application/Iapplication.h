@@ -10,12 +10,11 @@
  */
 #ifndef CORE_APPLICATION_IAPPLICATION_H_
 #define CORE_APPLICATION_IAPPLICATION_H_
-#include <chrono>  // NOLINT
+#include <stop_token>
 #include <string>
-#include <thread>  // NOLINT
 #include <unordered_map>
 
-#include "core/application/parm.h"
+#include "core/common/error_code.h"
 namespace simba {
 namespace core {
 class IApplication {
@@ -23,41 +22,28 @@ class IApplication {
   /**
    * @brief This function is called to launch the application
    *
+   * @param token stop token
+   */
+  virtual ErrorCode Run(std::stop_token token) = 0;
+  /**
+   * @brief This function is called to initialiaze the application
+   *
    * @param parms map with parms
    */
-  virtual void Run(const std::unordered_map<std::string, Parm>& parms) = 0;
-  virtual void Stop() {}
+  virtual ErrorCode Initialize(
+      const std::unordered_map<std::string, std::string>& parms) = 0;
   /**
    * @brief This is pre-run function only for creting new application
    * interfacess
    *
    * @param parms map with parms
    */
-  virtual void onRun(const std::unordered_map<std::string, Parm>& parms) {
-    this->Run(parms);
-  }
-  void SleepMainThred() {
-    while (true) {
-      std::this_thread::sleep_for(std::chrono::seconds::max());
-    }
-  }
+  virtual void onRun(const std::unordered_map<std::string, std::string>& parms) = 0;
 
  public:
-  void StopApp() {
-    this->Stop();
-    exit(1);
-  }
+  virtual void StopApp() = 0;
   virtual ~IApplication() = default;
-  void RunApp(int argc, char const* argv[]) {
-    std::unordered_map<std::string, Parm> parms{};
-    for (int i = 0; i < argc; i++) {
-      Parm p{std::string{argv[i]}};
-      parms.insert({p.GetName(), p});
-    }
-
-    onRun(parms);
-    parms.clear();
-  }
+  virtual void RunApp(int argc, char const* argv[]) = 0;
 };
 }  // namespace core
 }  // namespace simba

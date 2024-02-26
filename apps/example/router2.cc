@@ -37,7 +37,7 @@ void Router::Run(const std::unordered_map<std::string, core::Parm>& parms) {
   //   }
 
   AppLogger::Debug("Router started");
-  this->SleepMainThred();
+  this->SleepMainThread();
   // this->logger_->Debug("Router started");
 }
 void Router::Stop() {}

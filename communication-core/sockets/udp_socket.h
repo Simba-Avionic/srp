@@ -61,8 +61,9 @@ class UdpSocket : public ISocket {
    * @param payload payload to send
    * @return core::ErrorCode status
    */
-  simba::core::ErrorCode Transmit(const std::string& ip, const std::uint16_t port,
-                           std::vector<std::uint8_t> payload) override;
+  simba::core::ErrorCode Transmit(const std::string& ip,
+                                  const std::uint16_t port,
+                                  std::vector<std::uint8_t> payload) override;
   /**
    * @brief This function start RX thread
    *

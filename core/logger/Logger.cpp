@@ -10,18 +10,34 @@
  */
 #include "core/logger/Logger.h"
 
-#include "core/logger/ILogger.h"
+#include <unordered_map>
 
+#include "core/logger/ILogger.h"
 namespace simba {
 namespace core {
 namespace logger {
+namespace {
+std::unordered_map<std::string, loggingLevel> lookup_table{
+    {"kDebug", loggingLevel::DEBUG},
+    {"kInfo", loggingLevel::INFO},
+    {"kWarning", loggingLevel::WARNING},
+    {"kError", loggingLevel::ERROR}};
+}  // namespace
+
 std::string Logger::appName = "NONE";  // NOLINT
 loggingLevel Logger::level = loggingLevel::WARNING;
 std::vector<std::shared_ptr<ILogger>> Logger::loggers = {};
 
+loggingLevel Logger::ConvertStringToLogLevel(const std::string& val) {
+  return lookup_table.at(val);
+}
+
 void Logger::SetParms(const std::string& appName, loggingLevel lvl) {
   Logger::appName = appName;
   Logger::level = lvl;
+  for (auto logger : Logger::loggers) {
+    logger->SetAppName(Logger::appName);
+  }
 }
 void Logger::Debug(const std::string& log,
                    const std::source_location& location) {
@@ -57,6 +73,7 @@ void Logger::Error(const std::string& log,
 }
 
 void Logger::AddLogger(std::shared_ptr<ILogger> logger) {
+  logger->SetAppName(Logger::appName);
   loggers.push_back(logger);
 }
 std::string Logger::GetLogMsg(const std::string& log,

@@ -1,5 +1,5 @@
 cc_binary(
-    name = "router",
+    name = "example",
     srcs = [
         "main.cc",
         "router.cc",
@@ -7,25 +7,23 @@ cc_binary(
     ],
     visibility = ["//deployment/apps/example:__subpackages__"],
     deps = [
-        "//communication-core/sockets:socket_ipc",
-        "//core",
-        "//diag/base/controller:diag_controller",
+        "//core/application:simba_application",
         "@untar",
     ],
 )
 
-cc_binary(
-    name = "router2",
-    srcs = [
-        "main.cc",
-        "router.h",
-        "router2.cc",
-    ],
-    visibility = ["//deployment/apps/example:__subpackages__"],
-    deps = [
-        "//communication-core/sockets:socket_ipc",
-        "//core",
-        "//diag/base/controller:diag_controller",
-        "@untar",
-    ],
-)
+# cc_binary(
+#     name = "router2",
+#     srcs = [
+#         "main.cc",
+#         "router.h",
+#         "router2.cc",
+#     ],
+#     visibility = ["//deployment/apps/example:__subpackages__"],
+#     deps = [
+#         "//communication-core/sockets:socket_ipc",
+#         "//core",
+#         "//diag/base/controller:diag_controller",
+#         "@untar",
+#     ],
+# )

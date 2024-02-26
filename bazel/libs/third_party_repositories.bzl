@@ -22,9 +22,9 @@ def include_spdlog():
 
     http_archive(
         name = "com_json",
-        strip_prefix = "json-develop",
-        urls = ["https://github.com/nlohmann/json/archive/refs/heads/develop.zip"],
-        sha256 = "bd8a9cf30c1a62e6a5255f66658cf7181e302d32e07293bfde094b5d18d0fc76"
+        strip_prefix = "json-3.11.3",
+        urls = ["https://github.com/nlohmann/json/archive/refs/tags/v3.11.3.zip"],
+        sha256 = "04022b05d806eb5ff73023c280b68697d12b93e1b7267a0b22a1a39ec7578069"
     )
     http_archive(
         name = "untar",
@@ -32,5 +32,5 @@ def include_spdlog():
         build_file = "//bazel/libs:untar.BUILD",
         urls = ["https://codeload.github.com/AlexisTM/untar/zip/refs/heads/main"],
         type = "zip",
-        sha256 = "24233864931415fa661dc2ff036028659d66ef6dffdb0e32afe455f4f36a3294",
+        sha256 = "5b69c01e44ca184bf36d7fa4a19b7bb50d8014a256456e74177f221610865028",
     )
