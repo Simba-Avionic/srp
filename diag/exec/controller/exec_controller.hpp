@@ -32,21 +32,18 @@ enum Status {
 };
 
 class ExecController {
-    private:
-        const u_int16_t service_id;
-        const u_int16_t init_time;
-        u_int16_t time;
-        static ExecMsgFactory factory_;
-        com::soc::IpcSocket sock_;
-        std::thread thread_;
-        Status status_;
-        void Run();
+ private:
+    const uint16_t service_id;
+    static ExecMsgFactory factory_;
+    com::soc::IpcSocket sock_;
+    std::jthread thread_;
+    std::atomic<Status> status_;
+    void thread_func();
 
-    public:
-        ExecController(u_int16_t service_id, u_int16_t init_time);
-        void SetStatus(Status status);
-        ~ExecController();
-
+ public:
+    explicit ExecController(u_int16_t service_id);
+    void SetStatus(Status status);
+    ~ExecController();
 };
 }  // namespace exec
 }  // namespace diag

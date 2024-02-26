@@ -14,8 +14,9 @@ namespace simba {
 namespace diag {
 namespace exec {
 
-ExecHeader::ExecHeader(const uint16_t &service_id, const uint16_t &time_stamp, uint8_t flags)
-            :service_id_(service_id), time_stamp_(time_stamp), flags_(flags) {}
+ExecHeader::ExecHeader(const uint16_t &service_id,
+    const uint16_t &time_stamp, uint8_t flags)
+        :service_id_(service_id), time_stamp_(time_stamp), flags_(flags) {}
 ExecHeader::ExecHeader():service_id_{0}, time_stamp_{0} {};
 
 uint16_t ExecHeader::GetServiceID() {
@@ -26,6 +27,9 @@ uint16_t ExecHeader::GetTimestamp() {
 }
 uint8_t ExecHeader::GetFlags() {
     return this->flags_;
+}
+void ExecHeader::IncrementTimeStamp() {
+    this->time_stamp_+=1;
 }
 
 }  // namespace exec

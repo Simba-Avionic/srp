@@ -23,23 +23,24 @@ namespace exec {
 
 class ExecHeader : public com::core::network::NetworkDataStructure {
  private:
-    // numer id serwisu
-    const uint16_t service_id_;
-    // timestamp
-    const uint16_t time_stamp_;
-    uint8_t flags_;
+  // numer id serwisu
+  const uint16_t service_id_;
+  // timestamp
+  uint16_t time_stamp_;
+  uint8_t flags_;
  public:
-  ExecHeader(const uint16_t &service_id, const uint16_t &service_status, uint8_t flags);
+  ExecHeader(const uint16_t &service_id,
+  const uint16_t &time_stamp, uint8_t flags);
   ExecHeader();
 
   uint16_t GetServiceID();
   uint16_t GetTimestamp();
   uint8_t GetFlags();
-
+  void IncrementTimeStamp();
 };
 
 }  // namespace exec
 }  // namespace diag
 }  // namespace simba
 
-#endif  // DIAG_DTC_DATA_DTC_HEADER_HPP_
+#endif  // DIAG_EXEC_DATA_EXEC_HEADER_HPP_

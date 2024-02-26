@@ -40,6 +40,7 @@ class DtcController:public IDtcController{
  private:
     com::soc::IpcSocket sock_;
     static DtcMsgFactory factory_;
+    static const uint16_t service_id = 0x0101;
 };
 
 
