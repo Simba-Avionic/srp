@@ -11,9 +11,9 @@
 #include "exec_controller.hpp"
 
 
-namespace simba{
-namespace diag{
-namespace exec{
+namespace simba {
+namespace diag {
+namespace exec {
 
 
 ExecController::ExecController(u_int16_t service_id):
@@ -39,6 +39,6 @@ void ExecController::thread_func() {
 }
 
 
-}  // namepace exec
+}  // namespace exec
 }  // namespace diag
 }  // namespace simba

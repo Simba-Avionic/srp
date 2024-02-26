@@ -4,14 +4,17 @@
  * @brief
  * @version 0.1
  * @date 2024-01-28
+ * 
+ * @copyright Copyright (c) 2024
+ * 
 */
+
 
 #ifndef DIAG_EXEC_CONTROLLER_EXEC_CONTROLLER_HPP_
 #define DIAG_EXEC_CONTROLLER_EXEC_CONTROLLER_HPP_
 
 #include <vector>
 #include <memory>
-#include <thread>
 
 #include "communication-core/sockets/ipc_socket.h"
 #include "diag/exec/factories/exec_msg_factory.hpp"

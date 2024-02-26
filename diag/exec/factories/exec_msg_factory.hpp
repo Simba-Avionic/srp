@@ -44,4 +44,4 @@ class ExecMsgFactory {
 }  // namespace diag
 }  // namespace simba
 
-#endif  // DIAG_exec_FACTORIES_exec_MSG_FACTORY_HPP_
+#endif  // DIAG_EXEC_FACTORIES_EXEC_MSG_FACTORY_HPP_
