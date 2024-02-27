@@ -30,6 +30,7 @@ const uint8_t &dtc_status, const std::vector<uint8_t> &payload) {
     return this->sock_.Transmit("SIMBA.DIAG.DTC", 0, data);
 }
 
+
 }  // namespace dtc
 }  // namespace diag
 }  // namespace simba
