@@ -75,7 +75,7 @@ ErrorCode ApplicationCommon::CommonConfig(
 #endif
 
   if (!file.is_open()) {
-    std::cerr << "Logger config file not exist! -> "
+    std::cerr << "Logger config file doesn't exist! -> "
               << "/opt/" + parms.at("app_name") + "/etc/logger.json"
               << std::endl;
     return ErrorCode::kError;

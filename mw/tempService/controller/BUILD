@@ -1,9 +1,9 @@
 cc_binary(
-    name = "tempServiceMW",
+    name = "tempControllerMW",
     srcs = [
         "main.cc",
-        "TempService.cpp",
-        "TempService.h"
+        "TempController.cpp",
+        "TempController.h"
     ],
     visibility = ["//deployment:__subpackages__"],
     deps = [
