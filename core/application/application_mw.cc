@@ -16,6 +16,10 @@
 #include "core/logger/Logger.h"
 #include "diag/base/controller/diag_controller.h"
 
+#define DEBUG
+
+
+
 namespace simba {
 namespace core {
 void ApplicationMW::onRun(
@@ -39,9 +43,14 @@ void ApplicationMW::onRun(
 }
 ErrorCode ApplicationMW::MwConfig(
     const std::unordered_map<std::string, std::string>& parms) {
+  #ifndef DEBUG
   auto obj = json::JsonParser::Parser("/opt/" + parms.at("app_name") +
                                       "/etc/srp_app.json")
                  .Value();
+  #else
+  auto obj = json::JsonParser::Parser("mw/tempService/srp_app.json")
+                 .Value();
+  #endif
   auto service_id_r = obj.GetNumber<uint16_t>("diag_id");
   if (service_id_r.HasValue()) {
     if (service_id_r.Value() != 0) {

@@ -3,14 +3,15 @@ cc_binary(
     srcs = [
         "main.cc",
         "TempService.cpp",
-        "TempService.hpp"
+        "TempService.hpp",
     ],
     visibility = ["//deployment:__subpackages__"],
     deps = [
         "//core/application:simba_application",
         "//communication-core/sockets:socket_interface",
         "//communication-core/sockets:socket_ipc",
-        "//diag/base/data:diag_data_structure"
+        "//diag/base/data:diag_data_structure",
         # dodatkowe zależności jeśli potrzeba
     ],
+    data=["logger.json","app.json","srp_app.json"]
 )
