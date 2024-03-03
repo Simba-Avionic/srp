@@ -31,7 +31,7 @@ void Database::AddService(const std::uint16_t service_id,
   this->db.insert({service_id, element});
 }
 DatabaseElement Database::CreatDatabaseElement(const std::string& ip,
-                                               const int16_t port) {
+                                               const uint16_t port) {
   return DatabaseElement{ip, port};
 }
 }  // namespace database

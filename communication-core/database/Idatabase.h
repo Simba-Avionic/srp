@@ -27,7 +27,7 @@ class IDatabase {
   virtual void AddService(const std::uint16_t service_id,
                           const DatabaseElement& element) = 0;
   virtual DatabaseElement CreatDatabaseElement(const std::string& ip,
-                                               const int16_t port) = 0;
+                                               const uint16_t port) = 0;
 };
 }  // namespace database
 }  // namespace simba

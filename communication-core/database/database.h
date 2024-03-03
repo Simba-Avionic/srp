@@ -29,7 +29,7 @@ class Database : public IDatabase {
   void AddService(const std::uint16_t service_id,
                   const DatabaseElement& element) override;
   DatabaseElement CreatDatabaseElement(const std::string& ip,
-                                       const int16_t port) override;
+                                       const uint16_t port) override;
 
  public:
 };

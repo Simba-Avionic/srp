@@ -24,6 +24,7 @@ namespace core {
 class ApplicationCommon : public IApplication {
  protected:
   std::stop_source source;
+  
   /**
    * @brief This is pre-run function only for creting new application
    * interfacess
