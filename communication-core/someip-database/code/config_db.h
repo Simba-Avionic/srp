@@ -11,13 +11,13 @@
 #ifndef COMMUNICATION_CORE_SOMEIP_DATABASE_CODE_CONFIG_DB_H_
 #define COMMUNICATION_CORE_SOMEIP_DATABASE_CODE_CONFIG_DB_H_
 
+#include <optional>
 #include <string>
 #include <unordered_map>
 
 #include "communication-core/someip-database/code/endpoint.h"
 #include "communication-core/someip-database/code/interface.h"
 #include "core/common/error_code.h"
-#include "core/results/result.h"
 
 namespace simba {
 namespace com {
@@ -31,7 +31,7 @@ class ConfigDb {
  public:
   core::ErrorCode InsertObject(const std::string& key,
                                const Endpoint& item) noexcept;
-  core::Result<Endpoint> FindObject(const std::string& key) const noexcept;
+  std::optional<Endpoint> FindObject(const std::string& key) const noexcept;
   ConfigDb(/* args */);
   ~ConfigDb();
 };

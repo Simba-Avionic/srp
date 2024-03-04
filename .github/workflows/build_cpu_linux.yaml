@@ -1,0 +1,33 @@
+name: Build deployments (Linux config)
+
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+        with:
+          submodules: 'true'
+          ssh-key: ${{ secrets.PRIVATE_KEY_FOR_DEPLOY_KEY_IN_SUBMODULE }}
+
+      - name: Install bazel
+        run: |
+          sudo apt install apt-transport-https curl gnupg
+          sudo add-apt-repository ppa:ubuntu-toolchain-r/ppa -y
+          sudo apt update
+          sudo apt install g++-13 gcc-13
+          curl -fsSL https://bazel.build/bazel-release.pub.gpg | gpg --dearmor > bazel.gpg
+          sudo mv bazel.gpg /etc/apt/trusted.gpg.d/
+          echo "deb [arch=amd64] https://storage.googleapis.com/bazel-apt stable jdk1.8" | sudo tee /etc/apt/sources.list.d/bazel.list
+          sudo apt update && sudo apt install bazel-5.4.1
+      - name: Run build engine computer
+        run: |
+          bazel build //deployment/cpu/ec:pkg
+  
+  

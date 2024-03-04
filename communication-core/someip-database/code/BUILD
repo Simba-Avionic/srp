@@ -10,7 +10,6 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         "//core/common:common_types",
-        "//core/results:results_lib",
     ],
 )
 
@@ -24,7 +23,6 @@ cc_library(
     deps = [
         "//communication-core/someip-database/code:someip_database_lib",
         "//core/common:common_types",
-        "//core/results:results_lib",
         "@com_json//:json",
     ],
 )
@@ -37,7 +35,6 @@ cc_library(
     deps = [
         "//communication-core/someip-database/code:someip_database_lib",
         "//core/common:common_types",
-        "//core/results:results_lib",
     ],
 )
 
@@ -51,7 +48,6 @@ cc_library(
     deps = [
         "//communication-core/someip-database/code:config_database_lib_p",
         "//core/common:common_types",
-        "//core/results:results_lib",
         "@com_json//:json",
     ],
 )

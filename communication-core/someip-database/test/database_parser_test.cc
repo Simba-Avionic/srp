@@ -36,9 +36,9 @@ TEST(DataBaseParser, GiveCorrectFileWhileFindServiceReturnPositive) {
   auto obj = nlohmann::json::parse(f);
   EXPECT_EQ(simba::core::ErrorCode::kOk,
             simba::com::someip::json::DataBaseParser::ParseJsonObject(db, obj));
-  EXPECT_TRUE(db->FindService(15).HasValue());
-  EXPECT_EQ(0, db->FindService(15).Value().GetPort());
-  EXPECT_EQ("SIMBA.SOMEIP.15", db->FindService(15).Value().GetIp());
+  EXPECT_TRUE(db->FindService(15).has_value());
+  EXPECT_EQ(0, db->FindService(15).value().GetPort());
+  EXPECT_EQ("SIMBA.SOMEIP.15", db->FindService(15).value().GetIp());
 }
 
 TEST(DataBaseParser, GiveCorrectFileWhileFindServiceReturnNegative) {
@@ -48,5 +48,5 @@ TEST(DataBaseParser, GiveCorrectFileWhileFindServiceReturnNegative) {
   auto obj = nlohmann::json::parse(f);
   EXPECT_EQ(simba::core::ErrorCode::kOk,
             simba::com::someip::json::DataBaseParser::ParseJsonObject(db, obj));
-  EXPECT_FALSE(db->FindService(30).HasValue());
+  EXPECT_FALSE(db->FindService(30).has_value());
 }

@@ -23,13 +23,13 @@ core::ErrorCode ConfigDb::InsertObject(const std::string& key,
   return core::ErrorCode::kOk;
 }
 
-core::Result<Endpoint> ConfigDb::FindObject(
+std::optional<Endpoint> ConfigDb::FindObject(
     const std::string& key) const noexcept {
   const auto obj = this->item_list.find(key);
   if (obj == this->item_list.end()) {
-    return core::Result<Endpoint>{};
+    return {};
   }
-  return core::Result{obj->second};
+  return obj->second;
 }
 
 ConfigDb::ConfigDb(/* args */) {}

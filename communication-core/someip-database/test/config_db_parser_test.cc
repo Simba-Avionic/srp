@@ -36,10 +36,10 @@ TEST(DataBaseParser, ParsingAndFindReqMethod) {
   auto obj = nlohmann::json::parse(f);
   EXPECT_EQ(simba::core::ErrorCode::kOk,
             simba::com::someip::json::ConfigDbParser::ParseJsonObject(db, obj));
-  EXPECT_TRUE(db->FindObject("ExampleApp/exampleMethod").HasValue());
+  EXPECT_TRUE(db->FindObject("ExampleApp/exampleMethod").has_value());
   const auto r = db->FindObject("ExampleApp/exampleMethod");
-  EXPECT_EQ(10, r.Value().GetEndpointId());
-  EXPECT_EQ(15, r.Value().GetServiceId());
+  EXPECT_EQ(10, r.value().GetEndpointId());
+  EXPECT_EQ(15, r.value().GetServiceId());
 }
 
 TEST(DataBaseParser, ParsingAndFindPubMethod) {
@@ -49,11 +49,11 @@ TEST(DataBaseParser, ParsingAndFindPubMethod) {
   auto obj = nlohmann::json::parse(f);
   EXPECT_EQ(simba::core::ErrorCode::kOk,
             simba::com::someip::json::ConfigDbParser::ParseJsonObject(db, obj));
-  EXPECT_TRUE(db->FindObject("ExampleApp/exampleMethod").HasValue());
-  EXPECT_TRUE(db->FindObject("ExampleApp/exampleMethod2").HasValue());
+  EXPECT_TRUE(db->FindObject("ExampleApp/exampleMethod").has_value());
+  EXPECT_TRUE(db->FindObject("ExampleApp/exampleMethod2").has_value());
   const auto r = db->FindObject("ExampleApp/exampleMethod");
-  EXPECT_EQ(10, r.Value().GetEndpointId());
-  EXPECT_EQ(0, r.Value().GetServiceId());
+  EXPECT_EQ(10, r.value().GetEndpointId());
+  EXPECT_EQ(0, r.value().GetServiceId());
 }
 
 TEST(DataBaseParser, ParsingAndFindReqEvent) {
@@ -63,8 +63,8 @@ TEST(DataBaseParser, ParsingAndFindReqEvent) {
   auto obj = nlohmann::json::parse(f);
   EXPECT_EQ(simba::core::ErrorCode::kOk,
             simba::com::someip::json::ConfigDbParser::ParseJsonObject(db, obj));
-  EXPECT_TRUE(db->FindObject("ExampleApp/exampleEvent").HasValue());
+  EXPECT_TRUE(db->FindObject("ExampleApp/exampleEvent").has_value());
   const auto r = db->FindObject("ExampleApp/exampleEvent");
-  EXPECT_EQ(32769, r.Value().GetEndpointId());
-  EXPECT_EQ(15, r.Value().GetServiceId());
+  EXPECT_EQ(32769, r.value().GetEndpointId());
+  EXPECT_EQ(15, r.value().GetServiceId());
 }

@@ -24,14 +24,14 @@ core::ErrorCode DataBase::InsertService(const uint16_t service_id,
   this->list.insert({service_id, inf});
   return core::ErrorCode::kOk;
 }
-core::Result<Interface> DataBase::FindService(
+std::optional<Interface> DataBase::FindService(
     const uint16_t service_id) const noexcept {
   const auto obj = list.find(service_id);
   if (obj == list.end()) {
-    return core::Result<Interface>{};
+    return {};
   }
 
-  return core::Result{obj->second};
+  return obj->second;
 }
 }  // namespace objects
 }  // namespace someip

@@ -10,11 +10,11 @@
  */
 #ifndef COMMUNICATION_CORE_SOMEIP_DATABASE_CODE_DATABASE_H_
 #define COMMUNICATION_CORE_SOMEIP_DATABASE_CODE_DATABASE_H_
+#include <optional>
 #include <unordered_map>
 
 #include "communication-core/someip-database/code/interface.h"
 #include "core/common/error_code.h"
-#include "core/results/result.h"
 namespace simba {
 namespace com {
 namespace someip {
@@ -26,7 +26,8 @@ class DataBase {
  public:
   core::ErrorCode InsertService(const uint16_t service_id,
                                 const Interface& inf) noexcept;
-  core::Result<Interface> FindService(const uint16_t service_id) const noexcept;
+  std::optional<Interface> FindService(
+      const uint16_t service_id) const noexcept;
 };
 
 }  // namespace objects
