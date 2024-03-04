@@ -13,18 +13,25 @@
 
 #include <string>
 #include <unordered_map>
-#include "communication-core/someip-database/code/interface.h"
+
 #include "communication-core/someip-database/code/endpoint.h"
+#include "communication-core/someip-database/code/interface.h"
+#include "core/common/error_code.h"
+#include "core/results/result.h"
 
 namespace simba {
 namespace com {
 namespace someip {
 namespace objects {
-    
+
 class ConfigDb {
  private:
-    std::unordered_map<std::string, Endpoint> item_list{};
+  std::unordered_map<std::string, Endpoint> item_list{};
+
  public:
+  core::ErrorCode InsertObject(const std::string& key,
+                               const Endpoint& item) noexcept;
+  core::Result<Endpoint> FindObject(const std::string& key) const noexcept;
   ConfigDb(/* args */);
   ~ConfigDb();
 };

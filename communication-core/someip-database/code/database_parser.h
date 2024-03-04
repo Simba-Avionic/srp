@@ -26,7 +26,7 @@ namespace json {
 class DataBaseParser {
  public:
   static core::ErrorCode ParseJsonObject(std::shared_ptr<objects::DataBase> db,
-                                         nlohmann::json& obj) noexcept {
+                                         const nlohmann::json& obj) noexcept {
     core::ErrorCode flag = core::ErrorCode::kOk;
     if (DataBaseParser::ValidateDb(obj) != core::ErrorCode::kOk) {
       return core::ErrorCode::kError;
@@ -50,13 +50,13 @@ class DataBaseParser {
   }
 
  private:
-  static core::ErrorCode ValidateDb(nlohmann::json& obj) noexcept {
+  static core::ErrorCode ValidateDb(const nlohmann::json& obj) noexcept {
     if (!obj.contains("db")) {
       return core::ErrorCode::kError;
     }
     return core::ErrorCode::kOk;
   }
-  static core::ErrorCode ValidateItem(nlohmann::json& obj) noexcept {
+  static core::ErrorCode ValidateItem(const nlohmann::json& obj) noexcept {
     if (!obj.contains("ip")) {
       return core::ErrorCode::kError;
     }
