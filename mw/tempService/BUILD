@@ -11,6 +11,7 @@ cc_binary(
         "//communication-core/sockets:socket_interface",
         "//communication-core/sockets:socket_ipc",
         "//diag/base/data:diag_data_structure",
+        "//communication-core/network-data:network_data_structure",
         # dodatkowe zależności jeśli potrzeba
     ],
     data=["logger.json","app.json","srp_app.json"]

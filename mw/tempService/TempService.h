@@ -20,20 +20,31 @@
 #include <fstream>
 #include <memory>
 #include <vector>
+#include <set>
 
 #include "core/application/application_mw.h"
 #include "communication-core/sockets/ipc_socket.h"
 #include "communication-core/sockets/socket_config.h"
+#include "communication-core/network-data/network_data_structure.h"
+#include "core/logger/Logger.h"
 
 namespace simba {
 namespace mw {
 namespace temp {
 
+static constexpr char const* kTempServiceName = "SIMBA.TEMP.SERVICE";
+static constexpr char const* kTempServiceSubName = "SIMBA.TEMP.SERVICE.SUB";
+
 class TempApplication final : public simba::core::ApplicationMW {
  protected:
-    com::soc::IpcSocket sock_{};
+    com::soc::IpcSocket sub_sock_{};
+    com::soc::IpcSocket temp_sock_{};
+    std::set<std::uint16_t> subscribers;
+
 
  private:
+    std::unique_ptr<std::jthread> temp_thred;
+
   /**
    * @brief This function is called to launch the application
    *
@@ -51,8 +62,22 @@ class TempApplication final : public simba::core::ApplicationMW {
 
  public:
 
-   void TempCallback(const std::string& ip, const std::uint16_t& port,
+  void TempCallback(const std::string& ip, const std::uint16_t& port,
     const std::vector<std::uint8_t> data);
+
+  void SubCallback(const std::string& ip, const std::uint16_t& port,
+    const std::vector<std::uint8_t> data);
+  
+  simba::core::ErrorCode SendTempData(std::stop_token stoken);
+  
+  void StartTempThread() {
+    if (temp_thred != nullptr) {
+      return;
+    }
+    this->temp_thred = std::make_unique<std::jthread>(
+        [&](std::stop_token stoken) { this->SendTempData(stoken); });
+  }
+
 };
 
 } // namespace temp

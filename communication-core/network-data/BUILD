@@ -13,7 +13,8 @@ cc_library(
         "//communication-core:__subpackages__",
         "//diag/dtc/data:__subpackages__",
         "//mw/diag/dtc:__subpackages__",
-        "//diag/exec/data:__subpackages__"
+        "//diag/exec/data:__subpackages__",
+        "//mw/tempService:__subpackages__",
         ],
     deps = [":interfaces"],
 )

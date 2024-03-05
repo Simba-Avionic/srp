@@ -37,9 +37,10 @@ class IpcSocket : public ISocket {
   std::unique_ptr<std::jthread> rx_thred;
   void Loop(std::stop_token stoken);
   RXCallback callback_;
-  bool SocketExist(const std::string path);
+  
 
  public:
+ bool SocketExist(const std::string path);
   /**
    * @brief Socket init function
    *

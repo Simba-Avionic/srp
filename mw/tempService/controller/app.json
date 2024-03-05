@@ -1,0 +1,13 @@
+{
+    "app": {
+        "name": "TempController",
+        "bootMode": 8,
+        "diag_address": 260,
+        "logger": {
+            "app_id": "TempServiceMW",
+            "app_des": "MW Controller temp",
+            "log_level": "kDebug",
+            "log_mode": "kConsole|kDLT"
+        }
+    }
+}

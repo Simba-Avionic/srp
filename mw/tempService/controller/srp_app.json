@@ -1,0 +1,7 @@
+{
+    "diag_id": 260,
+    "startup_prio": 8,
+    "parms": "",
+    "startup_after_delay": 0,
+    "bin_path": "/opt/tempController/bin/tempController"
+  }

@@ -50,6 +50,9 @@ class TempController final : public simba::core::ApplicationMW {
 
 
  public:
+
+   void Callback(const std::string& ip, const std::uint16_t& port,
+    const std::vector<std::uint8_t> data);
 };
 
 } // namespace temp
