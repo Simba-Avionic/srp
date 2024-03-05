@@ -15,7 +15,6 @@
 
 namespace simba {
 namespace com {
-namespace core {
 namespace someip {
 class SomeIpHeader : public core::network::NetworkDataStructure {
  private:
@@ -60,7 +59,6 @@ class SomeIpHeader : public core::network::NetworkDataStructure {
 };
 
 }  // namespace someip
-}  // namespace core
 }  // namespace com
 }  // namespace simba
 #endif  // COMMUNICATION_CORE_SOMEIP_SOMEIP_HEADER_H_
