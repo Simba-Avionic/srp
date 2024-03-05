@@ -11,35 +11,34 @@
 #include <memory>
 
 #include "apps/example/router.h"
-#include "communication-core/sockets/ipc_socket.h"
+#include "communication-core/someip-controller/event_skeleton.h"
+#include "communication-core/someip-controller/method_proxy.h"
 #include "core/logger/Logger.h"
-#include "diag/base/controller/diag_controller.h"
 namespace simba {
 namespace router {
 
-void Router::Run(const std::unordered_map<std::string, core::Parm>& parms) {
-  diag::DiagController diag_controller{0x00002,
-                                       std::make_unique<com::soc::IpcSocket>()};
-  diag_controller.Init();
-  const auto res = diag_controller.Write(0x0001, 0x01, {0x10, 0x01});
-  if (res == core::ErrorCode::kOk) {
-    AppLogger::Info("OK");
-  } else {
-    AppLogger::Error("NOK");
+core::ErrorCode Router::Run(std::stop_token token) {
+  auto example =
+      std::make_shared<com::someip::MethodProxyBase>("ExampleApp2/someproxy");
+  auto event_example =
+      std::make_shared<com::someip::EventSkeleton>("ExampleApp2/exampleEvent");
+  com->Add(example);
+  com->Add(event_example);
+  example->StartFindService();
+  event_example->SetValue({10, 11, 12, 13, 14, 15});
+  while (true) {
+    // this->gpio_.SetPinValue(5,gpio::Value::HIGH);
+    std::ignore = example->Get();
+    // this->gpio_.SetPinValue(5,gpio::Value::LOW);
+    std::this_thread::sleep_for(std::chrono::seconds(1));
   }
-  //   if(res.HasValue()){
-  //     std::string pp = "";
-  //     auto res_p = res.Value();
-  //     for(auto a : res_p){
-  //         pp+=std::to_string(a)+",";
-  //     }
-  //     AppLogger::Debug("Payload: "+pp);
-  //   }
-
-  AppLogger::Debug("Router started");
-  this->SleepMainThread();
-  // this->logger_->Debug("Router started");
+  return core::ErrorCode::kOk;
 }
-void Router::Stop() {}
+
+core::ErrorCode Router::Initialize(
+    const std::unordered_map<std::string, std::string>& parms) {
+  this->gpio_.Init(12);
+  return core::ErrorCode::kOk;
+}
 }  // namespace router
 }  // namespace simba

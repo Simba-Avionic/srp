@@ -17,6 +17,18 @@ cc_library(
     deps = [
         "//communication-core/network-data:network_data_structure",
         "//communication-core/network-data:network_data_type",
-        "//core/common:common_converter"
+        "//core/common:common_converter",
+    ],
+)
+
+cc_library(
+    name = "someip_objects",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//communication-core/someip:someip_header",
+        "//communication-core/someip:someip_types",
+        "//communication-core/someip/factory:someip_factory_interface",
+        "//communication-core/someip/factory:someip_header_factory",
+        "//communication-core/someip/factory:someip_message_factory",
     ],
 )

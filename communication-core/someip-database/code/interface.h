@@ -13,6 +13,7 @@
 
 #include <cstdint>
 #include <string>
+#include <utility>
 
 namespace simba {
 namespace com {
@@ -26,7 +27,10 @@ class Interface {
  public:
   Interface(const std::string& ip, const uint16_t port)
       : port_{port}, ip_{ip} {}
-
+  Interface(const Interface& other) : port_{other.port_}, ip_{other.ip_} {}
+  Interface operator=(const Interface& other) {
+    return std::move(Interface(other));
+  }
   uint16_t GetPort() const { return this->port_; }
   std::string GetIp() const { return this->ip_; }
 };

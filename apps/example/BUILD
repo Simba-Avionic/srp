@@ -7,24 +7,27 @@ cc_binary(
     ],
     visibility = ["//deployment/apps/example:__subpackages__"],
     deps = [
+        "//communication-core/someip-controller:proxy",
+        "//communication-core/someip-controller:skeleton",
         "//core/application:simba_application",
-        "@untar",
         "//mw/gpio_server/controller:gpio_controller",
+        "@untar",
     ],
 )
 
-# cc_binary(
-#     name = "router2",
-#     srcs = [
-#         "main.cc",
-#         "router.h",
-#         "router2.cc",
-#     ],
-#     visibility = ["//deployment/apps/example:__subpackages__"],
-#     deps = [
-#         "//communication-core/sockets:socket_ipc",
-#         "//core",
-#         "//diag/base/controller:diag_controller",
-#         "@untar",
-#     ],
-# )
+cc_binary(
+    name = "example2",
+    srcs = [
+        "main.cc",
+        "router.h",
+        "router2.cc",
+    ],
+    visibility = ["//deployment/apps/example2:__subpackages__"],
+    deps = [
+        "//communication-core/someip-controller:proxy",
+        "//communication-core/someip-controller:skeleton",
+        "//core/application:simba_application",
+        "//mw/gpio_server/controller:gpio_controller",
+        "@untar",
+    ],
+)

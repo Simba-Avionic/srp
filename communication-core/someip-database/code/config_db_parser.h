@@ -25,56 +25,67 @@ namespace json {
 
 class ConfigDbParser {
  public:
-  static core::ErrorCode ParseJsonObject(std::shared_ptr<objects::ConfigDb> db,
-                                         const nlohmann::json& obj) noexcept {
+  static simba::core::ErrorCode ParseJsonObject(
+      std::shared_ptr<objects::ConfigDb> db,
+      const nlohmann::json& obj) noexcept {
     auto res = ParseReqMethods(db, obj);
-    if (res == core::ErrorCode::kOk) {
-      res = ParseProvideMethods(db, obj);
-    }
-    if (res == core::ErrorCode::kOk) {
-      res = ParsePubEvent(db, obj);
-    }
-    if (res == core::ErrorCode::kOk) {
-      res = ParseReqEvent(db, obj);
-    }
+    res = ParseProvideMethods(db, obj);
+    res = ParsePubEvent(db, obj);
+    res = ParseReqEvent(db, obj);
 
     return res;
   }
 
-  static core::ErrorCode ParseProvideMethods(
+ private:
+  static simba::core::ErrorCode ParseProvideMethods(
       std::shared_ptr<objects::ConfigDb> db,
       const nlohmann::json& obj) noexcept {
+    if (!obj.contains("pub_methods")) {
+      return simba::core::ErrorCode::kError;
+    }
     auto list = obj["pub_methods"];
     for (auto& [key, val] : list.items()) {
       db->InsertObject(key, ParseObj(val));
     }
-    return core::ErrorCode::kOk;
+    return simba::core::ErrorCode::kOk;
   }
 
-  static core::ErrorCode ParseReqMethods(std::shared_ptr<objects::ConfigDb> db,
-                                         const nlohmann::json& obj) noexcept {
+  static simba::core::ErrorCode ParseReqMethods(
+      std::shared_ptr<objects::ConfigDb> db,
+      const nlohmann::json& obj) noexcept {
+    if (!obj.contains("req_methods")) {
+      return simba::core::ErrorCode::kError;
+    }
     auto list = obj["req_methods"];
     for (auto& [key, val] : list.items()) {
       db->InsertObject(key, ParseObj(val));
     }
-    return core::ErrorCode::kOk;
+    return simba::core::ErrorCode::kOk;
   }
 
-  static core::ErrorCode ParseReqEvent(std::shared_ptr<objects::ConfigDb> db,
-                                       const nlohmann::json& obj) noexcept {
+  static simba::core::ErrorCode ParseReqEvent(
+      std::shared_ptr<objects::ConfigDb> db,
+      const nlohmann::json& obj) noexcept {
+    if (!obj.contains("req_events")) {
+      return simba::core::ErrorCode::kError;
+    }
     auto list = obj["req_events"];
     for (auto& [key, val] : list.items()) {
       db->InsertObject(key, ParseObj(val));
     }
-    return core::ErrorCode::kOk;
+    return simba::core::ErrorCode::kOk;
   }
-  static core::ErrorCode ParsePubEvent(std::shared_ptr<objects::ConfigDb> db,
-                                       const nlohmann::json& obj) noexcept {
+  static simba::core::ErrorCode ParsePubEvent(
+      std::shared_ptr<objects::ConfigDb> db,
+      const nlohmann::json& obj) noexcept {
+    if (!obj.contains("pub_event")) {
+      return simba::core::ErrorCode::kError;
+    }
     auto list = obj["pub_event"];
     for (auto& [key, val] : list.items()) {
       db->InsertObject(key, ParseObj(val));
     }
-    return core::ErrorCode::kOk;
+    return simba::core::ErrorCode::kOk;
   }
   static objects::Endpoint ParseObj(const nlohmann::json& obj) noexcept {
     uint16_t method_id = 0;

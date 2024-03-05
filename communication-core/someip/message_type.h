@@ -12,7 +12,6 @@
 #define COMMUNICATION_CORE_SOMEIP_MESSAGE_TYPE_H_
 namespace simba {
 namespace com {
-namespace core {
 namespace data {
 enum MessageType {
   kRequest = 0x00,
@@ -27,7 +26,6 @@ enum MessageType {
   kErrorAck = 0xC1
 };
 }  // namespace data
-}  // namespace core
 }  // namespace com
 }  // namespace simba
 #endif  // COMMUNICATION_CORE_SOMEIP_MESSAGE_TYPE_H_

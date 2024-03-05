@@ -13,7 +13,7 @@ namespace simba {
 namespace com {
 namespace someip {
 namespace objects {
-core::ErrorCode ConfigDb::InsertObject(const std::string& key,
+simba::core::ErrorCode ConfigDb::InsertObject(const std::string& key,
                                        const Endpoint& item) noexcept {
   if (this->item_list.find(key) != this->item_list.end()) {
     return core::ErrorCode::kError;
