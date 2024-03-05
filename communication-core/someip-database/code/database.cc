@@ -57,6 +57,20 @@ std::optional<std::vector<uint16_t>> DataBase::FindEventClient(
     return obj->second;
   }
 }
+
+core::ErrorCode DataBase::InsertInterface(const std::string& ip,
+                                          const uint16_t port) noexcept {
+  this->interfaces.push_back(objects::Interface{ip, port});
+  return core::ErrorCode::kOk;
+}
+core::ErrorCode DataBase::SetServiceId(const uint16_t id) noexcept {
+  this->service_id = id;
+}
+uint16_t DataBase::GetServiceId() const noexcept { return this->service_id; }
+
+std::vector<objects::Interface> DataBase::GetInterfaces() const noexcept {
+  return this->interfaces;
+}
 }  // namespace objects
 }  // namespace someip
 }  // namespace com

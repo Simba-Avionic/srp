@@ -56,7 +56,7 @@ simba::core::ErrorCode UdpSocket::Transmit(const std::string& ip,
   }
   remote.sin_family = AF_INET;
   remote.sin_addr.s_addr = inet_addr(ip.c_str());
-  remote.sin_port = port;
+  remote.sin_port = htons(port);
   std::uint8_t* buffor = new std::uint8_t[payload.size()];
   std::copy(payload.begin(), payload.end(), buffor);
   rc = sendto(client_socket, buffor, payload.size(), 0,

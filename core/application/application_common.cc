@@ -12,14 +12,17 @@
 
 #include <fstream>
 #include <iostream>
-#include <vector>
 #include <memory>
+#include <vector>
 
 #include "boost/algorithm/string.hpp"
+#include "communication-core/someip-database/code/com_config.h"
+#include "communication-core/someip-database/code/database.h"
+#include "communication-core/someip-database/code/database_parser.h"
 #include "core/application/parm.h"
+#include "core/json/json_parser.h"
 #include "core/logger/Logger.h"
 #include "core/logger/logger_factory.h"
-#include "core/json/json_parser.h"
 #include "nlohmann/json.hpp"
 namespace simba {
 namespace core {
@@ -41,7 +44,7 @@ void ApplicationCommon::RunApp(int argc, char const* argv[]) {
   const std::string app_name =
       help_path.substr(help_path.find_last_of("/") + 1);
   parms.insert({"app_name", app_name});
-    auto obj = json::JsonParser::Parser("/opt/" + parms.at("app_name") +
+  auto obj = json::JsonParser::Parser("/opt/" + parms.at("app_name") +
                                       "/etc/srp_app.json")
                  .value();
   auto app_id_ = obj.GetNumber<uint16_t>("app_id");
@@ -63,6 +66,7 @@ void ApplicationCommon::onRun(
   if (this->CommonConfig(parms) != ErrorCode::kOk) {
     std::abort();
   }
+  this->SomeIPConfig(parms);
   AppLogger::Info("Application initialize");
   this->Initialize(parms);
   AppLogger::Info("Application running");
@@ -135,6 +139,24 @@ ErrorCode ApplicationCommon::CommonConfig(
   AppLogger::Info("App id: " + app_id + ", Desc: " + app_desc);
   return res;
 }
+
+ErrorCode ApplicationCommon::SomeIPConfig(
+    const std::unordered_map<std::string, std::string>& parms) {
+  const std::string path{"/opt/" + parms.at("app_name") +
+                         "/etc/app_someip.json"};
+  com::config::ComConfig::InitConfigDb(path);
+  std::ifstream f(path);
+  if (f.is_open()) {
+    AppLogger::Info("Config DB initialization");
+    auto obj = std::make_shared<com::someip::objects::DataBase>();
+    auto json_obj = nlohmann::json::parse(f);
+    simba::com::someip::json::DataBaseParser::ParseJsonObject(obj, json_obj);
+    this->com = std::make_unique<com::someip::Controller>(obj);
+  }
+
+  return ErrorCode::kOk;
+}
+
 ApplicationCommon::~ApplicationCommon() {}
 }  // namespace core
 }  // namespace simba

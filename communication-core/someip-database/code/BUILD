@@ -51,3 +51,16 @@ cc_library(
         "@com_json//:json",
     ],
 )
+
+cc_library(
+    name = "app_config_object",
+    hdrs = ["com_config.h"],
+    srcs = ["com_config.cc"],
+    visibility = ["//visibility:public"],
+    deps = [
+        "//communication-core/someip-database/code:config_database_lib_p",
+        "//communication-core/someip-database/code:config_database_parser_lib",
+        "@com_json//:json",
+        "//core/logger:Logger",
+    ],
+)
