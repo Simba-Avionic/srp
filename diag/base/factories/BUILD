@@ -4,7 +4,6 @@ cc_library(
     hdrs = ["diag_data_factory.h"],
     visibility = ["//visibility:public"],
     deps = [
-        "//core/results:results_lib",
         "//diag/base/data:diag_data_structure",
     ],
 )

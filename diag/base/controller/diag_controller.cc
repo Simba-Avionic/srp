@@ -11,13 +11,13 @@
 #include "diag/base/controller/diag_controller.h"
 
 #include <functional>
+#include <optional>
 #include <string>
 #include <utility>
 
 #include "communication-core/sockets/socket_config.h"
 #include "core/common/error_code.h"
 #include "core/logger/Logger.h"
-#include "core/results/result.h"
 #include "diag/base/data/data_structure.h"
 #include "diag/base/data/parser.h"
 #include "diag/base/factories/diag_data_factory.h"
@@ -70,10 +70,10 @@ void DiagController::RxCallback(const std::string& ip,
                                 const std::uint16_t& port,
                                 std::vector<std::uint8_t> payload) {
   const auto data_r = diag::Parser::GetStructure(payload);
-  if (!data_r.HasValue()) {
+  if (!data_r.has_value()) {
     return;
   }
-  const auto data = data_r.Value();
+  const auto data = data_r.value();
   if (data.GetServiceID() != this->service_id_) {
     return;
   }
@@ -103,16 +103,16 @@ void DiagController::Request(const data::DataStructure req) {
   }
 
   const auto result = obj->second(req.GetPayload());
-  if (result.HasValue()) {
+  if (result.has_value()) {
     const auto res_t = DiagDataFactory::CreateResponse(
         req.GetSenderID(), req.GetDiagID() >> 0x2, this->service_id_,
-        req.GetTransferID(), result.Value());
-    if (!res_t.HasValue()) {
+        req.GetTransferID(), result.value());
+    if (!res_t.has_value()) {
       AppLogger::Error(
           "[DIAG_CONTROLLER] An error occurred while creating the answer");
       return;
     }
-    if (this->Send(res_t.Value()) != core::ErrorCode::kOk) {
+    if (this->Send(res_t.value()) != core::ErrorCode::kOk) {
       AppLogger::Error(
           "[DIAG_CONTROLLER] Cannot send response to: SIMBA.DIAG." +
           std::to_string(req.GetSenderID()));
@@ -124,11 +124,11 @@ void DiagController::Request(const data::DataStructure req) {
 
 simba::core::ErrorCode DiagController::Send(const data::DataStructure& req) {
   const auto buffer_t = Parser::GetBuffer(req);
-  if (!buffer_t.HasValue()) {
+  if (!buffer_t.has_value()) {
     AppLogger::Error("[DIAG_CONTROLLER] An error occurred while parsing");
     return core::ErrorCode::kError;
   }
-  const auto buffer = buffer_t.Value();
+  const auto buffer = buffer_t.value();
   if (this->socket_driver != nullptr) {
     return this->socket_driver->Transmit(
         "SIMBA.DIAG." + std::to_string(req.GetServiceID()), 0, buffer);
@@ -156,12 +156,12 @@ void DiagController::Response(const data::DataStructure req) {
 void DiagController::SendError(const data::DataStructure req) {
   const auto res_t = diag::DiagDataFactory::CreateResponse(
       req.GetSenderID(), 0x3F, this->service_id_, req.GetTransferID(), {});
-  if (!res_t.HasValue()) {
+  if (!res_t.has_value()) {
     AppLogger::Error(
         "[DIAG_CONTROLLER] An error occurred while creating the answer");
     return;
   }
-  const auto res = res_t.Value();
+  const auto res = res_t.value();
   if (this->Send(res) != core::ErrorCode::kOk) {
     AppLogger::Error(
         "[DIAG_CONTROLLER] Cannot send error response to: SIMBA.DIAG." +
@@ -169,22 +169,22 @@ void DiagController::SendError(const data::DataStructure req) {
   }
 }
 
-simba::core::Result<std::vector<uint8_t>> DiagController::Read(
+std::optional<std::vector<uint8_t>> DiagController::Read(
     const uint16_t service_id, const uint8_t diag_id) {
   const auto t_id = this->GetTransferId();
   const auto req_t = DiagDataFactory::CreateReadRequest(
       service_id, diag_id, this->service_id_, t_id, {});
-  if (!req_t.HasValue()) {
+  if (!req_t.has_value()) {
     AppLogger::Error(
         "[DIAG_CONTROLLER] An error occurred while creating the Read request");
-    return simba::core::Result<std::vector<uint8_t>>{};
+    return std::optional<std::vector<uint8_t>>{};
   }
   auto transfer = std::make_shared<DiagTransfer>(t_id);
-  if (this->Send(req_t.Value()) != core::ErrorCode::kOk) {
+  if (this->Send(req_t.value()) != core::ErrorCode::kOk) {
     AppLogger::Error(
         "[DIAG_CONTROLLER] Cannot send Read request to: SIMBA.DIAG." +
-        std::to_string(req_t.Value().GetServiceID()));
-    return simba::core::Result<std::vector<uint8_t>>{};
+        std::to_string(req_t.value().GetServiceID()));
+    return std::optional<std::vector<uint8_t>>{};
   }
   this->transfer_list.push_back(transfer);
   const auto result = transfer->GetPayloadAsc();
@@ -201,16 +201,16 @@ simba::core::ErrorCode DiagController::Write(
   const auto t_id = this->GetTransferId();
   const auto req_t = DiagDataFactory::CreateWriteRequest(
       service_id, diag_id, this->service_id_, t_id, payload);
-  if (!req_t.HasValue()) {
+  if (!req_t.has_value()) {
     AppLogger::Error(
         "[DIAG_CONTROLLER] An error occurred while creating the Read request");
     return core::ErrorCode::kError;
   }
   auto transfer = std::make_shared<DiagTransfer>(t_id);
-  if (this->Send(req_t.Value()) != core::ErrorCode::kOk) {
+  if (this->Send(req_t.value()) != core::ErrorCode::kOk) {
     AppLogger::Error(
         "[DIAG_CONTROLLER] Cannot send Write request to: SIMBA.DIAG." +
-        std::to_string(req_t.Value().GetServiceID()));
+        std::to_string(req_t.value().GetServiceID()));
     return core::ErrorCode::kConnectionError;
   }
   this->transfer_list.push_back(transfer);
@@ -219,29 +219,29 @@ simba::core::ErrorCode DiagController::Write(
                  [transfer](std::shared_ptr<DiagTransfer> t) {
                    return t->GetTransferID() == transfer->GetTransferID();
                  });
-  if (result.HasValue()) {
+  if (result.has_value()) {
     return core::ErrorCode::kOk;
   } else {
     return core::ErrorCode::kError;
   }
 }
-simba::core::Result<std::vector<uint8_t>> DiagController::Job(
+std::optional<std::vector<uint8_t>> DiagController::Job(
     const uint16_t service_id, const uint8_t diag_id,
     const std::vector<uint8_t> payload) {
   const auto t_id = this->GetTransferId();
   const auto req_t = DiagDataFactory::CreateJobRequest(
       service_id, diag_id, this->service_id_, t_id, payload);
-  if (!req_t.HasValue()) {
+  if (!req_t.has_value()) {
     AppLogger::Error(
         "[DIAG_CONTROLLER] An error occurred while creating the Read request");
-    return simba::core::Result<std::vector<uint8_t>>{};
+    return std::optional<std::vector<uint8_t>>{};
   }
   auto transfer = std::make_shared<DiagTransfer>(t_id);
-  if (this->Send(req_t.Value()) != core::ErrorCode::kOk) {
+  if (this->Send(req_t.value()) != core::ErrorCode::kOk) {
     AppLogger::Error(
         "[DIAG_CONTROLLER] Cannot send Job request to: SIMBA.DIAG." +
-        std::to_string(req_t.Value().GetSenderID()));
-    return simba::core::Result<std::vector<uint8_t>>{};
+        std::to_string(req_t.value().GetSenderID()));
+    return std::optional<std::vector<uint8_t>>{};
   }
   this->transfer_list.push_back(transfer);
   const auto result = transfer->GetPayloadAsc();
@@ -254,8 +254,7 @@ simba::core::Result<std::vector<uint8_t>> DiagController::Job(
 
 DiagController::DiagController(const uint16_t service_id,
                                std::unique_ptr<com::soc::ISocket> soc)
-    : service_id_{service_id}, socket_driver{std::move(soc)} {
-    }
+    : service_id_{service_id}, socket_driver{std::move(soc)} {}
 
 const uint16_t DiagController::GetTransferId() { return this->transfer_id++; }
 

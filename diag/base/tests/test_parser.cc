@@ -19,8 +19,8 @@ TEST(PARSER, GetBuffer_without_payload) {
   simba::diag::data::DataStructure obj{0x1111, 0x01, 0x02, 0x00};
 
   const auto res = simba::diag::Parser::GetBuffer(obj);
-  EXPECT_TRUE(res.HasValue());
-  const auto sut = res.Value();
+  EXPECT_TRUE(res.has_value());
+  const auto sut = res.value();
   EXPECT_EQ(expected.size(), sut.size());
   for (uint8_t i = 0; i < expected.size(); i++) {
     EXPECT_EQ(expected[i], sut[i]);
@@ -35,8 +35,8 @@ TEST(PARSER, GetBuffer_with_payload) {
   simba::diag::data::DataStructure obj{0x1111, 0x01, 0x02, 0x00};
   obj.SetPayload(elements);
   const auto res = simba::diag::Parser::GetBuffer(obj);
-  ASSERT_TRUE(res.HasValue());
-  const auto sut = res.Value();
+  ASSERT_TRUE(res.has_value());
+  const auto sut = res.value();
   EXPECT_EQ(expected.size(), sut.size());
   for (uint8_t i = 0; i < expected.size(); i++) {
     EXPECT_EQ(expected[i], sut[i]);
@@ -50,8 +50,8 @@ TEST(PARSER, GetStructure_without_payload) {
 
   simba::diag::data::DataStructure expected_obj{0x1111, 0x01, 0x02, 0x00};
   const auto res = simba::diag::Parser::GetStructure(src);
-  ASSERT_TRUE(res.HasValue());
-  const auto sut = res.Value();
+  ASSERT_TRUE(res.has_value());
+  const auto sut = res.value();
 
   EXPECT_EQ(expected_obj.GetServiceID(), sut.GetServiceID());
   EXPECT_EQ(expected_obj.GetDiagID(), sut.GetDiagID());
@@ -65,8 +65,8 @@ TEST(PARSER, GetStructure_with_payload) {
   simba::diag::data::DataStructure expected_obj{0x1111, 0x01, 0x02, 0x00};
   expected_obj.SetPayload(elements);
   const auto res = simba::diag::Parser::GetStructure(src);
-  ASSERT_TRUE(res.HasValue());
-  const auto sut = res.Value();
+  ASSERT_TRUE(res.has_value());
+  const auto sut = res.value();
 
   EXPECT_EQ(expected_obj.GetServiceID(), sut.GetServiceID());
   EXPECT_EQ(expected_obj.GetDiagID(), sut.GetDiagID());
@@ -81,10 +81,10 @@ TEST(PARSER, DoubleTest) {
   simba::diag::data::DataStructure expected_obj{0x1111, 0x01, 0x02, 0x00};
   expected_obj.SetPayload(elements);
   const auto res = simba::diag::Parser::GetBuffer(expected_obj);
-  ASSERT_TRUE(res.HasValue());
-  const auto res2 = simba::diag::Parser::GetStructure(res.Value());
-  ASSERT_TRUE(res2.HasValue());
-  const auto sut = res2.Value();
+  ASSERT_TRUE(res.has_value());
+  const auto res2 = simba::diag::Parser::GetStructure(res.value());
+  ASSERT_TRUE(res2.has_value());
+  const auto sut = res2.value();
   EXPECT_EQ(expected_obj.GetServiceID(), sut.GetServiceID());
   EXPECT_EQ(expected_obj.GetDiagID(), sut.GetDiagID());
   EXPECT_EQ(expected_obj.GetPayload().size(), sut.GetPayload().size());

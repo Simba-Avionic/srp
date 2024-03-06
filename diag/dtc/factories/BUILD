@@ -4,7 +4,6 @@ cc_library(
     hdrs = ["dtc_msg_factory.hpp"],
     visibility = ["//visibility:public"],
     deps = [
-        "//core/results:results_lib",
         "//diag/dtc/data:diag_dtc_data_structure"
     ],
 )
