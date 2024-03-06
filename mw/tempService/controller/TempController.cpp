@@ -22,6 +22,8 @@ simba::core::ErrorCode TempController::Run(std::stop_token token) {
 simba::core::ErrorCode TempController::Initialize(
     const std::unordered_map<std::string, std::string>& parms) {
 
+    LoadConfig(kTempConfigPath);
+
     if (auto ret = this->sub_sock_.Init(
         com::soc::SocketConfig(kTempControllerName, 0, 0)))
     {
@@ -62,6 +64,28 @@ void TempController::SubCallback(const std::string& ip, const std::uint16_t& por
     //     0x0201, 0x0001, this->conv_.convertUint16ToVector(hdr->GetDtcID()));
 }
 
+simba::core::ErrorCode TempController::LoadConfig(const std::string& path) {
+
+    std::ifstream file(path);
+
+    if (!file) {
+        AppLogger::Error("Couldn't load temperature sensors config!");
+        return simba::core::ErrorCode::kError;
+    }
+
+    json jsonData;
+    file >> jsonData;
+    file.close();
+
+    for (auto it = jsonData["sensors-temp"].begin(); 
+        it != jsonData["sensors-temp"].end(); ++it) {
+
+        sensorPathsToIds[it.key()] = it.value();
+    }
+
+    return simba::core::ErrorCode::kOk;
+}
+
 simba::core::ErrorCode TempController::SendTempData(std::stop_token stoken) {
 
     std::vector<TempReading> readings;
@@ -69,7 +93,7 @@ simba::core::ErrorCode TempController::SendTempData(std::stop_token stoken) {
 
     while (true) {
 
-        for (const auto& path : kTempSensorPathToId)
+        for (const auto& path : sensorPathsToIds)
         {
             std::future<simba::core::ErrorCode> future = 
                 std::async(std::launch::async, [this, &path, &readings]

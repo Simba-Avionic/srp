@@ -14,7 +14,8 @@ cc_binary(
         "//communication-core/sockets:socket_ipc",
         "//mw/tempService/subscribe_msg:subscribe_header",
         "//mw/tempService/subscribe_msg:subscribe_msg_factory",
+        "@com_json//:json"
 
     ],
-    data=["logger.json","app.json","srp_app.json"]
+    data=["logger.json","app.json","srp_app.json", "temp_config.json"]
 )

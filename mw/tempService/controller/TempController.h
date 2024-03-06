@@ -22,7 +22,7 @@
 #include <vector>
 #include <unordered_map>
 #include <set>
-#include "json.hpp"
+#include "nlohmann/json.hpp"
 
 #include "core/application/application_mw.h"
 #include "communication-core/sockets/ipc_socket.h"
@@ -40,6 +40,9 @@ namespace temp {
 
 static constexpr char const* 
   kTempControllerName = "SIMBA.TEMP.CONTROLLER";
+
+static const std::string kTempConfigPath = 
+  "mw/tempService/controller/temp_config.json";
 
 struct TempReading
 {
@@ -59,13 +62,7 @@ class TempController final : public simba::core::ApplicationMW {
 
   void StartTempThread();
 
-  void ParseSensors(const json& data, std::unordered_map<std::string, int>& sensorMap) {
-    for (auto it = data["sensors-temp"].begin(); it != data["sensors-temp"].end(); ++it) {
-        sensorMap[it.key()] = it.value();
-    }
-  }
-
-  void LoadConfig(std::string& path);
+  simba::core::ErrorCode LoadConfig(const std::string& path);
 
   /**
    * @brief This function is called to launch the application
