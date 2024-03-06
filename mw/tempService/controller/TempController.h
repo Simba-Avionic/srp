@@ -22,6 +22,7 @@
 #include <vector>
 #include <unordered_map>
 #include <set>
+#include "json.hpp"
 
 #include "core/application/application_mw.h"
 #include "communication-core/sockets/ipc_socket.h"
@@ -31,6 +32,7 @@
 #include "mw/tempService/subscribe_msg/subscribe_header.h"
 #include "mw/tempService/subscribe_msg/subscribe_msg_factory.h"
 
+using json = nlohmann::json;
 
 namespace simba {
 namespace mw {
@@ -38,16 +40,6 @@ namespace temp {
 
 static constexpr char const* 
   kTempControllerName = "SIMBA.TEMP.CONTROLLER";
-
-// static constexpr char const* 
-//   kTempControllerNameSub = "SIMBA.TEMP.CONTROLLER.SUB";
-
-static const std::unordered_map<std::string, std::uint8_t> 
-  kTempSensorPathToId {
-    {"/sys/bus/w1/devices/28-062018f00883", 0},
-    {"/sys/bus/w1/devices/28-3c29e381356d", 1},
-    {"/sys/bus/w1/devices/28-3c01e076e761", 2}
-  };
 
 struct TempReading
 {
@@ -63,8 +55,17 @@ class TempController final : public simba::core::ApplicationMW {
  private:
   std::unique_ptr<std::jthread> temp_thread;
   std::set<std::uint16_t> subscribers{};
+  std::unordered_map<std::string, std::uint8_t> sensorPathsToIds{};
 
   void StartTempThread();
+
+  void ParseSensors(const json& data, std::unordered_map<std::string, int>& sensorMap) {
+    for (auto it = data["sensors-temp"].begin(); it != data["sensors-temp"].end(); ++it) {
+        sensorMap[it.key()] = it.value();
+    }
+  }
+
+  void LoadConfig(std::string& path);
 
   /**
    * @brief This function is called to launch the application

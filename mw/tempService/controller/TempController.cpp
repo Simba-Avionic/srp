@@ -56,7 +56,7 @@ void TempController::SubCallback(const std::string& ip, const std::uint16_t& por
     auto hdr = factory.GetHeader(data);
     // std::vector<uint8_t> payload = factory.GetPayload(data);
 
-    std::cout << "Service want to subscribe: " << hdr.get()->GetServiceID() << std::endl; 
+    std::cout << "Service want to subscribe:" << hdr.get()->GetServiceID() << std::endl; 
 
     // this->diag_controller->Write(
     //     0x0201, 0x0001, this->conv_.convertUint16ToVector(hdr->GetDtcID()));
@@ -75,18 +75,18 @@ simba::core::ErrorCode TempController::SendTempData(std::stop_token stoken) {
                 std::async(std::launch::async, [this, &path, &readings]
                 () -> simba::core::ErrorCode
             {
-                std::ifstream sensorStream(path.first);
+                std::ifstream file(path.first + "/temperature");
                 
-                if (!sensorStream) {
+                if (!file) {
                     AppLogger::Warning("Sensor " + path.first + " not available!");
                     return simba::core::ErrorCode::kError;
                 }
 
                 _Float64 sensorValue;
-                sensorStream >> sensorValue;
-                sensorStream.close();
+                file >> sensorValue;
+                file.close();
 
-                readings.push_back(TempReading{path.second, sensorValue});
+                readings.push_back(TempReading{path.second, sensorValue/1000.0});
             });
             futures.push_back(std::move(future));
         }
