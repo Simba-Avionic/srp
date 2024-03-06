@@ -15,12 +15,12 @@
 namespace simba {
 namespace dlt {
 namespace data {
-enum DLTLogType : uint8_t {
-  kDLTDebug = 0x51,
-  kDLTInfo = 0x41,
-  kDLTWarning = 0x31,
-  kDLTError = 0x21,
-};
+  enum DLTLogType : uint8_t {
+    kDLTDebug = 0x51,
+    kDLTInfo = 0x41,
+    kDLTWarning = 0x31,
+    kDLTError = 0x21,
+  };
 }  // namespace data
 }  // namespace dlt
 }  // namespace simba

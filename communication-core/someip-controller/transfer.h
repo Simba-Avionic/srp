@@ -18,7 +18,6 @@
 #include <mutex>  // NOLINT
 #include <vector>
 
-#include "core/results/result.h"
 namespace simba {
 namespace com {
 namespace someip {
@@ -42,22 +41,22 @@ class Transfer {
   }
 
   std::vector<uint8_t> GetPayload() const { return this->response; }
-  simba::core::Result<std::vector<uint8_t>> GetPayloadAsc() {
+  std::optional<std::vector<uint8_t>> GetPayloadAsc() {
     std::unique_lock<std::mutex> lk(cv_m);
     if (!cv.wait_for(lk, std::chrono::seconds{2},
                      [this]() { return this->IsRespond(); })) {
-      return simba::core::Result<std::vector<uint8_t>>{};
+      return std::optional<std::vector<uint8_t>>{};
     }
-    return simba::core::Result<std::vector<uint8_t>>{response};
+    return std::optional<std::vector<uint8_t>>{response};
   }
 
-  simba::core::Result<bool> GetACK() {
+  std::optional<bool> GetACK() {
     std::unique_lock<std::mutex> lk(cv_m);
     if (!cv.wait_for(lk, std::chrono::seconds{2},
                      [this]() { return this->IsRespond(); })) {
-      return simba::core::Result<bool>{};
+      return std::optional<bool>{};
     } else {
-      return simba::core::Result<bool>{true};
+      return std::optional<bool>{true};
     }
   }
   virtual ~Transfer() {}

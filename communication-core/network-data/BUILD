@@ -2,7 +2,7 @@ cc_library(
     name = "interfaces",
     hdrs = ["iframe.h"],
     visibility = ["//communication-core:__subpackages__"],
-    deps = ["//core"],
+    deps = ["//core/common:common_types"],
 )
 
 cc_library(

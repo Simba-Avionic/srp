@@ -14,19 +14,19 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <optional>
 
 #include "core/common/error_code.h"
-#include "core/results/result.h"
 #include "communication-core/someip/message_code.h"
 namespace simba {
 namespace com {
 namespace someip {
-using SomeIPMethod = std::function<simba::core::Result<
+using SomeIPMethod = std::function<std::optional<
     std::pair<std::vector<uint8_t>, com::core::data::MessageCode>>(
     const std::vector<uint8_t> payload)>;
 class ISomeIpController {
  public:
-  virtual simba::core::Result<std::vector<uint8_t>> Request(
+  virtual std::optional<std::vector<uint8_t>> Request(
       const uint16_t service_id, const uint16_t method_id,
       const std::vector<uint8_t> payload) = 0;
   virtual bool RequestNoResponse(const uint16_t service_id,

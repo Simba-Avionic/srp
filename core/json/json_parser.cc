@@ -15,31 +15,31 @@ namespace simba {
 namespace core {
 namespace json {
 
-Result<JsonParser> JsonParser::Parser(const std::string& path) noexcept {
+std::optional<JsonParser> JsonParser::Parser(const std::string& path) noexcept {
   std::ifstream f(path);
   if (!f.is_open()) {
-    return core::Result<JsonParser>{};
+    return std::optional<JsonParser>{};
   }
-  return core::Result<JsonParser>{JsonParser{f}};
+  return std::optional<JsonParser>{JsonParser{f}};
 }
 JsonParser::JsonParser(std::ifstream& f) {
     this->obj = nlohmann::json::parse(f);
 }
 nlohmann::json JsonParser::GetObject() const { return this->obj; }
-Result<std::string> JsonParser::GetString(
+std::optional<std::string> JsonParser::GetString(
     const std::string& name) const noexcept {
   try {
     if (obj.contains(name)) {
       if (obj.at(name).is_string()) {
         const std::string res = obj.at(name);
-        return Result{res};
+        return std::optional{res};
       }
-      return Result<std::string>{};
+      return std::optional<std::string>{};
     } else {
-      return Result<std::string>{};
+      return std::optional<std::string>{};
     }
   } catch (std::exception&) {
-    return Result<std::string>{};
+    return std::optional<std::string>{};
   }
 }
 JsonParser::~JsonParser() {}

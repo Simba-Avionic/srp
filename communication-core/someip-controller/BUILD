@@ -8,7 +8,7 @@ cc_library(
         "//communication-core/someip:someip_header",
         "//communication-core/someip:someip_types",
         "//communication-core/someip/factory:someip_message_factory",
-        "//core",
+        "//core/common:common_types",
     ],
 )
 
@@ -19,7 +19,7 @@ cc_library(
         "//core:__subpackages__",
         "//diag:__subpackages__",
     ],
-    deps = ["//core/results:results_lib"],
+    deps = [],
 )
 
 cc_library(

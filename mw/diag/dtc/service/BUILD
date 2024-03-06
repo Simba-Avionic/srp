@@ -3,7 +3,7 @@ cc_library(
     deps = [
         "//mw/diag/dtc/database:dtc_db",
         "//mw/diag/dtc/database:dtc_db_element",
-        "//core",
+        "//core/application:simba_application",
         "//diag/dtc/factories:diag_dtc_msg_factory",
         "//communication-core/sockets:socket_interface",
         "//communication-core/sockets:socket_ipc",

@@ -118,8 +118,8 @@ ErrorCode ApplicationCommon::CommonConfig(
     AppLogger::SetParms(app_id, log_level);
     for (const auto& mode : log_mode) {
       auto res = logger::LoggerFactory::CreateLogger(mode);
-      if (res.HasValue()) {
-        AppLogger::AddLogger(res.Value());
+      if (res.has_value()) {
+        AppLogger::AddLogger(res.value());
       }
     }
   }

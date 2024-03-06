@@ -4,7 +4,6 @@ cc_library(
     hdrs = ["json_parser.h"],
     visibility = ["//visibility:public"],
     deps = [
-        "//core/results:results_lib",
         "@com_json//:json",
     ],
 )

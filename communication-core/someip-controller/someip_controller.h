@@ -30,7 +30,6 @@
 #include "communication-core/someip/factory/someip_message_factory.h"
 #include "core/common/error_code.h"
 #include "core/logger/Logger.h"
-#include "core/results/result.h"
 #include "memory"
 
 namespace simba {
@@ -73,7 +72,7 @@ class SomeIpController : public ISomeIpController {
       std::vector<std::uint8_t> data);
 
  public:
-  simba::core::Result<std::vector<uint8_t>> Request(
+  std::optional<std::vector<uint8_t>> Request(
       const uint16_t service_id, const uint16_t method_id,
       const std::vector<uint8_t> payload) override;
 

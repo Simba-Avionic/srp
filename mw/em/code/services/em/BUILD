@@ -9,7 +9,6 @@ cc_library(
     deps = [
         "//core/json:simba_json",
         "//core/logger:Logger",
-        "//core/results:results_lib",
         # "@boost//:process",
     ],
 )

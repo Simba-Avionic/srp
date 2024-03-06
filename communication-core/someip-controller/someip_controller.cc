@@ -16,22 +16,21 @@
 #include "communication-core/someip/message_code.h"
 #include "communication-core/someip/message_type.h"
 #include "communication-core/someip/someip_header.h"
-#include "core/results/result.h"
 namespace simba {
 namespace com {
 namespace someip {
-simba::core::Result<std::vector<uint8_t>> SomeIpController::Request(
+std::optional<std::vector<uint8_t>> SomeIpController::Request(
     const uint16_t service_id, const uint16_t method_id,
     const std::vector<uint8_t> payload) {
   const auto service_data = db_.GetService(service_id);
-  if (!service_data.HasValue()) {
+  if (!service_data.has_value()) {
     AppLogger::Error("[SOMEIPCONTROLLER] Service_id: " +
                      std::to_string(service_id) + " not found!");
-    return simba::core::Result<std::vector<uint8_t>>{};
+    return std::optional<std::vector<uint8_t>>{};
   } else {
     AppLogger::Error(
         "[SOMEIPCONTROLLER] Service_id: " + std::to_string(service_id) +
-        " ip = " + service_data.Value().GetIp());
+        " ip = " + service_data.value().GetIp());
   }
   const auto transfer = GetTransferID();
   auto req = header_factory.CreateRequest(service_id, method_id);
@@ -39,8 +38,8 @@ simba::core::Result<std::vector<uint8_t>> SomeIpController::Request(
   auto trans = this->AddTransfer(transfer);
   AppLogger::Debug("Sending to: " + std::to_string(req->GetServiceID()) +
                    " From " + std::to_string(req->GetClientID()));
-  if (this->socket_->Transmit(service_data.Value().GetIp(),
-                              service_data.Value().GetPort(),
+  if (this->socket_->Transmit(service_data.value().GetIp(),
+                              service_data.value().GetPort(),
                               req_payload) != simba::core::ErrorCode::kOk) {
     std::remove_if(
         this->transfers.begin(), transfers.end(),
@@ -50,7 +49,7 @@ simba::core::Result<std::vector<uint8_t>> SomeIpController::Request(
     AppLogger::Error(
         "[SOMEIPCONTROLLER] Request to :" + std::to_string(service_id) +
         " method_id: " + std::to_string(method_id) + " No connection");
-    return simba::core::Result<std::vector<uint8_t>>{};
+    return std::optional<std::vector<uint8_t>>{};
   }
   const auto res = trans->GetPayloadAsc();
   auto vec = trans->GetPayload();
@@ -59,13 +58,13 @@ simba::core::Result<std::vector<uint8_t>> SomeIpController::Request(
       [trans](std::shared_ptr<simba::com::someip::data::Transfer> tr) {
         return tr->GetTransferID() == trans->GetTransferID();
       });
-  if (res.HasValue()) {
-    return simba::core::Result<std::vector<uint8_t>>{vec};
+  if (res.has_value()) {
+    return std::optional<std::vector<uint8_t>>{vec};
   } else {
     AppLogger::Error(
         "[SOMEIPCONTROLLER] Request to :" + std::to_string(service_id) + " : " +
         std::to_string(method_id) + " Timeout");
-    return simba::core::Result<std::vector<uint8_t>>{};
+    return std::optional<std::vector<uint8_t>>{};
   }
 }
 
@@ -73,7 +72,7 @@ bool SomeIpController::RequestNoResponse(const uint16_t service_id,
                                          const uint16_t method_id,
                                          const std::vector<uint8_t> payload) {
   const auto service_data = db_.GetService(service_id);
-  if (!service_data.HasValue()) {
+  if (!service_data.has_value()) {
     AppLogger::Error("[SOMEIPCONTROLLER] Service_id: " +
                      std::to_string(service_id) + " not found!");
     return false;
@@ -84,11 +83,11 @@ bool SomeIpController::RequestNoResponse(const uint16_t service_id,
       msg_factory.GetBuffor(req, this->service_id_, transfer, payload);
   auto trans = this->AddTransfer(transfer);
 
-  this->socket_->Transmit(service_data.Value().GetIp(),
-                          service_data.Value().GetPort(), req_payload);
+  this->socket_->Transmit(service_data.value().GetIp(),
+                          service_data.value().GetPort(), req_payload);
   const auto res = trans->GetACK();
-  if (res.HasValue()) {
-    return res.Value();
+  if (res.has_value()) {
+    return res.value();
   } else {
     AppLogger::Error(
         "[SOMEIPCONTROLLER] Request to :" + std::to_string(service_id) + " : " +
@@ -167,19 +166,19 @@ void SomeIpController::MethodCalled(
 
   const auto res = obj->second(data);
 
-  if (!res.HasValue()) {
+  if (!res.has_value()) {
     AppLogger::Info("[SOMEIPCONTROLLER] Socket Send Respons No Value");
     // TODO(any) : implemnet error kNOK
   }
 
-  if (res.Value().second != com::core::data::MessageCode::kEOk) {
+  if (res.value().second != com::core::data::MessageCode::kEOk) {
     AppLogger::Info("[SOMEIPCONTROLLER] Socket Send Respons No OK");
     // TODO(any) : implemnet error
   } else {
     if (header->GetMessageType() == com::core::data::MessageType::kRequest) {
       header->SetMessageType(core::data::MessageType::kResponse);
       header->SetReturnCode(core::data::MessageCode::kEOk);
-      this->SendResponse(header, res.Value().first);
+      this->SendResponse(header, res.value().first);
       AppLogger::Info("[SOMEIPCONTROLLER] Socket Send Respons");
     }
   }
@@ -207,14 +206,14 @@ void SomeIpController::SendResponse(
     std::vector<std::uint8_t> data) {
   const auto service_id = header->GetClientID();
   const auto service_data = db_.GetService(service_id);
-  if (!service_data.HasValue()) {
+  if (!service_data.has_value()) {
     AppLogger::Error("[SOMEIPCONTROLLER] (" + std::string(__func__) +
                      ") Service_id: " + std::to_string(service_id) +
                      " not found!");
   }
 
-  this->socket_->Transmit(service_data.Value().GetIp(),
-                          service_data.Value().GetPort(),
+  this->socket_->Transmit(service_data.value().GetIp(),
+                          service_data.value().GetPort(),
                           msg_factory.GetBuffor(header, header->GetClientID(),
                                                 header->GetSessionID(), data));
 }
