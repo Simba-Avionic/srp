@@ -8,15 +8,17 @@
  * @copyright Copyright (c) 2023
  *
  */
-#include "diag/dtc/factories/dtc_msg_factory.hpp"
+#include "mw/tempService/subscribe_msg/subscribe_header.h"
+#include "subscribe_msg_factory.h"
+
 
 #include <algorithm>
 namespace simba {
-namespace diag {
-namespace dtc {
+namespace mw {
+namespace temp {
 
-std::vector<uint8_t> DtcMsgFactory::GetBuffer(
-  std::shared_ptr<diag::dtc::DtcHeader> header,
+std::vector<uint8_t> SubMsgFactory::GetBuffer(
+  std::shared_ptr<simba::mw::temp::SubscribeHeader> header,
   std::vector<uint8_t> payload) {
 
   std::vector<std::uint8_t> res{header->GetBuffor()};
@@ -24,15 +26,15 @@ std::vector<uint8_t> DtcMsgFactory::GetBuffer(
   return res;
 }
 
-std::shared_ptr<diag::dtc::DtcHeader> DtcMsgFactory::GetHeader(
+std::shared_ptr<simba::mw::temp::SubscribeHeader> SubMsgFactory::GetHeader(
     std::vector<uint8_t> raw_data) {
 
-  auto header = std::make_shared<diag::dtc::DtcHeader>();
+  auto header = std::make_shared<simba::mw::temp::SubscribeHeader>();
   header->SetBuffor(raw_data);
   return header;
 }
 
-std::vector<uint8_t> DtcMsgFactory::GetPayload(std::vector<uint8_t> raw_data) {
+std::vector<uint8_t> SubMsgFactory::GetPayload(std::vector<uint8_t> raw_data) {
   
     std::vector<uint8_t> payload{};
     if (raw_data.size() > 4) {
@@ -43,6 +45,6 @@ std::vector<uint8_t> DtcMsgFactory::GetPayload(std::vector<uint8_t> raw_data) {
     return {};
 }
 
-}  // namespace dtc
-}  // namespace diag
+}  // namespace temp
+}  // namespace mw
 }  // namespace simba

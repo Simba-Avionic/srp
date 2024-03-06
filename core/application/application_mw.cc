@@ -16,7 +16,7 @@
 #include "core/logger/Logger.h"
 #include "diag/base/controller/diag_controller.h"
 
-#define DEBUG
+// #define DEBUG
 
 
 

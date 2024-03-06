@@ -28,6 +28,9 @@
 #include "communication-core/network-data/network_data_structure.h"
 #include "core/logger/Logger.h"
 
+#include "mw/tempService/subscribe_msg/subscribe_header.h"
+#include "mw/tempService/subscribe_msg/subscribe_msg_factory.h"
+
 namespace simba {
 namespace mw {
 namespace temp {
@@ -37,13 +40,11 @@ static constexpr char const* kTempServiceSubName = "SIMBA.TEMP.SERVICE.SUB";
 
 class TempApplication final : public simba::core::ApplicationMW {
  protected:
-    com::soc::IpcSocket sub_sock_{};
-    com::soc::IpcSocket temp_sock_{};
-    std::set<std::uint16_t> subscribers;
+    com::soc::IpcSocket sock_{};
 
 
  private:
-    std::unique_ptr<std::jthread> temp_thred;
+    std::unique_ptr<std::jthread> sub_thread;
 
   /**
    * @brief This function is called to launch the application
@@ -62,21 +63,12 @@ class TempApplication final : public simba::core::ApplicationMW {
 
  public:
 
-  void TempCallback(const std::string& ip, const std::uint16_t& port,
-    const std::vector<std::uint8_t> data);
-
   void SubCallback(const std::string& ip, const std::uint16_t& port,
     const std::vector<std::uint8_t> data);
   
-  simba::core::ErrorCode SendTempData(std::stop_token stoken);
+  simba::core::ErrorCode Subscribe(std::stop_token stoken);
   
-  void StartTempThread() {
-    if (temp_thred != nullptr) {
-      return;
-    }
-    this->temp_thred = std::make_unique<std::jthread>(
-        [&](std::stop_token stoken) { this->SendTempData(stoken); });
-  }
+  void StartSubscribeThread();
 
 };
 

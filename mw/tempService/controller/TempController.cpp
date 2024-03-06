@@ -2,47 +2,132 @@
 #include <iostream>
 #include <chrono>
 #include <thread>
+#include <future>
 
 namespace simba {
 namespace mw {
 namespace temp {
 
-std::chrono::milliseconds timespan(1000);
-
 simba::core::ErrorCode TempController::Run(std::stop_token token) {
 
-    std::vector<uint8_t> payload{0,1,2,3};
-    std::cout << "TempController is running!" << std::endl;
-    while (true)
-    {
-        if(auto ret = this->sock_.Transmit("SIMBA.TEMP.SERVICE", 5, payload))
-        {
-            std::cout << "Message sent!" << std::endl;
-        }
-        else {
-            std::cout << "Message failed!" << std::endl;
-        }
-        std::this_thread::sleep_for(timespan);
-    }
+    this->sub_sock_.StartRXThread();
+    this->StartTempThread();
+    std::cout << "Started TempController!" << std::endl;
+
+    this->SleepMainThread();
 
     return core::ErrorCode::kError;
 }
 
 simba::core::ErrorCode TempController::Initialize(
-      const std::unordered_map<std::string, std::string>& parms) {
+    const std::unordered_map<std::string, std::string>& parms) {
 
-      this->sock_.Init(com::soc::SocketConfig(
-      "SIMBA.TEMP.SERVICE", 5, 6));
-      
-      std::cout << "Initialized TempController!" << std::endl;
-      return simba::core::ErrorCode::kOk;
+    if (auto ret = this->sub_sock_.Init(
+        com::soc::SocketConfig(kTempControllerName, 0, 0)))
+    {
+        AppLogger::Error("Couldn't initialize " + 
+                std::string(kTempControllerName) + "socket!");
+        return ret; 
+    }
+
+    // TODO: get path_to_id from config
+    
+    this->sub_sock_.SetRXCallback(
+        std::bind(&simba::mw::temp::TempController::SubCallback, this, 
+                std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+
+    return simba::core::ErrorCode::kOk;
 }
 
-void TempController::Callback(const std::string& ip, const std::uint16_t& port,
-    const std::vector<std::uint8_t> data) {
-      
-    return;
+void TempController::StartTempThread() {
+    if (temp_thread != nullptr) {
+        AppLogger::Error("Error starting temperature thread!");
+        return;
+    }
+    this->temp_thread = std::make_unique<std::jthread>(
+        [&](std::stop_token stoken) { this->SendTempData(stoken); });
 }
+
+void TempController::SubCallback(const std::string& ip, const std::uint16_t& port,
+    const std::vector<std::uint8_t> data)
+{
+    // TODO: register clients
+    simba::mw::temp::SubMsgFactory factory;
+    auto hdr = factory.GetHeader(data);
+    // std::vector<uint8_t> payload = factory.GetPayload(data);
+
+    std::cout << "Service want to subscribe: " << hdr.get()->GetServiceID() << std::endl; 
+
+    // this->diag_controller->Write(
+    //     0x0201, 0x0001, this->conv_.convertUint16ToVector(hdr->GetDtcID()));
+}
+
+simba::core::ErrorCode TempController::SendTempData(std::stop_token stoken) {
+
+    std::vector<TempReading> readings;
+    std::vector<std::future<simba::core::ErrorCode>> futures;
+
+    while (true) {
+
+        for (const auto& path : kTempSensorPathToId)
+        {
+            std::future<simba::core::ErrorCode> future = 
+                std::async(std::launch::async, [this, &path, &readings]
+                () -> simba::core::ErrorCode
+            {
+                std::ifstream sensorStream(path.first);
+                
+                if (!sensorStream) {
+                    AppLogger::Warning("Sensor " + path.first + " not available!");
+                    return simba::core::ErrorCode::kError;
+                }
+
+                _Float64 sensorValue;
+                sensorStream >> sensorValue;
+                sensorStream.close();
+
+                readings.push_back(TempReading{path.second, sensorValue});
+            });
+            futures.push_back(std::move(future));
+        }
+
+        for (auto& future : futures) {
+            future.get();
+        }
+        futures.clear();
+
+        for (const auto& client : this->subscribers)
+        {
+            std::future<simba::core::ErrorCode> future = 
+                std::async(std::launch::async, [this, &client, &readings]
+                () -> simba::core::ErrorCode
+            {
+                // TODO: serialize payload and client
+                this->sub_sock_.Transmit(
+                    "Engine." + std::to_string(client), 0, {0});
+            });
+            futures.push_back(std::move(future));
+        }
+
+        for (auto& future : futures) {
+            future.get();
+        }
+        futures.clear();
+        readings.clear();
+        std::this_thread::sleep_for(this->temp_timeout);
+    }
+
+}
+
+// TODO: REGISTER CLIENTS (SUBSCRIBERS)
+// we've got a socket for service and in the callback function
+// it should create user and send data to it
+
+// TODO: SEND DATA TO CLIENTS
+// need a way to store and retrieve data from sensors
+
+// TODO: GET DATA FROM TEMPERATURE SENSORS
+// from TempController idk yet how - another socket maybe
 
 } // namespace temp
 } // namespace mw

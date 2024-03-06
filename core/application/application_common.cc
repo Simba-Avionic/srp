@@ -20,7 +20,7 @@
 #include "core/logger/logger_factory.h"
 #include "nlohmann/json.hpp"
 
-#define DEBUG
+// #define DEBUG
 
 namespace simba {
 namespace core {
