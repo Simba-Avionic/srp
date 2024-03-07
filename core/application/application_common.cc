@@ -13,6 +13,7 @@
 #include <fstream>
 #include <iostream>
 #include <vector>
+#include <memory>
 
 #include "boost/algorithm/string.hpp"
 #include "core/application/parm.h"
