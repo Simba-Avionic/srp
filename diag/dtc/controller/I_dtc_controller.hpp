@@ -28,7 +28,7 @@ class IDtcController{
   virtual void Init(std::shared_ptr<com::soc::SocketConfig> config) = 0;
 
   virtual core::ErrorCode RegisterError(const uint16_t &dtc_error_id,
-  const uint8_t &dtc_status, const std::vector<uint8_t> &payload) = 0;
+   const std::vector<uint8_t> &payload, const uint8_t &dtc_status) = 0;
 };
 
 }  // namespace dtc

@@ -14,6 +14,7 @@
 #include <unordered_map>
 
 #include "core/application/application_mw.h"
+#include "core/gpio/GPIO_digital_driver.h"
 namespace simba {
 namespace router {
 class Router : public core::ApplicationMW{
@@ -34,6 +35,7 @@ class Router : public core::ApplicationMW{
 
  public:
   ~Router() = default;
+  core::gpio::GpioDigitalDriver gpio_;
 };
 
 }  // namespace router
