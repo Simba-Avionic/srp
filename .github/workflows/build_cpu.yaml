@@ -37,7 +37,7 @@ jobs:
       - name: Run build engine computer
         if: contains(steps.pr-labels.outputs.labels, 'check-bbb')
         run: |
-            bazel build --config=bbb //deployment/cpu/ec:pkg
+            bazel-5.4.1 build --config=bbb //deployment/cpu/ec:pkg
           
   
   
