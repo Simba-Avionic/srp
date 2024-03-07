@@ -8,7 +8,8 @@ cc_library(
         "//communication-core/someip:someip_header",
         "//communication-core/someip:someip_types",
         "//communication-core/someip/factory:someip_message_factory",
-        "//core",
+        "//core/common:common_types",
+        "//core/results:results_lib"
     ],
 )
 
@@ -38,7 +39,6 @@ cc_library(
         "//communication-core/someip:someip_types",
         "//communication-core/someip/factory:someip_header_factory",
         "//communication-core/someip/factory:someip_message_factory",
-        "//core",
         "//communication-core/someip-controller:transfer_lib",
     ],
 )

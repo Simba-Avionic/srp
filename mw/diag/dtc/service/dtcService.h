@@ -26,7 +26,6 @@
 #include "communication-core/sockets/ipc_socket.h"
 #include "communication-core/sockets/socket_config.h"
 #include "core/application/application_mw.h"
-#include "core/application/application_factory.h"
 #include "core/logger/ILogger.h"
 #include "diag/dtc/factories/dtc_msg_factory.hpp"
 #include "diag/base/data/data_structure.h"
