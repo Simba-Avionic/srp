@@ -21,6 +21,12 @@ cc_library(
 cc_library(
     name = "network_data_type",
     hdrs = ["network_data_type.h"],
-    visibility = ["//communication-core:__subpackages__"],
-    deps = [":interfaces"],
+    visibility = [
+        "//communication-core:__subpackages__",
+        "//diag:__subpackages__",
+        ],
+    deps = [
+        ":interfaces",
+        "//core/common:common_converter"
+        ],
 )

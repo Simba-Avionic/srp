@@ -13,10 +13,10 @@
 #include <string>
 #include <unordered_map>
 
-#include "core/application/application_no_ipc.h"
+#include "core/application/application_mw.h"
 namespace simba {
 namespace router {
-class Router : public core::ApplicationNoIPC{
+class Router : public core::ApplicationMW{
  protected:
   /**
    * @brief This function is called to launch the application

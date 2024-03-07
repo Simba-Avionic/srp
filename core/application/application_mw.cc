@@ -51,6 +51,12 @@ ErrorCode ApplicationMW::MwConfig(
           service_id_r.value(), std::make_unique<com::soc::IpcSocket>());
     }
   }
+  auto service_id_ = obj.GetNumber<uint16_t>("app_id");
+  if (service_id_.has_value()) {
+    this->exec_.Init(service_id_.value());
+  } else {
+    return ErrorCode::kError;
+  }
   return ErrorCode::kOk;
 }
 }  // namespace core
