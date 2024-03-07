@@ -13,9 +13,9 @@
 #define DIAG_EXEC_CONTROLLER_EXEC_CONTROLLER_HPP_
 
 #include <vector>
-#include <chrono>
-#include <thread>
 #include <memory>
+#include <chrono> // NOLINT
+#include <thread> // NOLINT
 
 namespace simba {
 namespace diag {
@@ -35,7 +35,7 @@ enum Status {
 class ExecController {
  private:
     uint16_t service_id;
-    std::jthread thread_;
+    std::unique_ptr<std::jthread> thread_;
     Status status_;
 
  public:
