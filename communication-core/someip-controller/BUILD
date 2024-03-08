@@ -19,7 +19,6 @@ cc_library(
         "//core:__subpackages__",
         "//diag:__subpackages__",
     ],
-    deps = [],
 )
 
 cc_library(

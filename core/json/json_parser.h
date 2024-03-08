@@ -14,8 +14,8 @@
 
 #include <fstream>
 #include <string>
-
 #include <optional>
+
 #include "nlohmann/json.hpp"
 
 namespace simba {

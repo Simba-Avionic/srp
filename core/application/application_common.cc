@@ -44,9 +44,9 @@ void ApplicationCommon::RunApp(int argc, char const* argv[]) {
     auto obj = json::JsonParser::Parser("/opt/" + parms.at("app_name") +
                                       "/etc/srp_app.json")
                  .value();
-  auto service_id_ = obj.GetNumber<uint16_t>("app_id");
-  if (service_id_.has_value()) {
-    this->exec_.Init(service_id_.value());
+  auto app_id_ = obj.GetNumber<uint16_t>("app_id");
+  if (app_id_.has_value()) {
+    this->exec_->Init(app_id_.value());
   }
   onRun(parms);
   parms.clear();

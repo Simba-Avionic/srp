@@ -53,7 +53,7 @@ ErrorCode ApplicationMW::MwConfig(
   }
   auto service_id_ = obj.GetNumber<uint16_t>("app_id");
   if (service_id_.has_value()) {
-    this->exec_.Init(service_id_.value());
+    this->exec_->Init(service_id_.value());
   } else {
     return ErrorCode::kError;
   }
