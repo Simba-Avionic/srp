@@ -26,7 +26,6 @@ namespace mw {
 
 void GPIOMWService::RxCallback(const std::string& ip, const std::uint16_t& port,
   const std::vector<std::uint8_t> data) {
-    AppLogger::Debug("Receive change pin command");
     if (data.size() <= 0) {
         return;
     }
@@ -41,7 +40,7 @@ void GPIOMWService::RxCallback(const std::string& ip, const std::uint16_t& port,
         AppLogger::Warning("Try to set IN pin value, ID: "+std::to_string(hdr.GetPinID()));
     }
     if (this->gpio_driver_.getValue(it->second.pinNum) != hdr.GetValue()) {
-        AppLogger::Info("set pin to position:"+std::to_string(hdr.GetValue()));
+        AppLogger::Debug("set pin to position:"+std::to_string(hdr.GetValue()));
         if (this->gpio_driver_.setValue(it->second.pinNum, hdr.GetValue()) != core::ErrorCode::kOk) {
             AppLogger::Warning("pin state not change");
         }
@@ -74,11 +73,16 @@ void GPIOMWService::InitializePins() {
         return;
     }
     for (const auto& gpio : data["gpio"]) {
-        uint16_t pin_id = static_cast<uint16_t>(data.at("id"));
-        uint16_t pin_num = static_cast<uint16_t>(data.at("num"));
-        core::gpio::direction_t direction = data["out"] ?
+        std::cout<< gpio["id"] <<":"<< gpio["num"] <<std::endl;
+        uint16_t pin_id = static_cast<uint16_t>(gpio["id"]);
+        uint16_t pin_num = static_cast<uint16_t>(gpio["num"]);
+        const std::string direct = gpio.at("direction");
+        core::gpio::direction_t direction = direct == "out" ?
             core::gpio::direction_t::OUT : core::gpio::direction_t::IN;
-        AppLogger::Error(std::to_string(pin_id)+":"+std::to_string(pin_num));
+        this->config.insert({
+            pin_id, {
+                pin_num, direction}
+        });
     }
     for (auto pin : this->config) {
         this->gpio_driver_.initializePin(pin.second.pinNum, pin.second.direction);

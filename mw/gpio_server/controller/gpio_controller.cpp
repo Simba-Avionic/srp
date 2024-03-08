@@ -29,7 +29,6 @@ core::ErrorCode GPIOController::SetPinValue(uint16_t pinID, Value value) {
 }
 
 Value GPIOController::GetPinValue(uint16_t pinID) {
-
     return Value::HIGH;
 }
 

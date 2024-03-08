@@ -15,7 +15,7 @@
 namespace simba {
 namespace gpio {
 
-Header::Header(uint16_t service_id, uint16_t pin_id, uint8_t value){
+Header::Header(uint16_t service_id, uint16_t pin_id, uint8_t value) {
     this->service_id = service_id;
     this->pin_id = pin_id;
     this->value = value;
@@ -28,5 +28,5 @@ void Header::SetData() {
     this->AddData(&value);
 }
 
-}  // gpio
-}  // simba
+}  // namespace gpio
+}  // namespace simba
