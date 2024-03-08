@@ -19,19 +19,17 @@ core::ErrorCode Router::Run(std::stop_token token) {
     AppLogger::Debug("AppLogger::Debug");
     AppLogger::Info("AppLogger::Info");
     AppLogger::Warning("AppLogger::Warning");
-    AppLogger::Error("AppLogger::Error");
-    this->gpio_.setValue(21, 1);
-    std::this_thread::sleep_for(std::chrono::seconds{1});
-    this->gpio_.setValue(21, 0);
-    std::this_thread::sleep_for(std::chrono::seconds{1});
+    this->gpio_.SetPinValue(1, gpio::Value::HIGH);
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+    this->gpio_.SetPinValue(1, gpio::Value::LOW);
+    std::this_thread::sleep_for(std::chrono::seconds(1));
   }
-
   return core::ErrorCode::kOk;
 }
 
 core::ErrorCode Router::Initialize(
     const std::unordered_map<std::string, std::string>& parms) {
-      this->gpio_.initializePin(21, core::gpio::direction_t::OUT);
+      this->gpio_.Init(12);
   return core::ErrorCode::kOk;
 }
 }  // namespace router
