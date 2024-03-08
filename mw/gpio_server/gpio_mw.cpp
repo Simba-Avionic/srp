@@ -11,19 +11,22 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
+#include <iostream>
 
 #include "gpio_mw.hpp"
 #include "mw/gpio_server/data/header.hpp"
-#include "mw/gpio_server/data/resHeader.hpp"
 #include "core/json/json_parser.h"
 #include "core/gpio/IGPIO_digital_driver.h"
 #include "core/logger/Logger.h"
+
+using json = nlohmann::json;
 
 namespace simba {
 namespace mw {
 
 void GPIOMWService::RxCallback(const std::string& ip, const std::uint16_t& port,
   const std::vector<std::uint8_t> data) {
+    AppLogger::Debug("Receive change pin command");
     if (data.size() <= 0) {
         return;
     }
@@ -38,25 +41,16 @@ void GPIOMWService::RxCallback(const std::string& ip, const std::uint16_t& port,
         AppLogger::Warning("Try to set IN pin value, ID: "+std::to_string(hdr.GetPinID()));
     }
     if (this->gpio_driver_.getValue(it->second.pinNum) != hdr.GetValue()) {
-        if (this->gpio_driver_.setValue(it->second.pinNum, hdr.GetValue()) == core::ErrorCode::kOk) {
-            gpio::ResHeader resHdr(hdr.GetPinID(), hdr.GetValue());
-            this->sock_.Transmit("SIMBA.GPIO.SET."+std::to_string(hdr.GetServiceID()), 0, resHdr.GetBuffor());
-        } else {
-            gpio::ResHeader resHdr(hdr.GetPinID(), !hdr.GetValue());
-            this->sock_.Transmit("SIMBA.GPIO.SET."+std::to_string(hdr.GetServiceID()), 0, resHdr.GetBuffor());
+        AppLogger::Info("set pin to position:"+std::to_string(hdr.GetValue()));
+        if (this->gpio_driver_.setValue(it->second.pinNum, hdr.GetValue()) != core::ErrorCode::kOk) {
+            AppLogger::Warning("pin state not change");
         }
     }
 }
 
 core::ErrorCode GPIOMWService::Run(std::stop_token token) {
-    while (true) {
-        this->gpio_driver_.setValue(21, 0);
-        this->gpio_driver_.setValue(22, 1);
-        std::this_thread::sleep_for(std::chrono::seconds(1));
-        this->gpio_driver_.setValue(21, 1);
-        this->gpio_driver_.setValue(22, 0);
-        std::this_thread::sleep_for(std::chrono::seconds(1));
-    }
+    this->SleepMainThread();
+    return core::ErrorCode::kOk;
 }
 
 core::ErrorCode GPIOMWService::Initialize(
@@ -66,14 +60,26 @@ core::ErrorCode GPIOMWService::Initialize(
                 std::placeholders::_2, std::placeholders::_3));
         this->InitializePins();
         this->sock_.StartRXThread();
+    return core::ErrorCode::kOk;
 }
 void GPIOMWService::InitializePins() {
-    // TODO (matikrajek42@gmail.com) READ config file   // NOLINT
-    this->config.insert({1, GpioConf{21, core::gpio::direction_t::OUT}});
-    this->config.insert({2, GpioConf{22, core::gpio::direction_t::OUT}});
-    this->config.insert({3, GpioConf{23, core::gpio::direction_t::OUT}});
-    this->config.insert({4, GpioConf{24, core::gpio::direction_t::OUT}});
-
+    std::ifstream file("/opt/gpio/etc/config.json");
+    if (!file.is_open()) {
+        AppLogger::Warning("file not found");
+        return;
+    }
+    nlohmann::json data = nlohmann::json::parse(file);
+    if (!data.contains("gpio")) {
+        AppLogger::Warning("cant find config file");
+        return;
+    }
+    for (const auto& gpio : data["gpio"]) {
+        uint16_t pin_id = static_cast<uint16_t>(data.at("id"));
+        uint16_t pin_num = static_cast<uint16_t>(data.at("num"));
+        core::gpio::direction_t direction = data["out"] ?
+            core::gpio::direction_t::OUT : core::gpio::direction_t::IN;
+        AppLogger::Error(std::to_string(pin_id)+":"+std::to_string(pin_num));
+    }
     for (auto pin : this->config) {
         this->gpio_driver_.initializePin(pin.second.pinNum, pin.second.direction);
     }

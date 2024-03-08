@@ -8,4 +8,7 @@ cc_library(
     ],
     srcs = ["gpio_controller.cpp"],
     hdrs = ["gpio_controller.hpp"],
+    visibility = [
+        "//apps:__subpackages__",
+        ],
 )

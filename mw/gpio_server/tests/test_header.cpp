@@ -10,6 +10,7 @@
  */
 
 #include <gtest/gtest.h>
+#include <iostream>
 
 #include "mw/gpio_server/data/header.hpp"
 
@@ -21,8 +22,21 @@ simba::gpio::Header hdr{service_id, pin_id, value};
 EXPECT_EQ(hdr.GetServiceID(), service_id);
 EXPECT_EQ(hdr.GetPinID(), pin_id);
 EXPECT_EQ(hdr.GetValue(), value);
+    service_id = 12;
+    pin_id = 1;
+    value = 0;
+simba::gpio::Header hdr2{service_id, pin_id, value};
+EXPECT_EQ(hdr2.GetServiceID(), service_id);
+EXPECT_EQ(hdr2.GetPinID(), pin_id);
+EXPECT_EQ(hdr2.GetValue(), value);
+    service_id = 7;
+    pin_id = 5;
+    value = 0;
+simba::gpio::Header hdr3{service_id, pin_id, value};
+EXPECT_EQ(hdr3.GetServiceID(), service_id);
+EXPECT_EQ(hdr3.GetPinID(), pin_id);
+EXPECT_EQ(hdr3.GetValue(), value);
 }
-
 
 TEST(GPIO_MSG_FACTORY, CHECK_BUFFOR) {
     simba::gpio::Header hdr(12, 12, 1);
