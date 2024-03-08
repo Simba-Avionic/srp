@@ -16,15 +16,30 @@ namespace mw {
 namespace temp {
 
 SubscribeHeader::SubscribeHeader(const uint16_t &service_id)
-        : service_id_(service_id){}
+        : service_id_(service_id), length_(sizeof(uint16_t)){
+                SetData();
+        }
 
 SubscribeHeader::SubscribeHeader() 
-        : service_id_(0){}
+        : service_id_(0), length_(sizeof(uint16_t)) {
+                SetData();
+        }
 
 uint16_t SubscribeHeader::GetServiceID() const {
-    return this->service_id_;
+    return this->service_id_.Get();
 }
 
+uint8_t SubscribeHeader::GetLength() {
+    return this->length_.Get();
+}
+
+void SubscribeHeader::SetLength(const uint8_t& value) {
+    this->length_ = value + sizeof(uint16_t);
+}
+
+void SubscribeHeader::SetData() {
+    this->AddData(&service_id_);
+}
 
 }  // namespace temp
 }  // namespace mw

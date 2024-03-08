@@ -31,8 +31,6 @@ simba::core::ErrorCode TempController::Initialize(
                 std::string(kTempControllerName) + "socket!");
         return ret; 
     }
-
-    // TODO: get path_to_id from config
     
     this->sub_sock_.SetRXCallback(
         std::bind(&simba::mw::temp::TempController::SubCallback, this, 
@@ -47,21 +45,23 @@ void TempController::StartTempThread() {
         return;
     }
     this->temp_thread = std::make_unique<std::jthread>(
-        [&](std::stop_token stoken) { this->SendTempData(stoken); });
+        [&](std::stop_token stoken) { this->Loop(stoken); });
 }
 
 void TempController::SubCallback(const std::string& ip, const std::uint16_t& port,
     const std::vector<std::uint8_t> data)
 {
-    // TODO: register clients
-    simba::mw::temp::SubMsgFactory factory;
+    // GetHeader doesn't work
     auto hdr = factory.GetHeader(data);
-    // std::vector<uint8_t> payload = factory.GetPayload(data);
 
-    std::cout << "Service want to subscribe:" << hdr.get()->GetServiceID() << std::endl; 
+    std::uint16_t service_id = hdr->GetServiceID();
+    // AppLogger::Info("Service Id: " + std::to_string(service_id));
 
-    // this->diag_controller->Write(
-    //     0x0201, 0x0001, this->conv_.convertUint16ToVector(hdr->GetDtcID()));
+    if(!this->subscribers.contains(service_id))
+    {
+        this->subscribers.insert(service_id);
+        AppLogger::Info("Registered new temperature client");
+    } 
 }
 
 simba::core::ErrorCode TempController::LoadConfig(const std::string& path) {
@@ -79,79 +79,82 @@ simba::core::ErrorCode TempController::LoadConfig(const std::string& path) {
 
     for (auto it = jsonData["sensors-temp"].begin(); 
         it != jsonData["sensors-temp"].end(); ++it) {
-
         sensorPathsToIds[it.key()] = it.value();
     }
 
     return simba::core::ErrorCode::kOk;
 }
 
-simba::core::ErrorCode TempController::SendTempData(std::stop_token stoken) {
+void TempController::RetrieveTempReadings(
+    std::vector<TempReading> &readings, 
+    std::vector<std::future<simba::core::ErrorCode>>& futures) {
+    
+    for (const auto& path : sensorPathsToIds)
+    {
+        std::future<simba::core::ErrorCode> future = 
+            std::async(std::launch::async, [this, &path, &readings]
+            () -> simba::core::ErrorCode
+        {
+            std::ifstream file(path.first + "/temperature");
+            
+            if (!file) {
+                AppLogger::Warning("Sensor " + path.first + " not available!");
+                return simba::core::ErrorCode::kError;
+            }
+
+            _Float64 sensorValue;
+            file >> sensorValue;
+            file.close();
+
+            readings.push_back(TempReading{path.second, sensorValue/1000.0});
+        });
+        futures.push_back(std::move(future));
+    }
+    for (auto& future : futures) {
+        future.get();
+    }
+    futures.clear();
+}
+
+void TempController::SendTempReadings(
+    std::vector<TempReading> &readings, 
+    std::vector<std::future<simba::core::ErrorCode>>& futures) {
+
+    for (const auto& client : this->subscribers)
+    {
+        std::future<simba::core::ErrorCode> future = 
+            std::async(std::launch::async, [this, &client, &readings]
+            () -> simba::core::ErrorCode
+        {
+            // TODO: serialize payload and client
+            this->sub_sock_.Transmit(
+                "Engine." + std::to_string(client), 0, {0});
+        });
+        futures.push_back(std::move(future));
+    }
+
+    for (auto& future : futures) {
+        future.get();
+    }
+    futures.clear();
+
+}
+
+simba::core::ErrorCode TempController::Loop(std::stop_token stoken) {
 
     std::vector<TempReading> readings;
     std::vector<std::future<simba::core::ErrorCode>> futures;
 
     while (true) {
 
-        for (const auto& path : sensorPathsToIds)
-        {
-            std::future<simba::core::ErrorCode> future = 
-                std::async(std::launch::async, [this, &path, &readings]
-                () -> simba::core::ErrorCode
-            {
-                std::ifstream file(path.first + "/temperature");
-                
-                if (!file) {
-                    AppLogger::Warning("Sensor " + path.first + " not available!");
-                    return simba::core::ErrorCode::kError;
-                }
+        RetrieveTempReadings(readings, futures);
+        SendTempReadings(readings, futures);
 
-                _Float64 sensorValue;
-                file >> sensorValue;
-                file.close();
-
-                readings.push_back(TempReading{path.second, sensorValue/1000.0});
-            });
-            futures.push_back(std::move(future));
-        }
-
-        for (auto& future : futures) {
-            future.get();
-        }
-        futures.clear();
-
-        for (const auto& client : this->subscribers)
-        {
-            std::future<simba::core::ErrorCode> future = 
-                std::async(std::launch::async, [this, &client, &readings]
-                () -> simba::core::ErrorCode
-            {
-                // TODO: serialize payload and client
-                this->sub_sock_.Transmit(
-                    "Engine." + std::to_string(client), 0, {0});
-            });
-            futures.push_back(std::move(future));
-        }
-
-        for (auto& future : futures) {
-            future.get();
-        }
-        futures.clear();
         readings.clear();
         std::this_thread::sleep_for(this->temp_timeout);
     }
 
 }
-
-// TODO: REGISTER CLIENTS (SUBSCRIBERS)
-// we've got a socket for service and in the callback function
-// it should create user and send data to it
-
-// TODO: SEND DATA TO CLIENTS
-// need a way to store and retrieve data from sensors
-
-// TODO: GET DATA FROM TEMPERATURE SENSORS
-// from TempController idk yet how - another socket maybe
 
 } // namespace temp
 } // namespace mw

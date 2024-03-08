@@ -22,6 +22,7 @@
 #include <vector>
 #include <unordered_map>
 #include <set>
+#include <future>
 #include "nlohmann/json.hpp"
 
 #include "core/application/application_mw.h"
@@ -59,6 +60,7 @@ class TempController final : public simba::core::ApplicationMW {
   std::unique_ptr<std::jthread> temp_thread;
   std::set<std::uint16_t> subscribers{};
   std::unordered_map<std::string, std::uint8_t> sensorPathsToIds{};
+  simba::mw::temp::SubMsgFactory factory;
 
   void StartTempThread();
 
@@ -80,11 +82,14 @@ class TempController final : public simba::core::ApplicationMW {
 
   // TempReading GetTempReading(std::string& path);
 
-  void DiscoverTempSources();
+  void RetrieveTempReadings(std::vector<TempReading> &readings, 
+    std::vector<std::future<simba::core::ErrorCode>>& futures);
+  void SendTempReadings(std::vector<TempReading> &readings, 
+    std::vector<std::future<simba::core::ErrorCode>>& futures);
 
  public:
 
-  simba::core::ErrorCode SendTempData(std::stop_token stoken);
+  simba::core::ErrorCode Loop(std::stop_token stoken);
 
   void SubCallback(const std::string& ip, const std::uint16_t& port,
     const std::vector<std::uint8_t> data);

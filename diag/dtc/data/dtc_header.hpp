@@ -16,6 +16,7 @@
 #include <vector>
 
 #include "communication-core/network-data/network_data_structure.h"
+#include "communication-core/network-data/network_data_type.h"
 
 namespace simba {
 namespace diag {
@@ -24,10 +25,11 @@ namespace dtc {
 class DtcHeader : public com::core::network::NetworkDataStructure {
  private:
   // numer błędu
-    const uint16_t dtc_id_;
+    com::core::network::uint16_t dtc_id_;
     // flagi błędu
-    const uint8_t dtc_status_;
-    uint8_t lenght_;
+    com::core::network::uint8_t dtc_status_;
+    com::core::network::uint8_t lenght_;
+    
  public:
   DtcHeader(const uint16_t &dtc_id, const uint8_t &dtc_status);
   DtcHeader();
@@ -42,6 +44,12 @@ class DtcHeader : public com::core::network::NetworkDataStructure {
     * @param value  (set only lenght of payload )
     */
   void SetLength(const uint8_t& value);
+
+  void SetData() {
+    this->AddData(&dtc_id_);
+    this->AddData(&dtc_status_);
+    this->AddData(&lenght_);
+  }
 };
 
 }  // namespace dtc

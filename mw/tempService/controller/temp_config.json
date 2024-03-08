@@ -1,6 +1,6 @@
 {
     "sensors-temp":{
-      "/sys/bus/w1/devices/28-00000f88f768" : 0,
-      "/sys/bus/w1/devices/28-00000f88f767": 1
+      "/tmp/bus/w1/devices/28-00000f88f768" : 0,
+      "/tmp/bus/w1/devices/28-00000f88f767": 1
     }
 }

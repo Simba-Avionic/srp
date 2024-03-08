@@ -6,7 +6,9 @@ cc_library(
         "//mw/tempService:__subpackages__",
     ],
 
-    deps = ["//communication-core/network-data:network_data_structure"]
+    deps = ["//communication-core/network-data:network_data_structure",
+        "//communication-core/network-data:network_data_type"
+    ]
 )
 
 cc_library(

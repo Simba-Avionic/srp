@@ -10,6 +10,7 @@ cc_binary(
     deps = [
         "//core/application:simba_application",
         "//communication-core/network-data:network_data_structure",
+        "//communication-core/network-data:network_data_type",
         "//communication-core/sockets:socket_interface",
         "//communication-core/sockets:socket_ipc",
         "//mw/tempService/subscribe_msg:subscribe_header",
