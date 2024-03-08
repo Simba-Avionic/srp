@@ -25,14 +25,18 @@
 namespace simba {
 namespace gpio {
 
+enum Value{
+  LOW = 0,
+  HIGH = 1,
+};
+
 class GPIOController {
  private:
     com::soc::IpcSocket sock_;
     uint16_t service_id;
-    std::optional<std::vector<uint8_t>> ReceiveData(std::string path, uint8_t buffer_size);
  public:
-    core::ErrorCode SetPinValue(uint16_t pinID, uint8_t value);
-    uint8_t GetPinValue(uint16_t pinID);
+    core::ErrorCode SetPinValue(uint16_t pinID, Value value);
+    Value GetPinValue(uint16_t pinID);
     void Init(uint16_t service_id);
 };
 

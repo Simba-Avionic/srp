@@ -14,11 +14,12 @@
 #include <unordered_map>
 
 #include "core/application/application_no_ipc.h"
-#include "core/gpio/GPIO_digital_driver.h"
+#include "mw/gpio_server/controller/gpio_controller.hpp"
 namespace simba {
 namespace router {
 class Router : public core::ApplicationNoIPC{
  protected:
+  gpio::GPIOController gpio_;
   /**
    * @brief This function is called to launch the application
    *
@@ -35,7 +36,6 @@ class Router : public core::ApplicationNoIPC{
 
  public:
   ~Router() = default;
-  core::gpio::GpioDigitalDriver gpio_;
 };
 
 }  // namespace router

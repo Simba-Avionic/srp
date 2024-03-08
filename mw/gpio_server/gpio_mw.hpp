@@ -19,6 +19,7 @@
 #include "core/gpio/GPIO_digital_driver.h"
 #include "communication-core/sockets/ipc_socket.h"
 #include "core/application/application_mw.h"
+#include "nlohmann/json.hpp"
 
 namespace simba {
 namespace mw {
