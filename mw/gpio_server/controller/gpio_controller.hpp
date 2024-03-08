@@ -15,6 +15,7 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
+#include <optional>
 
 #include "communication-core/sockets/ipc_socket.h"
 #include "core/gpio/GPIO_digital_driver.h"
@@ -28,8 +29,9 @@ class GPIOController {
  private:
     com::soc::IpcSocket sock_;
     uint16_t service_id;
+    std::optional<std::vector<uint8_t>> ReceiveData(std::string path, uint8_t buffer_size);
  public:
-    void SetPinValue(uint16_t pinID, uint8_t value);
+    core::ErrorCode SetPinValue(uint16_t pinID, uint8_t value);
     uint8_t GetPinValue(uint16_t pinID);
     void Init(uint16_t service_id);
 };
