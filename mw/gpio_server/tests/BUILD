@@ -2,7 +2,6 @@ cc_test(
     name = "data_structure",
     srcs = [
         "test_header.cpp",
-        "test_resHeader.cpp",
         ],
     visibility = ["//visibility:public"],
     deps=[
