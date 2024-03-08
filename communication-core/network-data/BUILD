@@ -13,7 +13,8 @@ cc_library(
         "//communication-core:__subpackages__",
         "//diag/dtc/data:__subpackages__",
         "//mw/diag/dtc:__subpackages__",
-        "//diag/exec/data:__subpackages__"
+        "//diag/exec/data:__subpackages__",
+        "//mw:__subpackages__",
         ],
     deps = [":interfaces"],
 )
@@ -21,6 +22,12 @@ cc_library(
 cc_library(
     name = "network_data_type",
     hdrs = ["network_data_type.h"],
-    visibility = ["//communication-core:__subpackages__"],
-    deps = [":interfaces"],
+    visibility = [
+        "//communication-core:__subpackages__",
+        "//mw:__subpackages__",
+        ],
+    deps = [
+        ":interfaces",
+        "//core/common:common_converter",
+        ],
 )
