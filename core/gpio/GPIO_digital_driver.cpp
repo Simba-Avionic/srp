@@ -73,7 +73,10 @@ core::ErrorCode GpioDigitalDriver::setValue(uint8_t pinNumber , uint8_t value) {
     }
     file << std::to_string(value);
     file.close();
-    return core::ErrorCode::kOk;
+    if (this->getValue(pinNumber) != value) {
+        return core::ErrorCode::kOk;
+    }
+    return core::ErrorCode::kError;
 }
 
 core::ErrorCode GpioDigitalDriver::setDirection(uint8_t pinNumber , direction_t direction) {
