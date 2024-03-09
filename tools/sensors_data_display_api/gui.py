@@ -14,7 +14,7 @@ class App(tk.Tk):
         self.window_height = 600
         self.screen_width = self.winfo_screenwidth()
         self.screen_height = self.winfo_screenheight()
-        self.padding = 10
+        self.padding = 5
 
         center_x = int(self.screen_width / 2 - self.window_width / 2)
         center_y = int(self.screen_height / 2 - self.window_height / 2)
@@ -24,8 +24,7 @@ class App(tk.Tk):
 
         # variables
         label_width = 20
-        text_width = 50
-        text_height = 1
+        button_padding = 2
 
         # measurements
         temperature_up_frame = tk.Frame(self)
@@ -58,14 +57,37 @@ class App(tk.Tk):
         self.pressure_difference = tk.Label(pressure_difference_frame, width=label_width, text='0')
         self.pressure_difference.config(state=tk.DISABLED)
 
+        main_valve_frame = tk.Frame(self)
+        main_valve_label = tk.Label(main_valve_frame, text='Main valve:', width=label_width)
+        self.main_valve = tk.Label(main_valve_frame, width=label_width, text='not given')
+        self.main_valve.config(state=tk.DISABLED)
+
+        vent_frame = tk.Frame(self)
+        vent_label = tk.Label(vent_frame, text='Vent:', width=label_width)
+        self.vent = tk.Label(vent_frame, width=label_width, text='not given')
+        self.vent.config(state=tk.DISABLED)
+
         # buttons
-        button_frame = tk.Frame(self)
-        start_saving_button = tk.Button(button_frame, text="Start saving data", command=lambda: self.start_saving())
-        stop_saving_button = tk.Button(button_frame, text="Stop saving data", command=lambda: self.stop_saving())
-        launch_rocket_button = tk.Button(button_frame, text="Launch rocket", command=lambda: self.launch_rocket())
-        exit_button = tk.Button(button_frame, text="Exit", command=lambda: self.exit())
+        start_stop_saving_button_frame = tk.Frame(self)
+        start_saving_button = tk.Button(start_stop_saving_button_frame, text="Start saving data", command=lambda: self.start_saving())
+        stop_saving_button = tk.Button(start_stop_saving_button_frame, text="Stop saving data", command=lambda: self.stop_saving())
+
+        main_valve_button_frame = tk.Frame(self)
+        main_valve_set_1_button = tk.Button(main_valve_button_frame, text="Main valve: set 1", command=lambda: self.set_main_valve(value=1))
+        main_valve_set_0_button = tk.Button(main_valve_button_frame, text="Main valve: set 0", command=lambda: self.set_main_valve(value=0))
+
+        vent_button_frame = tk.Frame(self)
+        vent_set_1_button = tk.Button(vent_button_frame, text="Vent: set 1", command=lambda: self.set_vent(value=1))
+        vent_set_0_button = tk.Button(vent_button_frame, text="Vent: set 0", command=lambda: self.set_vent(value=0))
+
+        launch_rocket_button_frame = tk.Frame(self)
+        launch_rocket_button = tk.Button(launch_rocket_button_frame, text="Launch rocket", command=lambda: self.launch_rocket())
+        stop_launch_rocket_button = tk.Button(launch_rocket_button_frame, text="Stop launch rocket", command=lambda: self.stop_launch_rocket())
+
+        exit_button = tk.Button(self, text="Exit", command=lambda: self.exit())
 
         # pack on screen
+        # pack measurements
         temperature_up_frame.pack(side=tk.TOP, pady=self.padding, fill='both')
         temperature_up_label.pack(side=tk.LEFT, pady=self.padding, fill='both')
         self.temperature_up.pack(side=tk.LEFT, pady=self.padding, fill='both')
@@ -90,11 +112,32 @@ class App(tk.Tk):
         pressure_difference_label.pack(side=tk.LEFT, pady=self.padding, fill='both')
         self.pressure_difference.pack(side=tk.LEFT, pady=self.padding, fill='both')
 
-        button_frame.pack(side=tk.TOP, pady=self.padding, fill='both')
-        start_saving_button.pack(side=tk.TOP, pady=self.padding, fill='both')
-        stop_saving_button.pack(side=tk.TOP, pady=self.padding, fill='both')
-        launch_rocket_button.pack(side=tk.TOP, pady=self.padding, fill='both')
-        exit_button.pack(side=tk.TOP, pady=self.padding, fill='both')
+        main_valve_frame.pack(side=tk.TOP, pady=self.padding, fill='both')
+        main_valve_label.pack(side=tk.LEFT, pady=self.padding, fill='both')
+        self.main_valve.pack(side=tk.LEFT, pady=self.padding, fill='both')
+
+        vent_frame.pack(side=tk.TOP, pady=self.padding, fill='both')
+        vent_label.pack(side=tk.LEFT, pady=self.padding, fill='both')
+        self.vent.pack(side=tk.LEFT, pady=self.padding, fill='both')
+
+        # pack buttons
+        main_valve_button_frame.pack(side=tk.TOP, pady=button_padding, fill='both')
+        main_valve_set_1_button.pack(side=tk.LEFT, pady=button_padding, fill='both', expand=True)
+        main_valve_set_0_button.pack(side=tk.LEFT, pady=button_padding, fill='both', expand=True)
+
+        vent_button_frame.pack(side=tk.TOP, pady=button_padding, fill='both')
+        vent_set_1_button.pack(side=tk.LEFT, pady=button_padding, fill='both', expand=True)
+        vent_set_0_button.pack(side=tk.LEFT, pady=button_padding, fill='both', expand=True)
+
+        start_stop_saving_button_frame.pack(side=tk.TOP, pady=button_padding, fill='both')
+        start_saving_button.pack(side=tk.LEFT, pady=button_padding, fill='both', expand=True)
+        stop_saving_button.pack(side=tk.LEFT, pady=button_padding, fill='both', expand=True)
+
+        launch_rocket_button_frame.pack(side=tk.TOP, pady=button_padding, fill='both')
+        launch_rocket_button.pack(side=tk.LEFT, pady=button_padding, fill='both', expand=True)
+        stop_launch_rocket_button.pack(side=tk.LEFT, pady=button_padding, fill='both', expand=True)
+
+        exit_button.pack(side=tk.TOP, fill='both')
 
         self.data_reader = DataReader(gui=self)
         self.read_data()
@@ -115,6 +158,12 @@ class App(tk.Tk):
         pass
 
     def launch_rocket(self):
+        pass
+
+    def set_main_valve(self, value):
+        pass
+
+    def set_vent(self, value):
         pass
 
     def exit(self):
