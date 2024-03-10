@@ -23,7 +23,6 @@ cc_library(
         ":console_logger",
         ":logger_interface",
         "//core/common:common_types",
-        "//core/results:results_lib",
         "//core/logger:dlt_logger",
     ],
 )

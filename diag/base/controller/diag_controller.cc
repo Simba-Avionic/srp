@@ -177,14 +177,14 @@ std::optional<std::vector<uint8_t>> DiagController::Read(
   if (!req_t.has_value()) {
     AppLogger::Error(
         "[DIAG_CONTROLLER] An error occurred while creating the Read request");
-    return std::optional<std::vector<uint8_t>>{};
+    return {};
   }
   auto transfer = std::make_shared<DiagTransfer>(t_id);
   if (this->Send(req_t.value()) != core::ErrorCode::kOk) {
     AppLogger::Error(
         "[DIAG_CONTROLLER] Cannot send Read request to: SIMBA.DIAG." +
         std::to_string(req_t.value().GetServiceID()));
-    return std::optional<std::vector<uint8_t>>{};
+    return {};
   }
   this->transfer_list.push_back(transfer);
   const auto result = transfer->GetPayloadAsc();
@@ -234,14 +234,14 @@ std::optional<std::vector<uint8_t>> DiagController::Job(
   if (!req_t.has_value()) {
     AppLogger::Error(
         "[DIAG_CONTROLLER] An error occurred while creating the Read request");
-    return std::optional<std::vector<uint8_t>>{};
+    return {};
   }
   auto transfer = std::make_shared<DiagTransfer>(t_id);
   if (this->Send(req_t.value()) != core::ErrorCode::kOk) {
     AppLogger::Error(
         "[DIAG_CONTROLLER] Cannot send Job request to: SIMBA.DIAG." +
         std::to_string(req_t.value().GetSenderID()));
-    return std::optional<std::vector<uint8_t>>{};
+    return {};
   }
   this->transfer_list.push_back(transfer);
   const auto result = transfer->GetPayloadAsc();

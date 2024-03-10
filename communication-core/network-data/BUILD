@@ -24,6 +24,7 @@ cc_library(
     hdrs = ["network_data_type.h"],
     visibility = [
         "//communication-core:__subpackages__",
+        "//diag:__subpackages__",
         "//mw:__subpackages__",
         ],
     deps = [

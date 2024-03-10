@@ -8,5 +8,5 @@ cc_library(
         "idlt_frame.h",
     ],
     visibility = ["//mw/logger:__subpackages__"],
-    deps = ["//core/results:results_lib"],
+    deps = [],
 )

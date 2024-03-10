@@ -12,7 +12,6 @@ cc_library(
         "//core/common:common_converter",
         "//core/common:common_types",
         "//core/logger:console_logger",
-        "//core/results:results_lib",
         "//core/logger:Logger",
     ],
 )

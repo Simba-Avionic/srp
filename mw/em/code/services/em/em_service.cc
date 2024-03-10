@@ -61,17 +61,17 @@ void EmService::LoadApps() noexcept {
         if (this->IsSrpApp(p.path().c_str())) {
           std::string pp{p.path().string() + "/etc/srp_app.json"};
           auto res = this->GetAppConfig(pp);
-          if (res.HasValue()) {
-            this->app_list.push_back(res.Value());
+          if (res.has_value()) {
+            this->app_list.push_back(res.value());
             if (std::find(this->app_level_list.begin(),
                           this->app_level_list.end(),
-                          res.Value().GetStartUpPrio()) ==
+                          res.value().GetStartUpPrio()) ==
                 this->app_level_list.end()) {
-              this->app_level_list.push_back(res.Value().GetStartUpPrio());
+              this->app_level_list.push_back(res.value().GetStartUpPrio());
             }
-            AppLogger::Info("App: " + res.Value().GetBinPath() +
+            AppLogger::Info("App: " + res.value().GetBinPath() +
                             " added to boot list with prio: " +
-                            std::to_string(res.Value().GetStartUpPrio()));
+                            std::to_string(res.value().GetStartUpPrio()));
           }
         }
       }
@@ -81,9 +81,9 @@ void EmService::LoadApps() noexcept {
   }
 }
 
-core::Result<data::AppConfig> EmService::GetAppConfig(
+std::optional<data::AppConfig> EmService::GetAppConfig(
     const std::string& path) noexcept {
-  auto obj = core::json::JsonParser::Parser(path).Value();
+  auto obj = core::json::JsonParser::Parser(path).value();
   std::string bin_path{""};
   std::string parm{""};
   uint8_t prio{0};
@@ -91,8 +91,8 @@ core::Result<data::AppConfig> EmService::GetAppConfig(
   uint8_t error_count{0};
   {
     auto bin_path_r = obj.GetString("bin_path");
-    if (bin_path_r.HasValue()) {
-      bin_path = bin_path_r.Value();
+    if (bin_path_r.has_value()) {
+      bin_path = bin_path_r.value();
     } else {
       AppLogger::Error("Application from: " + path + ", don't have: bin_path");
       error_count++;
@@ -100,8 +100,8 @@ core::Result<data::AppConfig> EmService::GetAppConfig(
   }
   {
     auto parm_r = obj.GetString("parms");
-    if (parm_r.HasValue()) {
-      parm = parm_r.Value();
+    if (parm_r.has_value()) {
+      parm = parm_r.value();
     } else {
       AppLogger::Error("Application from: " + path + ", don't have: parms");
       error_count++;
@@ -109,8 +109,8 @@ core::Result<data::AppConfig> EmService::GetAppConfig(
   }
   {
     auto prio_r = obj.GetNumber<uint8_t>("startup_prio");
-    if (prio_r.HasValue()) {
-      prio = prio_r.Value();
+    if (prio_r.has_value()) {
+      prio = prio_r.value();
     } else {
       AppLogger::Error("Application from: " + path +
                        ", don't have: startup_prio");
@@ -119,8 +119,8 @@ core::Result<data::AppConfig> EmService::GetAppConfig(
   }
   {
     auto delay_r = obj.GetNumber<uint8_t>("startup_after_delay");
-    if (delay_r.HasValue()) {
-      delay = delay_r.Value();
+    if (delay_r.has_value()) {
+      delay = delay_r.value();
     } else {
       AppLogger::Error("Application from: " + path +
                        ", don't have: startup_after_delay");
@@ -128,9 +128,9 @@ core::Result<data::AppConfig> EmService::GetAppConfig(
     }
   }
   if (error_count != 0) {
-    return core::Result<data::AppConfig>{};
+    return {};
   } else {
-    return core::Result{data::AppConfig{bin_path, parm, prio, delay}};
+    return std::optional{data::AppConfig{bin_path, parm, prio, delay}};
   }
 }
 void EmService::StartApps() noexcept {
