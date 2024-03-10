@@ -25,7 +25,7 @@ namespace core {
 class ApplicationCommon : public IApplication {
  protected:
   std::stop_source source;
-  std::unique_ptr<diag::exec::ExecController> exec_;
+  diag::exec::ExecController exec_;
   /**
    * @brief This is pre-run function only for creting new application
    * interfacess

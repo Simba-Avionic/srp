@@ -17,6 +17,7 @@
 #include <cstdint>
 #include <mutex>  // NOLINT
 #include <vector>
+#include <optional>
 
 namespace simba {
 namespace com {
@@ -45,7 +46,7 @@ class Transfer {
     std::unique_lock<std::mutex> lk(cv_m);
     if (!cv.wait_for(lk, std::chrono::seconds{2},
                      [this]() { return this->IsRespond(); })) {
-      return std::optional<std::vector<uint8_t>>{};
+      return {};
     }
     return std::optional<std::vector<uint8_t>>{response};
   }
@@ -54,7 +55,7 @@ class Transfer {
     std::unique_lock<std::mutex> lk(cv_m);
     if (!cv.wait_for(lk, std::chrono::seconds{2},
                      [this]() { return this->IsRespond(); })) {
-      return std::optional<bool>{};
+      return {};
     } else {
       return std::optional<bool>{true};
     }

@@ -38,12 +38,12 @@ class JsonParser {
           const T res{static_cast<T>(obj.at(name))};
           return std::optional{res};
         }
-        return std::optional<T>{};
+        return {};
       } else {
-        return std::optional<T>{};
+        return {};
       }
     } catch (std::exception&) {
-      return std::optional<T>{};
+      return {};
     }
   }
   ~JsonParser();

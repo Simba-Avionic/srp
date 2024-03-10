@@ -35,7 +35,7 @@ enum Status {
 class ExecController {
  private:
     uint16_t service_id;
-    std::unique_ptr<std::jthread> thread_;
+    std::jthread thread_;
     Status status_;
 
  public:

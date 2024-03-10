@@ -26,7 +26,7 @@ std::optional<std::vector<uint8_t>> SomeIpController::Request(
   if (!service_data.has_value()) {
     AppLogger::Error("[SOMEIPCONTROLLER] Service_id: " +
                      std::to_string(service_id) + " not found!");
-    return std::optional<std::vector<uint8_t>>{};
+    return {};
   } else {
     AppLogger::Error(
         "[SOMEIPCONTROLLER] Service_id: " + std::to_string(service_id) +
@@ -49,7 +49,7 @@ std::optional<std::vector<uint8_t>> SomeIpController::Request(
     AppLogger::Error(
         "[SOMEIPCONTROLLER] Request to :" + std::to_string(service_id) +
         " method_id: " + std::to_string(method_id) + " No connection");
-    return std::optional<std::vector<uint8_t>>{};
+    return {};
   }
   const auto res = trans->GetPayloadAsc();
   auto vec = trans->GetPayload();
@@ -64,7 +64,7 @@ std::optional<std::vector<uint8_t>> SomeIpController::Request(
     AppLogger::Error(
         "[SOMEIPCONTROLLER] Request to :" + std::to_string(service_id) + " : " +
         std::to_string(method_id) + " Timeout");
-    return std::optional<std::vector<uint8_t>>{};
+    return {};
   }
 }
 

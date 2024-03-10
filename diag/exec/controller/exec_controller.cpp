@@ -18,12 +18,11 @@ namespace diag {
 namespace exec {
 
 void ExecController::Init(uint16_t service_id) {
-    this->service_id = service_id;
     this->status_ = Status::Start_up;
-    this->thread_ = std::make_unique<std::jthread>(std::jthread([&](std::stop_token stop_token) {
+    this->thread_ = std::jthread([&](std::stop_token stop_token) {
     auto factory_ = ExecMsgFactory();
     auto sock_ = com::soc::IpcSocket();
-    auto hdr = ExecHeader(this->service_id, 0, this->status_);
+    auto hdr = ExecHeader(service_id, 0, this->status_);
     while (!stop_token.stop_requested()) {
         std::this_thread::sleep_for(std::chrono::seconds(1));
         auto data = factory_.GetBuffer(std::make_shared<ExecHeader>(hdr));
@@ -32,7 +31,7 @@ void ExecController::Init(uint16_t service_id) {
                     +" timestamp:"+std::to_string(hdr.GetTimestamp()));
         hdr.IncrementTimeStamp();
     }
-    }));
+    });
 }
 
 void ExecController::SetStatus(Status status) {

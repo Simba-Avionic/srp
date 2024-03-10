@@ -23,7 +23,7 @@ void OtaService::Run(const std::unordered_map<std::string, core::Parm>& parms) {
   diag_controller->AddMethod(
       0x01,
       [this](const std::vector<uint8_t> payload) {
-        return std::optional<std::vector<uint8_t>>{};
+        return {};
       },
       diag::DiagMethodType::WRITE);
   AppLogger::Info("Application function started");

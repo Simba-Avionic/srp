@@ -18,7 +18,7 @@ namespace json {
 std::optional<JsonParser> JsonParser::Parser(const std::string& path) noexcept {
   std::ifstream f(path);
   if (!f.is_open()) {
-    return std::optional<JsonParser>{};
+    return {};
   }
   return std::optional<JsonParser>{JsonParser{f}};
 }
@@ -34,12 +34,12 @@ std::optional<std::string> JsonParser::GetString(
         const std::string res = obj.at(name);
         return std::optional{res};
       }
-      return std::optional<std::string>{};
+      return {};
     } else {
-      return std::optional<std::string>{};
+      return {};
     }
   } catch (std::exception&) {
-    return std::optional<std::string>{};
+    return {};
   }
 }
 JsonParser::~JsonParser() {}

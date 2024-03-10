@@ -20,6 +20,7 @@
 #include <unordered_map>
 #include <utility>
 #include <vector>
+#include <optional>
 
 #include "communication-core/database/database.h"
 #include "communication-core/sockets/Isocket.h"

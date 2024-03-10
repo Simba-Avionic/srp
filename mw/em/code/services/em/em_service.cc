@@ -128,7 +128,7 @@ std::optional<data::AppConfig> EmService::GetAppConfig(
     }
   }
   if (error_count != 0) {
-    return std::optional<data::AppConfig>{};
+    return {};
   } else {
     return std::optional{data::AppConfig{bin_path, parm, prio, delay}};
   }
