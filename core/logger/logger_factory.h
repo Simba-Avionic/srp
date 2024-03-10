@@ -12,16 +12,16 @@
 #define CORE_LOGGER_LOGGER_FACTORY_H_
 #include <memory>
 #include <string>
+#include <optional>
 
 #include "core/logger/ILogger.h"
-#include "core/results/result.h"
 
 namespace simba {
 namespace core {
 namespace logger {
 class LoggerFactory {
  public:
-  static Result<std::shared_ptr<ILogger>> CreateLogger(const std::string& name);
+  static std::optional<std::shared_ptr<ILogger>> CreateLogger(const std::string& name);
 };
 }  // namespace logger
 }  // namespace core

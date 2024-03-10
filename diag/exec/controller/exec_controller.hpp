@@ -9,15 +9,13 @@
  * 
 */
 
-
 #ifndef DIAG_EXEC_CONTROLLER_EXEC_CONTROLLER_HPP_
 #define DIAG_EXEC_CONTROLLER_EXEC_CONTROLLER_HPP_
 
 #include <vector>
 #include <memory>
-
-#include "communication-core/sockets/ipc_socket.h"
-#include "diag/exec/factories/exec_msg_factory.hpp"
+#include <chrono> // NOLINT
+#include <thread> // NOLINT
 
 namespace simba {
 namespace diag {
@@ -36,15 +34,13 @@ enum Status {
 
 class ExecController {
  private:
-    const uint16_t service_id;
-    static ExecMsgFactory factory_;
-    com::soc::IpcSocket sock_;
+    uint16_t service_id;
     std::jthread thread_;
-    std::atomic<Status> status_;
-    void thread_func(std::stop_token token);
+    Status status_;
 
  public:
-    explicit ExecController(u_int16_t service_id);
+    void Init(uint16_t service_id);
+    ExecController();
     void SetStatus(Status status);
     ~ExecController();
 };

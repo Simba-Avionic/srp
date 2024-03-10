@@ -9,36 +9,38 @@
  * 
  */
 #include "exec_controller.hpp"
-
+#include "core/logger/Logger.h"
+#include "communication-core/sockets/ipc_socket.h"
+#include "diag/exec/factories/exec_msg_factory.hpp"
 
 namespace simba {
 namespace diag {
 namespace exec {
 
-
-ExecController::ExecController(u_int16_t service_id):
-    service_id(service_id), status_(Status::Start_up) {
-    this->sock_.Init(com::soc::SocketConfig{"SIMBA.DIAG." +
-    std::to_string(this->service_id), 0, 0});
-    this->thread_ = std::jthread(&ExecController::thread_func, this, std::placeholders::_1);
+void ExecController::Init(uint16_t service_id) {
+    this->status_ = Status::Start_up;
+    this->thread_ = std::jthread([&](std::stop_token stop_token) {
+    auto factory_ = ExecMsgFactory();
+    auto sock_ = com::soc::IpcSocket();
+    auto hdr = ExecHeader(service_id, 0, this->status_);
+    while (!stop_token.stop_requested()) {
+        std::this_thread::sleep_for(std::chrono::seconds(1));
+        auto data = factory_.GetBuffer(std::make_shared<ExecHeader>(hdr));
+        sock_.Transmit("SIMBA.EXE", 0, data);
+        AppLogger::Info("id: "+ std::to_string(hdr.GetServiceID())
+                    +" timestamp:"+std::to_string(hdr.GetTimestamp()));
+        hdr.IncrementTimeStamp();
+    }
+    });
 }
+
 void ExecController::SetStatus(Status status) {
     this->status_ = status;
 }
 
-void ExecController::thread_func(std::stop_token token) {
-    auto hdr = std::make_shared<simba::diag::exec::ExecHeader>(
-        this->service_id, 0, this->status_);
-    while (!token.stop_requested()) {
-        std::vector<uint8_t> data = this->factory_.GetBuffer(hdr);
-        hdr->IncrementTimeStamp();
-        this->sock_.Transmit("SIMBA.EXE", 0, data);
-        std::this_thread::sleep_for(std::chrono::seconds(1));
-    }
-}
+ExecController::ExecController() {}
 
 ExecController::~ExecController() {
-    this->thread_.request_stop();
 }
 
 

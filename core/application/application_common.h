@@ -16,15 +16,16 @@
 #include <string>
 #include <thread>  // NOLINT
 #include <unordered_map>
+#include <memory>
 
 #include "core/application/Iapplication.h"
-
+#include "diag/exec/controller/exec_controller.hpp"
 namespace simba {
 namespace core {
 class ApplicationCommon : public IApplication {
  protected:
   std::stop_source source;
-
+  diag::exec::ExecController exec_;
   /**
    * @brief This is pre-run function only for creting new application
    * interfacess

@@ -41,15 +41,21 @@ ErrorCode ApplicationMW::MwConfig(
     const std::unordered_map<std::string, std::string>& parms) {
   auto obj = json::JsonParser::Parser("/opt/" + parms.at("app_name") +
                                       "/etc/srp_app.json")
-                 .Value();
+                 .value();
   auto service_id_r = obj.GetNumber<uint16_t>("diag_id");
-  if (service_id_r.HasValue()) {
-    if (service_id_r.Value() != 0) {
+  if (service_id_r.has_value()) {
+    if (service_id_r.value() != 0) {
       AppLogger::Info("Application [MW] Service_id: " +
-                      std::to_string(service_id_r.Value()));
+                      std::to_string(service_id_r.value()));
       this->diag_controller = std::make_unique<diag::DiagController>(
-          service_id_r.Value(), std::make_unique<com::soc::IpcSocket>());
+          service_id_r.value(), std::make_unique<com::soc::IpcSocket>());
     }
+  }
+  auto app_ = obj.GetNumber<uint16_t>("app_id");
+  if (app_.has_value()) {
+    this->exec_.Init(app_.value());
+  } else {
+    return ErrorCode::kError;
   }
   return ErrorCode::kOk;
 }

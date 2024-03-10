@@ -14,8 +14,8 @@
 
 #include <fstream>
 #include <string>
+#include <optional>
 
-#include "core/results/result.h"
 #include "nlohmann/json.hpp"
 
 namespace simba {
@@ -26,24 +26,24 @@ class JsonParser {
   nlohmann::json obj;
 
  public:
-  static Result<JsonParser> Parser(const std::string& path) noexcept;
+  static std::optional<JsonParser> Parser(const std::string& path) noexcept;
   explicit JsonParser(std::ifstream& f);
   nlohmann::json GetObject() const;
-  Result<std::string> GetString(const std::string& name) const noexcept;
+  std::optional<std::string> GetString(const std::string& name) const noexcept;
   template <typename T>
-  Result<T> GetNumber(const std::string& name) const noexcept {
+  std::optional<T> GetNumber(const std::string& name) const noexcept {
     try {
       if (obj.contains(name)) {
         if (obj.at(name).is_number()) {
           const T res{static_cast<T>(obj.at(name))};
-          return Result{res};
+          return std::optional{res};
         }
-        return Result<T>{};
+        return {};
       } else {
-        return Result<T>{};
+        return {};
       }
     } catch (std::exception&) {
-      return Result<T>{};
+      return {};
     }
   }
   ~JsonParser();

@@ -12,14 +12,14 @@
 #define MW_LOGGER_CODE_DATA_IDLT_FRAME_H_
 #include <string>
 #include <vector>
+#include <optional>
 
-#include "core/results/result.h"
 namespace simba {
 namespace dlt {
 namespace data {
 class IDLTFrame {
  public:
-  virtual core::Result<std::vector<uint8_t>> ParseFrame() noexcept = 0;
+  virtual std::optional<std::vector<uint8_t>> ParseFrame() noexcept = 0;
   virtual ~IDLTFrame() {}
 };
 }  // namespace data

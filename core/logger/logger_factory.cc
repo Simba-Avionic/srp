@@ -27,13 +27,13 @@ std::unordered_map<std::string, std::function<std::shared_ptr<ILogger>()>>
         {"kDLT", []() { return std::make_shared<DltLogger>(); }}};
 }  // namespace
 
-Result<std::shared_ptr<ILogger>> LoggerFactory::CreateLogger(
+  std::optional<std::shared_ptr<ILogger>> LoggerFactory::CreateLogger(
     const std::string& name) {
   if (lookup_table.find(name) != lookup_table.end()) {
     auto obj = (lookup_table.at(name))();
-    return Result{obj};
+    return std::optional{obj};
   } else {
-    return Result<std::shared_ptr<ILogger>>{};
+    return {};
   }
 }
 }  // namespace logger
