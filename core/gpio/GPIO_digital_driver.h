@@ -35,6 +35,7 @@ class Pins{
   }
   core::ErrorCode AddPin(uint16_t pinNumber, direction_t direction) {
     this->pins.push_back(Pin(pinNumber, direction));
+    return core::ErrorCode::kOk;
   }
   bool pinIsRegistered(uint16_t pinNumber) {
     for (auto pin : this->pins) {
