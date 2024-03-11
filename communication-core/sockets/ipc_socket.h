@@ -32,7 +32,7 @@ class IpcSocket : public ISocket {
   int server_sock, len, rc;
   int bytes_rec = 0;
   struct sockaddr_un server_sockaddr, peer_sock;
-  char buf[256 * 2];
+
 
   std::unique_ptr<std::jthread> rx_thred;
   void Loop(std::stop_token stoken);

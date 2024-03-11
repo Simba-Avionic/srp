@@ -25,7 +25,7 @@ namespace simba {
 namespace core {
 void ApplicationCommon::StopApp() {
   this->source.request_stop();
-  exit(1);
+  // exit(1);
 }
 bool ApplicationCommon::FileExist(const std::string& name) {
   std::ifstream file{name};
