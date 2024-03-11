@@ -12,6 +12,7 @@
 #include "mw/logger/code/application/dlt_service.h"
 
 #include <memory>
+#include <utility>
 #include <vector>
 
 #include "communication-core/sockets/socket_config.h"
@@ -25,6 +26,7 @@ namespace mw {
 namespace dlt {
 
 core::ErrorCode DltService::Run(std::stop_token token) {
+  // int i = 0;
   std::this_thread::sleep_for(std::chrono::seconds{5});
   while (!token.stop_requested()) {
     auto res_v = this->logs.GetWithoutRemove();
@@ -35,7 +37,6 @@ core::ErrorCode DltService::Run(std::stop_token token) {
     }
   }
   AppLogger::Info("Stop");
-  SleepMainThread();
   return core::kOk;
 }
 

@@ -22,7 +22,7 @@ namespace simba {
 namespace core {
 namespace logger {
 DltLogger::DltLogger(/* args */) {
-  ipc_soc.Init(com::soc::SocketConfig{"", 0, 0});
+  // ipc_soc.Init(com::soc::SocketConfig{"", 0, 0});
   this->thread = std::make_unique<std::jthread>(
       [this](std::stop_token token) { this->Loop(token); });
 }
@@ -38,8 +38,8 @@ void DltLogger::Loop(std::stop_token token) {
       drop_number++;
       if (drop_number > 20) {
         drop_number = 0;
-        std::cerr << "DLT drop logs!!!" << std::endl;
         q.Remove();
+        std::cerr << "DLT drop logs!!!" << std::endl;
       }
     }
   }

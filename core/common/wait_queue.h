@@ -13,6 +13,7 @@
 #include <condition_variable>  // NOLINT
 #include <mutex>               // NOLINT
 #include <queue>
+#include <utility>
 namespace simba {
 namespace core {
 template <typename T, uint16_t maxsize = 0>
@@ -35,7 +36,7 @@ class WaitQueue final {
       q.pop();
       flag = false;
     }
-    q.push(obj);
+    q.push(std::move(obj));
     cv.notify_one();
     return flag;
   }
