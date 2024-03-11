@@ -33,6 +33,9 @@ uint8_t ExecHeader::GetFlags() const {
 void ExecHeader::IncrementTimeStamp() {
     this->time_stamp_.Set(this->time_stamp_.Get()+1);
 }
+void ExecHeader::SetFlags(uint8_t flags) {
+    this->flags_.Set(flags);
+}
 
 }  // namespace exec
 }  // namespace diag

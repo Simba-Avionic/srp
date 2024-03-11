@@ -15,7 +15,7 @@
 #include <vector>
 #include <optional>
 
-#include "mw/em/code/services/em/app_config.h"
+#include "app_config.h"
 
 namespace simba {
 namespace em {
@@ -28,9 +28,13 @@ class EmService {
   std::optional<data::AppConfig> GetAppConfig(const std::string& path) noexcept;
 
  public:
+  std::vector<service::data::AppConfig> GetAppList() {
+    return this->app_list;
+  }
   void LoadApps() noexcept;
   void StartApps() noexcept;
   void StartApps(const uint8_t level) noexcept;
+  void RestartApp(const uint16_t appID);
   EmService(/* args */);
   ~EmService();
 };

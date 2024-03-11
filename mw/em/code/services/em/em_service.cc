@@ -89,6 +89,7 @@ std::optional<data::AppConfig> EmService::GetAppConfig(
   uint8_t prio{0};
   uint8_t delay{0};
   uint8_t error_count{0};
+  uint16_t app_id{0};
   {
     auto bin_path_r = obj.GetString("bin_path");
     if (bin_path_r.has_value()) {
@@ -126,11 +127,19 @@ std::optional<data::AppConfig> EmService::GetAppConfig(
                        ", don't have: startup_after_delay");
       error_count++;
     }
+    auto app_id_r = obj.GetNumber<uint16_t>("app_id");
+    if (!app_id_r.has_value()) {
+      error_count++;
+      AppLogger::Error("Application from: " + path +
+                       ", don't have: app_id");
+    } else {
+      app_id = app_id_r.value();
+    }
   }
   if (error_count != 0) {
     return {};
   } else {
-    return std::optional{data::AppConfig{bin_path, parm, prio, delay}};
+    return std::optional{data::AppConfig{bin_path, parm, prio, delay, app_id}};
   }
 }
 void EmService::StartApps() noexcept {
@@ -160,6 +169,11 @@ void EmService::StartApps(const uint8_t level) noexcept {
     }
   }
 }
+
+void EmService::RestartApp(const uint16_t appID) {
+  // TODO (matikrajek42@gmail.com) restart app feature      // NOLINT
+}
+
 }  // namespace service
 }  // namespace em
 }  // namespace simba

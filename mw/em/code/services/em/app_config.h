@@ -24,19 +24,22 @@ class AppConfig {
   const std::string parms_;
   const uint8_t startup_prio_;
   const uint8_t startup_after_delay_;
+  const uint16_t appID_;
 
  public:
   AppConfig(const std::string &bin_path, const std::string &parms,
-            const uint8_t startup_prio, const uint8_t startup_after_delay)
+            const uint8_t startup_prio, const uint8_t startup_after_delay, uint16_t appID)
       : bin_path_{bin_path},
         parms_{parms},
         startup_prio_{startup_prio},
-        startup_after_delay_{startup_after_delay} {}
+        startup_after_delay_{startup_after_delay},
+        appID_{appID} {}
 
   std::string GetBinPath() const { return bin_path_; }
   std::string GetParms() const { return parms_; }
   uint8_t GetStartUpPrio() const { return startup_prio_; }
   uint8_t GetStartUpAfterDelay() const { return startup_after_delay_; }
+  uint16_t GetAppID() const { return appID_; }
 };
 }  // namespace data
 }  // namespace service

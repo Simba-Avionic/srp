@@ -9,5 +9,6 @@ cc_binary(
     deps = [
         "//core/application:simba_application",
         "//mw/em/code/services/em:em_service",
+        "//mw/em/code/services/exec:exec_service",
     ],
 )

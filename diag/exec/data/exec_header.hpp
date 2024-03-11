@@ -28,7 +28,7 @@ class ExecHeader : public com::core::network::NetworkDataStructure {
   com::core::network::uint16_t service_id_;
   // timestamp
   com::core::network::uint32_t time_stamp_;
-  com::core::network::uint8_t flags_;
+  com::core::network::uint8_t flags_{0};
  public:
   ExecHeader(const uint16_t &service_id,
   const uint16_t &time_stamp, uint8_t flags);
@@ -44,6 +44,7 @@ class ExecHeader : public com::core::network::NetworkDataStructure {
   uint16_t GetTimestamp() const;
   uint8_t GetFlags() const;
   void IncrementTimeStamp();
+  void SetFlags(uint8_t flags);
 };
 
 }  // namespace exec

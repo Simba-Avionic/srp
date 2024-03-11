@@ -43,7 +43,7 @@ core::ErrorCode GPIOController::SetPinValue(uint16_t pinID, Value value) {
     return this->sock_->Transmit("SIMBA.GPIO.SET", 0, hdr.GetBuffor());
 }
 
-Value GPIOController::GetPinValue(uint16_t pinID) {
+Value GPIOController::GetPinValue(uint16_t actuatorID) {
     return Value::HIGH;
 }
 
