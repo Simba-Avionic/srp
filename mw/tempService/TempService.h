@@ -9,13 +9,18 @@
  * 
  */
 
-#ifndef MW_TEMP_SERVICE_H_
-#define MW_TEMP_SERVICE_H_
+#ifndef MW_TEMPSERVICE_TEMPSERVICE_H_
+#define MW_TEMPSERVICE_TEMPSERVICE_H_
 
 #include <string>
 #include <unordered_map>
-#include <stdio.h>
-#include <inttypes.h>
+#include <cstdio>
+#include <cinttypes>
+#include <cstdint>
+#include <cstring>
+#include <sys/types.h>  // NOLINT
+#include <sys/socket.h>  // NOLINT
+#include <netinet/in.h>  // NOLINT
 
 #include <fstream>
 #include <memory>
@@ -30,6 +35,9 @@
 
 #include "mw/tempService/subscribe_msg/subscribe_header.h"
 #include "mw/tempService/subscribe_msg/subscribe_msg_factory.h"
+
+#include "mw/tempService/temp_reading_msg/temp_reading_msg.h"
+#include "mw/tempService/temp_reading_msg/temp_reading_msg_factory.h"
 
 namespace simba {
 namespace mw {
@@ -60,20 +68,17 @@ class TempApplication final : public simba::core::ApplicationMW {
   simba::core::ErrorCode Initialize(
       const std::unordered_map<std::string, std::string>& parms) final;
 
-
  public:
-
   void SubCallback(const std::string& ip, const std::uint16_t& port,
     const std::vector<std::uint8_t> data);
-  
-  simba::core::ErrorCode Subscribe(std::stop_token stoken);
-  
-  void StartSubscribeThread();
 
+  simba::core::ErrorCode Subscribe(std::stop_token stoken);
+
+  void StartSubscribeThread();
 };
 
-} // namespace temp
-} // namespace mw
-} // namespace simba
+}  // namespace temp
+}  // namespace mw
+}  // namespace simba
 
-#endif  // MW_TEMP_SERVICE_H_
+#endif  // MW_TEMPSERVICE_TEMPSERVICE_H_

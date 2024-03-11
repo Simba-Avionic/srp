@@ -69,7 +69,7 @@ ErrorCode ApplicationCommon::CommonConfig(
 
 #ifndef DEBUG
   std::ifstream file{"/opt/" + parms.at("app_name") + "/etc/logger.json"};
-#else 
+#else
   std::ifstream file{"mw/tempService/logger.json"};
   std::cout << 123;
 #endif

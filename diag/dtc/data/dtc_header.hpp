@@ -25,11 +25,11 @@ namespace dtc {
 class DtcHeader : public com::core::network::NetworkDataStructure {
  private:
   // numer błędu
-    com::core::network::uint16_t dtc_id_;
-    // flagi błędu
-    com::core::network::uint8_t dtc_status_;
-    com::core::network::uint8_t lenght_;
-    
+  com::core::network::uint16_t dtc_id_;
+  // flagi błędu
+  com::core::network::uint8_t dtc_status_;
+  com::core::network::uint8_t lenght_;
+
  public:
   DtcHeader(const uint16_t &dtc_id, const uint8_t &dtc_status);
   DtcHeader();

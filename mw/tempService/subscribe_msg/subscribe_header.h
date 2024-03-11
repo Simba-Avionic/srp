@@ -1,16 +1,16 @@
 /**
- * @file
- * @author
- * @brief
+ * @file subscribe_header.h
+ * @author Maciek Matuszewski (maciej.matuszewsky@gmail.com)
+ * @brief 
  * @version 0.1
- * @date
- *
+ * @date 2024-03-02
+ * 
  * @copyright Copyright (c) 2024
- *
+ * 
  */
 
-#ifndef MW_TEMP_SUBSCRIBE_HEADER_HPP_
-#define MW_TEMP_SUBSCRIBE_HEADER_HPP_
+#ifndef MW_TEMPSERVICE_SUBSCRIBE_MSG_SUBSCRIBE_HEADER_H_
+#define MW_TEMPSERVICE_SUBSCRIBE_MSG_SUBSCRIBE_HEADER_H_
 
 #include <chrono>  // NOLINT
 #include <vector>
@@ -28,17 +28,16 @@ class SubscribeHeader : public com::core::network::NetworkDataStructure {
   com::core::network::uint8_t length_;
 
  public:
-  SubscribeHeader(const uint16_t &service_id);
+  explicit SubscribeHeader(const uint16_t &service_id);
   SubscribeHeader();
   uint16_t GetServiceID() const;
   uint8_t GetLength();
   void SetLength(const uint8_t& value);
   void SetData();
-
 };
 
 }  // namespace temp
 }  // namespace mw
 }  // namespace simba
 
-#endif  // MW_TEMP_SUBSCRIBE_HEADER_HPP_
+#endif  // MW_TEMPSERVICE_SUBSCRIBE_MSG_SUBSCRIBE_HEADER_H_

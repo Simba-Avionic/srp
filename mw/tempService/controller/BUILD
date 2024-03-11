@@ -15,6 +15,8 @@ cc_binary(
         "//communication-core/sockets:socket_ipc",
         "//mw/tempService/subscribe_msg:subscribe_header",
         "//mw/tempService/subscribe_msg:subscribe_msg_factory",
+        "//mw/tempService/temp_reading_msg:temp_reading_msg",
+        "//mw/tempService/temp_reading_msg:temp_reading_msg_factory",
         "@com_json//:json"
 
     ],

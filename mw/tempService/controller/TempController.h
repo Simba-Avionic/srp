@@ -9,20 +9,24 @@
  * 
  */
 
-#ifndef MW_TEMP_CONTROLLER_H_
-#define MW_TEMP_CONTROLLER_H_
+#ifndef MW_TEMPSERVICE_CONTROLLER_TEMPCONTROLLER_H_
+#define MW_TEMPSERVICE_CONTROLLER_TEMPCONTROLLER_H_
 
 #include <string>
-#include <unordered_map>
-#include <stdio.h>
-#include <inttypes.h>
+#include <cstdio>
+#include <cinttypes>
+#include <cstdint>
+#include <cstring>
+#include <sys/types.h>  // NOLINT
+#include <sys/socket.h>  // NOLINT
+#include <netinet/in.h>  // NOLINT
 
 #include <fstream>
 #include <memory>
 #include <vector>
 #include <unordered_map>
 #include <set>
-#include <future>
+#include <future>  // NOLINT
 #include "nlohmann/json.hpp"
 
 #include "core/application/application_mw.h"
@@ -33,23 +37,20 @@
 #include "mw/tempService/subscribe_msg/subscribe_header.h"
 #include "mw/tempService/subscribe_msg/subscribe_msg_factory.h"
 
+#include "mw/tempService/temp_reading_msg/temp_reading_msg.h"
+#include "mw/tempService/temp_reading_msg/temp_reading_msg_factory.h"
+
 using json = nlohmann::json;
 
 namespace simba {
 namespace mw {
 namespace temp {
 
-static constexpr char const* 
+static constexpr char const*
   kTempControllerName = "SIMBA.TEMP.CONTROLLER";
 
-static const std::string kTempConfigPath = 
+static const char kTempConfigPath[] =
   "mw/tempService/controller/temp_config.json";
-
-struct TempReading
-{
-  uint16_t sensor_id;
-  _Float64 value;
-};
 
 class TempController final : public simba::core::ApplicationMW {
  protected:
@@ -80,35 +81,21 @@ class TempController final : public simba::core::ApplicationMW {
   simba::core::ErrorCode Initialize(
       const std::unordered_map<std::string, std::string>& parms) final;
 
-  // TempReading GetTempReading(std::string& path);
-
-  void RetrieveTempReadings(std::vector<TempReading> &readings, 
+  void RetrieveTempReadings(std::vector<TempReading> &readings,
     std::vector<std::future<simba::core::ErrorCode>>& futures);
-  void SendTempReadings(std::vector<TempReading> &readings, 
+
+  void SendTempReadings(std::vector<TempReading> &readings,
     std::vector<std::future<simba::core::ErrorCode>>& futures);
 
  public:
-
   simba::core::ErrorCode Loop(std::stop_token stoken);
 
   void SubCallback(const std::string& ip, const std::uint16_t& port,
     const std::vector<std::uint8_t> data);
-
 };
 
-} // namespace temp
-} // namespace mw
-} // namespace simba
+}  // namespace temp
+}  // namespace mw
+}  // namespace simba
 
-#endif  // MW_TEMP_CONTROLLER_H_
-
-
-// diag::dtc::DtcMsgFactory factory;
-// auto hdr = factory.GetHeader(data);
-// std::vector<uint8_t> payload = factory.GetPayload(data);
-// this->db_.AddError(hdr->GetDtcID(),
-//                    this->conv_.convertVecToString(payload, 0));
-// AppLogger::Debug("Zarejestrowano błąd " +
-//                  std::to_string(static_cast<int>(hdr->GetDtcID())));
-// this->diag_controller->Write(
-//     0x0201, 0x0001, this->conv_.convertUint16ToVector(hdr->GetDtcID()));
+#endif  // MW_TEMPSERVICE_CONTROLLER_TEMPCONTROLLER_H_

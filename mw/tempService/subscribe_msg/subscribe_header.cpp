@@ -1,9 +1,9 @@
 /**
- * @file exec_header.cpp
- * @author Wiktor Kawka (asinesak353@gmail.com)
+ * @file 
+ * @author 
  * @brief 
  * @version 0.1
- * @date 2024-01-27
+ * @date 
  * 
  * @copyright Copyright (c) 2024
  * 
@@ -16,14 +16,14 @@ namespace mw {
 namespace temp {
 
 SubscribeHeader::SubscribeHeader(const uint16_t &service_id)
-        : service_id_(service_id), length_(sizeof(uint16_t)){
-                SetData();
-        }
+    : service_id_(service_id), length_(sizeof(uint16_t)) {
+    SetData();
+}
 
-SubscribeHeader::SubscribeHeader() 
-        : service_id_(0), length_(sizeof(uint16_t)) {
-                SetData();
-        }
+SubscribeHeader::SubscribeHeader()
+    : service_id_(0), length_(sizeof(uint16_t)) {
+    SetData();
+}
 
 uint16_t SubscribeHeader::GetServiceID() const {
     return this->service_id_.Get();

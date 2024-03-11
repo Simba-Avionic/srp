@@ -1,6 +1,16 @@
+/**
+ * @file main.cc
+ * @author Maciek Matuszewski (maciej.matuszewsky@gmail.com)
+ * @brief 
+ * @version 0.1
+ * @date 2024-03-02
+ * 
+ * @copyright Copyright (c) 2024
+ * 
+ */
 
 #include <iostream>
-#include <thread>
+#include <thread>  // NOLINT 
 #include "TempService.h"
 #include "core/application/application_factory.h"
 

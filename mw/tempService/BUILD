@@ -14,6 +14,8 @@ cc_binary(
         "//communication-core/network-data:network_data_structure",
         "//mw/tempService/subscribe_msg:subscribe_header",
         "//mw/tempService/subscribe_msg:subscribe_msg_factory",
+        "//mw/tempService/temp_reading_msg:temp_reading_msg",
+        "//mw/tempService/temp_reading_msg:temp_reading_msg_factory",
     ],
     data=["logger.json","app.json","srp_app.json"]
 )
