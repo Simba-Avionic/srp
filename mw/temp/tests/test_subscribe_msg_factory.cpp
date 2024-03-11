@@ -10,8 +10,8 @@
  */
 #include <gtest/gtest.h>
 
-#include "mw/tempService/subscribe_msg/subscribe_header.h"
-#include "mw/tempService/subscribe_msg/subscribe_msg_factory.h"
+#include "mw/temp/subscribe_msg/subscribe_header.h"
+#include "mw/temp/subscribe_msg/subscribe_msg_factory.h"
 
 TEST(SUBSCRIBE_MSG_FACTORIES, SUBSCRIBE_MSG_FACTORIES_TEST) {
     simba::mw::temp::SubMsgFactory factory;

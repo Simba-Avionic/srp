@@ -3,7 +3,7 @@ cc_library(
     srcs = ["subscribe_header.cpp"],
     hdrs = ["subscribe_header.h"],
     visibility = [
-        "//mw/tempService:__subpackages__",
+        "//mw/temp:__subpackages__",
     ],
 
     deps = ["//communication-core/network-data:network_data_structure",
@@ -17,7 +17,7 @@ cc_library(
     hdrs = ["subscribe_msg_factory.h"],
 
     visibility = [
-        "//mw/tempService:__subpackages__",
+        "//mw/temp:__subpackages__",
     ],
 
     deps = [":subscribe_header"],

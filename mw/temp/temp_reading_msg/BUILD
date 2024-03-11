@@ -3,7 +3,7 @@ cc_library(
     srcs = ["temp_reading_msg.cpp"],
     hdrs = ["temp_reading_msg.h"],
     visibility = [
-        "//mw/tempService:__subpackages__",
+        "//mw/temp:__subpackages__",
     ],
 
     deps = ["//communication-core/network-data:network_data_structure",
@@ -17,7 +17,7 @@ cc_library(
     hdrs = ["temp_reading_msg_factory.h"],
 
     visibility = [
-        "//mw/tempService:__subpackages__",
+        "//mw/temp:__subpackages__",
     ],
 
     deps = [":temp_reading_msg"],

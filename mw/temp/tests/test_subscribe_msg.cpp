@@ -11,7 +11,7 @@
 
 #include <gtest/gtest.h>
 
-#include "mw/tempService/subscribe_msg/subscribe_header.h"
+#include "mw/temp/subscribe_msg/subscribe_header.h"
 
 TEST(SUBSCRIBE_HEADER, CONSTRUCTOR_CHECK) {
     uint16_t id = 0x0010;

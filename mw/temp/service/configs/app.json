@@ -1,11 +1,11 @@
 {
     "app": {
-        "name": "TempController",
+        "name": "TempService",
         "bootMode": 8,
         "diag_address": 260,
         "logger": {
             "app_id": "TempServiceMW",
-            "app_des": "MW Controller temp",
+            "app_des": "Service responsible for reading temperature sensors as well as handling subscribers",
             "log_level": "kDebug",
             "log_mode": "kConsole|kDLT"
         }

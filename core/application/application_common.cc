@@ -20,8 +20,6 @@
 #include "core/logger/logger_factory.h"
 #include "nlohmann/json.hpp"
 
-// #define DEBUG
-
 namespace simba {
 namespace core {
 void ApplicationCommon::StopApp() {
@@ -67,12 +65,7 @@ ErrorCode ApplicationCommon::CommonConfig(
     const std::unordered_map<std::string, std::string>& parms) {
   ErrorCode res = ErrorCode::kOk;
 
-#ifndef DEBUG
   std::ifstream file{"/opt/" + parms.at("app_name") + "/etc/logger.json"};
-#else
-  std::ifstream file{"mw/tempService/logger.json"};
-  std::cout << 123;
-#endif
 
   if (!file.is_open()) {
     std::cerr << "Logger config file doesn't exist! -> "

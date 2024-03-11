@@ -11,10 +11,10 @@
 
 #include <iostream>
 #include <thread>  // NOLINT
-#include "TempController.h"
+#include "temp_service.h"
 #include "core/application/application_factory.h"
 
 int main(int argc, char const *argv[]) {
-  simba::core::ApplicationFactory<simba::mw::temp::TempController>::Start(argc, argv);
+  simba::core::ApplicationFactory<simba::mw::temp::TempService>::Start(argc, argv);
   return 0;
 }

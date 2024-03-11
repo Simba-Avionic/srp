@@ -14,7 +14,7 @@ cc_library(
         "//diag/dtc/data:__subpackages__",
         "//mw/diag/dtc:__subpackages__",
         "//diag:__subpackages__",
-        "//mw/tempService:__subpackages__",
+        "//mw/temp:__subpackages__",
         ],
     deps = [":interfaces"],
 )
@@ -25,7 +25,7 @@ cc_library(
     visibility = [
         "//communication-core:__subpackages__",
         "//diag:__subpackages__",
-        "//mw/tempService:__subpackages__"
+        "//mw/temp:__subpackages__"
         ],
     deps = [
         ":interfaces",

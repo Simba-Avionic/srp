@@ -1,5 +1,5 @@
 /**
- * @file TempController.h
+ * @file TempService.h
  * @author Maciek Matuszewski (maciej.matuszewsky@gmail.com)
  * @brief 
  * @version 0.1
@@ -34,11 +34,11 @@
 #include "communication-core/sockets/socket_config.h"
 #include "core/logger/Logger.h"
 
-#include "mw/tempService/subscribe_msg/subscribe_header.h"
-#include "mw/tempService/subscribe_msg/subscribe_msg_factory.h"
+#include "mw/temp/subscribe_msg/subscribe_header.h"
+#include "mw/temp/subscribe_msg/subscribe_msg_factory.h"
 
-#include "mw/tempService/temp_reading_msg/temp_reading_msg.h"
-#include "mw/tempService/temp_reading_msg/temp_reading_msg_factory.h"
+#include "mw/temp/temp_reading_msg/temp_reading_msg.h"
+#include "mw/temp/temp_reading_msg/temp_reading_msg_factory.h"
 
 using json = nlohmann::json;
 
@@ -47,12 +47,15 @@ namespace mw {
 namespace temp {
 
 static constexpr char const*
-  kTempControllerName = "SIMBA.TEMP.CONTROLLER";
+  kTempServiceName = "SIMBA.TEMP.SERVICE";
 
-static const char kTempConfigPath[] =
-  "mw/tempService/controller/temp_config.json";
+static constexpr char const* 
+  kSubscriberPrefix = "SIMBA.TEMP.";
 
-class TempController final : public simba::core::ApplicationMW {
+static constexpr char const* kTempConfigPath =
+  "mw/temp/service/configs/temp_config.json";
+
+class TempService final : public simba::core::ApplicationMW {
  protected:
   com::soc::IpcSocket sub_sock_{};
   const std::chrono::milliseconds temp_timeout{750};

@@ -10,8 +10,8 @@
  */
 #include <gtest/gtest.h>
 
-#include "mw/tempService/temp_reading_msg/temp_reading_msg.h"
-#include "mw/tempService/temp_reading_msg/temp_reading_msg_factory.h"
+#include "mw/temp/temp_reading_msg/temp_reading_msg.h"
+#include "mw/temp/temp_reading_msg/temp_reading_msg_factory.h"
 
 TEST(TEMP_READING_MSG_FACTORY, TEMP_READING_MSG_FACTORY_TEST) {
     simba::mw::temp::TempReadingMsgFactory factory;

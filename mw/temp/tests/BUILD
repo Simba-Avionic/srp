@@ -4,7 +4,7 @@ cc_test(
     visibility = ["//visibility:public"],
     deps=[
         "@com_google_googletest//:gtest_main",
-        "//mw/tempService/subscribe_msg:subscribe_header",
+        "//mw/temp/subscribe_msg:subscribe_header",
     ]
 )
 
@@ -14,8 +14,8 @@ cc_test(
     visibility = ["//visibility:public"],
     deps=[
         "@com_google_googletest//:gtest_main",
-        "//mw/tempService/subscribe_msg:subscribe_header",
-        "//mw/tempService/subscribe_msg:subscribe_msg_factory",
+        "//mw/temp/subscribe_msg:subscribe_header",
+        "//mw/temp/subscribe_msg:subscribe_msg_factory",
     ]
 )
 
@@ -25,7 +25,7 @@ cc_test(
     visibility = ["//visibility:public"],
     deps=[
         "@com_google_googletest//:gtest_main",
-        "//mw/tempService/temp_reading_msg:temp_reading_msg",
-        "//mw/tempService/temp_reading_msg:temp_reading_msg_factory",
+        "//mw/temp/temp_reading_msg:temp_reading_msg",
+        "//mw/temp/temp_reading_msg:temp_reading_msg_factory",
     ]
 )

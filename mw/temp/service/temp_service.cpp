@@ -1,5 +1,5 @@
 /**
- * @file TempController.cpp
+ * @file TempService.cpp
  * @author Maciek Matuszewski (maciej.matuszewsky@gmail.com)
  * @brief 
  * @version 0.1
@@ -8,7 +8,7 @@
  * @copyright Copyright (c) 2024
  * 
  */
-#include "TempController.h"
+#include "temp_service.h"
 #include <iostream>
 #include <chrono>  // NOLINT
 #include <utility>  // NOLINT
@@ -17,35 +17,33 @@ namespace simba {
 namespace mw {
 namespace temp {
 
-simba::core::ErrorCode TempController::Run(std::stop_token token) {
+simba::core::ErrorCode TempService::Run(std::stop_token token) {
     this->sub_sock_.StartRXThread();
     this->StartTempThread();
-    std::cout << "Started TempController!" << std::endl;
-
+    AppLogger::Info("Temp Service started!");
     this->SleepMainThread();
-
     return core::ErrorCode::kError;
 }
 
-simba::core::ErrorCode TempController::Initialize(
+simba::core::ErrorCode TempService::Initialize(
     const std::unordered_map<std::string, std::string>& parms) {
     LoadConfig(kTempConfigPath);
 
     if (auto ret = this->sub_sock_.Init(
-        com::soc::SocketConfig(kTempControllerName, 0, 0))) {
+        com::soc::SocketConfig(kTempServiceName, 0, 0))) {
         AppLogger::Error("Couldn't initialize " +
-            std::string(kTempControllerName) + "socket!");
+            std::string(kTempServiceName) + "socket!");
         return ret;
     }
 
     this->sub_sock_.SetRXCallback(
-        std::bind(&simba::mw::temp::TempController::SubCallback, this,
+        std::bind(&simba::mw::temp::TempService::SubCallback, this,
             std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
 
     return simba::core::ErrorCode::kOk;
 }
 
-void TempController::StartTempThread() {
+void TempService::StartTempThread() {
     if (temp_thread != nullptr) {
         AppLogger::Error("Error starting temperature thread!");
         return;
@@ -54,7 +52,7 @@ void TempController::StartTempThread() {
         [&](std::stop_token stoken) { this->Loop(stoken); });
 }
 
-void TempController::SubCallback(const std::string& ip, const std::uint16_t& port,
+void TempService::SubCallback(const std::string& ip, const std::uint16_t& port,
     const std::vector<std::uint8_t> data) {
     auto hdr = factory.GetHeader(data);
 
@@ -62,11 +60,12 @@ void TempController::SubCallback(const std::string& ip, const std::uint16_t& por
 
     if (!this->subscribers.contains(service_id)) {
         this->subscribers.insert(service_id);
-        AppLogger::Info("Registered new temperature client");
+        AppLogger::Info("Registered new client with id: "
+            + std::to_string(service_id));
     }
 }
 
-simba::core::ErrorCode TempController::LoadConfig(const std::string& path) {
+simba::core::ErrorCode TempService::LoadConfig(const std::string& path) {
     std::ifstream file(path);
 
     if (!file) {
@@ -86,7 +85,7 @@ simba::core::ErrorCode TempController::LoadConfig(const std::string& path) {
     return simba::core::ErrorCode::kOk;
 }
 
-void TempController::RetrieveTempReadings(
+void TempService::RetrieveTempReadings(
     std::vector<TempReading>& readings,
     std::vector<std::future<simba::core::ErrorCode>>& futures) {
     for (const auto& path : sensorPathsToIds) {
@@ -127,17 +126,17 @@ void TempController::RetrieveTempReadings(
     futures.clear();
 }
 
-void TempController::SendTempReadings(
+void TempService::SendTempReadings(
     std::vector<TempReading> &readings,
     std::vector<std::future<simba::core::ErrorCode>>& futures) {
-    for (const auto& client : this->subscribers) {
+    for (const auto& client_id : this->subscribers) {
         // async functions can be deleted
         // because there won't be many sensors/clients
         std::future<simba::core::ErrorCode> future =
-            std::async(std::launch::async, [this, &client, &readings]
+            std::async(std::launch::async, [this, &client_id, &readings]
             () -> simba::core::ErrorCode {
             simba::mw::temp::TempReadingMsgFactory factory;
-            std::string ip = "Engine." + std::to_string(client);
+            std::string ip = kSubscriberPrefix + std::to_string(client_id);
 
             std::vector<uint8_t> data =
                 factory.GetBuffer(std::make_shared<TempReadingMsg>(), readings);
@@ -156,7 +155,7 @@ void TempController::SendTempReadings(
     futures.clear();
 }
 
-simba::core::ErrorCode TempController::Loop(std::stop_token stoken) {
+simba::core::ErrorCode TempService::Loop(std::stop_token stoken) {
     std::vector<TempReading> readings;
     std::vector<std::future<simba::core::ErrorCode>> futures;
 
