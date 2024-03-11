@@ -34,11 +34,11 @@ simba::core::ErrorCode IpcSocket::Init(const SocketConfig& config) {
   }
   umask(0);
   server_sockaddr.sun_family = AF_UNIX;
-  if (SocketExist("/tmp/" + config.GetIp())) {
-    remove(("/tmp/" + config.GetIp()).c_str());
+  if (SocketExist("/run/" + config.GetIp())) {
+    remove(("/run/" + config.GetIp()).c_str());
   }
   strcpy(server_sockaddr.sun_path,             // NOLINT
-         ("/tmp/" + config.GetIp()).c_str());  // NOLINT
+         ("/run/" + config.GetIp()).c_str());  // NOLINT
   len = sizeof(server_sockaddr);
   unlink(config.GetIp().c_str());
   return simba::core::ErrorCode::kOk;
@@ -61,7 +61,7 @@ simba::core::ErrorCode IpcSocket::Transmit(const std::string& ip,
   }
 
   remote.sun_family = AF_UNIX;
-  strcpy(remote.sun_path, ("/tmp/" +ip).c_str());  // NOLINT
+  strcpy(remote.sun_path, ("/run/" +ip).c_str());  // NOLINT
 
   std::uint8_t* buffor = new std::uint8_t[payload.size()];
   std::copy(payload.begin(), payload.end(), buffor);
