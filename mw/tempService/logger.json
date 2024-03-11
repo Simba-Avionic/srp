@@ -1,6 +1,0 @@
-{
-    "app_id": "TempServiceMW",
-    "app_des": "MW service temp",
-    "log_level": "kDebug",
-    "log_mode": "kConsole|kDLT"
-  }
