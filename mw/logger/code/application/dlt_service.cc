@@ -35,6 +35,7 @@ core::ErrorCode DltService::Run(std::stop_token token) {
     }
   }
   AppLogger::Info("Stop");
+  SleepMainThread();
   return core::kOk;
 }
 
@@ -117,7 +118,7 @@ void DltService::InitIPC() noexcept {
           simba::dlt::data::DltFrame<simba::dlt::data::DltString>>(
           timestamp, this->ec_name, app_id, types,
           simba::dlt::data::DltString{log_content});
-      if (!this->logs.push(r)) {
+      if (!this->logs.push(std::move(r))) {
         AppLogger::Error("DLT msg dropped in TX queue!!");
       }
     });

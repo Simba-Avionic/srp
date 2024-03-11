@@ -40,7 +40,7 @@ simba::core::ErrorCode IpcSocket::Init(const SocketConfig& config) {
   strcpy(server_sockaddr.sun_path,             // NOLINT
          ("/run/" + config.GetIp()).c_str());  // NOLINT
   len = sizeof(server_sockaddr);
-  unlink(config.GetIp().c_str());
+  unlink(("/run/" + config.GetIp()).c_str());
   return simba::core::ErrorCode::kOk;
 }
 
@@ -70,6 +70,7 @@ simba::core::ErrorCode IpcSocket::Transmit(const std::string& ip,
               (struct sockaddr*)&remote, sizeof(remote));
   delete[] buffor;
   if (rc == -1) {
+    rc = close(client_socket);
     return simba::core::ErrorCode::kError;
   }
 

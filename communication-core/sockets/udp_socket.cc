@@ -63,6 +63,7 @@ simba::core::ErrorCode UdpSocket::Transmit(const std::string& ip,
               (struct sockaddr*)&remote, sizeof(remote));
   delete[] buffor;
   if (rc == -1) {
+    rc = close(client_socket);
     return simba::core::ErrorCode::kError;
   }
   rc = close(client_socket);
