@@ -65,7 +65,7 @@ class Pins{
 };
 
 
-class GpioDigitalDriver:IgpioDigitalDriver{
+class GpioDigitalDriver: public IgpioDigitalDriver{
  public:
   GpioDigitalDriver();
   ~GpioDigitalDriver();

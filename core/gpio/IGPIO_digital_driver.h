@@ -30,7 +30,7 @@ enum direction_t{
 class IgpioDigitalDriver{
  public:
     IgpioDigitalDriver() {}
-
+    virtual ~IgpioDigitalDriver() {}
 
     virtual core::ErrorCode initializePin(uint8_t pinNumber, direction_t direction) = 0;
 

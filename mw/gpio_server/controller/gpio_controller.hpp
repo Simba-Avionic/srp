@@ -26,18 +26,21 @@ namespace simba {
 namespace gpio {
 
 enum Value{
+  ERROR = -1,
   LOW = 0,
   HIGH = 1,
 };
 
 class GPIOController {
  private:
-    com::soc::IpcSocket sock_;
+    com::soc::ISocket* sock_;
     uint16_t service_id;
  public:
+    explicit GPIOController(com::soc::ISocket* socket);
+    GPIOController();
     core::ErrorCode SetPinValue(uint16_t pinID, Value value);
     Value GetPinValue(uint16_t pinID);
-    void Init(uint16_t service_id);
+    core::ErrorCode Init(uint16_t service_id);
 };
 
 }  // namespace gpio
