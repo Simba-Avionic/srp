@@ -19,20 +19,20 @@
 #include <unistd.h>
 #include <vector>
 #include <string>
+#include <optional>
 #include "core/common/error_code.h"
-#include "core/results/result.h"
 namespace simba {
 namespace core {
 class I2C{
  public:
     ErrorCode init(const std::string& path);
-    Result<std::vector<uint8_t>> Read(const uint8_t address, const uint8_t reg);
+    std::optional<std::vector<uint8_t>> Read(const uint8_t address, const uint8_t reg);
     ErrorCode Write(const uint8_t address, const uint8_t reg, std::vector<uint8_t> data);
  private:
     int file = -1;
     int32_t i2c_smbus_access(char read_write,
     uint8_t command, int size, union i2c_smbus_data *data);
-    Result<uint8_t> i2c_smbus_read_byte_data(const uint8_t command);
+    std::optional<uint8_t> i2c_smbus_read_byte_data(const uint8_t command);
 };
 }  // namespace core
 }  // namespace simba
