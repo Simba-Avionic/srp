@@ -9,8 +9,8 @@
  * 
  */
 
-#ifndef MW_TEMPSERVICE_SUBSCRIBE_MSG_SUBSCRIBE_HEADER_H_
-#define MW_TEMPSERVICE_SUBSCRIBE_MSG_SUBSCRIBE_HEADER_H_
+#ifndef MW_TEMP_SUBSCRIBE_MSG_SUBSCRIBE_HEADER_H_
+#define MW_TEMP_SUBSCRIBE_MSG_SUBSCRIBE_HEADER_H_
 
 #include <chrono>  // NOLINT
 #include <vector>
@@ -40,4 +40,4 @@ class SubscribeHeader : public com::core::network::NetworkDataStructure {
 }  // namespace mw
 }  // namespace simba
 
-#endif  // MW_TEMPSERVICE_SUBSCRIBE_MSG_SUBSCRIBE_HEADER_H_
+#endif  // MW_TEMP_SUBSCRIBE_MSG_SUBSCRIBE_HEADER_H_

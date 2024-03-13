@@ -9,8 +9,8 @@
  * 
  */
 
-#ifndef MW_TEMPSERVICE_CONTROLLER_TEMPCONTROLLER_H_
-#define MW_TEMPSERVICE_CONTROLLER_TEMPCONTROLLER_H_
+#ifndef MW_TEMP_SERVICE_TEMP_SERVICE_H_
+#define MW_TEMP_SERVICE_TEMP_SERVICE_H_
 
 #include <string>
 #include <cstdio>
@@ -49,7 +49,7 @@ namespace temp {
 static constexpr char const*
   kTempServiceName = "SIMBA.TEMP.SERVICE";
 
-static constexpr char const* 
+static constexpr char const*
   kSubscriberPrefix = "SIMBA.TEMP.";
 
 static constexpr char const* kTempConfigPath =
@@ -84,11 +84,11 @@ class TempService final : public simba::core::ApplicationMW {
   simba::core::ErrorCode Initialize(
       const std::unordered_map<std::string, std::string>& parms) final;
 
-  void RetrieveTempReadings(std::vector<TempReading> &readings,
-    std::vector<std::future<simba::core::ErrorCode>>& futures);
+  void RetrieveTempReadings(std::shared_ptr<std::vector<TempReading>> readings,
+    std::shared_ptr<std::vector<std::future<simba::core::ErrorCode>>> futures);
 
-  void SendTempReadings(std::vector<TempReading> &readings,
-    std::vector<std::future<simba::core::ErrorCode>>& futures);
+  void SendTempReadings(std::shared_ptr<std::vector<TempReading>> readings,
+    std::shared_ptr<std::vector<std::future<simba::core::ErrorCode>>> futures);
 
  public:
   simba::core::ErrorCode Loop(std::stop_token stoken);
@@ -101,4 +101,4 @@ class TempService final : public simba::core::ApplicationMW {
 }  // namespace mw
 }  // namespace simba
 
-#endif  // MW_TEMPSERVICE_CONTROLLER_TEMPCONTROLLER_H_
+#endif  // MW_TEMP_SERVICE_TEMP_SERVICE_H_

@@ -8,8 +8,8 @@
  * @copyright Copyright (c) 2024
  * 
  */
-#ifndef MW_TEMP_CONTROLLER_TEMPCONTROLLER_H_
-#define MW_TEMP_CONTROLLER_TEMPCONTROLLER_H_
+#ifndef MW_TEMP_CONTROLLER_TEMP_CONTROLLER_H_
+#define MW_TEMP_CONTROLLER_TEMP_CONTROLLER_H_
 
 #include <string>
 #include <cstdio>
@@ -41,13 +41,13 @@ namespace mw {
 namespace temp {
 
 class TempController {
-  protected:
+ protected:
     uint16_t service_id;
     com::soc::IpcSocket sub_sock_{};
     std::vector<TempReading> latest_readings;
     simba::mw::temp::TempReadingMsgFactory factory;
 
-  private:
+ private:
     virtual simba::core::ErrorCode Init(uint16_t service_id);
 
  public:
@@ -61,4 +61,4 @@ class TempController {
 }  // namespace mw
 }  // namespace simba
 
-#endif  // MW_TEMP_CONTROLLER_TEMPCONTROLLER_H_
+#endif  // MW_TEMP_CONTROLLER_TEMP_CONTROLLER_H_

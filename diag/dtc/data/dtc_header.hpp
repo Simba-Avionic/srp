@@ -50,12 +50,6 @@ class DtcHeader : public com::core::network::NetworkDataStructure {
     * @param value  (set only lenght of payload )
     */
   void SetLength(const uint8_t& value);
-
-  void SetData() {
-    this->AddData(&dtc_id_);
-    this->AddData(&dtc_status_);
-    this->AddData(&lenght_);
-  }
 };
 
 }  // namespace dtc

@@ -9,8 +9,8 @@
  * 
  */
 
-#ifndef MW_TEMPSERVICE_TEMP_READING_MSG_TEMP_READING_MSG_H_
-#define MW_TEMPSERVICE_TEMP_READING_MSG_TEMP_READING_MSG_H_
+#ifndef MW_TEMP_TEMP_READING_MSG_TEMP_READING_MSG_H_
+#define MW_TEMP_TEMP_READING_MSG_TEMP_READING_MSG_H_
 
 #include <chrono>  // NOLINT
 #include <utility>
@@ -35,4 +35,4 @@ class TempReadingMsg : public com::core::network::NetworkDataStructure {
 }  // namespace mw
 }  // namespace simba
 
-#endif  // MW_TEMPSERVICE_TEMP_READING_MSG_TEMP_READING_MSG_H_
+#endif  // MW_TEMP_TEMP_READING_MSG_TEMP_READING_MSG_H_

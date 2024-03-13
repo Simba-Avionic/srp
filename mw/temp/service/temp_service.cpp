@@ -86,8 +86,8 @@ simba::core::ErrorCode TempService::LoadConfig(const std::string& path) {
 }
 
 void TempService::RetrieveTempReadings(
-    std::vector<TempReading>& readings,
-    std::vector<std::future<simba::core::ErrorCode>>& futures) {
+    std::shared_ptr<std::vector<TempReading>> readings,
+    std::shared_ptr<std::vector<std::future<simba::core::ErrorCode>>> futures) {
     for (const auto& path : sensorPathsToIds) {
         std::future<simba::core::ErrorCode> future =
             std::async(std::launch::async, [this, &path, &readings]
@@ -114,21 +114,21 @@ void TempService::RetrieveTempReadings(
             AppLogger::Debug("Sensor " + path.first +
                 ": " + std::to_string(sensorValueRaw));
 
-            readings.push_back(TempReading{path.second, sensorValueRaw});
+            readings->push_back(TempReading{path.second, sensorValueRaw});
             return simba::core::ErrorCode::kOk;
         });
-        futures.push_back(std::move(future));
+        futures->push_back(std::move(future));
     }
 
-    for (auto& future : futures) {
+    for (auto& future : *futures) {
         future.get();
     }
-    futures.clear();
+    futures->clear();
 }
 
 void TempService::SendTempReadings(
-    std::vector<TempReading> &readings,
-    std::vector<std::future<simba::core::ErrorCode>>& futures) {
+    std::shared_ptr<std::vector<TempReading>> readings,
+    std::shared_ptr<std::vector<std::future<simba::core::ErrorCode>>> futures) {
     for (const auto& client_id : this->subscribers) {
         // async functions can be deleted
         // because there won't be many sensors/clients
@@ -139,30 +139,30 @@ void TempService::SendTempReadings(
             std::string ip = kSubscriberPrefix + std::to_string(client_id);
 
             std::vector<uint8_t> data =
-                factory.GetBuffer(std::make_shared<TempReadingMsg>(), readings);
+                factory.GetBuffer(std::make_shared<TempReadingMsg>(), *readings);
 
             if (auto ret = this->sub_sock_.Transmit(ip, 0, data)) {
                 AppLogger::Error("Can't send message to: " + ip);
             }
             return simba::core::ErrorCode::kOk;
         });
-        futures.push_back(std::move(future));
+        futures->push_back(std::move(future));
     }
 
-    for (auto& future : futures) {
+    for (auto& future : *futures) {
         future.get();
     }
-    futures.clear();
+    futures->clear();
 }
 
 simba::core::ErrorCode TempService::Loop(std::stop_token stoken) {
-    std::vector<TempReading> readings;
-    std::vector<std::future<simba::core::ErrorCode>> futures;
+    std::shared_ptr<std::vector<TempReading>> readings;
+    std::shared_ptr<std::vector<std::future<simba::core::ErrorCode>>> futures;
 
     while (true) {
         RetrieveTempReadings(readings, futures);
         SendTempReadings(readings, futures);
-        readings.clear();
+        readings->clear();
         std::this_thread::sleep_for(this->temp_timeout);
     }
 }

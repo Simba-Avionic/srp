@@ -9,8 +9,8 @@
  * 
  */
 
-#ifndef MW_TEMPSERVICE_SUBSCRIBE_MSG_SUBSCRIBE_MSG_FACTORY_H_
-#define MW_TEMPSERVICE_SUBSCRIBE_MSG_SUBSCRIBE_MSG_FACTORY_H_
+#ifndef MW_TEMP_SUBSCRIBE_MSG_SUBSCRIBE_MSG_FACTORY_H_
+#define MW_TEMP_SUBSCRIBE_MSG_SUBSCRIBE_MSG_FACTORY_H_
 
 #include "subscribe_header.h"
 #include <vector>
@@ -54,4 +54,4 @@ class SubMsgFactory {
 }  // namespace mw
 }  // namespace simba
 
-#endif  // MW_TEMPSERVICE_SUBSCRIBE_MSG_SUBSCRIBE_MSG_FACTORY_H_
+#endif  // MW_TEMP_SUBSCRIBE_MSG_SUBSCRIBE_MSG_FACTORY_H_
