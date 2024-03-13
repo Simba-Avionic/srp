@@ -23,7 +23,7 @@ void DtcController::Init(
 }
 
 core::ErrorCode DtcController::RegisterError(const uint16_t &dtc_error_id,
-const uint8_t &dtc_status, const std::vector<uint8_t> &payload) {
+   const std::vector<uint8_t> &payload, const uint8_t &dtc_status) {
     DtcHeader hdr{dtc_error_id, dtc_status};
     std::vector<uint8_t> data = this->factory_.GetBuffer(
             std::make_shared<DtcHeader>(hdr), payload);

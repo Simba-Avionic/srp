@@ -12,6 +12,7 @@
 #include "mw/logger/code/application/dlt_service.h"
 
 #include <memory>
+#include <utility>
 #include <vector>
 
 #include "communication-core/sockets/socket_config.h"
@@ -25,11 +26,12 @@ namespace mw {
 namespace dlt {
 
 core::ErrorCode DltService::Run(std::stop_token token) {
+  // int i = 0;
   std::this_thread::sleep_for(std::chrono::seconds{5});
   while (!token.stop_requested()) {
     auto res_v = this->logs.GetWithoutRemove();
     auto res = res_v->ParseFrame();
-    if (soc.Transmit("231.255.42.99", tx_port, res.Value()) ==
+    if (soc.Transmit("231.255.42.99", tx_port, res.value()) ==
         core::ErrorCode::kOk) {
       this->logs.Remove();
     }
@@ -42,35 +44,35 @@ core::ErrorCode DltService::Initialize(
     const std::unordered_map<std::string, std::string>& parms) {
   auto obj_r = core::json::JsonParser::Parser("/opt/" + parms.at("app_name") +
                                               "/etc/config.json");
-  if (!obj_r.HasValue()) {
+  if (!obj_r.has_value()) {
     AppLogger::Error("File not found: /opt/" + parms.at("app_name") +
                      "/etc/config.json");
     return core::kError;
   }
-  auto json_obj = obj_r.Value();
+  auto json_obj = obj_r.value();
   {
     auto ip_t = json_obj.GetString("ip");
-    if (!ip_t.HasValue()) {
+    if (!ip_t.has_value()) {
       AppLogger::Error("Ip not found in config file");
       return core::kError;
     }
-    ip_ = ip_t.Value();
+    ip_ = ip_t.value();
   }
   {
     auto port_t = json_obj.GetNumber<uint16_t>("tx_port");
-    if (!port_t.HasValue()) {
+    if (!port_t.has_value()) {
       AppLogger::Error("tx port not found in config file");
       return core::kError;
     }
-    tx_port = port_t.Value();
+    tx_port = port_t.value();
   }
   {
     auto ip_t = json_obj.GetString("ecu_id");
-    if (!ip_t.HasValue()) {
+    if (!ip_t.has_value()) {
       AppLogger::Error("Ecu id not found in config file");
       return core::kError;
     }
-    ec_name = ip_t.Value();
+    ec_name = ip_t.value();
   }
   AppLogger::Info("Config loaded: ip=" + ip_ +
                   ", port=" + std::to_string(tx_port) + ", name=" + ec_name);
@@ -117,7 +119,7 @@ void DltService::InitIPC() noexcept {
           simba::dlt::data::DltFrame<simba::dlt::data::DltString>>(
           timestamp, this->ec_name, app_id, types,
           simba::dlt::data::DltString{log_content});
-      if (!this->logs.push(r)) {
+      if (!this->logs.push(std::move(r))) {
         AppLogger::Error("DLT msg dropped in TX queue!!");
       }
     });

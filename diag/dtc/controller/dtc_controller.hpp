@@ -34,7 +34,7 @@ class DtcController:public IDtcController{
   * @return core::ErrorCode 
   */
   core::ErrorCode RegisterError(const uint16_t &dtc_error_id,
-  const uint8_t &dtc_status, const std::vector<uint8_t> &payload) override;
+   const std::vector<uint8_t> &payload, const uint8_t &dtc_status) override;
   void Init(std::shared_ptr<com::soc::SocketConfig> config) override;
 
  private:

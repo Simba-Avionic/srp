@@ -15,15 +15,62 @@
 
 #include <stdint.h>
 #include <string>
+#include <vector>
 
 namespace simba {
 namespace core {
 namespace gpio {
 
+struct Pin{
+  uint16_t number;
+  direction_t direction_;
+};
+class Pins{
+ private:
+  std::vector<Pin> pins;
+
+ public:
+  std::vector<Pin> getPins() {
+  return this->pins;
+  }
+  core::ErrorCode AddPin(uint16_t pinNumber, direction_t direction) {
+    this->pins.push_back(Pin(pinNumber, direction));
+    return core::ErrorCode::kOk;
+  }
+  bool pinIsRegistered(uint16_t pinNumber) {
+    for (auto pin : this->pins) {
+      if (pin.number == pinNumber) {
+        return true;
+      }
+    }
+    return false;
+  }
+  direction_t getPinDirection(uint16_t pinNumber) {
+    for (auto pin : this->pins) {
+      if (pin.number == pinNumber) {
+        return pin.direction_;
+      }
+    }
+    return direction_t::ERROR;
+  }
+  ErrorCode SetDirection(uint16_t pinNumber, direction_t direction) {
+    for (auto pin : this->pins) {
+      if (pin.number == pinNumber) {
+        pin.direction_ = direction;
+        return ErrorCode::kOk;
+      }
+    }
+    return ErrorCode::kConnectionError;
+  }
+};
+
+
 class GpioDigitalDriver:IgpioDigitalDriver{
  public:
   GpioDigitalDriver();
+  ~GpioDigitalDriver();
 
+  core::ErrorCode initializePin(uint8_t pinNumber, direction_t direction) override;
   /**
    * @brief Set the pin Value 
    * 
@@ -48,13 +95,6 @@ class GpioDigitalDriver:IgpioDigitalDriver{
    * @param value 
    * @return core::ErrorCode 
    */
-  core::ErrorCode setActivePinLow(uint8_t pinNumber, bool value) override;
-  /**
-   * @brief Get the pin Value 
-   * 
-   * @param pinNumber 
-   * @return uint8_t 
-   */
   uint8_t getValue(uint8_t pinNumber) override;
   /**
    * @brief Get the pin Direction
@@ -70,12 +110,12 @@ class GpioDigitalDriver:IgpioDigitalDriver{
    * @return true 
    * @return false 
    */
-  bool getActivePinLow(uint8_t pinNumber) override;
-
  private:
   std::string getEndpointPath(uint8_t pinNumber, std::string endpoint);
+  core::ErrorCode  unregisterPin(uint8_t pinNumber);
+  const std::string path = "/sys/class/gpio";
 
-  const std::string path = "/sys/class/gpio/gpio";
+  Pins registered_pins;
 };
 }  // namespace gpio
 }  // namespace core

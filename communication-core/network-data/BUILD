@@ -2,7 +2,7 @@ cc_library(
     name = "interfaces",
     hdrs = ["iframe.h"],
     visibility = ["//communication-core:__subpackages__"],
-    deps = ["//core"],
+    deps = ["//core/common:common_types"],
 )
 
 cc_library(
@@ -13,8 +13,8 @@ cc_library(
         "//communication-core:__subpackages__",
         "//diag/dtc/data:__subpackages__",
         "//mw/diag/dtc:__subpackages__",
-        "//diag:__subpackages__",
-        "//mw/temp:__subpackages__",
+        "//diag/exec/data:__subpackages__",
+        "//mw:__subpackages__",
         ],
     deps = [":interfaces"],
 )
@@ -25,10 +25,10 @@ cc_library(
     visibility = [
         "//communication-core:__subpackages__",
         "//diag:__subpackages__",
-        "//mw/temp:__subpackages__"
+        "//mw:__subpackages__",
         ],
     deps = [
         ":interfaces",
-        # "//core/common:common_converter"
-    ],
+        "//core/common:common_converter",
+        ],
 )

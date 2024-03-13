@@ -11,7 +11,6 @@ cc_library(
     hdrs = ["parser.h"],
     visibility = ["//visibility:public"],
     deps = [
-        "//core/results:results_lib",
         "//diag/base/data:diag_data_structure",
     ],
 )

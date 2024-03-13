@@ -12,7 +12,6 @@
 #include "mw/diag/ota/code/service/ota_service.h"
 
 #include "communication-core/sockets/ipc_socket.h"
-#include "core/results/result.h"
 #include "diag/base/controller/diag_controller.h"
 namespace simba {
 namespace mw {
@@ -24,7 +23,7 @@ void OtaService::Run(const std::unordered_map<std::string, core::Parm>& parms) {
   diag_controller->AddMethod(
       0x01,
       [this](const std::vector<uint8_t> payload) {
-        return core::Result<std::vector<uint8_t>>{};
+        return {};
       },
       diag::DiagMethodType::WRITE);
   AppLogger::Info("Application function started");

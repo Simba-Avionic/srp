@@ -62,10 +62,10 @@ simba::core::ErrorCode UdpSocket::Transmit(const std::string& ip,
   rc = sendto(client_socket, buffor, payload.size(), 0,
               (struct sockaddr*)&remote, sizeof(remote));
   delete[] buffor;
+  close(client_socket);
   if (rc == -1) {
     return simba::core::ErrorCode::kError;
   }
-  rc = close(client_socket);
   return simba::core::ErrorCode::kOk;
 }
 

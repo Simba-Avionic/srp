@@ -15,7 +15,6 @@
 #include <string>
 #include <vector>
 
-#include "core/results/result.h"
 #include "mw/logger/code/data/dlt_log_type.h"
 #include "mw/logger/code/data/idlt_frame.h"
 namespace simba {
@@ -79,7 +78,7 @@ class DltFrame final : public IDLTFrame {
     APID = app_id;
     MSIN = type;
   }
-  core::Result<std::vector<uint8_t>> ParseFrame() noexcept override {
+  std::optional<std::vector<uint8_t>> ParseFrame() noexcept override {
     LEN += payload.Length();
     std::vector<uint8_t> res{HTYP, MCNT, static_cast<uint8_t>(LEN >> 8U),
                              static_cast<uint8_t>(LEN & 0xFFU)};
@@ -95,7 +94,7 @@ class DltFrame final : public IDLTFrame {
     std::copy(this->CTID.begin(), this->CTID.end(), std::back_inserter(res));
     const auto r = payload.ParseArg();
     std::copy(r.begin(), r.end(), std::back_inserter(res));
-    return core::Result{res};
+    return std::optional{res};
   }
 };
 }  // namespace data

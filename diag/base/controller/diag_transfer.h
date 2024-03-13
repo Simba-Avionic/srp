@@ -27,16 +27,16 @@ class DiagTransfer : public com::someip::data::Transfer {
   explicit DiagTransfer(const uint16_t transfer_id)
       : com::someip::data::Transfer{transfer_id} {}
 
-  simba::core::Result<std::vector<uint8_t>> GetPayloadAsc() {
+  std::optional<std::vector<uint8_t>> GetPayloadAsc() {
     std::unique_lock<std::mutex> lk(cv_m);
     if (!cv.wait_for(lk, std::chrono::seconds{2},
                      [this]() { return this->IsRespond() || this->error; })) {
-      return simba::core::Result<std::vector<uint8_t>>{};
+      return {};
     }
     if (!this->error) {
-      return simba::core::Result<std::vector<uint8_t>>{response};
+      return response;
     } else {
-      return simba::core::Result<std::vector<uint8_t>>{};
+      return {};
     }
   }
 

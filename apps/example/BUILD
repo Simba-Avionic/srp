@@ -9,6 +9,7 @@ cc_binary(
     deps = [
         "//core/application:simba_application",
         "@untar",
+        "//mw/gpio_server/controller:gpio_controller",
     ],
 )
 

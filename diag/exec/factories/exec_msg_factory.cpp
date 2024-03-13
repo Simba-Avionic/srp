@@ -23,9 +23,9 @@ std::vector<uint8_t> ExecMsgFactory::GetBuffer(
 
 std::shared_ptr<diag::exec::ExecHeader> ExecMsgFactory::GetHeader(
     std::vector<uint8_t> raw_data) {
-  auto header = std::make_shared<diag::exec::ExecHeader>();
-  header->SetBuffor(raw_data);
-  return header;
+  auto header = diag::exec::ExecHeader();
+  header.SetBuffor(raw_data);
+  return std::make_shared<diag::exec::ExecHeader>(header);
 }
 
 }  // namespace exec

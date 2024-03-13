@@ -8,7 +8,6 @@ cc_library(
     deps = [
         "//communication-core/someip:someip_header",
         "//communication-core/someip:someip_types",
-        "//core",
     ],
 )
 
@@ -23,7 +22,6 @@ cc_library(
         ":someip_factory_interface",
         "//communication-core/someip:someip_header",
         "//communication-core/someip:someip_types",
-        "//core",
     ],
 )
 
@@ -38,6 +36,5 @@ cc_library(
         ":someip_factory_interface",
         "//communication-core/someip:someip_header",
         "//communication-core/someip:someip_types",
-        "//core",
     ],
 )

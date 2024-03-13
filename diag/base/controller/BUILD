@@ -5,7 +5,6 @@ cc_library(
     deps = [
         "//communication-core/someip-controller:transfer_lib",
         "//core/common:common_types",
-        "//core/results:results_lib",
     ],
 )
 
@@ -14,7 +13,6 @@ cc_library(
     hdrs = ["idiag_controller.h"],
     deps = [
         "//core/common:common_types",
-        "//core/results:results_lib",
     ],
 )
 
@@ -31,7 +29,6 @@ cc_library(
         "//communication-core/sockets:socket_interface",
         "//core/common:common_types",
         "//core/logger:Logger",
-        "//core/results:results_lib",
         "//diag/base/controller:diag_transfer",
         "//diag/base/controller:idiag_controller",
         "//diag/base/data:diag_parser",

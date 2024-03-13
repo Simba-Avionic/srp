@@ -13,18 +13,20 @@
 #include <fstream>
 #include <iostream>
 #include <vector>
+#include <memory>
 
 #include "boost/algorithm/string.hpp"
 #include "core/application/parm.h"
 #include "core/logger/Logger.h"
 #include "core/logger/logger_factory.h"
+#include "core/json/json_parser.h"
 #include "nlohmann/json.hpp"
 
 namespace simba {
 namespace core {
 void ApplicationCommon::StopApp() {
   this->source.request_stop();
-  exit(1);
+  // exit(1);
 }
 bool ApplicationCommon::FileExist(const std::string& name) {
   std::ifstream file{name};
@@ -40,6 +42,13 @@ void ApplicationCommon::RunApp(int argc, char const* argv[]) {
   const std::string app_name =
       help_path.substr(help_path.find_last_of("/") + 1);
   parms.insert({"app_name", app_name});
+    auto obj = json::JsonParser::Parser("/opt/" + parms.at("app_name") +
+                                      "/etc/srp_app.json")
+                 .value();
+  auto app_id_ = obj.GetNumber<uint16_t>("app_id");
+  if (app_id_.has_value()) {
+    this->exec_.Init(app_id_.value());
+  }
   onRun(parms);
   parms.clear();
 }
@@ -120,8 +129,8 @@ ErrorCode ApplicationCommon::CommonConfig(
     AppLogger::SetParms(app_id, log_level);
     for (const auto& mode : log_mode) {
       auto res = logger::LoggerFactory::CreateLogger(mode);
-      if (res.HasValue()) {
-        AppLogger::AddLogger(res.Value());
+      if (res.has_value()) {
+        AppLogger::AddLogger(res.value());
       }
     }
   }

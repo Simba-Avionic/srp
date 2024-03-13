@@ -40,7 +40,7 @@ simba::core::ErrorCode IpcSocket::Init(const SocketConfig& config) {
   strcpy(server_sockaddr.sun_path,             // NOLINT
          ("/tmp/" + config.GetIp()).c_str());  // NOLINT
   len = sizeof(server_sockaddr);
-  unlink(config.GetIp().c_str());
+  unlink(("/run/" + config.GetIp()).c_str());
   return simba::core::ErrorCode::kOk;
 }
 
@@ -54,14 +54,13 @@ simba::core::ErrorCode IpcSocket::Transmit(const std::string& ip,
   int client_socket, rc;
   struct sockaddr_un remote;
   memset(&remote, 0, sizeof(struct sockaddr_un));
-
   client_socket = socket(AF_UNIX, SOCK_DGRAM, 0);
   if (client_socket == -1) {
     return simba::core::ErrorCode::kError;
   }
 
   remote.sun_family = AF_UNIX;
-  strcpy(remote.sun_path, ("/tmp/" +ip).c_str());  // NOLINT
+  strcpy(remote.sun_path, ("/run/" + ip).c_str());  // NOLINT
 
   std::uint8_t* buffor = new std::uint8_t[payload.size()];
   std::copy(payload.begin(), payload.end(), buffor);
@@ -69,11 +68,11 @@ simba::core::ErrorCode IpcSocket::Transmit(const std::string& ip,
   rc = sendto(client_socket, buffor, payload.size(), 0,
               (struct sockaddr*)&remote, sizeof(remote));
   delete[] buffor;
+  close(client_socket);
   if (rc == -1) {
     return simba::core::ErrorCode::kError;
   }
 
-  rc = close(client_socket);
   return simba::core::ErrorCode::kOk;
 }
 

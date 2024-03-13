@@ -20,8 +20,8 @@ static constexpr uint8_t hdrSize = 0x04;
 
 DtcHeader::DtcHeader(const uint16_t &dtc_id, const uint8_t &dtc_status)
             :dtc_id_(dtc_id), dtc_status_(dtc_status) {
-            this->lenght_ = hdrSize;
-            this->SetData();
+                this->lenght_ = hdrSize;
+                this->SetData();
     }
 DtcHeader::DtcHeader():dtc_id_{0}, dtc_status_{0} {
     this->SetData();
