@@ -85,84 +85,58 @@ simba::core::ErrorCode TempService::LoadConfig(const std::string& path) {
     return simba::core::ErrorCode::kOk;
 }
 
-void TempService::RetrieveTempReadings(
-    std::shared_ptr<std::vector<TempReading>> readings,
-    std::shared_ptr<std::vector<std::future<simba::core::ErrorCode>>> futures) {
+std::vector<TempReading> TempService::RetrieveTempReadings() {
+    std::vector<TempReading> readings;
     for (const auto& path : sensorPathsToIds) {
-        std::future<simba::core::ErrorCode> future =
-            std::async(std::launch::async, [this, &path, &readings]
-            () -> simba::core::ErrorCode {
-            std::ifstream file(path.first + "/w1_slave");
+        std::ifstream file(path.first + "/w1_slave");
 
-            if (!file) {
-                AppLogger::Warning("Sensor " + path.first + " not available!");
-                return simba::core::ErrorCode::kError;
+        if (!file) {
+            AppLogger::Warning("Sensor " + path.first + " not available!");
+            break;
+        }
+
+        std::string line;
+        double sensorValueRaw;
+
+        while (std::getline(file, line)) {
+            size_t found = line.find("t=");
+            if (found != std::string::npos) {
+                sensorValueRaw = stof(line.substr(found + 2)) / 1000.0;
+                break;
             }
+        }
+        file.close();
 
-            std::string line;
-            double sensorValueRaw;
+        AppLogger::Debug("Sensor " + path.first +
+            ": " + std::to_string(sensorValueRaw));
 
-            while (std::getline(file, line)) {
-                size_t found = line.find("t=");
-                if (found != std::string::npos) {
-                    sensorValueRaw = stof(line.substr(found + 2)) / 1000.0;
-                    break;
-                }
-            }
-            file.close();
-
-            AppLogger::Debug("Sensor " + path.first +
-                ": " + std::to_string(sensorValueRaw));
-
-            readings->push_back(TempReading{path.second, sensorValueRaw});
-            return simba::core::ErrorCode::kOk;
-        });
-        futures->push_back(std::move(future));
+        readings.push_back(TempReading{path.second, sensorValueRaw});
     }
-
-    for (auto& future : *futures) {
-        future.get();
-    }
-    futures->clear();
+    return readings;
 }
 
 void TempService::SendTempReadings(
-    std::shared_ptr<std::vector<TempReading>> readings,
-    std::shared_ptr<std::vector<std::future<simba::core::ErrorCode>>> futures) {
+    const std::vector<TempReading>& readings) {
     for (const auto& client_id : this->subscribers) {
-        // async functions can be deleted
-        // because there won't be many sensors/clients
-        std::future<simba::core::ErrorCode> future =
-            std::async(std::launch::async, [this, &client_id, &readings]
-            () -> simba::core::ErrorCode {
-            simba::mw::temp::TempReadingMsgFactory factory;
-            std::string ip = kSubscriberPrefix + std::to_string(client_id);
+        simba::mw::temp::TempReadingMsgFactory factory;
+        std::string ip = kSubscriberPrefix + std::to_string(client_id);
 
-            std::vector<uint8_t> data =
-                factory.GetBuffer(std::make_shared<TempReadingMsg>(), *readings);
+        std::vector<uint8_t> data =
+            factory.GetBuffer(std::make_shared<TempReadingMsg>(), readings);
 
-            if (auto ret = this->sub_sock_.Transmit(ip, 0, data)) {
-                AppLogger::Error("Can't send message to: " + ip);
-            }
-            return simba::core::ErrorCode::kOk;
-        });
-        futures->push_back(std::move(future));
+        if (auto ret = this->sub_sock_.Transmit(ip, 0, data)) {
+            AppLogger::Error("Can't send message to: " + ip);
+            break;
+        }
     }
-
-    for (auto& future : *futures) {
-        future.get();
-    }
-    futures->clear();
 }
 
 simba::core::ErrorCode TempService::Loop(std::stop_token stoken) {
-    std::shared_ptr<std::vector<TempReading>> readings;
-    std::shared_ptr<std::vector<std::future<simba::core::ErrorCode>>> futures;
-
+    std::vector<TempReading> readings;
     while (true) {
-        RetrieveTempReadings(readings, futures);
-        SendTempReadings(readings, futures);
-        readings->clear();
+        readings = RetrieveTempReadings();
+        SendTempReadings(readings);
+        readings.clear();
         std::this_thread::sleep_for(this->temp_timeout);
     }
 }

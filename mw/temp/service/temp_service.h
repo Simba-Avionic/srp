@@ -84,11 +84,9 @@ class TempService final : public simba::core::ApplicationMW {
   simba::core::ErrorCode Initialize(
       const std::unordered_map<std::string, std::string>& parms) final;
 
-  void RetrieveTempReadings(std::shared_ptr<std::vector<TempReading>> readings,
-    std::shared_ptr<std::vector<std::future<simba::core::ErrorCode>>> futures);
+  std::vector<TempReading> RetrieveTempReadings();
 
-  void SendTempReadings(std::shared_ptr<std::vector<TempReading>> readings,
-    std::shared_ptr<std::vector<std::future<simba::core::ErrorCode>>> futures);
+  void SendTempReadings(const std::vector<TempReading>& readings);
 
  public:
   simba::core::ErrorCode Loop(std::stop_token stoken);
