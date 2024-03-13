@@ -39,6 +39,7 @@ void ApplicationMW::onRun(
 }
 ErrorCode ApplicationMW::MwConfig(
     const std::unordered_map<std::string, std::string>& parms) {
+
   auto obj = json::JsonParser::Parser("/opt/" + parms.at("app_name") +
                                       "/etc/srp_app.json")
                  .value();

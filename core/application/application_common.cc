@@ -21,6 +21,7 @@
 #include "core/logger/logger_factory.h"
 #include "core/json/json_parser.h"
 #include "nlohmann/json.hpp"
+
 namespace simba {
 namespace core {
 void ApplicationCommon::StopApp() {
@@ -74,8 +75,9 @@ ErrorCode ApplicationCommon::CommonConfig(
   ErrorCode res = ErrorCode::kOk;
 
   std::ifstream file{"/opt/" + parms.at("app_name") + "/etc/logger.json"};
+
   if (!file.is_open()) {
-    std::cerr << "Logger config file not exist! -> "
+    std::cerr << "Logger config file doesn't exist! -> "
               << "/opt/" + parms.at("app_name") + "/etc/logger.json"
               << std::endl;
     return ErrorCode::kError;
