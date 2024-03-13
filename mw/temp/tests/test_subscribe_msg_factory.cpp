@@ -1,9 +1,9 @@
 /**
- * @file test_dtc_msg_factory.cpp
- * @author Mateusz Krajewski (matikrajek42@gmail.com)
+ * @file test_subscribe_msg_factory.cpp
+ * @author Maciek Matuszewski (maciej.matuszewsky@gmail.com)
  * @brief 
  * @version 0.1
- * @date 2024-01-10
+ * @date 2024-03-02
  * 
  * @copyright Copyright (c) 2024
  * 

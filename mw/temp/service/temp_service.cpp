@@ -27,7 +27,7 @@ simba::core::ErrorCode TempService::Run(std::stop_token token) {
 
 simba::core::ErrorCode TempService::Initialize(
     const std::unordered_map<std::string, std::string>& parms) {
-    LoadConfig(kTempConfigPath);
+    LoadConfig(parms);
 
     if (auto ret = this->sub_sock_.Init(
         com::soc::SocketConfig(kTempServiceName, 0, 0))) {
@@ -65,9 +65,9 @@ void TempService::SubCallback(const std::string& ip, const std::uint16_t& port,
     }
 }
 
-simba::core::ErrorCode TempService::LoadConfig(const std::string& path) {
-    std::ifstream file(path);
-
+simba::core::ErrorCode TempService::LoadConfig(
+    const std::unordered_map<std::string, std::string>& parms) {
+    std::ifstream file{"/opt/" + parms.at("app_name") + "/etc/config.json"};
     if (!file) {
         AppLogger::Error("Couldn't load temperature sensors config!");
         return simba::core::ErrorCode::kError;
@@ -81,7 +81,6 @@ simba::core::ErrorCode TempService::LoadConfig(const std::string& path) {
         it != jsonData["sensors-temp"].end(); ++it) {
         sensorPathsToIds[it.key()] = it.value();
     }
-
     return simba::core::ErrorCode::kOk;
 }
 
@@ -121,8 +120,7 @@ void TempService::SendTempReadings(
         simba::mw::temp::TempReadingMsgFactory factory;
         std::string ip = kSubscriberPrefix + std::to_string(client_id);
 
-        std::vector<uint8_t> data =
-            factory.GetBuffer(std::make_shared<TempReadingMsg>(), readings);
+        std::vector<uint8_t> data = factory.GetBuffer(readings);
 
         if (auto ret = this->sub_sock_.Transmit(ip, 0, data)) {
             AppLogger::Error("Can't send message to: " + ip);

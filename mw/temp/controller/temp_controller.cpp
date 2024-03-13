@@ -15,7 +15,8 @@ namespace simba {
 namespace mw {
 namespace temp {
 
-simba::core::ErrorCode TempController::Init(uint16_t service_id) {
+simba::core::ErrorCode TempController::Init(
+    uint16_t service_id, simba::com::soc::RXCallback callback) {
     this->service_id = service_id;
 
     if (auto ret = this->sub_sock_.Init(
@@ -24,9 +25,8 @@ simba::core::ErrorCode TempController::Init(uint16_t service_id) {
         AppLogger::Error("Couldn't initialize socket!");
         return ret;
     }
-    this->sub_sock_.SetRXCallback(
-        std::bind(&simba::mw::temp::TempController::Callback, this,
-                std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+    this->callback_ = callback;
+    SetTempRXCallback();
 
     this->Subscribe();
     return simba::core::ErrorCode::kOk;
@@ -45,15 +45,13 @@ simba::core::ErrorCode TempController::Subscribe() {
     return simba::core::ErrorCode::kOk;
 }
 
-void TempController::Callback(const std::string& ip, const std::uint16_t& port,
-    const std::vector<std::uint8_t> data) {
-    this->latest_readings = factory.GetPayload(data);
-
-    for (auto reading : latest_readings) {
-        AppLogger::Debug(std::to_string(reading.first) +
-                " " + std::to_string(reading.second));
-    }
-    return;
+void TempController::SetTempRXCallback() {
+    simba::com::soc::RXCallback lambdaCallback = [this](
+        const std::string& ip, const std::uint16_t& port,
+            const std::vector<std::uint8_t> data) {
+        this->callback_(ip, port, data);
+    };
+    this->sub_sock_.SetRXCallback(lambdaCallback);
 }
 
 }  // namespace temp

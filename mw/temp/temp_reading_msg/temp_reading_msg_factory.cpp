@@ -13,16 +13,15 @@
 
 #include <algorithm>
 #include <utility>
+#include <cstring>
 namespace simba {
 namespace mw {
 namespace temp {
 
 std::vector<uint8_t> TempReadingMsgFactory::GetBuffer(
-  std::shared_ptr<simba::mw::temp::TempReadingMsg> header,
   std::vector<std::pair<uint16_t, double>> payload) {
-  std::vector<std::uint8_t> res{header->GetBuffor()};
+  std::vector<std::uint8_t> res;
 
-  // Serialize payload
   for (const auto& pair : payload) {
       uint16_t first = pair.first;
       double second = pair.second;
@@ -40,21 +39,11 @@ std::vector<uint8_t> TempReadingMsgFactory::GetBuffer(
   return res;
 }
 
-std::shared_ptr<simba::mw::temp::TempReadingMsg> TempReadingMsgFactory::GetHeader(
-    std::vector<uint8_t> raw_data) {
-  auto header = std::make_shared<simba::mw::temp::TempReadingMsg>();
-  header->SetBuffor(raw_data);
-  return header;
-}
-
 std::vector<std::pair<uint16_t, double>>
   TempReadingMsgFactory::GetPayload(std::vector<uint8_t> raw_data) {
-    auto header = GetHeader(raw_data);
-
     std::vector<std::pair<uint16_t, double>> payload{};
     if (raw_data.size() > 4) {
-      for (size_t i = header.get()->GetSize();
-        i < raw_data.size(); i += (sizeof(uint16_t) + sizeof(double))) {
+      for (size_t i = 0; i < raw_data.size(); i += (sizeof(uint16_t) + sizeof(double))) {
           uint16_t first;
           std::memcpy(&first, &raw_data[i], sizeof(uint16_t));
 
@@ -63,7 +52,6 @@ std::vector<std::pair<uint16_t, double>>
 
           payload.push_back(std::make_pair(first, second));
       }
-
     return payload;
     }
     return {};

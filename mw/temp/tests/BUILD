@@ -25,7 +25,6 @@ cc_test(
     visibility = ["//visibility:public"],
     deps=[
         "@com_google_googletest//:gtest_main",
-        "//mw/temp/temp_reading_msg:temp_reading_msg",
         "//mw/temp/temp_reading_msg:temp_reading_msg_factory",
     ]
 )

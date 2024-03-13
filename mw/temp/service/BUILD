@@ -18,16 +18,8 @@ cc_binary(
         "//communication-core/sockets:socket_ipc",
         "//mw/temp/subscribe_msg:subscribe_header",
         "//mw/temp/subscribe_msg:subscribe_msg_factory",
-        "//mw/temp/temp_reading_msg:temp_reading_msg",
         "//mw/temp/temp_reading_msg:temp_reading_msg_factory",
         "@com_json//:json"
 
     ],
-    
-    data = [
-        "configs/logger.json",
-        "configs/app.json",
-        "configs/srp_app.json",
-        "configs/temp_config.json"
-    ]
 )

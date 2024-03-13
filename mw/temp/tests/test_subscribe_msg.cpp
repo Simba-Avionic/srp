@@ -1,14 +1,13 @@
 /**
- * @file test_data_hdr.cpp
- * @author Mateusz Krajewski (matikrajek42@gmail.com)
+ * @file test_subscribe_msg.cpp
+ * @author Maciek Matuszewski (maciej.matuszewsky@gmail.com)
  * @brief 
  * @version 0.1
- * @date 2024-01-10
+ * @date 2024-03-02
  * 
  * @copyright Copyright (c) 2024
  * 
  */
-
 #include <gtest/gtest.h>
 
 #include "mw/temp/subscribe_msg/subscribe_header.h"

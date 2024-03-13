@@ -12,13 +12,16 @@
 #ifndef MW_TEMP_TEMP_READING_MSG_TEMP_READING_MSG_FACTORY_H_
 #define MW_TEMP_TEMP_READING_MSG_TEMP_READING_MSG_FACTORY_H_
 
-#include "temp_reading_msg.h"
 #include <vector>
 #include <memory>
+#include <utility>
 
 namespace simba {
 namespace mw {
 namespace temp {
+
+// first - sensor_id, second - value
+using TempReading = std::pair<uint16_t, double>;
 
 class TempReadingMsgFactory {
  public:
@@ -29,17 +32,7 @@ class TempReadingMsgFactory {
    * @param payload
    * @return std::vector<uint8_t>
    */
-  std::vector<uint8_t> GetBuffer(std::shared_ptr<simba::mw::temp::TempReadingMsg> header,
-                                 std::vector<TempReading> payload);
-
-  /**
-   * @brief Create header object from raw data
-   *
-   * @param raw_data
-   * @return std::shared_ptr<SubscribeHeader>
-   */
-  std::shared_ptr<simba::mw::temp::TempReadingMsg> GetHeader(
-    std::vector<uint8_t> raw_data);
+  std::vector<uint8_t> GetBuffer(std::vector<TempReading> payload);
 
   /**
    * @brief Get payload from raw data

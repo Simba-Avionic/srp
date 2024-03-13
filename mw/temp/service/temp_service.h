@@ -27,6 +27,7 @@
 #include <unordered_map>
 #include <set>
 #include <future>  // NOLINT
+#include "core/json/json_parser.h"
 #include "nlohmann/json.hpp"
 
 #include "core/application/application_mw.h"
@@ -37,7 +38,6 @@
 #include "mw/temp/subscribe_msg/subscribe_header.h"
 #include "mw/temp/subscribe_msg/subscribe_msg_factory.h"
 
-#include "mw/temp/temp_reading_msg/temp_reading_msg.h"
 #include "mw/temp/temp_reading_msg/temp_reading_msg_factory.h"
 
 using json = nlohmann::json;
@@ -52,9 +52,6 @@ static constexpr char const*
 static constexpr char const*
   kSubscriberPrefix = "SIMBA.TEMP.";
 
-static constexpr char const* kTempConfigPath =
-  "mw/temp/service/configs/temp_config.json";
-
 class TempService final : public simba::core::ApplicationMW {
  protected:
   com::soc::IpcSocket sub_sock_{};
@@ -68,7 +65,8 @@ class TempService final : public simba::core::ApplicationMW {
 
   void StartTempThread();
 
-  simba::core::ErrorCode LoadConfig(const std::string& path);
+  simba::core::ErrorCode LoadConfig(
+    const std::unordered_map<std::string, std::string>& parms);
 
   /**
    * @brief This function is called to launch the application

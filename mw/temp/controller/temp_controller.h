@@ -31,7 +31,6 @@
 #include "mw/temp/subscribe_msg/subscribe_header.h"
 #include "mw/temp/subscribe_msg/subscribe_msg_factory.h"
 
-#include "mw/temp/temp_reading_msg/temp_reading_msg.h"
 #include "mw/temp/temp_reading_msg/temp_reading_msg_factory.h"
 
 #include "mw/temp/service/temp_service.h"
@@ -42,19 +41,21 @@ namespace temp {
 
 class TempController {
  protected:
-    uint16_t service_id;
-    com::soc::IpcSocket sub_sock_{};
-    std::vector<TempReading> latest_readings;
-    simba::mw::temp::TempReadingMsgFactory factory;
+  uint16_t service_id;
+  com::soc::IpcSocket sub_sock_{};
+  std::vector<TempReading> latest_readings;
+  simba::mw::temp::TempReadingMsgFactory factory;
+  simba::com::soc::RXCallback callback_;
 
  private:
-    virtual simba::core::ErrorCode Init(uint16_t service_id);
+  virtual simba::core::ErrorCode Init(uint16_t service_id, simba::com::soc::RXCallback callback);
 
  public:
-    virtual void Callback(const std::string& ip, const std::uint16_t& port,
-        const std::vector<std::uint8_t> data);
+  virtual void SetTempRXCallback();
+  virtual simba::core::ErrorCode Subscribe();
 
-    virtual simba::core::ErrorCode Subscribe();
+  void TempRXCallback(const std::string& ip,
+     const std::uint16_t& port, const std::vector<std::uint8_t> data);
 };
 
 }  // namespace temp

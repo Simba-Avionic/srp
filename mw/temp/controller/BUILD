@@ -13,7 +13,6 @@ cc_library(
         "//communication-core/sockets:socket_ipc",
         "//mw/temp/subscribe_msg:subscribe_header",
         "//mw/temp/subscribe_msg:subscribe_msg_factory",
-        "//mw/temp/temp_reading_msg:temp_reading_msg",
         "//mw/temp/temp_reading_msg:temp_reading_msg_factory",
         "//mw/temp/service:temp_service_mw",
         "@com_json//:json"
