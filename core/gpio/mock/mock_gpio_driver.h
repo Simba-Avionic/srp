@@ -8,9 +8,13 @@
  * @copyright Copyright (c) 2024
  * 
  */
-#include "gmock/gmock.h"
-#include <gtest/gtest.h>
+#ifndef CORE_GPIO_MOCK_MOCK_GPIO_DRIVER_H_
+#define CORE_GPIO_MOCK_MOCK_GPIO_DRIVER_H_
+
 #include <cstdint>
+
+#include "gmock/gmock.h"
+#include "gtest/gtest.h"
 
 #include "core/gpio/IGPIO_digital_driver.h"
 
@@ -24,3 +28,5 @@ class MockGPIO : public simba::core::gpio::IgpioDigitalDriver {
   MOCK_METHOD((simba::core::ErrorCode), setDirection, (uint8_t, simba::core::gpio::direction_t), (override));
   virtual ~MockGPIO() = default;
 };
+
+#endif  // CORE_GPIO_MOCK_MOCK_GPIO_DRIVER_H_

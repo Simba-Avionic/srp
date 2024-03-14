@@ -8,8 +8,8 @@
  * @copyright Copyright (c) 2024
  * 
  */
-#ifndef COMMUNICATION_CORE_SOCKETS_TESTS_MOCK_MOCKSOCKET_H_
-#define COMMUNICATION_CORE_SOCKETS_TESTS_MOCK_MOCKSOCKET_H_
+#ifndef COMMUNICATION_CORE_SOCKETS_MOCK_MOCKSOCKET_H_
+#define COMMUNICATION_CORE_SOCKETS_MOCK_MOCKSOCKET_H_
 
 #include <string>
 #include <vector>
@@ -27,4 +27,4 @@ class MockSocket : public simba::com::soc::ISocket {
   MOCK_METHOD(void, StartRXThread, (), (override));
 };
 
-#endif  // COMMUNICATION_CORE_SOCKETS_TESTS_MOCK_MOCKSOCKET_H_
+#endif  // COMMUNICATION_CORE_SOCKETS_MOCK_MOCKSOCKET_H_

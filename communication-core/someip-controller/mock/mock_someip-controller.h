@@ -8,6 +8,9 @@
  * @copyright Copyright (c) 2024
  * 
  */
+#ifndef COMMUNICATION_CORE_SOMEIP_CONTROLLER_MOCK_MOCK_SOMEIP_CONTROLLER_H_
+#define COMMUNICATION_CORE_SOMEIP_CONTROLLER_MOCK_MOCK_SOMEIP_CONTROLLER_H_
+
 #include <cstdint>
 #include <vector>
 #include <string>
@@ -31,3 +34,5 @@ class MockSomeIpController : public simba::com::someip::ISomeIpController{
 
   virtual ~MockSomeIpController() = default;
 };
+
+#endif  // COMMUNICATION_CORE_SOMEIP_CONTROLLER_MOCK_MOCK_SOMEIP_CONTROLLER_H_

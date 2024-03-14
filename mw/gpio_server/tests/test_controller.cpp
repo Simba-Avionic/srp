@@ -1,3 +1,13 @@
+/**
+ * @file test_controller.cpp
+ * @author Mateusz Krajewski (matikrajek42@gmail.com)
+ * @brief 
+ * @version 0.1
+ * @date 2024-03-14
+ * 
+ * @copyright Copyright (c) 2024
+ * 
+ */
 #include "gtest/gtest.h"
 
 #include "mw/gpio_server/controller/gpio_controller.hpp"
@@ -16,4 +26,4 @@ TEST(GPIO_CONTROLLER, TESTS) {
   EXPECT_EQ(gpio_.SetPinValue(14, simba::gpio::Value::ERROR), simba::core::ErrorCode::kError);
   EXPECT_EQ(gpio_.GetPinValue(21), simba::gpio::Value::HIGH);
   EXPECT_EQ(gpio_.Init(12), simba::core::ErrorCode::kOk);
-};
+}

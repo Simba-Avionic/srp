@@ -11,8 +11,7 @@
 #include "exec_controller.hpp"
 #include "core/logger/Logger.h"
 #include "communication-core/sockets/ipc_socket.h"
-#include "diag/exec/factories/exec_msg_factory.hpp"
-
+#include "diag/exec/data/exec_header.hpp"
 namespace simba {
 namespace diag {
 namespace exec {
@@ -22,7 +21,6 @@ void ExecController::Init(uint16_t service_id) {
     this->status_ = Status::Start_up;
     this->flags_ = std::bitset<5>{"00000"};
     this->thread_ = std::jthread([&](std::stop_token stop_token) {
-    auto factory_ = ExecMsgFactory();
     auto sock_ = com::soc::IpcSocket();
     auto hdr = ExecHeader(service_id, 1, this->flags_.to_ulong() << 3 | this->status_);
     this->mtx_status_.unlock();
@@ -31,7 +29,7 @@ void ExecController::Init(uint16_t service_id) {
         this->mtx_status_.lock();
         hdr.SetFlags(this->flags_.to_ulong() << 3 | this->status_);
         this->mtx_status_.unlock();
-        auto data = factory_.GetBuffer(std::make_shared<ExecHeader>(hdr));
+        auto data = hdr.GetBuffor();
         sock_.Transmit("SIMBA.EXE", 0, data);
         AppLogger::Info("id: "+ std::to_string(hdr.GetServiceID())
                     +" timestamp:"+std::to_string(hdr.GetTimestamp()));

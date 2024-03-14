@@ -8,11 +8,15 @@
  * @copyright Copyright (c) 2024
  * 
  */
-#include "gmock/gmock.h"
-#include <gtest/gtest.h>
+#ifndef CORE_I2C_MOCK_MOCK_I2CDRIVER_HPP_
+#define CORE_I2C_MOCK_MOCK_I2CDRIVER_HPP_
+
 #include <cstdint>
 #include <string>
 #include <vector>
+
+#include "gmock/gmock.h"
+#include "gtest/gtest.h"
 
 #include "core/i2c/Ii2cdriver.h"
 
@@ -25,3 +29,4 @@ class MockI2C : public simba::core::II2C {
                                         std::vector<uint8_t>), (override));
   virtual ~MockI2C() = default;
 };
+#endif  // CORE_I2C_MOCK_MOCK_I2CDRIVER_HPP_
