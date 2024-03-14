@@ -147,8 +147,6 @@ class App(tk.Tk):
         data_reader_thread.start()
 
     def update_data_label(self, data):
-        # self.temperature_up.delete(0, tk.END)
-        # self.temperature_up.insert(tk.END, data)
         self.temperature_up.config(text=str(data))
 
     def start_saving(self):

@@ -1,0 +1,129 @@
+{
+  "service_id": 1,
+  "interface": [
+    {
+      "ip": "127.0.0.1",
+      "port": 10101
+    }
+  ],
+  "pub_methods": {},
+  "pub_event": {},
+  "req_methods": {
+    "PC_APP/setServoValue": {
+      "service_id": 515,
+      "method_id": 1
+    },
+    "PC_APP/readServoValue": {
+      "service_id": 515,
+      "method_id": 2
+    },
+    "PC_APP/startPrime": {
+      "service_id": 516,
+      "method_id": 3
+    },
+    "PC_APP/onPrime": {
+      "service_id": 516,
+      "method_id": 1
+    },
+    "PC_APP/offPrime": {
+      "service_id": 516,
+      "method_id": 2
+    },
+    "PC_APP/LoggerStart": {
+      "service_id": 517,
+      "method_id": 1
+    },
+    "PC_APP/LoggerStop": {
+      "service_id": 517,
+      "method_id": 2
+    },
+    "PC_APP/EngineStart": {
+      "service_id": 518,
+      "method_id": 1
+    },
+    "PC_APP/EngineSetMode": {
+      "service_id": 518,
+      "method_id": 2
+    },
+    "PC_APP/diagMethodRequestJob": {
+      "service_id": 513,
+      "method_id": 1
+    },
+    "PC_APP/diagMethodRequestRead": {
+      "service_id": 513,
+      "method_id": 2
+    },
+    "PC_APP/diagMethodRequestWrite": {
+      "service_id": 513,
+      "method_id": 3
+    }
+  },
+  "req_events": {
+    "PC_APP/servoStatusEvent": {
+      "service_id": 515,
+      "event_id": 32769
+    },
+    "PC_APP/newTempEvent_1": {
+      "service_id": 514,
+      "event_id": 32769
+    },
+    "PC_APP/newTempEvent_2": {
+      "service_id": 514,
+      "event_id": 32770
+    },
+    "PC_APP/newTempEvent_3": {
+      "service_id": 514,
+      "event_id": 32771
+    },
+    "PC_APP/newTempEvent_4": {
+      "service_id": 514,
+      "event_id": 32772
+    },
+    "PC_APP/newPressEvent": {
+      "service_id": 514,
+      "event_id": 32773
+    },
+    "PC_APP/newDPressEvent": {
+      "service_id": 514,
+      "event_id": 32774
+    },
+    "PC_APP/primeStatusEvent": {
+      "service_id": 516,
+      "event_id": 32769
+    },
+    "PC_APP/newDTCEvent": {
+      "service_id": 513,
+      "event_id": 32769
+    },
+    "PC_APP/currentMode": {
+      "service_id": 518,
+      "event_id": 32769
+    }
+  },
+  "db": {
+    "515": {
+      "ip": "192.168.10.101",
+      "port": 1515
+    },
+    "516": {
+      "ip": "192.168.10.101",
+      "port": 1516
+    },
+    "517": {
+      "ip": "192.168.10.101",
+      "port": 1517
+    },
+    "518": {
+      "ip": "192.168.10.101",
+      "port": 1518
+    },
+    "513": {
+      "ip": "192.168.10.101",
+      "port": 1513
+    },
+    "514": {
+      "ip": "192.168.10.101",
+      "port": 1514
+    }
+  }
+}
