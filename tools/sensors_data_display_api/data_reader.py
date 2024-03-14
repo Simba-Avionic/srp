@@ -25,47 +25,56 @@ class DataReader:
     def read_data(self):
         with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
             try:
-                sock.bind(('127.0.0.1', 10101))
+                sock.bind(('127.0.0.1', 12345))
             except:
                 logging.critical("Port is taken")
+            sock.listen()
+            conn, addr = sock.accept()
             try:
-                while True:
-                    data = sock.recv(150)
-                    if len(data) == 0:
-                        break
-                    some_ip_header = SomeIPHeader()
-                    some_ip_header.read(data)
+                with conn:
+                    while True:
+                        if self.gui.stop_reading:
+                            break
+                        data = sock.recv(150)
+                        if len(data) == 0:
+                            break
+                        some_ip_header = SomeIPHeader()
+                        some_ip_header.read(data)
 
-                    # get service_id, method_id and payload
-                    service_id = some_ip_header.service_id
-                    method_id = some_ip_header.methode_id
-                    payload = some_ip_header.payload
+                        # get service_id, method_id and payload
+                        service_id = some_ip_header.service_id
+                        method_id = some_ip_header.methode_id
+                        payload = some_ip_header.payload
 
-                    # get data type
-                    data_type = self.lookup_table.get((service_id, method_id))
-                    if data_type is not None:
-                        if data_type == 'PC_APP/newTempEvent_1':
-                            # temperature up
-                            temperature_up = int.from_bytes(payload, byteorder="big", signed=False)
-                            self.gui.temperature_up.config(text=str(temperature_up))
-                        elif data_type == 'PC_APP/newTempEvent_2':
-                            # temperature down
-                            temperature_down = int.from_bytes(payload, byteorder="big", signed=False)
-                            self.gui.temperature_down.config(text=str(temperature_down))
-                        elif data_type == 'PC_APP/newTempEvent_3':
-                            # temperature middle
-                            temperature_middle = int.from_bytes(payload, byteorder="big", signed=False)
-                            self.gui.temperature_middle.config(text=str(temperature_middle))
-                        elif data_type == 'PC_APP/newPressEvent':
-                            # tank pressure
-                            tank_pressure = int.from_bytes(payload, byteorder="big", signed=False)
-                            self.gui.tank_pressure.config(text=str(tank_pressure))
-                        elif data_type == 'PC_APP/servoStatusEvent':
-                            # main valve
-                            main_valve = payload.decode('UTF-8', errors='ignore')
-                            self.gui.main_valve.config(text=main_valve)
-                    else:
-                        print("No data")
-
+                        # get data type
+                        data_type = self.lookup_table.get((service_id, method_id))
+                        if data_type is not None:
+                            if data_type == 'PC_APP/newTempEvent_1':
+                                # temperature up
+                                temperature_up = int.from_bytes(payload, byteorder="big", signed=False)
+                                self.gui.data_to_save.temperature_up = temperature_up
+                                self.gui.temperature_up.config(text=str(temperature_up))
+                            elif data_type == 'PC_APP/newTempEvent_2':
+                                # temperature down
+                                temperature_down = int.from_bytes(payload, byteorder="big", signed=False)
+                                self.gui.data_to_save.temperature_down = temperature_down
+                                self.gui.temperature_down.config(text=str(temperature_down))
+                            elif data_type == 'PC_APP/newTempEvent_3':
+                                # temperature middle
+                                temperature_middle = int.from_bytes(payload, byteorder="big", signed=False)
+                                self.gui.data_to_save.temperature_middle = temperature_middle
+                                self.gui.temperature_middle.config(text=str(temperature_middle))
+                            elif data_type == 'PC_APP/newPressEvent':
+                                # tank pressure
+                                tank_pressure = int.from_bytes(payload, byteorder="big", signed=False)
+                                self.gui.data_to_save.tank_pressure = tank_pressure
+                                self.gui.tank_pressure.config(text=str(tank_pressure))
+                            elif data_type == 'PC_APP/servoStatusEvent':
+                                # main valve
+                                main_valve = payload.decode('UTF-8', errors='ignore')
+                                self.gui.data_to_save.main_valve = main_valve
+                                self.gui.main_valve.config(text=main_valve)
+                        else:
+                            print("No data")
             except KeyboardInterrupt:
                 time.sleep(0.5)

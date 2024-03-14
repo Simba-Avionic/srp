@@ -1,6 +1,7 @@
 import threading
 import tkinter as tk
 
+from Data import Data
 from data_reader import DataReader
 
 
@@ -25,6 +26,9 @@ class App(tk.Tk):
         # variables
         label_width = 20
         button_padding = 2
+        self.stop_reading = False
+        self.data_reader_thread = None
+        self.data_to_save = Data()
 
         # measurements
         temperature_up_frame = tk.Frame(self)
@@ -69,8 +73,8 @@ class App(tk.Tk):
 
         # buttons
         start_stop_saving_button_frame = tk.Frame(self)
-        start_saving_button = tk.Button(start_stop_saving_button_frame, text="Start saving data", command=lambda: self.start_saving())
-        stop_saving_button = tk.Button(start_stop_saving_button_frame, text="Stop saving data", command=lambda: self.stop_saving())
+        start_saving_button = tk.Button(start_stop_saving_button_frame, text="Start saving data", command=lambda: self.save_to_file(start_stop=True))
+        stop_saving_button = tk.Button(start_stop_saving_button_frame, text="Stop saving data", command=lambda: self.save_to_file(start_stop=False))
 
         main_valve_button_frame = tk.Frame(self)
         main_valve_set_1_button = tk.Button(main_valve_button_frame, text="Main valve: set 1", command=lambda: self.set_main_valve(value=1))
@@ -143,16 +147,10 @@ class App(tk.Tk):
         self.read_data()
 
     def read_data(self):
-        data_reader_thread = threading.Thread(target=self.data_reader.read_data)
-        data_reader_thread.start()
+        self.data_reader_thread = threading.Thread(target=self.data_reader.read_data)
+        self.data_reader_thread.start()
 
-    def update_data_label(self, data):
-        self.temperature_up.config(text=str(data))
-
-    def start_saving(self):
-        pass
-
-    def stop_saving(self):
+    def save_to_file(self, start_stop: bool):
         pass
 
     def launch_rocket(self):
@@ -165,4 +163,6 @@ class App(tk.Tk):
         pass
 
     def exit(self):
+        self.stop_reading = True
+        self.data_reader_thread.join()
         self.destroy()

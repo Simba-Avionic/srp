@@ -8,9 +8,10 @@ from some_ip_header import SomeIPHeader
 
 first = True
 HOST = "127.0.0.1"
-PORT = 10101
+PORT = 12345
 
 with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
+    sock.connect((HOST, PORT))
     while True:
         hdr = SomeIPHeader(0x01, 0x8002)
         payload = struct.pack('f', random.uniform(20, 25))
