@@ -30,7 +30,7 @@ cc_library(
     visibility = ["//communication-core:__subpackages__"],
     deps = [
         ":someip_interface",
-        "//communication-core/database:DatabaseLib",
+        #"//communication-core/database:DatabaseLib",
         # "//communication-core/json-parser:JsonParser",
         "//communication-core/sockets:socket_interface",
         "//communication-core/someip:someip_header",

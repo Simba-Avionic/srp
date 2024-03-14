@@ -12,7 +12,7 @@ cc_library(
         "//communication-core:__subpackages__",
     ],
     deps = [
-        "//communication-core/database:DatabaseLib",
+        #"//communication-core/database:DatabaseLib",
         "@com_json//:json",
     ],
 )

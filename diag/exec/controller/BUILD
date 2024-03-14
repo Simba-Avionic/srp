@@ -2,7 +2,7 @@
 cc_library(
     name = "diag_exec_controller",
     deps = [
-        "//diag/exec/factories:diag_exec_factories",
+        "//diag/exec/data:diag_exec_header",
         "//communication-core/sockets:socket_ipc",
         "//core/logger:Logger",
         ":diag_status"
