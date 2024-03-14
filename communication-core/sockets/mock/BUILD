@@ -7,5 +7,6 @@ cc_library(
     deps=[
         "@com_google_googletest//:gtest_main",
         "//communication-core/sockets:socket_interface",
-    ]
+    ],
+    testonly = True,
 )

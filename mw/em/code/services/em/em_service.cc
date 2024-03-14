@@ -153,25 +153,38 @@ void EmService::StartApps() noexcept {
 }
 
 void EmService::StartApps(const uint8_t level) noexcept {
-  for (const auto& app : app_list) {
+  for (auto& app : app_list) {
     if (app.GetStartUpPrio() == level) {
       pid_t pid;
       char* app_args = new char[app.GetBinPath().size()];
       sprintf(app_args, "%s", app.GetBinPath().c_str());  // NOLINT
       char* argv[] = {app_args, NULL};
-      int status{0};
-      status =
-          posix_spawn(&pid, app.GetBinPath().c_str(), NULL, NULL, argv, NULL);
+      posix_spawn(&pid, app.GetBinPath().c_str(), NULL, NULL, argv, NULL);
       delete[] app_args;
       AppLogger::Info("Spawning app: " + app.GetBinPath() +
                       " pid: " + std::to_string(pid));
+      app.SetPid(pid);
       /**todo Dodać sleep  w  gdy serwis oczekuje czekania*/
     }
   }
 }
 
 void EmService::RestartApp(const uint16_t appID) {
-  // TODO (matikrajek42@gmail.com) restart app feature      // NOLINT
+  for ( auto &app : this->app_list ) {
+    if ( app.GetAppID() == appID ) {
+        kill(app.GetPid(), SIGKILL);
+        pid_t newPid;
+        char* app_args = new char[app.GetBinPath().size()];
+        sprintf(app_args, "%s", app.GetBinPath().c_str());  // NOLINT
+        char* argv[] = {app_args, NULL};
+        posix_spawn(&newPid, app.GetBinPath().c_str(), NULL, NULL, argv, NULL);
+        delete[] app_args;
+        AppLogger::Info("Spawning app: " + app.GetBinPath() +
+                        " pid: " + std::to_string(newPid));
+        app.SetPid(newPid);
+        return;
+    }
+  }
 }
 
 }  // namespace service

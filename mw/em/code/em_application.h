@@ -13,9 +13,12 @@
 
 #include <string>
 #include <unordered_map>
+#include <queue>
+#include <memory>
 
 #include "core/application/application_mw.h"
 #include "mw/em/code/services/em/em_service.h"
+#include "mw/em/code/services/exec/exec_manager.hpp"
 namespace simba {
 namespace em {
 class EmApplication final : public core::ApplicationMW {
@@ -34,7 +37,9 @@ class EmApplication final : public core::ApplicationMW {
   core::ErrorCode Initialize(
       const std::unordered_map<std::string, std::string>& parms) final;
 
+  std::queue<uint16_t> restartQueue;
   service::EmService em_service{};
+  mw::exec::ExecManager exec_service{std::make_shared<std::queue<uint16_t>>(this->restartQueue)};
 
  public:
   EmApplication(/* args */);

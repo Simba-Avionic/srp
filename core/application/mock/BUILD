@@ -7,5 +7,6 @@ cc_library(
     deps=[
         "@com_google_googletest//:gtest_main",
         "//core/application:application",
-    ]
+    ],
+    testonly = True,
 )

@@ -7,5 +7,6 @@ cc_library(
     deps=[
         "@com_google_googletest//:gtest_main",
         "//communication-core/someip-controller:someip_interface",
-    ]
+    ],
+    testonly = True,
 )

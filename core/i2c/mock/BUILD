@@ -7,5 +7,6 @@ cc_library(
     deps=[
         "@com_google_googletest//:gtest_main",
         "//core/i2c:i2cdriver",
-    ]
+    ],
+    testonly = True,
 )

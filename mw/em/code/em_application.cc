@@ -20,7 +20,10 @@ EmApplication::~EmApplication() {}
 
 core::ErrorCode EmApplication::Run(std::stop_token token) {
   this->em_service.StartApps();
-  SleepMainThread();
+  while ( this->restartQueue.size() > 0 ) {
+      this->em_service.RestartApp(this->restartQueue.front());
+      this->restartQueue.pop();
+  }
   return core::ErrorCode::kOk;
 }
 /**
@@ -31,6 +34,8 @@ core::ErrorCode EmApplication::Run(std::stop_token token) {
 core::ErrorCode EmApplication::Initialize(
     const std::unordered_map<std::string, std::string>& parms) {
   this->em_service.LoadApps();
+  this->exec_service.SetApps(this->em_service.GetAppList());
+  this->exec_service.Init();
   return core::ErrorCode::kOk;
 }
 

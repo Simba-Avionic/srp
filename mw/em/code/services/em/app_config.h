@@ -25,6 +25,7 @@ class AppConfig {
   const uint8_t startup_prio_;
   const uint8_t startup_after_delay_;
   const uint16_t appID_;
+  pid_t pid{0};
 
  public:
   AppConfig(const std::string &bin_path, const std::string &parms,
@@ -40,6 +41,8 @@ class AppConfig {
   uint8_t GetStartUpPrio() const { return startup_prio_; }
   uint8_t GetStartUpAfterDelay() const { return startup_after_delay_; }
   uint16_t GetAppID() const { return appID_; }
+  pid_t GetPid() { return pid; }
+  void SetPid(pid_t pid) { this->pid = pid; }
 };
 }  // namespace data
 }  // namespace service
