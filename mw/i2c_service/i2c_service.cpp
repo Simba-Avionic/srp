@@ -33,8 +33,7 @@ void I2CService::I2CRxCallback(const std::string& ip,
       std::optional<std::vector<uint8_t>> result = i2c_driver_.Read(address, reg);
       if (result.has_value()) {
         i2c_sock_.Transmit("SIMBA.I2C.RESPONSE." + std::to_string(service_id), 0, result.value());
-      }
-      else {
+      } else {
         i2c_sock_.Transmit("SIMBA.I2C.RESPONSE." + std::to_string(service_id), 0, {});
       }
     }

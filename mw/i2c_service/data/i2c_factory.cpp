@@ -28,7 +28,8 @@ std::shared_ptr<Header> I2CFactory::GetHeader(const std::vector<uint8_t>& raw_da
         if (raw_data.size() < 4) {
             return nullptr;
         }
-        return std::make_shared<Header>(static_cast<Header::ACTION>(raw_data[0]), raw_data[1], raw_data[2], raw_data[3]);
+        return std::make_shared<Header>(static_cast<Header::ACTION>(raw_data[0]),
+         raw_data[1], raw_data[2], raw_data[3]);
     }
 std::vector<uint8_t> I2CFactory::GetPayload(const std::vector<uint8_t>& raw_data) {
         if (raw_data.size() <= 4) {

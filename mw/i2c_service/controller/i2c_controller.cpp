@@ -12,7 +12,7 @@
 
 namespace simba {
 namespace i2c {
-I2CController::I2CController (uint8_t service_id) {
+I2CController::I2CController(uint8_t service_id) {
     this->service_id = service_id;
     this->sock_.Init({"SIMBA.I2C.RESPONSE." + std::to_string(this->service_id), 0, 0});
     this->sock_.SetRXCallback(std::bind(&I2CController::ReceiveCallback, this, std::placeholders::_1,
@@ -21,7 +21,8 @@ I2CController::I2CController (uint8_t service_id) {
 }
 core::ErrorCode I2CController::Write(const uint8_t address, const uint8_t reg, std::vector<uint8_t> data) {
     mtx.lock();
-    std::shared_ptr<Header> headerPtr = std::make_shared<simba::i2c::Header>(Header::ACTION::Write, address, reg, this->service_id);
+    std::shared_ptr<Header> headerPtr = std::make_shared<simba::i2c::Header>(Header::ACTION::Write,
+     address, reg, this->service_id);
     std::vector<uint8_t> messageBuffer = I2CFactory::GetBuffer(headerPtr, data);
     mtx.unlock();
     return this->sock_.Transmit("SIMBA.I2C", 0, messageBuffer);

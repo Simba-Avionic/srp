@@ -33,7 +33,7 @@ class I2CController{
   bool data_ready;
   std::condition_variable data_condition;
  public:
-  I2CController(uint8_t service_id);
+  explicit I2CController(uint8_t service_id);
   core::ErrorCode Write(const uint8_t address, const uint8_t reg, std::vector<uint8_t> data);
   std::vector<uint8_t> Read(const uint8_t address, const uint8_t reg);
 };
