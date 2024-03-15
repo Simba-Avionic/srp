@@ -14,6 +14,7 @@
 #include <string>
 #include <unordered_map>
 #include <queue>
+#include <condition_variable>
 #include <memory>
 
 #include "core/application/application_mw.h"
@@ -37,9 +38,8 @@ class EmApplication final : public core::ApplicationMW {
   core::ErrorCode Initialize(
       const std::unordered_map<std::string, std::string>& parms) final;
 
-  std::queue<uint16_t> restartQueue;
   service::EmService em_service{};
-  mw::exec::ExecManager exec_service{std::make_shared<std::queue<uint16_t>>(this->restartQueue)};
+  mw::exec::ExecManager exec_service{};
 
  public:
   EmApplication(/* args */);

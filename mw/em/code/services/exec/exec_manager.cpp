@@ -30,6 +30,9 @@ void ExecManager::RxCallback(const std::string& ip, const std::uint16_t& port,
     if ( payload.size() <=0 ) { return; }
     diag::exec::ExecHeader hdr{};
     hdr.SetBuffor(payload);
+    AppLogger::Info("Receive hb:"+std::to_string(hdr.GetServiceID())+
+                    ", timestamp:"+std::to_string(hdr.GetTimestamp()));
+    mtx.lock();
     auto it = this->db_.find(hdr.GetServiceID());
     auto pair = this->getStatusAndFlags(hdr.GetFlags());
     if (it == this->db_.end()) {
@@ -41,6 +44,10 @@ void ExecManager::RxCallback(const std::string& ip, const std::uint16_t& port,
     if (it->second.last_timestamp+1 != hdr.GetTimestamp()) {
         AppLogger::Error("Missing timestamp service_id: "+std::to_string(hdr.GetServiceID()));
     }
+    if ( std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now()
+                                                            - it->second.last_timestamp_time).count() > 1250 ) {
+        it->second.invalid_timestamp_num++;
+    }
     it->second.last_timestamp_time = std::chrono::high_resolution_clock::now();
     it->second.last_timestamp = hdr.GetTimestamp();
     if ( it->second.state != pair.first ) {
@@ -50,40 +57,34 @@ void ExecManager::RxCallback(const std::string& ip, const std::uint16_t& port,
     if (it->second.flags != pair.second) {
         it->second.flags = pair.second;
     }
-    AppLogger::Debug("Receive hb:"+std::to_string(hdr.GetServiceID())+
-                    ", timestamp:"+std::to_string(hdr.GetTimestamp()));
+    mtx.unlock();
 }
 
 void ExecManager::SetApps(std::vector<simba::em::service::data::AppConfig> apps) {
+    mtx.lock();
     for (auto app : apps) {
         this->db_.insert({app.GetAppID(), Service(0)});
     }
+    mtx.unlock();
 }
-ExecManager::ExecManager(std::shared_ptr<std::queue<uint16_t>> queue) {
-    if ( !this->restartQueue ) {
-        return;
+
+std::queue<uint16_t> ExecManager::CheckAppCondition() {
+  mtx.lock();
+  std::queue<uint16_t> res;
+  for ( auto &app : this->db_ ) {
+    if ( app.second.last_timestamp == 0 ) {
+        continue;
     }
-    this->restartQueue = queue;
-}
-void ExecManager::Loop(std::stop_token stoken) {
-    while ( true ) {
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
-        for ( auto &app : this->db_ ) {
-            if ( app.second.last_timestamp == 0 ) {
-                continue;
-            }
-            auto delta = std::chrono::duration_cast<std::chrono::milliseconds>
-                    (std::chrono::high_resolution_clock::now() - app.second.last_timestamp_time).count();
-            if ( delta > 5000 || app.second.invalid_timestamp_num > 5 ) {
-                this->restartQueue->push(app.first);
-                this->db_.erase(app.first);
-                continue;
-            }
-            if ( delta > 1250 ) {
-                app.second.invalid_timestamp_num++;
-            }
-        }
+    auto delta = std::chrono::duration_cast<std::chrono::milliseconds>
+            (std::chrono::high_resolution_clock::now() - app.second.last_timestamp_time).count();
+    if ( delta > 5000 || app.second.invalid_timestamp_num > 5 ) {
+        AppLogger::Error("app need restart[][][][][][][][][][][]");
+        res.push(app.first);
+        this->db_.erase(app.first);
     }
+  }
+  mtx.unlock();
+  return res;
 }
 
 void ExecManager::Init() {
@@ -93,14 +94,10 @@ void ExecManager::Init() {
         AppLogger::Debug("ipc bind succesfully");
     }
     this->sock_.SetRXCallback(
-        [&](const std::string& ip, const std::uint16_t& port,
-        const std::vector<std::uint8_t>& payload) {
-            this->RxCallback(ip, port, payload);
-    });
+        std::bind(&ExecManager::RxCallback, this, std::placeholders::_1,
+                std::placeholders::_2, std::placeholders::_3));
     this->sock_.StartRXThread();
     AppLogger::Debug("finish startup exec");
-    this->mainThread = std::make_unique<std::jthread>(
-      [&](std::stop_token stoken) { this->Loop(stoken); });
 }
 
 }  // namespace exec

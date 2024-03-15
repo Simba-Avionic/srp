@@ -20,6 +20,7 @@
 #include <memory>
 #include <utility>
 #include <queue>
+#include <optional>
 
 #include "communication-core/sockets/ipc_socket.h"
 #include "diag/exec/controller/exec_controller.hpp"
@@ -36,7 +37,7 @@ struct Service{
     /**
      * @brief numer ostatniego timestamp
      */
-    uint16_t last_timestamp{0}; 
+    uint16_t last_timestamp{0};
     /**
      * @brief czas otrzymania ostatniego hb
      * 
@@ -80,19 +81,14 @@ class ExecManager{
  private:
   com::soc::IpcSocket sock_;
   std::unordered_map<uint16_t, Service> db_;
-  std::unique_ptr<std::jthread> mainThread;
-  std::shared_ptr<std::queue<uint16_t>> restartQueue;
+  std::mutex mtx;
   void RxCallback(const std::string& ip, const std::uint16_t& port,
-      std::vector<std::uint8_t> payload);
-  void Loop(std::stop_token stoken);
+                        std::vector<std::uint8_t> payload);
   std::pair<simba::diag::exec::Status, std::bitset<5>> getStatusAndFlags(uint8_t data);
  public:
-  explicit ExecManager(std::shared_ptr<std::queue<uint16_t>> queue);
+  std::queue<uint16_t> CheckAppCondition();
   void SetApps(std::vector<simba::em::service::data::AppConfig> apps);
   void Init();
-  std::unordered_map<uint16_t, Service>* GetDB() {
-    return &this->db_;
-    }
 };
 
 }  // namespace exec

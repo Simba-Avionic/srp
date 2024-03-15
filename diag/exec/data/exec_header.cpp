@@ -31,11 +31,7 @@ uint8_t ExecHeader::GetFlags() const {
     return this->flags_.Get();
 }
 void ExecHeader::IncrementTimeStamp() {
-    if ( this->time_stamp_.Get() == 65535 ) {
-        this->time_stamp_.Set(1);
-    } else {
     this->time_stamp_.Set(this->time_stamp_.Get()+1);
-    }
 }
 void ExecHeader::SetFlags(uint8_t flags) {
     this->flags_.Set(flags);

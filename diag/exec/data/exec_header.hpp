@@ -27,7 +27,7 @@ class ExecHeader : public com::core::network::NetworkDataStructure {
   // numer id serwisu
   com::core::network::uint16_t service_id_;
   // timestamp
-  com::core::network::uint32_t time_stamp_;
+  com::core::network::uint16_t time_stamp_;
   com::core::network::uint8_t flags_{0};
  public:
   ExecHeader(const uint16_t &service_id,

@@ -65,7 +65,7 @@ simba::core::ErrorCode IpcSocket::Transmit(const std::string& ip,
   std::uint8_t* buffor = new std::uint8_t[payload.size()];
   std::copy(payload.begin(), payload.end(), buffor);
 
-  rc = sendto(client_socket, buffor, payload.size(), 0,
+  sendto(client_socket, buffor, payload.size(), 0,
               (struct sockaddr*)&remote, sizeof(remote));
   delete[] buffor;
   close(client_socket);

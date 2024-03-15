@@ -18,7 +18,6 @@ core::ErrorCode Router::Run(std::stop_token token) {
   while (true) {
     AppLogger::Debug("AppLogger::Debug");
     AppLogger::Info("AppLogger::Info");
-    AppLogger::Warning("AppLogger::Warning");
     this->gpio_.SetPinValue(1, gpio::Value::HIGH);
     std::this_thread::sleep_for(std::chrono::seconds(1));
     this->gpio_.SetPinValue(1, gpio::Value::LOW);
