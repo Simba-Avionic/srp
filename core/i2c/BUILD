@@ -5,5 +5,7 @@ cc_library(
     deps = [
         "//core/common:common_types",
     ],
-    visibility = ["//core:__subpackages__"],
+    visibility = ["//core:__subpackages__",
+    "//mw:__subpackages__",
+    ],
 )
