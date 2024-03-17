@@ -51,22 +51,22 @@ class DataReader:
                         # temperature up
                         temperature_up = struct.unpack('f', payload)[0]
                         self.gui.data_to_save.temperature_up = temperature_up
-                        self.gui.temperature_up.config(text=str(temperature_up))
+                        self.gui.temperature_up.config(text=str(round(temperature_up, 2)))
                     elif data_type == 'PC_APP/newTempEvent_2':
                         # temperature down
                         temperature_down = struct.unpack('f', payload)[0]
                         self.gui.data_to_save.temperature_down = temperature_down
-                        self.gui.temperature_down.config(text=str(temperature_down))
+                        self.gui.temperature_down.config(text=str(round(temperature_down, 2)))
                     elif data_type == 'PC_APP/newTempEvent_3':
                         # temperature middle
                         temperature_middle = struct.unpack('f', payload)[0]
                         self.gui.data_to_save.temperature_middle = temperature_middle
-                        self.gui.temperature_middle.config(text=str(temperature_middle))
+                        self.gui.temperature_middle.config(text=str(round(temperature_middle, 2)))
                     elif data_type == 'PC_APP/newPressEvent':
                         # tank pressure
                         tank_pressure = struct.unpack('f', payload)[0]
                         self.gui.data_to_save.tank_pressure = tank_pressure
-                        self.gui.tank_pressure.config(text=str(tank_pressure))
+                        self.gui.tank_pressure.config(text=str(round(tank_pressure, 2)))
                     elif data_type == 'PC_APP/servoStatusEvent':
                         # main valve
                         main_valve = payload.decode('UTF-8', errors='ignore')

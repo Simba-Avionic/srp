@@ -1,7 +1,9 @@
+import csv
+import datetime
 import threading
 import tkinter as tk
 
-from Data import Data
+from data import Data
 from data_reader import DataReader
 
 
@@ -27,7 +29,9 @@ class App(tk.Tk):
         label_width = 20
         button_padding = 2
         self.stop_reading = False
+        self.saving = False
         self.data_reader_thread = None
+        self.saving_thread = None
         self.data_to_save = Data()
 
         # measurements
@@ -73,8 +77,8 @@ class App(tk.Tk):
 
         # buttons
         start_stop_saving_button_frame = tk.Frame(self)
-        start_saving_button = tk.Button(start_stop_saving_button_frame, text="Start saving data", command=lambda: self.save_to_file(start_stop=True))
-        stop_saving_button = tk.Button(start_stop_saving_button_frame, text="Stop saving data", command=lambda: self.save_to_file(start_stop=False))
+        start_saving_button = tk.Button(start_stop_saving_button_frame, text="Start saving data", command=lambda: self.start_save_to_file())
+        stop_saving_button = tk.Button(start_stop_saving_button_frame, text="Stop saving data", command=lambda: self.stop_save_to_file())
 
         main_valve_button_frame = tk.Frame(self)
         main_valve_set_1_button = tk.Button(main_valve_button_frame, text="Main valve: set 1", command=lambda: self.set_main_valve(value=1))
@@ -150,8 +154,38 @@ class App(tk.Tk):
         self.data_reader_thread = threading.Thread(target=self.data_reader.read_data)
         self.data_reader_thread.start()
 
-    def save_to_file(self, start_stop: bool):
-        pass
+    def start_save_to_file(self):
+        self.saving = True
+        self.saving_thread = threading.Thread(target=self._save_to_file)
+        self.saving_thread.start()
+
+    def stop_save_to_file(self):
+        self.saving = False
+        self.saving_thread.join()
+
+    def _save_to_file(self):
+        timestamp = datetime.datetime.now()
+        filename = f"data_{timestamp.hour}_{timestamp.minute}_{timestamp.second}.csv"
+        with open(file=filename, mode='w', encoding='UTF-8') as csvFile:
+            writer = csv.writer(csvFile, delimiter=";")
+            writer.writerow(['TIMESTAMP', 'TEMPERATURE_UP', 'TEMPERATURE_DOWN', 'TEMPERATURE_MIDDLE', 'TANK_PRESSURE', 'JET_PRESSURE', 'PRESSURE_DIFFERENCE', 'MAIN_VALVE', 'VENT'])
+        start = datetime.datetime.now()
+        while self.saving:
+            if self.data_to_save.is_None() is False:
+                timestamp = datetime.datetime.now() - start
+                with open(filename, 'a', encoding='UTF-8', newline='') as csvFile:
+                    writer = csv.writer(csvFile, delimiter=";")
+                    writer.writerow([timestamp, self.data_to_save.temperature_up, self.data_to_save.temperature_down, self.data_to_save.temperature_middle,
+                                     self.data_to_save.tank_pressure, self.data_to_save.jet_pressure, self.data_to_save.pressure_difference,
+                                     self.data_to_save.main_valve, self.data_to_save.vent])
+                self.data_to_save.temperature_up = None
+                self.data_to_save.temperature_down = None
+                self.data_to_save.temperature_middle = None
+                self.data_to_save.tank_pressure = None
+                self.data_to_save.jet_pressure = None
+                self.data_to_save.pressure_difference = None
+                self.data_to_save.main_valve = None
+                self.data_to_save.vent = None
 
     def launch_rocket(self):
         pass
