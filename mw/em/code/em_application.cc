@@ -24,16 +24,13 @@ core::ErrorCode EmApplication::Run(std::stop_token token) {
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
     AppLogger::Info("check if restart needed");
     auto res = this->exec_service.CheckAppCondition();
-    if ( res.has_value() ) {
-    auto apps = res.value();
-    while ( apps.size() > 0 ) {
+    while ( res.size() > 0 ) {
       AppLogger::Error("Restart needed");
-      //this->em_service.RestartApp(apps.front());
-      AppLogger::Error("RESTARTED APP WITH ID: "+std::to_string(apps.front()));
-      apps.pop();
+      //this->em_service.RestartApp(res.front());
+      AppLogger::Error("RESTARTED APP WITH ID: "+std::to_string(res.front()));
+      res.pop();
     }
     }
-  }
   return core::ErrorCode::kOk;
 }
 /**
