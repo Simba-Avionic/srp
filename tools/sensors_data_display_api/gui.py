@@ -198,5 +198,6 @@ class App(tk.Tk):
 
     def exit(self):
         self.stop_reading = True
+        self.saving = False
         self.data_reader_thread.join()
         self.destroy()
