@@ -37,7 +37,7 @@ class App(tk.Tk):
         # measurements
         temperature_up_frame = tk.Frame(self)
         temperature_up_label = tk.Label(temperature_up_frame, text='Temperature up:', width=label_width)
-        self.temperature_up = tk.Label(temperature_up_frame, text='0')
+        self.temperature_up = tk.Label(temperature_up_frame, text='0', width=label_width)
         self.temperature_up.config(state=tk.DISABLED)
 
         temperature_down_frame = tk.Frame(self)
