@@ -100,13 +100,13 @@ class App(tk.Tk):
         temperature_up_label.pack(side=tk.LEFT, pady=self.padding, fill='both')
         self.temperature_up.pack(side=tk.LEFT, pady=self.padding, fill='both')
 
-        temperature_down_frame.pack(side=tk.TOP, pady=self.padding, fill='both')
-        temperature_down_label.pack(side=tk.LEFT, pady=self.padding, fill='both')
-        self.temperature_down.pack(side=tk.LEFT, pady=self.padding, fill='both')
-
         temperature_middle_frame.pack(side=tk.TOP, pady=self.padding, fill='both')
         temperature_middle_label.pack(side=tk.LEFT, pady=self.padding, fill='both')
         self.temperature_middle.pack(side=tk.LEFT, pady=self.padding, fill='both')
+
+        temperature_down_frame.pack(side=tk.TOP, pady=self.padding, fill='both')
+        temperature_down_label.pack(side=tk.LEFT, pady=self.padding, fill='both')
+        self.temperature_down.pack(side=tk.LEFT, pady=self.padding, fill='both')
 
         tank_pressure_frame.pack(side=tk.TOP, pady=self.padding, fill='both')
         tank_pressure_label.pack(side=tk.LEFT, pady=self.padding, fill='both')
