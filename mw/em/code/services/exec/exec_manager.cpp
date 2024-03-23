@@ -99,7 +99,7 @@ void ExecManager::Init() {
 void ExecManager::RestartedApp(uint16_t appID) {
     for (auto& app : this->db_) {
         if (app.first == appID) {
-            app.second.execState=ExecState::kRunning,
+            app.second.execState = ExecState::kRunning,
             app.second.state = diag::exec::Status::Start_up;
             app.second.last_timestamp = 0;
             app.second.flags = 0;

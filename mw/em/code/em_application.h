@@ -14,7 +14,7 @@
 #include <string>
 #include <unordered_map>
 #include <queue>
-#include <condition_variable>
+#include <condition_variable> // NOLINT
 #include <memory>
 
 #include "core/application/application_mw.h"
