@@ -14,6 +14,10 @@
 namespace simba {
 namespace router {
 
+#define EEPROM_DEVICE "/dev/i2c-2"  // Ścieżka do urządzenia I2C
+#define EEPROM_ADDRESS 0x50         // Adres EEPROM
+#define DATA_SIZE 128
+
 core::ErrorCode Router::Run(std::stop_token token) {
     uint8_t pcaAddress = 0x70;
 
@@ -32,8 +36,19 @@ core::ErrorCode Router::Run(std::stop_token token) {
     i2c_.Write(pcaAddress, LED0_ON_L, 204); // 50% duty cycle for 12-bit resolution
 
   while (true) {
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+    auto data = i2c_.Read(0x50,0x00,1);
+    if (data.has_value()) {
+      int i = 0;
+      for (const auto x : data.value()) {
+        AppLogger::Error("["+std::to_string(i)+"]:"+std::to_string(x));
+        i++;
+      }
+    }
 
-  std::this_thread::sleep_for(std::chrono::seconds(5));
+    // Wyświetlenie odczytanych danych
+    AppLogger::Info("Odczytane dane z EEPROM:");
+    std::this_thread::sleep_for(std::chrono::seconds(3));
   }
   return core::ErrorCode::kOk;
 }
