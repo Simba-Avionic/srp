@@ -21,6 +21,10 @@
 namespace simba {
 namespace router {
 
+#define EEPROM_DEVICE "/dev/i2c-2"  // Ścieżka do urządzenia I2C
+#define EEPROM_ADDRESS 0x50         // Adres EEPROM
+#define DATA_SIZE 128
+
 core::ErrorCode Router::Run(std::stop_token token) {
   auto example = std::make_shared<com::someip::MethodSkeleton>(
       "ExampleApp/exampleMethod",
