@@ -28,27 +28,25 @@ std::pair<simba::diag::exec::Status, std::bitset<5>> ExecManager::getStatusAndFl
 void ExecManager::RxCallback(const std::string& ip, const std::uint16_t& port,
                 std::vector<std::uint8_t> payload) {
     if ( payload.size() <=0 ) { return; }
+    std::lock_guard<std::mutex> lock(mtx);
     diag::exec::ExecHeader hdr{};
     hdr.SetBuffor(payload);
-    AppLogger::Info("Receive hb:"+std::to_string(hdr.GetServiceID())+
+        AppLogger::Info("Receive hb:"+std::to_string(hdr.GetServiceID())+
                     ", timestamp:"+std::to_string(hdr.GetTimestamp()));
-    mtx.lock();
     auto it = this->db_.find(hdr.GetServiceID());
-    auto pair = this->getStatusAndFlags(hdr.GetFlags());
     if (it == this->db_.end()) {
         AppLogger::Warning("Invalid service id:"+std::to_string(hdr.GetServiceID()));
-        this->db_.insert({hdr.GetServiceID(), Service(hdr.GetTimestamp(), pair.first, pair.second)});
-        AppLogger::Warning("Registered new hb to tracking");
         return;
     }
-    if (it->second.last_timestamp+1 != hdr.GetTimestamp()) {
+    auto pair = this->getStatusAndFlags(hdr.GetFlags());
+    it->second.last_timestamp_time = std::chrono::high_resolution_clock::now();
+    if (it->second.last_timestamp+1 != hdr.GetTimestamp() && it->second.last_timestamp != 0) {
         AppLogger::Error("Missing timestamp service_id: "+std::to_string(hdr.GetServiceID()));
     }
     if ( std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now()
                                                             - it->second.last_timestamp_time).count() > 1250 ) {
         it->second.invalid_timestamp_num++;
     }
-    it->second.last_timestamp_time = std::chrono::high_resolution_clock::now();
     it->second.last_timestamp = hdr.GetTimestamp();
     if ( it->second.state != pair.first ) {
         AppLogger::Info("change app "+std::to_string(it->first)+" status to "+std::to_string(it->second.state));
@@ -57,33 +55,31 @@ void ExecManager::RxCallback(const std::string& ip, const std::uint16_t& port,
     if (it->second.flags != pair.second) {
         it->second.flags = pair.second;
     }
-    mtx.unlock();
 }
 
 void ExecManager::SetApps(std::vector<simba::em::service::data::AppConfig> apps) {
-    mtx.lock();
+    std::lock_guard<std::mutex> lock(mtx);
     for (auto app : apps) {
         this->db_.insert({app.GetAppID(), Service(0)});
     }
-    mtx.unlock();
 }
 
 std::queue<uint16_t> ExecManager::CheckAppCondition() {
-  mtx.lock();
+  std::lock_guard<std::mutex> lock(mtx);
   std::queue<uint16_t> res;
   for ( auto &app : this->db_ ) {
-    if ( app.second.last_timestamp == 0 ) {
+    if ( app.second.last_timestamp == 0 || app.second.execState == ExecState::kRestartNeeded ) {
         continue;
     }
     auto delta = std::chrono::duration_cast<std::chrono::milliseconds>
             (std::chrono::high_resolution_clock::now() - app.second.last_timestamp_time).count();
-    if ( delta > 5000 || app.second.invalid_timestamp_num > 5 ) {
+    if ( (delta > 5000 || app.second.invalid_timestamp_num > 5)
+                                        && app.second.execState != ExecState::kRestartNeeded && app.first != 258) {
         AppLogger::Error("app need restart[][][][][][][][][][][]");
         res.push(app.first);
-        this->db_.erase(app.first);
+        app.second.execState = ExecState::kRestartNeeded;
     }
   }
-  mtx.unlock();
   return res;
 }
 
@@ -98,6 +94,18 @@ void ExecManager::Init() {
                 std::placeholders::_2, std::placeholders::_3));
     this->sock_.StartRXThread();
     AppLogger::Debug("finish startup exec");
+}
+
+void ExecManager::RestartedApp(uint16_t appID) {
+    for (auto& app : this->db_) {
+        if (app.first == appID) {
+            app.second.execState=ExecState::kRunning,
+            app.second.state = diag::exec::Status::Start_up;
+            app.second.last_timestamp = 0;
+            app.second.flags = 0;
+            app.second.invalid_timestamp_num = 0;
+        }
+    }
 }
 
 }  // namespace exec

@@ -26,7 +26,7 @@ void ExecController::Init(uint16_t service_id) {
         this->mtx_status_.lock();
         hdr.SetFlags((this->flags_.to_ulong() << 3) | this->status_);
         sock_.Transmit("SIMBA.EXE", 0, hdr.GetBuffor());
-        AppLogger::Info("id: "+ std::to_string(hdr.GetServiceID())
+        AppLogger::Warning("id: "+ std::to_string(hdr.GetServiceID())
                     +" timestamp:"+std::to_string(hdr.GetTimestamp()));
         hdr.IncrementTimeStamp();
         this->mtx_status_.unlock();
