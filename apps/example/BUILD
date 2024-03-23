@@ -10,6 +10,7 @@ cc_binary(
         "//core/application:simba_application",
         "@untar",
         "//mw/gpio_server/controller:gpio_controller",
+        "//core/i2c:i2cdriver",
     ],
 )
 
