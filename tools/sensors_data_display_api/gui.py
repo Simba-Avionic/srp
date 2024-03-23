@@ -77,7 +77,7 @@ class App(tk.Tk):
 
         # buttons
         start_stop_saving_button_frame = tk.Frame(self)
-        start_saving_button = tk.Button(start_stop_saving_button_frame, text="Start saving data", command=lambda: self.start_save_to_file())
+        self.start_saving_button = tk.Button(start_stop_saving_button_frame, text="Start saving data", command=lambda: self.start_save_to_file())
         stop_saving_button = tk.Button(start_stop_saving_button_frame, text="Stop saving data", command=lambda: self.stop_save_to_file())
 
         main_valve_button_frame = tk.Frame(self)
@@ -138,7 +138,7 @@ class App(tk.Tk):
         vent_set_0_button.pack(side=tk.LEFT, pady=button_padding, fill='both', expand=True)
 
         start_stop_saving_button_frame.pack(side=tk.TOP, pady=button_padding, fill='both')
-        start_saving_button.pack(side=tk.LEFT, pady=button_padding, fill='both', expand=True)
+        self.start_saving_button.pack(side=tk.LEFT, pady=button_padding, fill='both', expand=True)
         stop_saving_button.pack(side=tk.LEFT, pady=button_padding, fill='both', expand=True)
 
         launch_rocket_button_frame.pack(side=tk.TOP, pady=button_padding, fill='both')
@@ -156,11 +156,13 @@ class App(tk.Tk):
 
     def start_save_to_file(self):
         self.saving = True
+        self.start_saving_button.config(state=tk.DISABLED)
         self.saving_thread = threading.Thread(target=self._save_to_file)
         self.saving_thread.start()
 
     def stop_save_to_file(self):
         self.saving = False
+        self.start_saving_button.config(state=tk.NORMAL)
         self.saving_thread.join()
 
     def _save_to_file(self):
@@ -171,7 +173,9 @@ class App(tk.Tk):
             writer.writerow(['TIMESTAMP', 'TEMPERATURE_UP', 'TEMPERATURE_DOWN', 'TEMPERATURE_MIDDLE', 'TANK_PRESSURE', 'JET_PRESSURE', 'PRESSURE_DIFFERENCE', 'MAIN_VALVE', 'VENT'])
         start = datetime.datetime.now()
         while self.saving:
+            print("SAVING....")
             if self.data_to_save.is_None() is False:
+                print("SAVED")
                 timestamp = datetime.datetime.now() - start
                 with open(filename, 'a', encoding='UTF-8', newline='') as csvFile:
                     writer = csv.writer(csvFile, delimiter=";")
@@ -186,6 +190,8 @@ class App(tk.Tk):
                 self.data_to_save.pressure_difference = None
                 self.data_to_save.main_valve = None
                 self.data_to_save.vent = None
+            else:
+                print("NOT SAVED")
 
     def launch_rocket(self):
         pass
