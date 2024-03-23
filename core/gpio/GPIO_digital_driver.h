@@ -14,56 +14,13 @@
 #include "IGPIO_digital_driver.h"
 
 #include <stdint.h>
+#include <unordered_map>
 #include <string>
 #include <vector>
 
 namespace simba {
 namespace core {
 namespace gpio {
-
-struct Pin{
-  uint16_t number;
-  direction_t direction_;
-};
-class Pins{
- private:
-  std::vector<Pin> pins;
-
- public:
-  std::vector<Pin> getPins() {
-  return this->pins;
-  }
-  core::ErrorCode AddPin(uint16_t pinNumber, direction_t direction) {
-    this->pins.push_back(Pin(pinNumber, direction));
-    return core::ErrorCode::kOk;
-  }
-  bool pinIsRegistered(uint16_t pinNumber) {
-    for (auto pin : this->pins) {
-      if (pin.number == pinNumber) {
-        return true;
-      }
-    }
-    return false;
-  }
-  direction_t getPinDirection(uint16_t pinNumber) {
-    for (auto pin : this->pins) {
-      if (pin.number == pinNumber) {
-        return pin.direction_;
-      }
-    }
-    return direction_t::ERROR;
-  }
-  ErrorCode SetDirection(uint16_t pinNumber, direction_t direction) {
-    for (auto pin : this->pins) {
-      if (pin.number == pinNumber) {
-        pin.direction_ = direction;
-        return ErrorCode::kOk;
-      }
-    }
-    return ErrorCode::kConnectionError;
-  }
-};
-
 
 class GpioDigitalDriver: public IgpioDigitalDriver{
  public:
@@ -114,8 +71,6 @@ class GpioDigitalDriver: public IgpioDigitalDriver{
   std::string getEndpointPath(uint8_t pinNumber, std::string endpoint);
   core::ErrorCode  unregisterPin(uint8_t pinNumber);
   const std::string path = "/sys/class/gpio";
-
-  Pins registered_pins;
 };
 }  // namespace gpio
 }  // namespace core
