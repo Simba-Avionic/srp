@@ -16,32 +16,28 @@
 #include <memory>
 #include <chrono> // NOLINT
 #include <thread> // NOLINT
+#include <mutex> // NOLINT
+#include <bitset>
+
+#include "status.hpp"
 
 namespace simba {
 namespace diag {
 namespace exec {
 
-enum Status {
-    Start_up = 0x00,
-    Running = 0x01,
-    Running_with_dtc = 0x02,
-    Running_after_dtc = 0x03,
-    Error = 0x04,
-    Running_after_error = 0x05,
-    Running_ignore_DTC = 0x06,
-    Running_ignore_error = 0x07
-};
-
 class ExecController {
  private:
     uint16_t service_id;
     std::jthread thread_;
+    std::mutex mtx_status_;
     Status status_;
+    std::bitset<5> flags_;
 
  public:
     void Init(uint16_t service_id);
     ExecController();
     void SetStatus(Status status);
+    void SetFlags(std::bitset<5> flags);
     ~ExecController();
 };
 }  // namespace exec

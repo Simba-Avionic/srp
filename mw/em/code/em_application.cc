@@ -20,7 +20,25 @@ EmApplication::~EmApplication() {}
 
 core::ErrorCode EmApplication::Run(std::stop_token token) {
   this->em_service.StartApps();
-  SleepMainThread();
+  std::this_thread::sleep_for(std::chrono::seconds(2));
+  this->exec_service.Init();
+  while (true) {
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    AppLogger::Info("check if restart needed");
+    auto res = this->exec_service.CheckAppCondition();
+    while ( res.size() > 0 ) {
+      AppLogger::Error("Restart needed");
+      auto pid = this->em_service.RestartApp(res.front());
+      if ( !pid.has_value() ) {
+        AppLogger::Error("ERROR RESTART APP WITH ID: "+std::to_string(res.front()));
+      } else {
+        AppLogger::Error("RESTARTED APP WITH ID: "+std::to_string(res.front()));
+        this->exec_service.RestartedApp(res.front());
+        res.pop();
+      }
+    }
+  }
+  this->SleepMainThread();
   return core::ErrorCode::kOk;
 }
 /**
@@ -31,6 +49,7 @@ core::ErrorCode EmApplication::Run(std::stop_token token) {
 core::ErrorCode EmApplication::Initialize(
     const std::unordered_map<std::string, std::string>& parms) {
   this->em_service.LoadApps();
+  this->exec_service.SetApps(this->em_service.GetAppList());
   return core::ErrorCode::kOk;
 }
 

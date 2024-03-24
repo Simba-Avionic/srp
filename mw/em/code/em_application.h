@@ -13,9 +13,13 @@
 
 #include <string>
 #include <unordered_map>
+#include <queue>
+#include <condition_variable> // NOLINT
+#include <memory>
 
 #include "core/application/application_mw.h"
 #include "mw/em/code/services/em/em_service.h"
+#include "mw/em/code/services/exec/exec_manager.hpp"
 namespace simba {
 namespace em {
 class EmApplication final : public core::ApplicationMW {
@@ -35,6 +39,7 @@ class EmApplication final : public core::ApplicationMW {
       const std::unordered_map<std::string, std::string>& parms) final;
 
   service::EmService em_service{};
+  mw::exec::ExecManager exec_service{};
 
  public:
   EmApplication(/* args */);

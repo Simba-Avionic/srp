@@ -20,13 +20,7 @@ namespace gpio {
 
 GpioDigitalDriver::GpioDigitalDriver() {}
 
-GpioDigitalDriver::~GpioDigitalDriver() {
-    for (auto pin : this->registered_pins.getPins()) {
-        if (!this->unregisterPin(pin.number)) {
-            AppLogger::Error("Cant close  gpio file");
-        }
-    }
-}
+GpioDigitalDriver::~GpioDigitalDriver() {}
 
 core::ErrorCode  GpioDigitalDriver::unregisterPin(uint8_t pinNumber) {
     std::ofstream file;
@@ -52,7 +46,6 @@ core::ErrorCode GpioDigitalDriver::initializePin(uint8_t pinNumber, direction_t 
         AppLogger::Error("cant set direction");
         return core::ErrorCode::kError;
     }
-    this->registered_pins.AddPin(pinNumber, direction);
     return core::ErrorCode::kOk;
 }
 
@@ -62,9 +55,6 @@ std::string GpioDigitalDriver::getEndpointPath(uint8_t pinNumber, std::string en
 }
 
 core::ErrorCode GpioDigitalDriver::setValue(uint8_t pinNumber , uint8_t value) {
-    if ( this->registered_pins.getPinDirection(pinNumber) != direction_t::OUT ) {
-        return core::ErrorCode::kInitializeError;
-    }
     std::ofstream file;
     file.open(this->getEndpointPath(pinNumber, "value"));
     if (!file.is_open()) {
@@ -87,14 +77,10 @@ core::ErrorCode GpioDigitalDriver::setDirection(uint8_t pinNumber , direction_t 
     }
     file << (direction == direction_t::IN ? "in" : "out");
     file.close();
-    this->registered_pins.SetDirection(pinNumber, direction);
     return ErrorCode::kOk;
 }
 
 uint8_t GpioDigitalDriver::getValue(uint8_t pinNumber) {
-    if (this->registered_pins.getPinDirection(pinNumber)!= direction_t::IN) {
-        return ErrorCode::kError;
-    }
     std::ifstream file;
     file.open(this->getEndpointPath(pinNumber, "value"));
     if (!file.is_open()) {

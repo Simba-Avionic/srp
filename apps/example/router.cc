@@ -35,7 +35,6 @@ core::ErrorCode Router::Run(std::stop_token token) {
   while (true) {
     AppLogger::Debug("AppLogger::Debug");
     AppLogger::Info("AppLogger::Info");
-    AppLogger::Warning("AppLogger::Warning");
     this->gpio_.SetPinValue(1, gpio::Value::HIGH);
     std::this_thread::sleep_for(std::chrono::seconds(1));
     this->gpio_.SetPinValue(1, gpio::Value::LOW);
@@ -46,7 +45,8 @@ core::ErrorCode Router::Run(std::stop_token token) {
 
 core::ErrorCode Router::Initialize(
     const std::unordered_map<std::string, std::string>& parms) {
-  this->gpio_.Init(12);
+      this->gpio_ = gpio::GPIOController(new com::soc::IpcSocket());
+      this->gpio_.Init(12);
   return core::ErrorCode::kOk;
 }
 }  // namespace router
