@@ -14,8 +14,9 @@
 #include <unordered_map>
 #include <vector>
 #include <optional>
+#include <utility>
 
-#include "mw/em/code/services/em/app_config.h"
+#include "app_config.h"
 
 namespace simba {
 namespace em {
@@ -26,11 +27,15 @@ class EmService {
   std::vector<data::AppConfig> app_list{};
   bool IsSrpApp(const std::string& path) noexcept;
   std::optional<data::AppConfig> GetAppConfig(const std::string& path) noexcept;
-
+  pid_t StartApp(const simba::em::service::data::AppConfig &app);
  public:
+  std::vector<service::data::AppConfig> GetAppList() {
+    return this->app_list;
+  }
   void LoadApps() noexcept;
   void StartApps() noexcept;
   void StartApps(const uint8_t level) noexcept;
+  std::optional<pid_t> RestartApp(const uint16_t appID);
   EmService(/* args */);
   ~EmService();
 };

@@ -89,6 +89,7 @@ std::optional<data::AppConfig> EmService::GetAppConfig(
   uint8_t prio{0};
   uint8_t delay{0};
   uint8_t error_count{0};
+  uint16_t app_id{0};
   {
     auto bin_path_r = obj.GetString("bin_path");
     if (bin_path_r.has_value()) {
@@ -126,11 +127,19 @@ std::optional<data::AppConfig> EmService::GetAppConfig(
                        ", don't have: startup_after_delay");
       error_count++;
     }
+    auto app_id_r = obj.GetNumber<uint16_t>("app_id");
+    if (!app_id_r.has_value()) {
+      error_count++;
+      AppLogger::Error("Application from: " + path +
+                       ", don't have: app_id");
+    } else {
+      app_id = app_id_r.value();
+    }
   }
   if (error_count != 0) {
     return {};
   } else {
-    return std::optional{data::AppConfig{bin_path, parm, prio, delay}};
+    return std::optional{data::AppConfig{bin_path, parm, prio, delay, app_id}};
   }
 }
 void EmService::StartApps() noexcept {
@@ -144,22 +153,48 @@ void EmService::StartApps() noexcept {
 }
 
 void EmService::StartApps(const uint8_t level) noexcept {
-  for (const auto& app : app_list) {
+  for (auto& app : app_list) {
     if (app.GetStartUpPrio() == level) {
-      pid_t pid;
-      char* app_args = new char[app.GetBinPath().size()];
-      sprintf(app_args, "%s", app.GetBinPath().c_str());  // NOLINT
-      char* argv[] = {app_args, NULL};
-      int status{0};
-      status =
-          posix_spawn(&pid, app.GetBinPath().c_str(), NULL, NULL, argv, NULL);
-      delete[] app_args;
-      AppLogger::Info("Spawning app: " + app.GetBinPath() +
-                      " pid: " + std::to_string(pid));
+      pid_t pid = this->StartApp(app);
+      if (pid == 0) {
+        AppLogger::Error("Failed to start app");
+        return;
+      }
+      app.SetPid(pid);
       /**todo Dodać sleep  w  gdy serwis oczekuje czekania*/
     }
   }
 }
+
+std::optional<pid_t> EmService::RestartApp(const uint16_t appID) {
+  for ( auto &app : this->app_list ) {
+    if ( app.GetAppID() == appID ) {
+      if (kill(app.GetPid(), SIGKILL) != 0) {
+        return {};
+      }
+      pid_t pid = this->StartApp(app);
+      if (pid == 0) {
+        AppLogger::Error("Failed to start app");
+        return {};
+      }
+      app.SetPid(pid);
+      return std::optional<pid_t>{pid};
+    }
+  }
+}
+
+pid_t EmService::StartApp(const simba::em::service::data::AppConfig &app) {
+    pid_t pid{0};
+    char* app_args = new char[app.GetBinPath().size()];
+    sprintf(app_args, "%s", app.GetBinPath().c_str());  // NOLINT
+    char* argv[] = {app_args, NULL};
+    posix_spawn(&pid, app.GetBinPath().c_str(), NULL, NULL, argv, NULL);
+    delete[] app_args;
+    AppLogger::Info("Spawning app: " + app.GetBinPath() +
+                        " pid: " + std::to_string(pid));
+    return pid;
+  }
+
 }  // namespace service
 }  // namespace em
 }  // namespace simba

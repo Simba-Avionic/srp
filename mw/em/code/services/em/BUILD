@@ -2,7 +2,6 @@ cc_library(
     name = "em_service",
     srcs = ["em_service.cc"],
     hdrs = [
-        "app_config.h",
         "em_service.h",
     ],
     visibility = ["//mw/em/code:__subpackages__"],
@@ -10,5 +9,14 @@ cc_library(
         "//core/json:simba_json",
         "//core/logger:Logger",
         # "@boost//:process",
+        ":em_config"
     ],
+)
+
+cc_library(
+    name = "em_config",
+    hdrs = ["app_config.h"],
+    visibility = [
+        "//mw/em/code/services/exec:__subpackages__",
+        ],
 )

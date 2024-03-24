@@ -12,6 +12,9 @@ cc_library(
         "//core/application:simba_application",
         "//core/json:simba_json",
     ],
+    visibility = [
+        "//mw/gpio_server/tests:__subpackages__",
+        ],
 )
 
 cc_binary(

@@ -32,14 +32,14 @@ class DataBase {
  public:
   uint16_t GetServiceId() const noexcept;
   std::vector<objects::Interface> GetInterfaces() const noexcept;
-  core::ErrorCode InsertService(const uint16_t service_id,
+  simba::core::ErrorCode InsertService(const uint16_t service_id,
                                 const Interface& inf) noexcept;
   std::optional<Interface> FindService(
       const uint16_t service_id) const noexcept;
-  core::ErrorCode InsertInterface(const std::string& ip,
+  simba::core::ErrorCode InsertInterface(const std::string& ip,
                                   const uint16_t port) noexcept;
-  core::ErrorCode SetServiceId(const uint16_t id) noexcept;
-  core::ErrorCode InstertEvent(const uint16_t event_id,
+  simba::core::ErrorCode SetServiceId(const uint16_t id) noexcept;
+  simba::core::ErrorCode InstertEvent(const uint16_t event_id,
                                const uint16_t client_id) noexcept;
   std::optional<std::vector<uint16_t>> FindEventClient(
       const uint16_t event_id) const noexcept;
