@@ -29,7 +29,7 @@ class AppConfig {
 
  public:
   AppConfig(const std::string &bin_path, const std::string &parms,
-            const uint8_t startup_prio, const uint8_t startup_after_delay, uint16_t appID)
+            const uint8_t startup_prio, const uint8_t startup_after_delay, const uint16_t appID)
       : bin_path_{bin_path},
         parms_{parms},
         startup_prio_{startup_prio},
