@@ -27,14 +27,19 @@ class I2C{
  public:
     ErrorCode init(const std::string& path);
     ErrorCode init();
-    ~I2C() {
-      close(this->file);
-    }
-    std::optional<std::vector<uint8_t>> Read(const uint8_t address, const int buffor_size);
-    std::optional<std::vector<uint8_t>> Read(const uint8_t address, const uint8_t reg, const int buffor_size);
-    ErrorCode Write(const uint8_t address, const uint8_t reg, std::vector<uint8_t> data);
+    // czy to wgl działa???
+    std::optional<uint8_t> Read(const uint8_t address);
+    /**
+     * @brief ERPROM Need Read And Write 
+     * 
+     * @param address 
+     * @param reg 
+     * @return std::optional<uint8_t> 
+     */
+    std::optional<uint8_t> ReadAndWrite(const uint8_t address, const uint8_t reg);
+    ErrorCode Write(const uint8_t address, const uint8_t reg, uint8_t data);
  private:
-    int file = -1;
+    std::string path;
 };
 }  // namespace core
 }  // namespace simba

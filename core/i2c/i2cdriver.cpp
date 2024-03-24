@@ -20,51 +20,72 @@ namespace simba {
 namespace core {
 
 ErrorCode I2C::init(const std::string&  path) {
-    this->file = open(path.c_str(), O_RDWR);
-    return this->file < 0 ? ErrorCode::kError : ErrorCode::kOk;
+    this->path = path;
+    return ErrorCode::kOk;
 }
 ErrorCode I2C::init() {
-    this->file = open("/dev/i2c-2", O_RDWR);
-    if (this->file < 0) {
-        return ErrorCode::kError;
-    }
+    this->path = "/dev/i2c-2";
     return ErrorCode::kOk;
-}
-std::optional<std::vector<uint8_t>> I2C::Read(const uint8_t address, const int buffor_size) {
-    if (ioctl(file, I2C_SLAVE, address) < 0) {
-        return {};
-    }
-    char buffor[kMaxBufSize];
-    if (read(this->file, buffor, buffor_size) != buffor_size) {
-        return {};
-    }
-    std::vector<uint8_t> vec(buffor, buffor + sizeof(buffor));
-    return std::optional<std::vector<uint8_t>>{std::vector<uint8_t>{vec}};
-}
-std::optional<std::vector<uint8_t>> I2C::Read(const uint8_t address, const uint8_t reg, const int buffor_size) {
-    if (ioctl(file, I2C_SLAVE, address) < 0) {
-        return {};
-    }
-    char buffer[kMaxBufSize];
-    buffer[0] = reg;
-    if (read(file, buffer+1, buffor_size) != buffor_size) {
-        return {};
-    }
-    std::vector<uint8_t> vec(buffer + 1, buffer + 1 + buffor_size);
-    return vec;
 }
 
-ErrorCode I2C::Write(const uint8_t address, const uint8_t reg, std::vector<uint8_t> data) {
-    if (ioctl(this->file, I2C_SLAVE, address) < 0) {
+std::optional<uint8_t> I2C::ReadAndWrite(const uint8_t address, const uint8_t reg) {
+    auto file = open(this->path.c_str(), O_RDWR);
+    if (ioctl(file, I2C_SLAVE, address) < 0) {
+        close(file);
+       return {};
+    }
+    if (write(file, &reg, 1) != 1) {
+        close(file);
+        return {};
+    }
+    uint8_t data;
+    if (read(file, &data, 1) != 1) {
+        close(file);
+        return {};
+    }
+    close(file);
+    return std::optional<uint8_t>{data};
+}
+
+ErrorCode I2C::Write(const uint8_t address, const uint8_t reg, uint8_t data) {
+    auto file = open(path.c_str(), O_RDWR);
+    if (ioctl(file, I2C_SLAVE, address) < 0) {
+        close(file);
         return ErrorCode::kInitializeError;
     }
-    std::vector<uint8_t> buffer(data.size() + 1);
-        buffer[0] = reg;
-        std::copy(data.begin(), data.end(), buffer.begin() + 1);
-    if (write(file, data.data(), data.size()) != data.size()) {
+    uint8_t buf[2];
+    buf[0] = reg;
+    buf[1] = data;
+
+    if (write(file, &buf, 2) != 1) {
+        close(file);
         return ErrorCode::kError;
     }
+    close(file);
     return ErrorCode::kOk;
 }
+
+/**
+ * @brief Dont work??
+ * 
+ * @param address 
+ * @return std::optional<uint8_t> 
+ */
+std::optional<uint8_t> I2C::Read(const uint8_t address) {
+    auto file = open(this->path.c_str(), O_RDWR);
+    if (ioctl(file, I2C_SLAVE, address) < 0) {
+        close(file);
+        return {};
+    }
+    uint8_t buffor = 0x10;
+    if (read(file, &buffor, sizeof(buffor)) != sizeof(buffor)) {
+        close(file);
+        return {};
+    }
+    close(file);
+    return std::optional<uint16_t>{buffor};
+}
+
+
 }  // namespace core
 }  // namespace simba
