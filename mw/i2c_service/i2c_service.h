@@ -24,7 +24,11 @@ class I2CService : public core::ApplicationMW {
  private:
     com::soc::IpcSocket i2c_sock_;
     simba::core::I2C i2c_driver_;
+    std::mutex i2c_mtx;
+    com::soc::IpcSocket servo_sock_;
     void I2CRxCallback(const std::string& ip, const std::uint16_t& port,
+    const std::vector<std::uint8_t> data);
+    void ServoRxCallback(const std::string& ip, const std::uint16_t& port,
     const std::vector<std::uint8_t> data);
 
  public:

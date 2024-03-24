@@ -9,9 +9,10 @@
  * 
  */
 #include "i2c_service.h"
+#include "mw/i2c_service/data/servo_hdr.hpp"
 namespace simba {
 namespace mw {
-
+/**
 void I2CService::I2CRxCallback(const std::string& ip,
   const std::uint16_t& port, const std::vector<std::uint8_t> data) {
     if (data.size() <= 0) {
@@ -38,6 +39,22 @@ void I2CService::I2CRxCallback(const std::string& ip,
       }
     }
 }
+*/
+
+void  I2CService::ServoRxCallback(const std::string& ip, const std::uint16_t& port,
+    const std::vector<std::uint8_t> data) {
+      i2c::ServoHdr hdr{0, 0, 0};
+      hdr.SetBuffor(data);
+      if (hdr.GetServiceID() == 0) {
+        return;
+      }
+      
+}
+
+
+void I2CService::I2CRxCallback(const std::string& ip,
+  const std::uint16_t& port, const std::vector<std::uint8_t> data) {return;}
+
 core::ErrorCode I2CService::Run(std::stop_token token) {
     this->SleepMainThread();
     return core::ErrorCode::kOk;
@@ -45,12 +62,16 @@ core::ErrorCode I2CService::Run(std::stop_token token) {
 core::ErrorCode I2CService::Initialize(
       const std::unordered_map<std::string, std::string>& parms) {
         this->i2c_sock_.Init({"SIMBA.I2C", 0, 0});
+        this->servo_sock_.Init({"SIMBA.SERVO", 0, 0});
         this->i2c_sock_.SetRXCallback(std::bind(&I2CService::I2CRxCallback, this, std::placeholders::_1,
                 std::placeholders::_2, std::placeholders::_3));
-        if (this->i2c_driver_.init("/dev/i2c-1") != core::ErrorCode::kOk) {
+        this->servo_sock_.SetRXCallback(std::bind(&I2CService::ServoRxCallback, this, std::placeholders::_1,
+                std::placeholders::_2, std::placeholders::_3));
+        if (this->i2c_driver_.init() != core::ErrorCode::kOk) {
           return core::ErrorCode::kError;
         }
         this->i2c_sock_.StartRXThread();
+        this->servo_sock_.StartRXThread();
     return core::ErrorCode::kOk;
 }
 
