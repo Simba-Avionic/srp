@@ -31,7 +31,7 @@ void ExecManager::RxCallback(const std::string& ip, const std::uint16_t& port,
     std::lock_guard<std::mutex> lock(mtx);
     diag::exec::ExecHeader hdr{};
     hdr.SetBuffor(payload);
-        AppLogger::Info("Receive hb:"+std::to_string(hdr.GetServiceID())+
+        AppLogger::Debug("Receive hb:"+std::to_string(hdr.GetServiceID())+
                     ", timestamp:"+std::to_string(hdr.GetTimestamp()));
     auto it = this->db_.find(hdr.GetServiceID());
     if (it == this->db_.end()) {
@@ -41,7 +41,7 @@ void ExecManager::RxCallback(const std::string& ip, const std::uint16_t& port,
     auto pair = this->getStatusAndFlags(hdr.GetFlags());
     it->second.last_timestamp_time = std::chrono::high_resolution_clock::now();
     if (it->second.last_timestamp+1 != hdr.GetTimestamp() && it->second.last_timestamp != 0) {
-        AppLogger::Error("Missing timestamp service_id: "+std::to_string(hdr.GetServiceID()));
+        AppLogger::Warning("Missing timestamp service_id: "+std::to_string(hdr.GetServiceID()));
     }
     if ( std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now()
                                                             - it->second.last_timestamp_time).count() > 1250 ) {
@@ -85,7 +85,7 @@ std::queue<uint16_t> ExecManager::CheckAppCondition() {
 
 void ExecManager::Init() {
     if (this->sock_.Init(com::soc::SocketConfig{"SIMBA.EXE", 0, 0}) != core::ErrorCode::kOk) {
-        AppLogger::Warning("failed to bind ipc");
+        AppLogger::Error("failed to bind ipc");
     } else {
         AppLogger::Debug("ipc bind succesfully");
     }
