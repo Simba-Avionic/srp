@@ -1,14 +1,44 @@
 cc_library(
-    name = "someip_interface",
+    name = "interfaces",
     hdrs = [
-        "Isomeip_controller.h",
+        "callbacks.h",
+        "iproxy.h",
+        "iskeleton.h",
     ],
-    visibility = ["//communication-core:__subpackages__"],
+    visibility = [],
     deps = [
-        "//communication-core/someip:someip_header",
         "//communication-core/someip:someip_types",
-        "//communication-core/someip/factory:someip_message_factory",
-        "//core/common:common_types",
+        "//communication-core/someip-database/code:someip_database_lib",
+    ],
+)
+
+cc_library(
+    name = "proxy",
+    srcs = [],
+    hdrs = [
+        "event_proxy.h",
+        "method_proxy.h",
+    ],
+    visibility = ["//visibility:public"],
+    deps = [
+        ":interfaces",
+        "//communication-core/someip-database/code:app_config_object",
+        "//core/logger:Logger",
+    ],
+)
+
+cc_library(
+    name = "skeleton",
+    srcs = [],
+    hdrs = [
+        "event_skeleton.h",
+        "method_skeleton.h",
+    ],
+    visibility = ["//visibility:public"],
+    deps = [
+        ":interfaces",
+        "//communication-core/someip-database/code:app_config_object",
+        "//core/logger:Logger",
     ],
 )
 
@@ -22,21 +52,17 @@ cc_library(
 )
 
 cc_library(
-    name = "someip_controller",
-    srcs = ["someip_controller.cc"],
-    hdrs = [
-        "someip_controller.h",
-    ],
-    visibility = ["//communication-core:__subpackages__"],
+    name = "controller",
+    srcs = ["controller.cc"],
+    hdrs = ["controller.h"],
+    visibility = ["//visibility:public"],
     deps = [
-        ":someip_interface",
-        #"//communication-core/database:DatabaseLib",
-        # "//communication-core/json-parser:JsonParser",
-        "//communication-core/sockets:socket_interface",
-        "//communication-core/someip:someip_header",
-        "//communication-core/someip:someip_types",
-        "//communication-core/someip/factory:someip_header_factory",
-        "//communication-core/someip/factory:someip_message_factory",
-        "//communication-core/someip-controller:transfer_lib",
+        "//communication-core/sockets:socket_ipc",
+        "//communication-core/sockets:socket_udp",
+        "//communication-core/someip:someip_objects",
+        "//communication-core/someip-controller:interfaces",
+        "//communication-core/someip-database/code:someip_database_lib",
+        "//core/common:wait_queue",
+        "//core/logger:Logger",
     ],
 )

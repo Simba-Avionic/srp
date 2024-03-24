@@ -21,7 +21,6 @@
 #include "communication-core/someip/someip_header.h"
 namespace simba {
 namespace com {
-namespace core {
 namespace someip {
 namespace factory {
 class SomeIpHeaderFactory : public ISomeIpHeaderFactory {
@@ -56,14 +55,15 @@ class SomeIpHeaderFactory : public ISomeIpHeaderFactory {
    */
   std::shared_ptr<SomeIpHeader> CreateResponse(
       const std::uint16_t service_id, const std::uint16_t methode_id,
-      const simba::com::core::data::MessageCode res_flag) override;
+      const simba::com::data::MessageCode res_flag) override;
   std::shared_ptr<SomeIpHeader> CreateRequestNoReturn(
       const std::uint16_t service_id, const std::uint16_t methode_id) override;
+      std::shared_ptr<SomeIpHeader> CreateRequestACK(
+    const std::uint16_t service_id, const std::uint16_t methode_id) override;
   ~SomeIpHeaderFactory() = default;
 };
 }  // namespace factory
 }  // namespace someip
-}  // namespace core
 }  // namespace com
 }  // namespace simba
 #endif  // COMMUNICATION_CORE_SOMEIP_FACTORY_SOMEIP_HEADER_FACTORY_H_

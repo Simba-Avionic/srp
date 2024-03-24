@@ -32,16 +32,16 @@ simba::core::ErrorCode UdpMulticastSocket::Init(const SocketConfig &config) {
   groupSock.sin_family = AF_INET;
   groupSock.sin_addr.s_addr = inet_addr("231.255.42.99");
   groupSock.sin_port = htons(config.GetRxPort());
-  // {
-  //   char loopch = 0;
+  {
+    char loopch = 0;
 
-  //   if (setsockopt(sd, IPPROTO_IP, IP_MULTICAST_LOOP,
-  //                  (char *)&loopch,  // NOLINT
-  //                  sizeof(loopch)) < 0) {
-  //     close(sd);
-  //     return simba::core::ErrorCode::kError;
-  //   }
-  // }
+    if (setsockopt(sd, IPPROTO_IP, IP_MULTICAST_LOOP,
+                   (char *)&loopch,  // NOLINT
+                   sizeof(loopch)) < 0) {
+      close(sd);
+      return simba::core::ErrorCode::kError;
+    }
+  }
   localInterface.s_addr = inet_addr(config.GetIp().c_str());
   if (setsockopt(sd, IPPROTO_IP, IP_MULTICAST_IF,
                  (char *)&localInterface,  // NOLINT

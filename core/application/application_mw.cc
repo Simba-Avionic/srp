@@ -27,6 +27,7 @@ void ApplicationMW::onRun(
   if (this->MwConfig(parms) != ErrorCode::kOk) {
     std::abort();
   }
+  this->SomeIPConfig(parms);
   AppLogger::Info("Application [MW] configured");
   AppLogger::Info("Application [MW] initialize");
   this->Initialize(parms);

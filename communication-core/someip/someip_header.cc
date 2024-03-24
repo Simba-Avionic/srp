@@ -12,7 +12,6 @@
 
 namespace simba {
 namespace com {
-namespace core {
 namespace someip {
 SomeIpHeader::SomeIpHeader(/* args */) { this->SetData(); }
 SomeIpHeader::SomeIpHeader(const SomeIpHeader& other)
@@ -99,6 +98,5 @@ void SomeIpHeader::SetReturnCode(const uint8_t& value) {
 }
 // GCOVR_EXCL_STOP
 }  // namespace someip
-}  // namespace core
 }  // namespace com
 }  // namespace simba

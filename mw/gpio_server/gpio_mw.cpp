@@ -71,7 +71,6 @@ void GPIOMWService::InitializePins() {
         return;
     }
     for (const auto& gpio : data["gpio"]) {
-        std::cout<< gpio["id"] <<":"<< gpio["num"] <<std::endl;
         uint16_t pin_id = static_cast<uint16_t>(gpio["id"]);
         uint16_t pin_num = static_cast<uint16_t>(gpio["num"]);
         const std::string direct = gpio.at("direction");

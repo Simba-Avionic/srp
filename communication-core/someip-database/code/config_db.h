@@ -30,7 +30,7 @@ class ConfigDb {
 
 
  public:
-  core::ErrorCode InsertObject(const std::string& key,
+  simba::core::ErrorCode InsertObject(const std::string& key,
                                const Endpoint& item) noexcept;
   std::optional<Endpoint> FindObject(const std::string& key) const noexcept;
 
