@@ -9,7 +9,7 @@
  * 
  */
 #include "i2c_service.h"
-#include "mw/i2c_service/servo/data/servo_hdr.hpp"
+#include "mw/i2c_service/pca9685/data/servo_hdr.hpp"
 namespace simba {
 namespace mw {
 /**
@@ -43,13 +43,16 @@ void I2CService::I2CRxCallback(const std::string& ip,
 
 void  I2CService::ServoRxCallback(const std::string& ip, const std::uint16_t& port,
     const std::vector<std::uint8_t> data) {
-      i2c::ServoHdr hdr{0, 0, 0};
+      AppLogger::Warning("Recive change msg");
+      i2c::ServoHdr hdr{0, 0};
       hdr.SetBuffor(data);
-      if (hdr.GetServiceID() == 0) {
-        return;
+      if (hdr.GetMode() == i2c::smode_t::AUTO) {
+        this->pca9685_.AutoSetServoPos(hdr.GetActuatorID(), hdr.GetPosition());
+      } else {
+        this->pca9685_.ManSetServoPos(hdr.GetActuatorID(), hdr.GetPosition());
       }
-      this->pca9685_.SetServoPos(hdr.GetActuatorID(), hdr.GetPosition());
-      AppLogger::Debug("set servo with id:"+std::to_string(hdr.GetActuatorID())+std::to_string(hdr.GetPosition()));
+      AppLogger::Debug("set servo with id:"+std::to_string(
+                hdr.GetActuatorID())+"pos:"+std::to_string(hdr.GetPosition()));
 }
 
 
@@ -63,16 +66,14 @@ core::ErrorCode I2CService::Run(std::stop_token token) {
 core::ErrorCode I2CService::Initialize(
       const std::unordered_map<std::string, std::string>& parms) {
         this->i2c_sock_.Init({"SIMBA.I2C", 0, 0});
-        this->servo_sock_.Init({"SIMBA.SERVO", 0, 0});
+        this->servo_sock_.Init({"SIMBA.PCA9685", 0, 0});
         this->i2c_sock_.SetRXCallback(std::bind(&I2CService::I2CRxCallback, this, std::placeholders::_1,
                 std::placeholders::_2, std::placeholders::_3));
         this->servo_sock_.SetRXCallback(std::bind(&I2CService::ServoRxCallback, this, std::placeholders::_1,
                 std::placeholders::_2, std::placeholders::_3));
-        if (this->i2c_driver_.init() != core::ErrorCode::kOk) {
-          return core::ErrorCode::kError;
-        }
         this->i2c_sock_.StartRXThread();
         this->servo_sock_.StartRXThread();
+        this->pca9685_.Init(12);
     return core::ErrorCode::kOk;
 }
 
