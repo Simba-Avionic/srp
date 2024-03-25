@@ -33,9 +33,7 @@ namespace {
  * @return core::ErrorCode 
  */
 core::ErrorCode PCA9685::SetServo(uint8_t channel, uint16_t pos) {
-    if (this->mtx != nullptr) {
-        this->mtx->lock();
-    }
+    std::lock_guard<std::mutex> lock(*this->mtx);
     int i2cFile;
     const char *i2cDevice = "/dev/i2c-2";
     if ((i2cFile = open(i2cDevice, O_RDWR)) < 0) {
@@ -80,9 +78,6 @@ core::ErrorCode PCA9685::SetServo(uint8_t channel, uint16_t pos) {
         return core::ErrorCode::kInitializeError;
     }
     close(i2cFile);
-    if (this->mtx != nullptr) {
-        this->mtx->unlock();
-    }
     return core::ErrorCode::kOk;
 }
 
@@ -118,19 +113,37 @@ core::ErrorCode PCA9685::ReadConfig() {
     return core::ErrorCode::kOk;
 }
 
-core::ErrorCode PCA9685::SetServoPos(uint8_t actuator_id, uint16_t position) {
+core::ErrorCode PCA9685::AutoSetServoPos(uint8_t actuator_id, uint8_t position) {
     auto it = this->db_.find(actuator_id);
     if (it == this->db_.end()) {
+        AppLogger::Warning("Not find service");
         return core::ErrorCode::kNotDefine;
     }
-    if ( it->second.position != position ) {
+    if (it->second.position != (position == 0 ? it->second.on_pos : it->second.off_pos)) {
         this->gpio_.SetPinValue(it->second.mosfet_id, gpio::Value::HIGH);
-        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+        std::this_thread::sleep_for(std::chrono::milliseconds(5));
         this->SetServo(it->second.channel, it->second.position == 1 ? it->second.on_pos : it->second.off_pos);
-        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+        std::this_thread::sleep_for(std::chrono::milliseconds(5));
         this->gpio_.SetPinValue(it->second.mosfet_id, gpio::Value::LOW);
+        it->second.position = position;
     }
     return core::ErrorCode::kOk;
+}
+
+core::ErrorCode PCA9685::ManSetServoPos(uint8_t actuator_id, uint16_t position) {
+    auto it = this->db_.find(actuator_id);
+    if (it == this->db_.end()) {
+        AppLogger::Warning("Not find service");
+        return core::ErrorCode::kNotDefine;
+    }
+    if (it->second.position != position) {
+        this->gpio_.SetPinValue(it->second.mosfet_id, gpio::Value::HIGH);
+        std::this_thread::sleep_for(std::chrono::milliseconds(5));
+        this->SetServo(it->second.channel, position);
+        std::this_thread::sleep_for(std::chrono::milliseconds(5));
+        this->gpio_.SetPinValue(it->second.mosfet_id, gpio::Value::LOW);
+        it->second.position = position;
+    }
 }
 PCA9685::PCA9685(std::mutex *mtx) {
     this->mtx = mtx;

@@ -14,19 +14,16 @@
 #include <unordered_map>
 #include <memory>
 
-#include "core/i2c/i2cdriver.h"
 #include "core/application/application_no_ipc.h"
 #include "mw/gpio_server/controller/gpio_controller.hpp"
-#include "mw/i2c_service/servo/service/pca9685.hpp"
-#include "core/i2c/i2cdriver.h"
+#include "mw/i2c_service/pca9685/controller/servoController.hpp"
 namespace simba {
 namespace router {
 class Router : public core::ApplicationNoIPC{
  protected:
   gpio::GPIOController gpio_;
-  core::I2C i2c_;
   std::mutex mtx;
-  simba::i2c::PCA9685 pca_;
+  core::ServoController servo_;
   /**
    * @brief This function is called to launch the application
    *

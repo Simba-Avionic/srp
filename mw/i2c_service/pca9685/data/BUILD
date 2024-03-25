@@ -12,6 +12,6 @@ cc_library(
         "//communication-core/network-data:network_data_type",
     ],
     visibility = [
-        "//mw/i2c_service/servo:__subpackages__",
+        "//mw/i2c_service:__subpackages__",
         ],
 )

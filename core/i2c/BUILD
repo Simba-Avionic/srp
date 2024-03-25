@@ -7,6 +7,5 @@ cc_library(
     ],
     visibility = ["//core:__subpackages__",
     "//mw:__subpackages__",
-    "//apps:__subpackages__"
     ],
 )

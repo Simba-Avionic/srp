@@ -10,8 +10,7 @@ cc_binary(
         "//core/application:simba_application",
         "@untar",
         "//mw/gpio_server/controller:gpio_controller",
-        "//core/i2c:i2cdriver",
-        "//mw/i2c_service/servo/service:pca9685_lib"
+        "//mw/i2c_service/pca9685/controller:servoController"
     ],
 )
 

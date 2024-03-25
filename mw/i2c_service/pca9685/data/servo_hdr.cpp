@@ -16,15 +16,15 @@ namespace i2c {
 
 
 void ServoHdr::SetData() {
-    this->AddData(&service_id);
     this->AddData(&actuator_id);
     this->AddData(&position);
+    this->AddData(&mode);
 }
 
-ServoHdr::ServoHdr(uint16_t service_id, uint8_t actuator_id, uint8_t position) {
-    this->service_id = service_id;
+ServoHdr::ServoHdr(uint8_t actuator_id, uint16_t position, smode_t mode) {
     this->actuator_id = actuator_id;
     this->position = position;
+    this->mode = static_cast<uint8_t>(mode);
     this->SetData();
 }
 
