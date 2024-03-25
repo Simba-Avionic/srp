@@ -65,13 +65,13 @@ core::ErrorCode I2CService::Run(std::stop_token token) {
 }
 core::ErrorCode I2CService::Initialize(
       const std::unordered_map<std::string, std::string>& parms) {
-        this->i2c_sock_.Init({"SIMBA.I2C", 0, 0});
+        // this->i2c_sock_.Init({"SIMBA.I2C", 0, 0});
         this->servo_sock_.Init({"SIMBA.PCA9685", 0, 0});
-        this->i2c_sock_.SetRXCallback(std::bind(&I2CService::I2CRxCallback, this, std::placeholders::_1,
-                std::placeholders::_2, std::placeholders::_3));
+        // this->i2c_sock_.SetRXCallback(std::bind(&I2CService::I2CRxCallback, this, std::placeholders::_1,
+        //        std::placeholders::_2, std::placeholders::_3));
         this->servo_sock_.SetRXCallback(std::bind(&I2CService::ServoRxCallback, this, std::placeholders::_1,
                 std::placeholders::_2, std::placeholders::_3));
-        this->i2c_sock_.StartRXThread();
+        // this->i2c_sock_.StartRXThread();
         this->servo_sock_.StartRXThread();
         this->pca9685_.Init(12);
     return core::ErrorCode::kOk;

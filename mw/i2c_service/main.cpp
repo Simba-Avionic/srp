@@ -8,7 +8,7 @@
  * @copyright Copyright (c) 2024
  * 
  */
-#include "mw/i2c_service/i2c_service.h"
+#include "i2c_service.h"
 #include "core/application/application_factory.h"
 
 int main(int argc, char const *argv[]) {

@@ -13,7 +13,7 @@
 #include <memory>
 #include <vector>
 #include <string>
-#include <condition_variable>
+#include <condition_variable>  // NOLINT
 #include "core/i2c/i2cdriver.h"
 #include "communication-core/sockets/ipc_socket.h"
 #include "mw/i2c_service/data/header.h"

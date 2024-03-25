@@ -27,5 +27,4 @@ simba::i2c::ServoHdr hdr2{actuator_id, pos2, simba::i2c::smode_t::MAN};
 EXPECT_EQ(hdr2.GetActuatorID(), actuator_id);
 EXPECT_EQ(hdr2.GetPosition(), pos2);
 EXPECT_EQ(hdr2.GetMode(), simba::i2c::smode_t::MAN);
-
 }

@@ -8,8 +8,8 @@
  * @copyright Copyright (c) 2024
  * 
  */
-#ifndef MW_I2C_SERVICE_DATA_SERVO_HDR_HPP_
-#define MW_I2C_SERVICE_DATA_SERVO_HDR_HPP_
+#ifndef MW_I2C_SERVICE_PCA9685_DATA_SERVO_HDR_HPP_
+#define MW_I2C_SERVICE_PCA9685_DATA_SERVO_HDR_HPP_
 
 #include <cstdint>
 
@@ -45,4 +45,4 @@ class ServoHdr : public com::core::network::NetworkDataStructure {
 
 
 
-#endif  // MW_I2C_SERVICE_DATA_SERVO_HDR_HPP_
+#endif  // MW_I2C_SERVICE_PCA9685_DATA_SERVO_HDR_HPP_

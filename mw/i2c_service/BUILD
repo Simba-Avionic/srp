@@ -4,7 +4,6 @@ cc_library(
     hdrs = ["i2c_service.h"],
     visibility = ["//mw/i2c_service:__subpackages__"],
     deps = [
-        "//core/i2c:i2cdriver",
         "//communication-core/sockets:socket_ipc",
         "//core/application:simba_application",
         "//mw/i2c_service/data:i2c_factory",
