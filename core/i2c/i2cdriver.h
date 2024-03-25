@@ -11,19 +11,14 @@
 #ifndef CORE_I2C_I2CDRIVER_H_
 #define CORE_I2C_I2CDRIVER_H_
 
-#include <sys/ioctl.h>
-#include <fcntl.h>
-#include <linux/i2c-dev.h>
-#include <linux/types.h>
-#include <linux/i2c.h>
-#include <unistd.h>
-#include <vector>
 #include <string>
-#include <optional>
-#include "core/common/error_code.h"
+#include <vector>
+
+#include "Ii2cdriver.hpp"
+
 namespace simba {
 namespace core {
-class I2C{
+class I2C : public II2C {
  public:
     ErrorCode init(const std::string& path);
     std::optional<std::vector<uint8_t>> Read(const uint8_t address, const uint8_t reg);

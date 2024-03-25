@@ -15,7 +15,6 @@
 
 namespace simba {
 namespace com {
-namespace core {
 namespace someip {
 namespace factory {
 std::shared_ptr<SomeIpHeader> SomeIpHeaderFactory::CreatEvent(
@@ -38,12 +37,17 @@ std::shared_ptr<SomeIpHeader> SomeIpHeaderFactory::CreateRequestNoReturn(
 
 std::shared_ptr<SomeIpHeader> SomeIpHeaderFactory::CreateResponse(
     const std::uint16_t service_id, const std::uint16_t methode_id,
-    const simba::com::core::data::MessageCode res_flag) {
+    const simba::com::data::MessageCode res_flag) {
   return std::make_shared<SomeIpHeader>(service_id, methode_id, 0x00, 0x00,
                                         0x00, 0x1, data::kResponse, res_flag);
 }
+
+std::shared_ptr<SomeIpHeader> SomeIpHeaderFactory::CreateRequestACK(
+    const std::uint16_t service_id, const std::uint16_t methode_id) {
+  return std::make_shared<SomeIpHeader>(service_id, methode_id, 0x00, 0x00,
+                                        0x00, 0x1, data::kRequestAck, data::kEOk);
+}
 }  // namespace factory
 }  // namespace someip
-}  // namespace core
 }  // namespace com
 }  // namespace simba

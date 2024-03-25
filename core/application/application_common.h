@@ -11,21 +11,23 @@
 #ifndef CORE_APPLICATION_APPLICATION_COMMON_H_
 #define CORE_APPLICATION_APPLICATION_COMMON_H_
 
-#include <chrono>      // NOLINT
+#include <chrono>  // NOLINT
+#include <memory>
 #include <stop_token>  // NOLINT
 #include <string>
 #include <thread>  // NOLINT
 #include <unordered_map>
-#include <memory>
 
 #include "core/application/Iapplication.h"
 #include "diag/exec/controller/exec_controller.hpp"
+#include "communication-core/someip-controller/controller.h"
 namespace simba {
 namespace core {
 class ApplicationCommon : public IApplication {
  protected:
   std::stop_source source;
   diag::exec::ExecController exec_;
+  std::unique_ptr<com::someip::Controller> com;
   /**
    * @brief This is pre-run function only for creting new application
    * interfacess
@@ -36,6 +38,8 @@ class ApplicationCommon : public IApplication {
       const std::unordered_map<std::string, std::string>& parms) override;
   void SleepMainThread();
   ErrorCode CommonConfig(
+      const std::unordered_map<std::string, std::string>& parms);
+  ErrorCode SomeIPConfig(
       const std::unordered_map<std::string, std::string>& parms);
   bool FileExist(const std::string& name);
 

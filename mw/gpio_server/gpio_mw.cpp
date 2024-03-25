@@ -26,9 +26,6 @@ namespace mw {
 
 void GPIOMWService::RxCallback(const std::string& ip, const std::uint16_t& port,
   const std::vector<std::uint8_t> data) {
-    if (data.size() <= 0) {
-        return;
-    }
     gpio::Header hdr(0, 0, 0);
     hdr.SetBuffor(data);
     auto it = this->config.find(hdr.GetPinID());
@@ -38,6 +35,7 @@ void GPIOMWService::RxCallback(const std::string& ip, const std::uint16_t& port,
     }
     if (it->second.direction != core::gpio::direction_t::OUT) {
         AppLogger::Warning("Try to set IN pin value, ID: "+std::to_string(hdr.GetPinID()));
+        return;
     }
     if (this->gpio_driver_.getValue(it->second.pinNum) != hdr.GetValue()) {
         AppLogger::Debug("set pin to position:"+std::to_string(hdr.GetValue()));
@@ -73,7 +71,6 @@ void GPIOMWService::InitializePins() {
         return;
     }
     for (const auto& gpio : data["gpio"]) {
-        std::cout<< gpio["id"] <<":"<< gpio["num"] <<std::endl;
         uint16_t pin_id = static_cast<uint16_t>(gpio["id"]);
         uint16_t pin_num = static_cast<uint16_t>(gpio["num"]);
         const std::string direct = gpio.at("direction");

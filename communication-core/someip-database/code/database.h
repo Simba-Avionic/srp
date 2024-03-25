@@ -13,6 +13,8 @@
 #include <optional>
 #include <unordered_map>
 #include <vector>
+#include <string>
+
 #include "communication-core/someip-database/code/interface.h"
 #include "communication-core/someip-database/code/service.h"
 #include "core/common/error_code.h"
@@ -24,14 +26,23 @@ class DataBase {
  private:
   std::unordered_map<uint16_t, Interface> list{};
   std::unordered_map<uint16_t, std::vector<uint16_t>> event_map{};
+  std::vector<objects::Interface> interfaces{};
+  std::uint16_t service_id{0};
+
  public:
-  core::ErrorCode InsertService(const uint16_t service_id,
+  uint16_t GetServiceId() const noexcept;
+  std::vector<objects::Interface> GetInterfaces() const noexcept;
+  simba::core::ErrorCode InsertService(const uint16_t service_id,
                                 const Interface& inf) noexcept;
   std::optional<Interface> FindService(
       const uint16_t service_id) const noexcept;
-
-  core::ErrorCode InstertEvent(const uint16_t event_id, const uint16_t client_id) noexcept;
-  std::optional<std::vector<uint16_t>> FindEventClient(const uint16_t event_id) const noexcept;
+  simba::core::ErrorCode InsertInterface(const std::string& ip,
+                                  const uint16_t port) noexcept;
+  simba::core::ErrorCode SetServiceId(const uint16_t id) noexcept;
+  simba::core::ErrorCode InstertEvent(const uint16_t event_id,
+                               const uint16_t client_id) noexcept;
+  std::optional<std::vector<uint16_t>> FindEventClient(
+      const uint16_t event_id) const noexcept;
 };
 
 }  // namespace objects

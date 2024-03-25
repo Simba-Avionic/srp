@@ -10,6 +10,7 @@ cc_library(
     hdrs = ["gpio_controller.hpp"],
     visibility = [
         "//apps:__subpackages__",
-        "//mw/i2c_service:__subpackages__"
+        "//mw/i2c_service:__subpackages__",
+        "//mw:__subpackages__",
         ],
 )

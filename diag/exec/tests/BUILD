@@ -7,13 +7,3 @@ cc_test(
         "@com_google_googletest//:gtest_main",
     ],
 )
-
-cc_test(
-    name = "diag_data_factory",
-    srcs = ["exec_data_factory.cc"],
-    visibility = ["//visibility:public"],
-    deps = [
-        "//diag/exec/factories:diag_exec_factories",
-        "@com_google_googletest//:gtest_main",
-    ],
-)

@@ -16,12 +16,11 @@
 #include <memory>
 namespace simba {
 namespace com {
-namespace core {
 namespace someip {
 namespace factory {
 
 std::vector<uint8_t> SomeIpMessageFactory::GetBuffor(
-    std::shared_ptr<SomeIpHeader> header, const uint16_t client_id,
+    std::shared_ptr<simba::com::someip::SomeIpHeader> header, const uint16_t client_id,
     const uint16_t transfer_id, const std::vector<uint8_t> payload) {
   header->SetClientID(client_id);
   header->SetSessionID(transfer_id);
@@ -31,9 +30,9 @@ std::vector<uint8_t> SomeIpMessageFactory::GetBuffor(
   return res;
 }
 
-std::shared_ptr<SomeIpHeader> SomeIpMessageFactory::GetHeader(
+std::shared_ptr<simba::com::someip::SomeIpHeader> SomeIpMessageFactory::GetHeader(
     std::vector<uint8_t> raw) {
-  auto header = std::make_shared<SomeIpHeader>();
+  auto header = std::make_shared<simba::com::someip::SomeIpHeader>();
   header->SetBuffor(raw);
   return header;
 }
@@ -46,6 +45,5 @@ std::vector<uint8_t> SomeIpMessageFactory::GetPayload(
 }
 }  // namespace factory
 }  // namespace someip
-}  // namespace core
 }  // namespace com
 }  // namespace simba

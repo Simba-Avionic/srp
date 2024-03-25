@@ -13,7 +13,7 @@
 #include <chrono> // NOLINT
 #include <thread>  // NOLINT
 
-#include "application/parm.h"
+#include "core/application/parm.h"
 
 static void ParamConvertBenchmark(benchmark::State& state) {  // NOLINT
   for (auto _ : state) {

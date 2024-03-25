@@ -26,55 +26,64 @@ namespace someip {
 namespace json {
 class DataBaseParser {
  public:
-  static core::ErrorCode ParseJsonObject(std::shared_ptr<objects::DataBase> db,
+  static simba::core::ErrorCode ParseJsonObject(std::shared_ptr<objects::DataBase> db,
                                          const nlohmann::json& obj) noexcept {
-    core::ErrorCode flag = core::ErrorCode::kOk;
-    if (DataBaseParser::ValidateDb(obj) != core::ErrorCode::kOk) {
-      return core::ErrorCode::kError;
+    simba::core::ErrorCode flag = simba::core::ErrorCode::kOk;
+    if (DataBaseParser::ValidateDb(obj) != simba::core::ErrorCode::kOk) {
+      return simba::core::ErrorCode::kError;
     }
     auto list = obj.at("db");
     for (auto& [key, val] : list.items()) {
-      if (DataBaseParser::ValidateItem(val) == core::ErrorCode::kOk) {
+      if (DataBaseParser::ValidateItem(val) == simba::core::ErrorCode::kOk) {
         std::string ip = val.at("ip");
         uint16_t port = static_cast<uint16_t>(val.at("port"));
         if (db->InsertService(static_cast<uint16_t>(std::stoi(key)),
                               objects::Interface{ip, port}) !=
-            core::ErrorCode::kOk) {
-          flag = core::ErrorCode::kError;
+            simba::core::ErrorCode::kOk) {
+          flag = simba::core::ErrorCode::kError;
         }
       } else {
-        flag = core::ErrorCode::kError;
+        flag = simba::core::ErrorCode::kError;
       }
     }
-    if (flag == core::ErrorCode::kOk) {
-      flag = ParseEventClients(std::move(db), obj);
+    if (flag == simba::core::ErrorCode::kOk) {
+      flag = ParseEventClients(db, obj);
+    }
+    if (flag == simba::core::ErrorCode::kOk) {
+      flag = ParseConfig(std::move(db), obj);
     }
     return flag;
   }
 
  private:
-  static core::ErrorCode ValidateDb(const nlohmann::json& obj) noexcept {
-    if (!obj.contains("db")) {
-      return core::ErrorCode::kError;
+  static simba::core::ErrorCode ValidateDb(const nlohmann::json& obj) noexcept {
+    if (!obj.contains("interface")) {
+      return simba::core::ErrorCode::kError;
     }
-    return core::ErrorCode::kOk;
+    if (!obj.contains("service_id")) {
+      return simba::core::ErrorCode::kError;
+    }
+    if (!obj.contains("db")) {
+      return simba::core::ErrorCode::kError;
+    }
+    return simba::core::ErrorCode::kOk;
   }
-  static core::ErrorCode ValidateItem(const nlohmann::json& obj) noexcept {
+  static simba::core::ErrorCode ValidateItem(const nlohmann::json& obj) noexcept {
     if (!obj.contains("ip")) {
-      return core::ErrorCode::kError;
+      return simba::core::ErrorCode::kError;
     }
     if (!obj.contains("port")) {
-      return core::ErrorCode::kError;
+      return simba::core::ErrorCode::kError;
     }
     if (!obj.at("ip").is_string()) {
-      return core::ErrorCode::kError;
+      return simba::core::ErrorCode::kError;
     }
     if (!obj.at("port").is_number_unsigned()) {
-      return core::ErrorCode::kError;
+      return simba::core::ErrorCode::kError;
     }
-    return core::ErrorCode::kOk;
+    return simba::core::ErrorCode::kOk;
   }
-  static core::ErrorCode ParseEventClients(
+  static simba::core::ErrorCode ParseEventClients(
       std::shared_ptr<objects::DataBase> db, const nlohmann::json& obj) {
     auto list = obj["pub_event"];
     for (auto& [key, val] : list.items()) {
@@ -84,7 +93,19 @@ class DataBaseParser {
         db->InstertEvent(event_id, val);
       }
     }
-    return core::ErrorCode::kOk;
+    return simba::core::ErrorCode::kOk;
+  }
+  static simba::core::ErrorCode ParseConfig(std::shared_ptr<objects::DataBase> db,
+                                     const nlohmann::json& obj) {
+    const uint16_t id = obj.at("service_id");
+    db->SetServiceId(id);
+    auto list = obj.at("interface");
+    for (auto& obj : list.items()) {
+      const std::string ip = obj.value()["ip"];
+      const uint16_t port = obj.value()["port"];
+      db->InsertInterface(ip, port);
+    }
+    return simba::core::ErrorCode::kOk;
   }
 };
 
