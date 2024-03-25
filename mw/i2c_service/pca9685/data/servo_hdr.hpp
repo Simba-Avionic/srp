@@ -20,6 +20,11 @@
 namespace simba {
 namespace i2c {
 
+enum mode_t {
+  AUTO = 0,
+  MANUAL = 1,
+};
+
 class ServoHdr : public com::core::network::NetworkDataStructure {
  private:
     com::core::network::uint16_t service_id;

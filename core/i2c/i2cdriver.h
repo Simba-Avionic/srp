@@ -36,10 +36,16 @@ class I2C{
      * @param reg 
      * @return std::optional<uint8_t> 
      */
-    std::optional<uint8_t> ReadAndWrite(const uint8_t address, const uint8_t reg);
-    ErrorCode Write(const uint8_t address, const uint8_t reg, uint8_t data);
+
+    void openFile();
+    void closeFile();
+    ErrorCode connectTo(const uint8_t deviceAddress);
+    std::optional<uint8_t> ReadAndWrite(const uint8_t reg);
+    ErrorCode Write(const uint8_t reg, uint8_t data);
  private:
     std::string path;
+    int file;
+    uint8_t address;
 };
 }  // namespace core
 }  // namespace simba

@@ -28,40 +28,39 @@ ErrorCode I2C::init() {
     return ErrorCode::kOk;
 }
 
-std::optional<uint8_t> I2C::ReadAndWrite(const uint8_t address, const uint8_t reg) {
-    auto file = open(this->path.c_str(), O_RDWR);
+void I2C::openFile() {
+    this->file = open(this->path.c_str(), O_RDWR);
+}
+void I2C::closeFile() {
+    close(this->file);
+}
+
+core::ErrorCode I2C::connectTo(uint8_t deviceAddress) {
+    this->address = deviceAddress;
     if (ioctl(file, I2C_SLAVE, address) < 0) {
-        close(file);
-       return {};
+       return core::ErrorCode::kInitializeError;
     }
+    return core::ErrorCode::kOk;
+}
+std::optional<uint8_t> I2C::ReadAndWrite( const uint8_t reg) {
     if (write(file, &reg, 1) != 1) {
-        close(file);
         return {};
     }
     uint8_t data;
     if (read(file, &data, 1) != 1) {
-        close(file);
         return {};
     }
-    close(file);
     return std::optional<uint8_t>{data};
 }
 
-ErrorCode I2C::Write(const uint8_t address, const uint8_t reg, uint8_t data) {
-    auto file = open(path.c_str(), O_RDWR);
-    if (ioctl(file, I2C_SLAVE, address) < 0) {
-        close(file);
-        return ErrorCode::kInitializeError;
-    }
+ErrorCode I2C::Write(const uint8_t reg, uint8_t data) {
     uint8_t buf[2];
     buf[0] = reg;
     buf[1] = data;
 
     if (write(file, &buf, 2) != 1) {
-        close(file);
         return ErrorCode::kError;
     }
-    close(file);
     return ErrorCode::kOk;
 }
 
@@ -72,17 +71,10 @@ ErrorCode I2C::Write(const uint8_t address, const uint8_t reg, uint8_t data) {
  * @return std::optional<uint8_t> 
  */
 std::optional<uint8_t> I2C::Read(const uint8_t address) {
-    auto file = open(this->path.c_str(), O_RDWR);
-    if (ioctl(file, I2C_SLAVE, address) < 0) {
-        close(file);
-        return {};
-    }
     uint8_t buffor = 0x10;
     if (read(file, &buffor, sizeof(buffor)) != sizeof(buffor)) {
-        close(file);
         return {};
     }
-    close(file);
     return std::optional<uint16_t>{buffor};
 }
 

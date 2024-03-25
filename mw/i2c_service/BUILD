@@ -8,7 +8,7 @@ cc_library(
         "//communication-core/sockets:socket_ipc",
         "//core/application:simba_application",
         "//mw/i2c_service/data:i2c_factory",
-        "//mw/i2c_service/data:servo_hdr",
+        "//mw/i2c_service/pca9685/service:pca9685_lib",
     ],
 )
 cc_binary(

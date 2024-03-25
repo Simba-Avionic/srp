@@ -5,7 +5,7 @@ cc_library(
         "servo_hdr.cpp",
         ],
     hdrs = [
-        "servo_hdr.h",
+        "servo_hdr.hpp",
         ],
     deps = [
         "//communication-core/network-data:network_data_structure",

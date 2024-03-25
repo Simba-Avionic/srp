@@ -9,7 +9,7 @@
  * 
  */
 #include "i2c_service.h"
-#include "mw/i2c_service/data/servo_hdr.hpp"
+#include "mw/i2c_service/servo/data/servo_hdr.hpp"
 namespace simba {
 namespace mw {
 /**
@@ -48,7 +48,8 @@ void  I2CService::ServoRxCallback(const std::string& ip, const std::uint16_t& po
       if (hdr.GetServiceID() == 0) {
         return;
       }
-      
+      this->pca9685_.SetServoPos(hdr.GetActuatorID(), hdr.GetPosition());
+      AppLogger::Debug("set servo with id:"+std::to_string(hdr.GetActuatorID())+std::to_string(hdr.GetPosition()));
 }
 
 
