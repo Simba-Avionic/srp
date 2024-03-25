@@ -21,7 +21,14 @@ jobs:
         with:
           submodules: 'true'
           ssh-key: ${{ secrets.PRIVATE_KEY_FOR_DEPLOY_KEY_IN_SUBMODULE }}
-
+      - name: RM 1
+        if: contains(steps.pr-labels.outputs.labels, 'check-bbb')
+        uses: thollander/actions-comment-pull-request@v2
+        with:
+          message: |
+            Successfully built software for linux
+          comment_tag: to_delete
+          mode: delete
       - name: Install bazel
         if: contains(steps.pr-labels.outputs.labels, 'check')
         run: |
@@ -38,5 +45,11 @@ jobs:
         if: contains(steps.pr-labels.outputs.labels, 'check')
         run: |
             bazel build //deployment/cpu/ec:pkg
+      - name: Add msg
+        if: contains(steps.pr-labels.outputs.labels, 'check')
+        uses: thollander/actions-comment-pull-request@v2
+        with:
+          message: |
+               Successfully built software for linux
   
   
