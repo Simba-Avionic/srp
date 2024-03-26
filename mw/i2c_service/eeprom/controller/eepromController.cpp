@@ -10,13 +10,17 @@
  */
 
 #include <memory>
+#include <string>
+#include <utility>
 
 #include "eepromController.hpp"
 
 namespace simba {
 namespace core {
 
-std::vector<uint8_t> SmallIpcReceiver(std::string sock_path){
+EepromController::EepromController(std::unique_ptr<com::soc::IpcSocket> sock):sock_(std::move(sock)) {}
+
+std::vector<uint8_t> SmallIpcReceiver(std::string sock_path) {
   int server_sock, len, rc;
   int bytes_rec = 0;
   struct sockaddr_un server_sockaddr, peer_sock;
@@ -50,7 +54,7 @@ std::vector<uint8_t> SmallIpcReceiver(std::string sock_path){
 std::optional<uint8_t> EepromController::ReadData(uint8_t address, uint8_t reg) {
     auto hdr = i2c::EepromHdr {this->appID, this->transferID, i2c::operation_t::READ, address};
     auto data = this->factory_.GetBuffer(std::make_shared<i2c::EepromHdr>(hdr), {reg});
-    this->sock_.Transmit("SIMBA.EEPROM", 0, data);
+    this->sock_->Transmit("SIMBA.EEPROM", 0, data);
     auto data = SmallIpcReceiver(std::to_string(this->appID)+"."+std::to_string(this->transferID));
     this->transferID++;
     if (data.size() == 0) {
@@ -66,7 +70,7 @@ std::optional<uint8_t> EepromController::ReadData(uint8_t address, uint8_t reg) 
 std::vector<uint8_t> EepromController::ReadData(uint8_t address) {
     auto hdr = i2c::EepromHdr {this->appID, this->transferID, i2c::operation_t::READ, address};
     auto data = this->factory_.GetBuffer(std::make_shared<i2c::EepromHdr>(hdr), {});
-    this->sock_.Transmit("SIMBA.EEPROM", 0, data);
+    this->sock_->Transmit("SIMBA.EEPROM", 0, data);
     auto data = SmallIpcReceiver(std::to_string(this->appID)+"."+std::to_string(this->transferID));
     this->transferID++;
     if (data.size() == 0) {

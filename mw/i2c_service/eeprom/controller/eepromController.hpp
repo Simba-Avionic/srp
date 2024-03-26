@@ -14,6 +14,7 @@
 
 #include <optional>
 #include <vector>
+#include <memory>
 
 #include "communication-core/sockets/ipc_socket.h"
 #include "mw/i2c_service/eeprom/factory/eeprom_factory.hpp"
@@ -23,15 +24,16 @@ namespace core {
 
 class EepromController {
  public:
+  explicit EepromController(std::unique_ptr<com::soc::IpcSocket> sock);
+  void Init(uint16_t app_id);
   std::optional<uint8_t> ReadData(uint8_t address, uint8_t reg);
   std::vector<uint8_t> ReadData(uint8_t address);
-  void Init(uint16_t app_id);
   ErrorCode WriteData(uint8_t address, uint8_t reg, uint8_t data);
   ErrorCode WriteData(uint8_t address, std::vector<uint8_t> data);
  private:
   uint8_t transferID{0};
   uint16_t appID{0};
-  com::soc::IpcSocket sock_;
+  std::unique_ptr<com::soc::IpcSocket> sock_;
   static i2c::EepromMsgFactory factory_;
 };
 }  // namespace core
