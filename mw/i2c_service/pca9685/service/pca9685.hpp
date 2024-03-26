@@ -38,12 +38,12 @@ class PCA9685 {
  private:
   std::unordered_map<uint8_t, Servo> db_;
   uint16_t app_id{0};
-  gpio::GPIOController gpio_{};
+  std::unique_ptr<gpio::GPIOController> gpio_{};
   core::ErrorCode ReadConfig();
   core::ErrorCode SetServo(uint8_t channel, uint16_t pos);
   std::mutex *mtx = nullptr;
  public:
-  explicit PCA9685(std::mutex *mtx);
+  PCA9685(std::mutex *mtx, std::unique_ptr<gpio::GPIOController> gpio);
   core::ErrorCode Init(uint16_t app_id);
   core::ErrorCode AutoSetServoPos(uint8_t actuator_id, uint8_t position);
   core::ErrorCode ManSetServoPos(uint8_t actuator_id, uint16_t position);

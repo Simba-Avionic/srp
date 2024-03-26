@@ -12,6 +12,8 @@
 #ifndef MW_I2C_SERVICE_PCA9685_CONTROLLER_SERVOCONTROLLER_HPP_
 #define MW_I2C_SERVICE_PCA9685_CONTROLLER_SERVOCONTROLLER_HPP_
 
+#include <memory>
+
 #include "communication-core/sockets/ipc_socket.h"
 
 namespace simba {
@@ -29,8 +31,10 @@ class ServoController{
     ErrorCode SetServoPos(uint8_t actuatorID, uint8_t position);
     ErrorCode MANSetServoPos(uint8_t actuatorID, uint16_t position);
     void Init(uint16_t app_id);
+    explicit ServoController(std::unique_ptr<com::soc::IpcSocket> sock);
+    ServoController();
  private:
-    com::soc::IpcSocket sock_;
+    std::unique_ptr<com::soc::IpcSocket> sock_;
     uint16_t app_id;
 };
 }  // namespace core
