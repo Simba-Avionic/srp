@@ -11,6 +11,7 @@ cc_binary(
         "//communication-core/someip-controller:skeleton",
         "//core/application:simba_application",
         "//mw/gpio_server/controller:gpio_controller",
+        "//mw/i2c_service/pca9685/controller:servoController",
         "@untar",
     ],
 )
