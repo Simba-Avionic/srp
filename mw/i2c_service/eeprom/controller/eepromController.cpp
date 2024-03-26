@@ -19,6 +19,9 @@ namespace simba {
 namespace core {
 
 EepromController::EepromController(std::unique_ptr<com::soc::IpcSocket> sock):sock_(std::move(sock)) {}
+EepromController::EepromController() {
+    this->sock_ = std::unique_ptr<com::soc::IpcSocket>{};
+}
 
 std::vector<uint8_t> SmallIpcReceiver(std::string sock_path) {
   int server_sock, len, rc;

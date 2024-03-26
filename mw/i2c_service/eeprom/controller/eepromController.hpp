@@ -25,6 +25,7 @@ namespace core {
 class EepromController {
  public:
   explicit EepromController(std::unique_ptr<com::soc::IpcSocket> sock);
+  EepromController();
   void Init(uint16_t app_id);
   std::optional<uint8_t> ReadData(uint8_t address, uint8_t reg);
   std::vector<uint8_t> ReadData(uint8_t address);
