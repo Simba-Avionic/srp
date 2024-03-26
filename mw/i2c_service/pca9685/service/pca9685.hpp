@@ -44,6 +44,7 @@ class PCA9685 {
   std::mutex *mtx = nullptr;
  public:
   PCA9685(std::mutex *mtx, std::unique_ptr<gpio::GPIOController> gpio);
+  explicit PCA9685(std::mutex *mtx);
   core::ErrorCode Init(uint16_t app_id);
   core::ErrorCode AutoSetServoPos(uint8_t actuator_id, uint8_t position);
   core::ErrorCode ManSetServoPos(uint8_t actuator_id, uint16_t position);

@@ -148,6 +148,9 @@ core::ErrorCode PCA9685::ManSetServoPos(uint8_t actuator_id, uint16_t position) 
 PCA9685::PCA9685(std::mutex *mtx, std::unique_ptr<gpio::GPIOController> gpio):gpio_(std::move(gpio)) {
     this->mtx = mtx;
 }
+PCA9685::PCA9685(std::mutex *mtx) {
+    this->mtx = mtx;
+}
 
 }  // namespace i2c
 }  // namespace simba
