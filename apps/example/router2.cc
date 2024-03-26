@@ -22,6 +22,7 @@ core::ErrorCode Router::Run(std::stop_token token) {
       std::make_shared<com::someip::MethodProxyBase>("ExampleApp2/someproxy");
   auto event_example =
       std::make_shared<com::someip::EventSkeleton>("ExampleApp2/exampleEvent");
+      
   com->Add(example);
   com->Add(event_example);
   example->StartFindService();
