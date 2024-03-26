@@ -49,7 +49,7 @@ class MethodProxyBase : public IProxy {
                   const uint16_t transfer_id) {
     if (transfer_id == transfer_id_) {
       is_response = true;
-      response_code == code;
+      response_code = code;
       response = payload;
       request_cv.notify_all();
     }
