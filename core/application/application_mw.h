@@ -16,12 +16,12 @@
 
 #include "core/application/application_common.h"
 #include "core/common/error_code.h"
-#include "diag/base/controller/idiag_controller.h"
+#include "diag/base/controller/diag_controller.h"
 namespace simba {
 namespace core {
 class ApplicationMW : public ApplicationCommon {
  protected:
-  std::unique_ptr<diag::IDiagController> diag_controller;
+  std::unique_ptr<diag::DiagController> diag_controller;
   void onRun(const std::unordered_map<std::string, std::string>& parms) final;
   ErrorCode MwConfig(const std::unordered_map<std::string, std::string>& parms);
 

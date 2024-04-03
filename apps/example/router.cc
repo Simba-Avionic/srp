@@ -47,7 +47,7 @@ core::ErrorCode Router::Run(std::stop_token token) {
 core::ErrorCode Router::Initialize(
     const std::unordered_map<std::string, std::string>& parms) {
       this->gpio_ = gpio::GPIOController(new com::soc::IpcSocket());
-      this->gpio_.Init(12);
+      this->gpio_.Init(this->app_id_);
       this->servo_.Init(12);
   return core::ErrorCode::kOk;
 }

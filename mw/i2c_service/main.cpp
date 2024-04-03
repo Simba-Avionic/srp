@@ -1,9 +1,9 @@
 /**
  * @file main.cpp
- * @author Michal Mankowski (m.mankowski2004@gmail.com)
+ * @author Mateusz Krajewski (matikrajek42@gmail.com)
  * @brief 
  * @version 0.1
- * @date 2024-03-02
+ * @date 2024-04-03
  * 
  * @copyright Copyright (c) 2024
  * 

@@ -14,16 +14,18 @@
 
 #include <mutex>  // NOLINT
 #include <memory>
+#include <utility>
 #include <unordered_map>
+#include <string>
+#include <vector>
 
-#include "core/i2c/i2cdriver.h"
 #include "core/json/json_parser.h"
 #include "mw/gpio_server/controller/gpio_controller.hpp"
 #include "mw/i2c_service/pca9685/data/servo_hdr.hpp"
+#include "core/i2c/v2/i2cdriver.hpp"
 
 namespace simba {
 namespace i2c {
-
 
 struct Servo {
   smode_t mode;
@@ -39,11 +41,13 @@ class PCA9685 {
   std::unordered_map<uint8_t, Servo> db_;
   uint16_t app_id{0};
   std::unique_ptr<gpio::GPIOController> gpio_{};
+  std::unique_ptr<core::I2CDriver> i2c_{};
   core::ErrorCode ReadConfig();
   core::ErrorCode SetServo(uint8_t channel, uint16_t pos);
   std::mutex *mtx = nullptr;
  public:
-  PCA9685(std::mutex *mtx, std::unique_ptr<gpio::GPIOController> gpio);
+  PCA9685(std::mutex *mtx, std::unique_ptr<gpio::GPIOController> gpio,
+                          std::unique_ptr<core::I2CDriver> i2c);
   explicit PCA9685(std::mutex *mtx);
   core::ErrorCode Init(uint16_t app_id);
   core::ErrorCode AutoSetServoPos(uint8_t actuator_id, uint8_t position);

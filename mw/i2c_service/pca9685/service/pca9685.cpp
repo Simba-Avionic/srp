@@ -11,6 +11,7 @@
 
 #include "pca9685.hpp"
 #include <utility>
+#include <string>
 
 namespace simba {
 namespace i2c {
@@ -23,7 +24,6 @@ namespace {
     constexpr uint8_t LED0_ON_H = 0x07;
     constexpr uint8_t LED0_OFF_L = 0x08;
     constexpr uint8_t LED0_OFF_H = 0x09;
-
 }
 /**
  * @brief 
@@ -33,52 +33,16 @@ namespace {
  * @return core::ErrorCode 
  */
 core::ErrorCode PCA9685::SetServo(uint8_t channel, uint16_t pos) {
-    std::lock_guard<std::mutex> lock(*this->mtx);
-    int i2cFile;
-    const char *i2cDevice = "/dev/i2c-2";
-    if ((i2cFile = open(i2cDevice, O_RDWR)) < 0) {
-      return core::ErrorCode::kInitializeError;
-    }
-
-    if (ioctl(i2cFile, I2C_SLAVE, PCA9685_ADDRESS) < 0) {
-        return core::ErrorCode::kInitializeError;
-    }
-
-    char buf[2] = {MODE1_REG, 0x01};
-    if (write(i2cFile, buf, 2) != 2) {
-        return core::ErrorCode::kInitializeError;
-    }
-
-    int prescale = 121;
-    buf[0] = PRESCALE_REG;
-    buf[1] = prescale;
-    if (write(i2cFile, buf, 2) != 2) {
-        return core::ErrorCode::kInitializeError;
-    }
-
-    int onValue = 0;
-    buf[0] = LED0_ON_L+4*channel;
-    buf[1] = onValue & 0xFF;
-    if (write(i2cFile, buf, 2) != 2) {
-        return core::ErrorCode::kInitializeError;
-    }
-    buf[0] = LED0_ON_H+4*channel;
-    buf[1] = onValue >> 8;
-    if (write(i2cFile, buf, 2) != 2) {
-        return core::ErrorCode::kInitializeError;
-    }
-    buf[0] = LED0_OFF_L+4*channel;
-    buf[1] = pos & 0xFF;
-    if (write(i2cFile, buf, 2) != 2) {
-        return core::ErrorCode::kInitializeError;
-    }
-    buf[0] = LED0_OFF_H+4*channel;
-    buf[1] = pos >> 8;
-    if (write(i2cFile, buf, 2) != 2) {
-        return core::ErrorCode::kInitializeError;
-    }
-    close(i2cFile);
-    return core::ErrorCode::kOk;
+    std::unique_lock<std::mutex> lock(*this->mtx);
+    this->i2c_->Ioctl(PCA9685_ADDRESS, I2C_SLAVE);
+    std::vector<std::pair<uint8_t, uint8_t>> vec = {
+        {MODE1_REG, 0x01},  // setup reset mode
+        {PRESCALE_REG, 121},  // przeskalowanie dla 50 Hz
+        {LED0_ON_L+4*channel, 0x0},  // ON LOW REG Val
+        {LED0_ON_H+4*channel, 0x0},   // ON HIGH REG Val
+        {LED0_OFF_L+4*channel, pos & 0xFF},  // OFF LOW REG Val
+        {LED0_OFF_H+4*channel, pos >> 8}};   // OFF HIGH REG Val
+    return this->i2c_->Write(vec);
 }
 
 core::ErrorCode PCA9685::Init(uint16_t app_id) {
@@ -144,8 +108,10 @@ core::ErrorCode PCA9685::ManSetServoPos(uint8_t actuator_id, uint16_t position) 
         this->gpio_->SetPinValue(it->second.mosfet_id, gpio::Value::LOW);
         it->second.position = position;
     }
+    return core::ErrorCode::kOk;
 }
-PCA9685::PCA9685(std::mutex *mtx, std::unique_ptr<gpio::GPIOController> gpio):gpio_(std::move(gpio)) {
+PCA9685::PCA9685(std::mutex *mtx, std::unique_ptr<gpio::GPIOController> gpio,
+        std::unique_ptr<core::I2CDriver> i2c):gpio_(std::move(gpio)), i2c_(std::move(i2c)) {
     this->mtx = mtx;
 }
 PCA9685::PCA9685(std::mutex *mtx) {
