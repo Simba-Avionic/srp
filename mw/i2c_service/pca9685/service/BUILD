@@ -8,7 +8,7 @@ cc_library(
         "//apps:__subpackages__"
         ],
     deps = [
-        "//core/i2c:i2cdriver",
+        "//core/i2c/v2:i2cdriver",
         "//communication-core/sockets:socket_ipc",
         "//mw/i2c_service/pca9685/data:servo_hdr",
         "//core/json:simba_json",
