@@ -20,16 +20,16 @@ namespace mw {
 namespace temp {
 
 std::vector<uint8_t> TempReadingMsgFactory::GetBuffer(
-  std::vector<std::pair<uint16_t, double>> payload) {
+  std::vector<std::pair<uint8_t, double>> payload) {
   std::vector<std::uint8_t> res;
 
   for (const auto& pair : payload) {
-      uint16_t first = pair.first;
+      uint8_t first = pair.first;
       double second = pair.second;
-      std::array<uint8_t, sizeof(uint16_t)> firstBytes;
+      std::array<uint8_t, sizeof(uint8_t)> firstBytes;
       std::array<uint8_t, sizeof(double)> secondBytes;
 
-      memcpy(firstBytes.data(), &first, sizeof(uint16_t));
+      memcpy(firstBytes.data(), &first, sizeof(uint8_t));
       memcpy(secondBytes.data(), &second, sizeof(double));
 
       res.insert(res.end(), firstBytes.begin(), firstBytes.end());
@@ -39,16 +39,16 @@ std::vector<uint8_t> TempReadingMsgFactory::GetBuffer(
   return res;
 }
 
-std::vector<std::pair<uint16_t, double>>
+std::vector<std::pair<uint8_t, double>>
   TempReadingMsgFactory::GetPayload(std::vector<uint8_t> raw_data) {
-    std::vector<std::pair<uint16_t, double>> payload{};
+    std::vector<std::pair<uint8_t, double>> payload{};
     if (raw_data.size() > 4) {
-      for (size_t i = 0; i < raw_data.size(); i += (sizeof(uint16_t) + sizeof(double))) {
-          uint16_t first;
-          std::memcpy(&first, &raw_data[i], sizeof(uint16_t));
+      for (size_t i = 0; i < raw_data.size(); i += (sizeof(uint8_t) + sizeof(double))) {
+          uint8_t first;
+          std::memcpy(&first, &raw_data[i], sizeof(uint8_t));
 
           double second;
-          std::memcpy(&second, &raw_data[i+sizeof(uint16_t)], sizeof(double));
+          std::memcpy(&second, &raw_data[i+sizeof(uint8_t)], sizeof(double));
 
           payload.push_back(std::make_pair(first, second));
       }

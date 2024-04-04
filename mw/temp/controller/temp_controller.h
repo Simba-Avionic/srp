@@ -39,19 +39,14 @@ class TempController {
  protected:
   uint16_t service_id;
   com::soc::IpcSocket sub_sock_{};
-  std::vector<TempReading> latest_readings;
   simba::mw::temp::TempReadingMsgFactory factory;
   simba::com::soc::RXCallback callback_;
 
  private:
-  virtual simba::core::ErrorCode Init(uint16_t service_id, simba::com::soc::RXCallback callback);
-
  public:
+  virtual simba::core::ErrorCode Init(uint16_t service_id, simba::com::soc::RXCallback callback);
   virtual void SetTempRXCallback();
   virtual simba::core::ErrorCode Subscribe();
-
-  void TempRXCallback(const std::string& ip,
-     const std::uint16_t& port, const std::vector<std::uint8_t> data);
 };
 
 }  // namespace temp

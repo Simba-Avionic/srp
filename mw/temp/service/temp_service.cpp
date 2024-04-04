@@ -23,11 +23,10 @@ namespace {
     static constexpr char const*
         kSubscriberPrefix = "SIMBA.TEMP.";
     constexpr uint8_t sensor_resolution = 10;
-    constexpr char* sensor_path = "/sys/devices/w1_bus_master1/";
+    constexpr const char* sensor_path = "/sys/bus/w1/devices/";
 }
 
 simba::core::ErrorCode TempService::Run(std::stop_token token) {
-    this->sub_sock_.StartRXThread();
     this->StartTempThread();
     AppLogger::Info("Temp Service started!");
     this->SleepMainThread();
@@ -49,6 +48,7 @@ simba::core::ErrorCode TempService::Initialize(
     this->sub_sock_.SetRXCallback(
         std::bind(&simba::mw::temp::TempService::SubCallback, this,
             std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+    this->sub_sock_.StartRXThread();
     return simba::core::ErrorCode::kOk;
 }
 
@@ -140,7 +140,7 @@ void TempService::SendTempReadings(
 
         std::vector<uint8_t> data = factory.GetBuffer(readings);
 
-        if (auto ret = this->sub_sock_.Transmit(ip, 0, data)) {
+        if (this->sub_sock_.Transmit(ip, 0, data)) {
             AppLogger::Error("Can't send message to: " + ip);
             break;
         }

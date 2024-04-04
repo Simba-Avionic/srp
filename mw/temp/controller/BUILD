@@ -4,7 +4,10 @@ cc_library(
         "temp_controller.h",
         "temp_controller.cpp",
     ],
-    visibility = ["//deployment:__subpackages__"],
+    visibility = [
+        "//deployment:__subpackages__",
+        "//apps/env_service:__subpackages__",
+        ],
     
     deps = [
         "//communication-core/network-data:network_data_structure",

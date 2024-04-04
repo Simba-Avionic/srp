@@ -21,7 +21,7 @@ namespace mw {
 namespace temp {
 
 // first - sensor_id, second - value
-using TempReading = std::pair<uint16_t, double>;
+using TempReading = std::pair<uint8_t, double>;
 
 class TempReadingMsgFactory {
  public:

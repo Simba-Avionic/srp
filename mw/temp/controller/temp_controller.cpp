@@ -19,10 +19,16 @@ namespace simba {
 namespace mw {
 namespace temp {
 
+namespace {
+    static constexpr char const*
+        kTempServiceName = "SIMBA.TEMP.SERVICE";
+    static constexpr char const*
+        kSubscriberPrefix = "SIMBA.TEMP.";
+}
+
 simba::core::ErrorCode TempController::Init(
     uint16_t service_id, simba::com::soc::RXCallback callback) {
     this->service_id = service_id;
-
     if (auto ret = this->sub_sock_.Init(
         com::soc::SocketConfig(
             kSubscriberPrefix + std::to_string(this->service_id), 0, 0))) {
@@ -31,8 +37,8 @@ simba::core::ErrorCode TempController::Init(
     }
     this->callback_ = callback;
     SetTempRXCallback();
-
     this->Subscribe();
+    this->sub_sock_.StartRXThread();
     return simba::core::ErrorCode::kOk;
 }
 
@@ -41,10 +47,9 @@ simba::core::ErrorCode TempController::Subscribe() {
     SubscribeHeader hdr{this->service_id};
     std::vector<uint8_t> data =
         factory.GetBuffer(std::make_shared<SubscribeHeader>(hdr), {});
-
-    if (auto ret = sub_sock_.Transmit(kTempServiceName, 0, data)) {
+    if (sub_sock_.Transmit(kTempServiceName, 0, data) != core::ErrorCode::kOk) {
         AppLogger::Error("Failed to subscribe to " + std::string(kTempServiceName));
-        return ret;
+        return core::ErrorCode::kError;
     }
     return simba::core::ErrorCode::kOk;
 }
