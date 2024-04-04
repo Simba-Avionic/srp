@@ -18,6 +18,10 @@ namespace mw {
 namespace temp {
 
 namespace {
+    static constexpr char const*
+        kTempServiceName = "SIMBA.TEMP.SERVICE";
+    static constexpr char const*
+        kSubscriberPrefix = "SIMBA.TEMP.";
     constexpr uint8_t sensor_resolution = 10;
     constexpr char* sensor_path = "/sys/devices/w1_bus_master1/";
 }
@@ -45,7 +49,6 @@ simba::core::ErrorCode TempService::Initialize(
     this->sub_sock_.SetRXCallback(
         std::bind(&simba::mw::temp::TempService::SubCallback, this,
             std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
-
     return simba::core::ErrorCode::kOk;
 }
 

@@ -9,8 +9,6 @@
  * 
  */
 
-#include <iostream>
-#include <thread>  // NOLINT
 #include "temp_service.h"
 #include "core/application/application_factory.h"
 

@@ -21,7 +21,7 @@ TEST(TEMP_READING_MSG_FACTORY, TEMP_READING_MSG_FACTORY_TEST) {
     };
 
     std::vector<uint8_t> raw_data = factory.GetBuffer(payload);
-    auto payload2 = factory.GetPayload(raw_data);
+    const auto payload2 = factory.GetPayload(raw_data);
 
     EXPECT_EQ(payload[0], payload2[0]);
     EXPECT_EQ(payload[1], payload2[1]);

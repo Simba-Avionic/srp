@@ -15,10 +15,6 @@
 #include <cstdio>
 #include <cinttypes>
 #include <cstdint>
-#include <cstring>
-#include <sys/types.h>  // NOLINT
-#include <sys/socket.h>  // NOLINT
-#include <netinet/in.h>  // NOLINT
 
 #include <memory>
 #include <vector>

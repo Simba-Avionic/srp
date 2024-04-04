@@ -13,6 +13,7 @@
 
 #include <algorithm>
 #include <utility>
+#include <array>
 #include <cstring>
 namespace simba {
 namespace mw {
@@ -25,15 +26,15 @@ std::vector<uint8_t> TempReadingMsgFactory::GetBuffer(
   for (const auto& pair : payload) {
       uint16_t first = pair.first;
       double second = pair.second;
+      std::array<uint8_t, sizeof(uint16_t)> firstBytes;
+      std::array<uint8_t, sizeof(double)> secondBytes;
 
-      uint8_t firstBytes[sizeof(uint16_t)];
-      uint8_t secondBytes[sizeof(double)];
+      memcpy(firstBytes.data(), &first, sizeof(uint16_t));
+      memcpy(secondBytes.data(), &second, sizeof(double));
 
-      memcpy(firstBytes, &first, sizeof(uint16_t));
-      memcpy(secondBytes, &second, sizeof(double));
+      res.insert(res.end(), firstBytes.begin(), firstBytes.end());
+      res.insert(res.end(), secondBytes.begin(), secondBytes.end());
 
-      res.insert(res.end(), firstBytes, firstBytes + sizeof(uint16_t));
-      res.insert(res.end(), secondBytes, secondBytes + sizeof(double));
   }
 
   return res;

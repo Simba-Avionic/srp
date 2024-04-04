@@ -12,21 +12,13 @@
 #ifndef MW_TEMP_SERVICE_TEMP_SERVICE_H_
 #define MW_TEMP_SERVICE_TEMP_SERVICE_H_
 
-#include <string>
 #include <cstdio>
-#include <cinttypes>
-#include <cstdint>
-#include <cstring>
-#include <sys/types.h>  // NOLINT
-#include <sys/socket.h>  // NOLINT
-#include <netinet/in.h>  // NOLINT
+#include <string>
 
-#include <fstream>
 #include <memory>
 #include <vector>
 #include <unordered_map>
 #include <set>
-#include <future>  // NOLINT
 #include "core/json/json_parser.h"
 #include "nlohmann/json.hpp"
 
@@ -45,12 +37,6 @@ using json = nlohmann::json;
 namespace simba {
 namespace mw {
 namespace temp {
-
-static constexpr char const*
-  kTempServiceName = "SIMBA.TEMP.SERVICE";
-
-static constexpr char const*
-  kSubscriberPrefix = "SIMBA.TEMP.";
 
 class TempService final : public simba::core::ApplicationMW {
  protected:

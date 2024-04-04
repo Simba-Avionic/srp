@@ -31,7 +31,7 @@ class SubscribeHeader : public com::core::network::NetworkDataStructure {
   explicit SubscribeHeader(const uint16_t &service_id);
   SubscribeHeader();
   uint16_t GetServiceID() const;
-  uint8_t GetLength();
+  uint8_t GetLength() const;
   void SetLength(const uint8_t& value);
   void SetData();
 };

@@ -29,7 +29,7 @@ uint16_t SubscribeHeader::GetServiceID() const {
     return this->service_id_.Get();
 }
 
-uint8_t SubscribeHeader::GetLength() {
+uint8_t SubscribeHeader::GetLength() const {
     return this->length_.Get();
 }
 

@@ -9,6 +9,10 @@
  * 
  */
 #include "temp_controller.h"
+#include <cstring>
+#include <sys/types.h>  // NOLINT
+#include <sys/socket.h>  // NOLINT
+#include <netinet/in.h>  // NOLINT
 #include <iostream>
 
 namespace simba {
