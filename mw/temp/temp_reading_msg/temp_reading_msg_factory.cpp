@@ -34,7 +34,6 @@ std::vector<uint8_t> TempReadingMsgFactory::GetBuffer(
 
       res.insert(res.end(), firstBytes.begin(), firstBytes.end());
       res.insert(res.end(), secondBytes.begin(), secondBytes.end());
-
   }
 
   return res;
