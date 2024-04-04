@@ -53,10 +53,14 @@ simba::core::ErrorCode TempService::Initialize(
 }
 
 simba::core::ErrorCode TempService::ConfigSensors() {
-    std::fstream file;
     for (auto sensor : this->sensorPathsToIds) {
-        file.open(sensor.first);
-        file << sensor_resolution;
+        std::fstream file(sensor.first + "/resolution");
+        if (!file) {
+            AppLogger::Warning("Sensor " + sensor.first + " not available!");
+            break;
+        }
+        AppLogger::Debug("set resolution for sensor"+sensor.first);
+        file << static_cast<int>(sensor_resolution);
         file.close();
     }
     return simba::core::ErrorCode::kOk;
