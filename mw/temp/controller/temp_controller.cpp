@@ -43,13 +43,13 @@ simba::core::ErrorCode TempController::Init(
 }
 
 simba::core::ErrorCode TempController::Subscribe() {
-    simba::mw::temp::SubMsgFactory factory;
+    static simba::mw::temp::SubMsgFactory factory;
     SubscribeHeader hdr{this->service_id};
     std::vector<uint8_t> data =
         factory.GetBuffer(std::make_shared<SubscribeHeader>(hdr), {});
-    if (sub_sock_.Transmit(kTempServiceName, 0, data) != core::ErrorCode::kOk) {
-        AppLogger::Error("Failed to subscribe to " + std::string(kTempServiceName));
-        return core::ErrorCode::kError;
+    if (auto res = sub_sock_.Transmit(kTempServiceName, 0, data)) {
+        AppLogger::Error("Failed to subscribe to " + std::string(kTempServiceName)+":::"+std::to_string(res));
+        return res;
     }
     return simba::core::ErrorCode::kOk;
 }

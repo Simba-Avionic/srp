@@ -41,7 +41,7 @@ namespace temp {
 class TempService final : public simba::core::ApplicationMW {
  protected:
   com::soc::IpcSocket sub_sock_{};
-  const std::chrono::milliseconds temp_timeout{750};
+  const std::chrono::milliseconds temp_timeout{500};
 
  private:
   std::unique_ptr<std::jthread> temp_thread;

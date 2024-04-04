@@ -39,6 +39,7 @@ class ExecController {
     void SetStatus(Status status);
     void SetFlags(std::bitset<5> flags);
     ~ExecController();
+    void ForceStop();
 };
 }  // namespace exec
 }  // namespace diag

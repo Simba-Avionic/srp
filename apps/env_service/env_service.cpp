@@ -24,6 +24,10 @@ std::vector<uint8_t> doubleToBytes(double value) {
 }
 
 core::ErrorCode EnvService::Run(std::stop_token token) {
+    std::this_thread::sleep_for(std::chrono::seconds(2));
+    this->temp_.Init(514, std::bind(&EnvService::TempRxCallback,
+            this, std::placeholders::_1, std::placeholders::_2,
+                                        std::placeholders::_3));
     this->SleepMainThread();
     return core::ErrorCode::kOk;
 }
@@ -33,10 +37,6 @@ core::ErrorCode EnvService::Initialize(
     this->temp1_event = std::make_shared<com::someip::EventSkeleton>("EnvApp/newTempEvent_1");
     this->temp2_event = std::make_shared<com::someip::EventSkeleton>("EnvApp/newTempEvent_2");
     this->temp3_event = std::make_shared<com::someip::EventSkeleton>("EnvApp/newTempEvent_3");
-    this->temp_.Init(514, std::bind(&EnvService::TempRxCallback,
-                this, std::placeholders::_1, std::placeholders::_2,
-                                            std::placeholders::_3));
-    this->temp_.Subscribe();
     return core::ErrorCode::kOk;
 }
 
@@ -46,7 +46,7 @@ void EnvService::TempRxCallback(const std::string& ip, const std::uint16_t& port
     static mw::temp::TempReadingMsgFactory factory_;
     auto hdrs = factory_.GetPayload(data);
     for (auto &hdr : hdrs) {
-        AppLogger::Error("Receive: "+std::to_string(hdr.first)+":"+std::to_string(hdr.second));
+        AppLogger::Debug("Receive: "+std::to_string(hdr.first)+":"+std::to_string(hdr.second));
         switch (hdr.first) {
             case 0:
             this->temp1_event->SetValue(doubleToBytes(hdr.second));
