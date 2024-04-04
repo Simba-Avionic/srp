@@ -42,11 +42,10 @@ core::ErrorCode EnvService::Initialize(
 
 void EnvService::TempRxCallback(const std::string& ip, const std::uint16_t& port,
                                 const std::vector<std::uint8_t> data) {
-    AppLogger::Debug("Receive temp");
-    static mw::temp::TempReadingMsgFactory factory_;
+    mw::temp::TempReadingMsgFactory factory_;
     auto hdrs = factory_.GetPayload(data);
     for (auto &hdr : hdrs) {
-        AppLogger::Debug("Receive: "+std::to_string(hdr.first)+":"+std::to_string(hdr.second));
+        AppLogger::Info("Receive temp id: "+std::to_string(hdr.first)+",temp:"+std::to_string(hdr.second));
         switch (hdr.first) {
             case 0:
             this->temp1_event->SetValue(doubleToBytes(hdr.second));
