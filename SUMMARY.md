@@ -14,5 +14,3 @@
 - [Communication-Core](./communication-core/README.md)
   - [Adress](./communication-core/ADDRESS.md)
 - [Tools](./tools/README.md)
-- [Deployment](./deployment/README.md)
-  - [Engine Computer](./deployment/cpu/ec/README.md)
