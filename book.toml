@@ -1,0 +1,9 @@
+[book]
+authors = ["Mateusz Krajewski"]
+language = "pl"
+multilingual = false
+src = "."
+title = "SimBa-Avionics-Docs"
+
+[build]
+build-dir = "book"
