@@ -10,6 +10,7 @@ cc_binary(
         "//communication-core/someip-controller:proxy",
         "//communication-core/someip-controller:skeleton",
         "//core/application:simba_application",
+        "//diag/dtc/controller:diag_dtc_",
         "//mw/gpio_server/controller:gpio_controller",
         "@untar",
     ],
