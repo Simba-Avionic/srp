@@ -16,6 +16,7 @@
 #include "communication-core/someip-controller/event_proxy.h"
 #include "communication-core/someip-controller/method_skeleton.h"
 #include "core/logger/Logger.h"
+#include "diag/dtc/controller/dtc.h"
 namespace simba {
 namespace router {
 
@@ -32,12 +33,16 @@ core::ErrorCode Router::Run(std::stop_token token) {
   com->Add(example);
   com->Add(proxy_event);
   proxy_event->StartFindService();
+  auto dtc = std::make_shared<diag::dtc::DTCObject>(20);
+  diag_controller.RegisterDTC(dtc);
   while (true) {
     AppLogger::Debug("AppLogger::Debug");
     AppLogger::Info("AppLogger::Info");
+    dtc->Pass();
     this->gpio_.SetPinValue(1, gpio::Value::HIGH);
     std::this_thread::sleep_for(std::chrono::seconds(1));
     this->gpio_.SetPinValue(1, gpio::Value::LOW);
+    dtc->Failed();
     std::this_thread::sleep_for(std::chrono::seconds(1));
   }
   return core::ErrorCode::kOk;
@@ -45,8 +50,8 @@ core::ErrorCode Router::Run(std::stop_token token) {
 
 core::ErrorCode Router::Initialize(
     const std::unordered_map<std::string, std::string>& parms) {
-      this->gpio_ = gpio::GPIOController(new com::soc::IpcSocket());
-      this->gpio_.Init(12);
+  this->gpio_ = gpio::GPIOController(new com::soc::IpcSocket());
+  this->gpio_.Init(12);
   return core::ErrorCode::kOk;
 }
 }  // namespace router

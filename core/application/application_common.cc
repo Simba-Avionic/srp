@@ -67,6 +67,7 @@ void ApplicationCommon::onRun(
     std::abort();
   }
   this->SomeIPConfig(parms);
+  this->DiagConfig(parms);
   AppLogger::Info("Application initialize");
   this->Initialize(parms);
   AppLogger::Info("Application running");
@@ -92,6 +93,7 @@ ErrorCode ApplicationCommon::CommonConfig(
   if (data.contains("app_id")) {
     if (data.at("app_id").is_string()) {
       app_id = data.at("app_id");
+
     } else {
       res = ErrorCode::kError;
     }
@@ -155,6 +157,30 @@ ErrorCode ApplicationCommon::SomeIPConfig(
   }
 
   return ErrorCode::kOk;
+}
+
+ErrorCode ApplicationCommon::DiagConfig(
+    const std::unordered_map<std::string, std::string>& parms) {
+  std::ifstream file{"/opt/" + parms.at("app_name") + "/etc/srp_app.json"};
+  if (!file.is_open()) {
+    std::cerr << "App config file not exist! -> "
+              << "/opt/" + parms.at("app_name") + "/etc/srp_app.json"
+              << std::endl;
+    return ErrorCode::kError;
+  }
+  nlohmann::json data = nlohmann::json::parse(file);
+  uint16_t app_id_{};
+  if (data.contains("app_id")) {
+    if (data.at("app_id").is_string()) {
+      app_id_ = data.at("app_id");
+      diag_controller.Init(app_id_);
+      return ErrorCode::kOk;
+    } else {
+      return ErrorCode::kError;
+    }
+  } else {
+    return ErrorCode::kError;
+  }
 }
 
 ApplicationCommon::~ApplicationCommon() {}
