@@ -65,6 +65,7 @@ core::ErrorCode DataBase::InsertInterface(const std::string& ip,
 }
 core::ErrorCode DataBase::SetServiceId(const uint16_t id) noexcept {
   this->service_id = id;
+  return core::ErrorCode::kOk;
 }
 uint16_t DataBase::GetServiceId() const noexcept { return this->service_id; }
 

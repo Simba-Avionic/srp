@@ -18,13 +18,15 @@
 #include <thread>  // NOLINT
 #include <unordered_map>
 
-#include "core/application/Iapplication.h"
-#include "diag/exec/controller/exec_controller.hpp"
 #include "communication-core/someip-controller/controller.h"
+#include "core/application/Iapplication.h"
+#include "diag/controller/diag_controller.h"
+#include "diag/exec/controller/exec_controller.hpp"
 namespace simba {
 namespace core {
 class ApplicationCommon : public IApplication {
  protected:
+  diag::CommonDiagController diag_controller{};
   std::stop_source source;
   diag::exec::ExecController exec_;
   std::unique_ptr<com::someip::Controller> com;
@@ -41,6 +43,8 @@ class ApplicationCommon : public IApplication {
   ErrorCode CommonConfig(
       const std::unordered_map<std::string, std::string>& parms);
   ErrorCode SomeIPConfig(
+      const std::unordered_map<std::string, std::string>& parms);
+  ErrorCode DiagConfig(
       const std::unordered_map<std::string, std::string>& parms);
   bool FileExist(const std::string& name);
 

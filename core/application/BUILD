@@ -18,6 +18,7 @@ cc_library(
         "//core/common:common_types",
         "//core/json:simba_json",
         "//core/logger:Logger",
+        "//diag/controller:diag_controller",
         "//diag/exec/controller:diag_exec_controller",
         "@boost//:algorithm",
         "@com_json//:json",
