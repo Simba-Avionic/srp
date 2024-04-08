@@ -15,6 +15,7 @@
 #include <functional>
 
 #include "core/common/error_code.h"
+#include "diag/dtc/controller/dtc.h"
 
 namespace simba {
 namespace diag {

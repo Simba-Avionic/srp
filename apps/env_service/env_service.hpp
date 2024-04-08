@@ -25,6 +25,7 @@ namespace envService {
 
 class EnvService : public core::ApplicationNoIPC{
  private:
+  std::shared_ptr<diag::dtc::DTCObject> dtc_temp_error = std::make_shared<diag::dtc::DTCObject>(0x20);
   mw::temp::TempController temp_{};
   std::shared_ptr<com::someip::EventSkeleton> temp1_event;
   std::shared_ptr<com::someip::EventSkeleton> temp2_event;
@@ -46,6 +47,7 @@ class EnvService : public core::ApplicationNoIPC{
       const std::unordered_map<std::string, std::string>& parms) final;
   void TempRxCallback(const std::string& ip, const std::uint16_t& port,
                                 const std::vector<std::uint8_t> data);
+  bool CheckTempError(double value);
 
  public:
   ~EnvService() = default;
