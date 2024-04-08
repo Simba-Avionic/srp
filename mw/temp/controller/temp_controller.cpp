@@ -28,18 +28,22 @@ namespace {
 
 simba::core::ErrorCode TempController::Init(
     uint16_t service_id, simba::com::soc::RXCallback callback) {
+    auto res = core::ErrorCode::kOk;
     this->service_id = service_id;
-    if (auto ret = this->sub_sock_.Init(
+    if (res = this->sub_sock_.Init(
         com::soc::SocketConfig(
             kSubscriberPrefix + std::to_string(this->service_id), 0, 0))) {
         AppLogger::Error("Couldn't initialize socket!");
-        return ret;
+        return res;
     }
     this->callback_ = callback;
     SetTempRXCallback();
-    this->Subscribe();
+    res = this->Subscribe();
+    if (res != core::ErrorCode::kOk) {
+        return res;
+    }
     this->sub_sock_.StartRXThread();
-    return simba::core::ErrorCode::kOk;
+    return res;
 }
 
 simba::core::ErrorCode TempController::Subscribe() {

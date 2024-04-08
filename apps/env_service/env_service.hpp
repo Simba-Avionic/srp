@@ -19,13 +19,15 @@
 #include "mw/temp/controller/temp_controller.h"
 #include "core/application/application_no_ipc.h"
 #include "communication-core/someip-controller/event_skeleton.h"
+#include "diag/dtc/controller/dtc.h"
 
 namespace simba {
 namespace envService {
 
 class EnvService : public core::ApplicationNoIPC{
  private:
-  std::shared_ptr<diag::dtc::DTCObject> dtc_temp_error = std::make_shared<diag::dtc::DTCObject>(0x20);
+  std::shared_ptr<simba::diag::dtc::DTCObject> dtc_temp_error;
+  std::shared_ptr<diag::dtc::DTCObject> dtc_temp_connection_error_0x20;
   mw::temp::TempController temp_{};
   std::shared_ptr<com::someip::EventSkeleton> temp1_event;
   std::shared_ptr<com::someip::EventSkeleton> temp2_event;
@@ -47,7 +49,7 @@ class EnvService : public core::ApplicationNoIPC{
       const std::unordered_map<std::string, std::string>& parms) final;
   void TempRxCallback(const std::string& ip, const std::uint16_t& port,
                                 const std::vector<std::uint8_t> data);
-  bool CheckTempError(double value);
+  bool CheckTempError(const double &value);
 
  public:
   ~EnvService() = default;

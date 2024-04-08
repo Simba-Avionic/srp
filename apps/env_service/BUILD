@@ -13,6 +13,7 @@ cc_binary(
         "//communication-core/someip-controller:skeleton",
         "//core/application:simba_application",
         "//mw/temp/controller:temp_controller_mw",
+        "//diag/dtc/controller:diag_dtc_",
         "@untar",
     ],
 )
