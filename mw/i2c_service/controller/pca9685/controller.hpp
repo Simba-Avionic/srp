@@ -27,15 +27,18 @@ enum smode_t {
 
 
 struct Servo {
-  smode_t mode;
+  smode_t mode{AUTO};
   uint16_t on_pos;
   uint16_t off_pos;
+  bool need_losening{false};
+  uint16_t on_losening_pos{};
+  uint16_t off_losening_pos;
   uint8_t channel;
   uint16_t position{0};
   bool need_mosfet{false};
   uint8_t mosfet_id;
-  uint16_t servo_delay;
-  uint16_t mosfet_time;
+  uint16_t servo_delay{0};
+  uint16_t mosfet_time{100};
 };
 
 class PCA9685 {
