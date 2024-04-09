@@ -32,7 +32,10 @@ struct Servo {
   uint16_t off_pos;
   uint8_t channel;
   uint16_t position{0};
+  bool need_mosfet{false};
   uint8_t mosfet_id;
+  uint16_t servo_delay;
+  uint16_t mosfet_time;
 };
 
 class PCA9685 {

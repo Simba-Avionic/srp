@@ -32,7 +32,7 @@ core::ErrorCode I2CDriver::Ioctl(const uint8_t address, const uint16_t type) {
 }
 
 core::ErrorCode I2CDriver::Write(const std::vector<uint8_t> data) {
-    for (int i = 0; i< data.size(); i+=2) {
+    for (int i = 0; i < data.size(); i+=2) {
       uint8_t buf[2] = {data[i], data[i+1]};
       if (write(i2cFile, buf, 2) != 2) {
         return core::ErrorCode::kInitializeError;

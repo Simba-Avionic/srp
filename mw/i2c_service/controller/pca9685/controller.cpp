@@ -48,11 +48,15 @@ core::ErrorCode PCA9685::AutoSetServoPosition(uint8_t actuator_id, uint8_t state
         return core::ErrorCode::kNotDefine;
     }
     if (it->second.position != (state == 0 ? it->second.on_pos : it->second.off_pos)) {
-        this->gpio_.SetPinValue(it->second.mosfet_id, gpio::Value::HIGH);
-        std::this_thread::sleep_for(std::chrono::milliseconds(5));
+        if (it->second.need_mosfet) {
+            this->gpio_.SetPinValue(it->second.mosfet_id, gpio::Value::HIGH);
+            std::this_thread::sleep_for(std::chrono::milliseconds(it->second.servo_delay));
+        }
         this->SetServo(it->second.channel, it->second.position == 1 ? it->second.on_pos : it->second.off_pos);
-        std::this_thread::sleep_for(std::chrono::milliseconds(5));
+        if (it->second.need_mosfet) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(it->second.mosfet_time));
         this->gpio_.SetPinValue(it->second.mosfet_id, gpio::Value::LOW);
+        }
         it->second.position = state;
     }
     return core::ErrorCode::kOk;
@@ -75,11 +79,15 @@ core::ErrorCode PCA9685::ManSetServoPosition(uint8_t actuator_id, uint16_t posit
         return core::ErrorCode::kNotDefine;
     }
     if (it->second.position != position) {
-        this->gpio_.SetPinValue(it->second.mosfet_id, gpio::Value::HIGH);
-        std::this_thread::sleep_for(std::chrono::milliseconds(5));
+        if (it->second.need_mosfet) {
+            this->gpio_.SetPinValue(it->second.mosfet_id, gpio::Value::HIGH);
+            std::this_thread::sleep_for(std::chrono::milliseconds(it->second.servo_delay));
+        }
         this->SetServo(it->second.channel, position);
-        std::this_thread::sleep_for(std::chrono::milliseconds(5));
+        if (it->second.need_mosfet) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(it->second.mosfet_time));
         this->gpio_.SetPinValue(it->second.mosfet_id, gpio::Value::LOW);
+        }
         it->second.position = position;
     }
     return core::ErrorCode::kOk;
@@ -95,11 +103,8 @@ core::ErrorCode PCA9685::ReadConfig() {
         return core::ErrorCode::kNotDefine;
     }
     for (const auto& servo : data["servos"]) {
-        if (!servo.contains("actuator_id") ||
-        !servo.contains("channel") ||
-        !servo.contains("on_pos") ||
-        !servo.contains("off_pos") ||
-        !servo.contains("mosfet_id")) {
+        if (!servo.contains("actuator_id") || !servo.contains("channel")
+        || !servo.contains("on_pos") || !servo.contains("off_pos")) {
             AppLogger::Warning("Invalid servo config");
         }
         Servo ser;
@@ -108,6 +113,12 @@ core::ErrorCode PCA9685::ReadConfig() {
         ser.on_pos = static_cast<uint16_t>(servo["on_pos"]);
         ser.off_pos = static_cast<uint16_t>(servo["off_pos"]);
         ser.mosfet_id = static_cast<uint8_t>(servo["mosfet_id"]);
+        if (servo.contains("mosfet_id")) {
+            ser.need_mosfet = true;
+            ser.mosfet_id = static_cast<uint8_t>(servo["mosfet_id"]);
+            ser.servo_delay = static_cast<uint16_t>(servo["servo_delay"]);
+            ser.mosfet_time = static_cast<uint16_t>(servo["mosfet_time"]);
+        }
         this->db_.insert({actuator_id, ser});
     }
 
