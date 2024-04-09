@@ -16,7 +16,7 @@
 #include "communication-core/someip-controller/event_proxy.h"
 #include "communication-core/someip-controller/method_skeleton.h"
 #include "core/logger/Logger.h"
-#include "mw/i2c_service/pca9685/controller/servoController.hpp"
+#include "mw/i2c_service/controller/pca9685/controller.hpp"
 #include "diag/dtc/controller/dtc.h"
 namespace simba {
 namespace router {
@@ -38,14 +38,12 @@ core::ErrorCode Router::Run(std::stop_token token) {
   diag_controller.RegisterDTC(dtc);
   while (true) {
     dtc->Pass();
-    this->gpio_.SetPinValue(1, gpio::Value::HIGH);
-    this->servo_.SetServoPos(60, 1);
-    this->servo_.SetServoPos(61, 1);
+    this->servo_.AutoSetServoPosition(60, 1);
+    this->servo_.AutoSetServoPosition(61, 1);
     std::this_thread::sleep_for(std::chrono::seconds(1));
-    this->gpio_.SetPinValue(1, gpio::Value::LOW);
+    this->servo_.AutoSetServoPosition(60, 0);
+    this->servo_.AutoSetServoPosition(61, 0);
     dtc->Failed();
-    this->servo_.SetServoPos(60, 0);
-    this->servo_.SetServoPos(61, 0);
     std::this_thread::sleep_for(std::chrono::seconds(1));
   }
   return core::ErrorCode::kOk;
@@ -55,7 +53,7 @@ core::ErrorCode Router::Initialize(
     const std::unordered_map<std::string, std::string>& parms) {
       this->gpio_ = gpio::GPIOController(new com::soc::IpcSocket());
       this->gpio_.Init(this->app_id_);
-      this->servo_.Init(this->app_id_);
+      this->servo_.Init(this->app_id_, parms);
   return core::ErrorCode::kOk;
 }
 

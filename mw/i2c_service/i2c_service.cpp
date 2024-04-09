@@ -8,25 +8,54 @@
  * @copyright Copyright (c) 2024
  * 
  */
-#include "i2c_service.h"
-#include "mw/i2c_service/pca9685/data/servo_hdr.hpp"
+#include <utility>
+#include "mw/i2c_service/i2c_service.h"
+#include "mw/i2c_service/data/i2c_factory.h"
+#include "core/logger/Logger.h"
 namespace simba {
 namespace mw {
 
-void  I2CService::ServoRxCallback(const std::string& ip, const std::uint16_t& port,
-    const std::vector<std::uint8_t> data) {
-      AppLogger::Warning("Recive change msg");
-      i2c::ServoHdr hdr{0, 0};
-      hdr.SetBuffor(data);
-      if (hdr.GetMode() == i2c::smode_t::AUTO) {
-        this->pca9685_.AutoSetServoPos(hdr.GetActuatorID(), hdr.GetPosition());
-      } else {
-        this->pca9685_.ManSetServoPos(hdr.GetActuatorID(), hdr.GetPosition());
-      }
-      AppLogger::Debug("set servo with id:"+std::to_string(
-                hdr.GetActuatorID())+"pos:"+std::to_string(hdr.GetPosition()));
+namespace {
+    constexpr uint8_t PCA9685_ADDRESS = 0x70;
+    constexpr uint8_t MODE1_REG = 0x00;
+    constexpr uint8_t PRESCALE_REG = 0xFE;
+    constexpr uint8_t LED0_ON_L = 0x06;
+    constexpr uint8_t LED0_ON_H = 0x07;
+    constexpr uint8_t LED0_OFF_L = 0x08;
+    constexpr uint8_t LED0_OFF_H = 0x09;
 }
 
+void I2CService::RxCallback(const std::string& ip,
+  const std::uint16_t& port, const std::vector<std::uint8_t> data) {
+    std::unique_lock<std::mutex> lock(this->i2c_mtx);
+    AppLogger::Warning("Receive i2c msg");
+    std::shared_ptr<i2c::Header> headerPtr = i2c::I2CFactory::GetHeader(data);
+    this->i2c_.Ioctl(headerPtr->GetAddress());
+    std::vector<uint8_t> payload;
+    std::vector<std::pair<uint8_t, uint8_t>> pairs;
+    switch (headerPtr->GetAction()) {
+      case i2c::ACTION::Write:
+        payload = i2c::I2CFactory::GetPayload(data);
+        if (payload.size() <= 0) {
+          return;
+        }
+        i2c_.Write(payload);
+        break;
+      case i2c::ACTION::Read:
+      // TODO   // NOLINT
+        // result = i2c_driver_.Read(address, reg);
+        // if (result.has_value()) {
+        //   i2c_sock_.Transmit("SIMBA.I2C.RESPONSE." + std::to_string(service_id), 0, result.value());
+        // } else {
+        //   i2c_sock_.Transmit("SIMBA.I2C.RESPONSE." + std::to_string(service_id), 0, {});
+        // }
+      case i2c::ACTION::ReadWrite:
+      // TODO  // NOLINT
+      break;
+      default:
+      break;
+    }
+}
 
 core::ErrorCode I2CService::Run(std::stop_token token) {
     this->SleepMainThread();
@@ -34,11 +63,11 @@ core::ErrorCode I2CService::Run(std::stop_token token) {
 }
 core::ErrorCode I2CService::Initialize(
       const std::unordered_map<std::string, std::string>& parms) {
-        this->servo_sock_.Init({"SIMBA.PCA9685", 0, 0});
-        this->servo_sock_.SetRXCallback(std::bind(&I2CService::ServoRxCallback, this, std::placeholders::_1,
+    this->i2c_.Init();
+    this->sock_.Init(com::soc::SocketConfig("SIMBA.I2C", 0, 0));
+    this->sock_.SetRXCallback(std::bind(&I2CService::RxCallback, this, std::placeholders::_1,
                 std::placeholders::_2, std::placeholders::_3));
-        this->servo_sock_.StartRXThread();
-        this->pca9685_.Init(this->app_id_);
+    this->sock_.StartRXThread();
     return core::ErrorCode::kOk;
 }
 

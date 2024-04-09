@@ -1,62 +1,66 @@
 /**
  * @file i2cdriver.cpp
- * @author Michal Mankowski (m.mankowski2004@gmail.com)
- * @brief This file defines I2C driver
+ * @author Mateusz Krajewski (matikrajek42@gmail.com)
+ * @brief 
  * @version 0.1
- * @date 2024-01-14
+ * @date 2024-04-03
  * 
  * @copyright Copyright (c) 2024
  * 
  */
-#include "i2cdriver.h"
+
+#include "core/i2c/i2cdriver.hpp"
+
+#define path "/dev/i2c-2"
 
 namespace simba {
 namespace core {
-int32_t I2C::i2c_smbus_access(char read_write, uint8_t command, int size, union i2c_smbus_data *data) {
-    i2c_smbus_ioctl_data args;
-    args.read_write = read_write;
-    args.command = command;
-    args.size = size;
-    args.data = data;
-    return ioctl(this->file, I2C_SMBUS, &args);
+namespace i2c {
+
+core::ErrorCode I2CDriver::Init() {
+    if ((this->i2cFile = open(path, O_RDWR)) < 0) {
+      return core::ErrorCode::kInitializeError;
+    }
+    return core::ErrorCode::kOk;
 }
-std::optional<uint8_t> I2C::i2c_smbus_read_byte_data(const uint8_t command) {
-    union i2c_smbus_data data;
-    if (i2c_smbus_access(I2C_SMBUS_READ, command, I2C_SMBUS_BYTE_DATA, &data) != 0) {
-        return{};
+
+core::ErrorCode I2CDriver::Ioctl(const uint8_t address, const uint16_t type) {
+    if (ioctl(this->i2cFile, type, address) < 0) {
+        return core::ErrorCode::kInitializeError;
     }
-    return std::optional<uint8_t>(0xFF & data.byte);
+    return core::ErrorCode::kOk;
 }
-ErrorCode I2C::init(const std::string&  path) {
-    this->file = open(path.c_str(), O_RDWR);
-    if (this->file < 0) {
-        return ErrorCode::kError;
+
+core::ErrorCode I2CDriver::Write(const std::vector<uint8_t> data) {
+    for (int i = 0; i< data.size(); i+=2) {
+      uint8_t buf[2] = {data[i], data[i+1]};
+      if (write(i2cFile, buf, 2) != 2) {
+        return core::ErrorCode::kInitializeError;
+      }
     }
-    return ErrorCode::kOk;
+    return core::ErrorCode::kOk;
 }
-std::optional<std::vector<uint8_t>> I2C::Read(const uint8_t address, const uint8_t reg) {
-    std::vector<uint8_t> result;
-    if (ioctl(this->file, I2C_SLAVE, address) < 0) {
-        return {};
-    }
-    std::optional<uint8_t> data = i2c_smbus_read_byte_data(reg);
-    if (!data.has_value()) {
-        return {};
-    }
-    while (data.value() >= 0) {
-        result.push_back(data.value());
-        data = i2c_smbus_read_byte_data(reg);
-    }
-    return std::optional<std::vector<uint8_t>>{result};
+std::optional<uint8_t> I2CDriver::Read(const uint8_t address, const uint8_t reg) {
+  uint8_t buf;
+  if (read(i2cFile, &buf, 1) != 1) {
+    return {};
+  }
+  return buf;
 }
-ErrorCode I2C::Write(const uint8_t address, const uint8_t reg, std::vector<uint8_t> data) {
-    if (ioctl(this->file, I2C_SLAVE, address) < 0) {
-        return ErrorCode::kInitializeError;
+std::optional<std::vector<uint8_t>> I2CDriver::Read(const uint8_t address, const std::vector<uint8_t> reg) {
+  std::vector<uint8_t> res;
+  uint8_t buf;
+  for (auto &r : reg) {
+    if (write(i2cFile, &r, 1) != 1) {
+      return {};
     }
-    if (write(file, data.data(), data.size()) != data.size()) {
-        return ErrorCode::kError;
+    if (read(i2cFile, &buf, 1) != 1) {
+      return {};
     }
-    return ErrorCode::kOk;
+    res.push_back(buf);
+  }
+  return res;
 }
+}  // namespace i2c
 }  // namespace core
 }  // namespace simba

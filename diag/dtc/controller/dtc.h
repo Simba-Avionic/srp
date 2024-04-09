@@ -24,7 +24,7 @@ class DTCObject : public IDTC {
  public:
   void Pass() const noexcept { callback(id, 2U); }
   void Failed() const noexcept { callback(id, 1U); }
-  explicit DTCObject(const uint16_t id_) : id{id_} {}
+  explicit DTCObject(const uint8_t id_) : id{id_} {}
   void SetCallback(DTCSendCallback callback_) noexcept override {
     callback = callback_;
     callback(id, 0U);

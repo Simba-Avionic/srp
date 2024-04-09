@@ -9,8 +9,8 @@
  * 
  */
 
-#ifndef CORE_I2C_V2_I2CDRIVER_HPP_
-#define CORE_I2C_V2_I2CDRIVER_HPP_
+#ifndef CORE_I2C_I2CDRIVER_HPP_
+#define CORE_I2C_I2CDRIVER_HPP_
 
 #include <sys/ioctl.h>
 #include <fcntl.h>
@@ -21,10 +21,12 @@
 #include <string>
 #include <vector>
 #include <utility>
+#include <optional>
 #include "core/common/error_code.h"
 
 namespace simba {
 namespace core {
+namespace i2c {
 
 class I2CDriver{
  private:
@@ -32,11 +34,18 @@ class I2CDriver{
  public:
   core::ErrorCode Init();
   core::ErrorCode Ioctl(const uint8_t address, const uint16_t type = I2C_SLAVE);
-                                          //          req  ,   data
-  core::ErrorCode Write(const std::vector<std::pair<uint8_t, uint8_t>> data);
-  void Read(){}
+  /**
+   * @brief Function to write data to device on i2c bus
+   * 
+   * @param data pair ( req, data)
+   * @return core::ErrorCode 
+   */
+  core::ErrorCode Write(const std::vector<uint8_t> data);
+  std::optional<uint8_t> Read(const uint8_t address, const uint8_t reg);
+  std::optional<std::vector<uint8_t>> Read(const uint8_t address, const std::vector<uint8_t> reg);
 };
+}  // namespace i2c
 }  // namespace core
 }  // namespace simba
 
-#endif  // CORE_I2C_V2_I2CDRIVER_HPP_
+#endif  // CORE_I2C_I2CDRIVER_HPP_

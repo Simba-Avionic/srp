@@ -16,15 +16,15 @@
 #include <memory>
 #include "core/application/application_mw.h"
 #include "communication-core/sockets/ipc_socket.h"
-#include "mw/i2c_service/pca9685/service/pca9685.hpp"
+#include "core/i2c/i2cdriver.hpp"
 namespace simba {
 namespace mw {
 class I2CService : public core::ApplicationMW {
  private:
     std::mutex i2c_mtx;
-    com::soc::IpcSocket servo_sock_;
-    i2c::PCA9685 pca9685_{&i2c_mtx};
-    void ServoRxCallback(const std::string& ip, const std::uint16_t& port,
+    core::i2c::I2CDriver i2c_;
+    com::soc::IpcSocket sock_;
+    void RxCallback(const std::string& ip, const std::uint16_t& port,
     const std::vector<std::uint8_t> data);
 
  public:

@@ -75,7 +75,6 @@ std::queue<uint16_t> ExecManager::CheckAppCondition() {
             (std::chrono::high_resolution_clock::now() - app.second.last_timestamp_time).count();
     if ( (delta > 5000 || app.second.invalid_timestamp_num > 5)
                                         && app.second.execState != ExecState::kRestartNeeded && app.first != 258) {
-        AppLogger::Error("app need restart[][][][][][][][][][][]");
         res.push(app.first);
         app.second.execState = ExecState::kRestartNeeded;
     }

@@ -6,6 +6,6 @@ cc_test(
     visibility = ["//visibility:public"],
     deps=[
         "@com_google_googletest//:gtest_main",
-        "//mw/i2c_service/pca9685/data:servo_hdr",
+        "//mw/i2c_service/data:i2c_factory"
     ]
 )
