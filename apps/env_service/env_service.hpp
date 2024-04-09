@@ -27,7 +27,7 @@ namespace envService {
 class EnvService : public core::ApplicationNoIPC{
  private:
   std::shared_ptr<simba::diag::dtc::DTCObject> dtc_temp_error;
-  std::shared_ptr<diag::dtc::DTCObject> dtc_temp_connection_error_0x20;
+  std::shared_ptr<diag::dtc::DTCObject> dtc_temp_connection_error_0xB0;
   mw::temp::TempController temp_{};
   std::shared_ptr<com::someip::EventSkeleton> temp1_event;
   std::shared_ptr<com::someip::EventSkeleton> temp2_event;

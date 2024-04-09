@@ -35,9 +35,9 @@ core::ErrorCode EnvService::Initialize(
     this->temp1_event = std::make_shared<com::someip::EventSkeleton>("EnvApp/newTempEvent_1");
     this->temp2_event = std::make_shared<com::someip::EventSkeleton>("EnvApp/newTempEvent_2");
     this->temp3_event = std::make_shared<com::someip::EventSkeleton>("EnvApp/newTempEvent_3");
-    this->dtc_temp_error = std::make_shared<diag::dtc::DTCObject>(0x20);
-    this->dtc_temp_connection_error_0x20 = std::make_shared<diag::dtc::DTCObject>(0x10);
-    diag_controller.RegisterDTC(dtc_temp_connection_error_0x20);
+    this->dtc_temp_error = std::make_shared<diag::dtc::DTCObject>(0xB0);
+    this->dtc_temp_connection_error_0xB0 = std::make_shared<diag::dtc::DTCObject>(0x10);
+    diag_controller.RegisterDTC(dtc_temp_connection_error_0xB0);
     diag_controller.RegisterDTC(dtc_temp_error);
     uint8_t i = 0;
     do {
@@ -47,7 +47,7 @@ core::ErrorCode EnvService::Initialize(
                                         std::placeholders::_3));
     } while (res != core::ErrorCode::kOk && i < 6);
     if (res != core::ErrorCode::kOk) {
-        this->dtc_temp_connection_error_0x20->Failed();
+        this->dtc_temp_connection_error_0xB0->Failed();
         return res;
     }
     return core::ErrorCode::kOk;
