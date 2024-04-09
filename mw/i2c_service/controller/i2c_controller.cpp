@@ -20,7 +20,7 @@ I2CController::I2CController() {
     // this->sock_.StartRXThread();
 }
 core::ErrorCode I2CController::Write(const uint8_t address, const std::vector<uint8_t> data) {
-    AppLogger::Warning("Sent i2c msg");
+    AppLogger::Debug("Sent i2c msg");
     std::lock_guard<std::mutex> lock(this->mtx);
     auto hdr = Header(ACTION::Write, address, this->service_id);
     std::vector<uint8_t> convertedVector;

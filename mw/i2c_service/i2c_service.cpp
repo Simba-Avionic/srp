@@ -28,7 +28,7 @@ namespace {
 void I2CService::RxCallback(const std::string& ip,
   const std::uint16_t& port, const std::vector<std::uint8_t> data) {
     std::unique_lock<std::mutex> lock(this->i2c_mtx);
-    AppLogger::Warning("Receive i2c msg");
+    AppLogger::Debug("Receive i2c msg");
     std::shared_ptr<i2c::Header> headerPtr = i2c::I2CFactory::GetHeader(data);
     this->i2c_.Ioctl(headerPtr->GetAddress());
     std::vector<uint8_t> payload;
