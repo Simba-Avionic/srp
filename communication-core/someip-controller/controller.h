@@ -92,6 +92,7 @@ class Controller {
  public:
   void Add(std::shared_ptr<IProxy> proxy);
   void Add(std::shared_ptr<ISkeleton> skeleton);
+  uint16_t GetServiceId() const { return service_id; }
   explicit Controller(std::shared_ptr<objects::DataBase> db_);
   ~Controller() = default;
 };

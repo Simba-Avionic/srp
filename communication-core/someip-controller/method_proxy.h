@@ -38,7 +38,7 @@ class MethodProxyBase : public IProxy {
   bool is_callback{false};
   bool is_response{false};
   std::vector<uint8_t> response;
-  data::MessageCode response_code;
+  com::data::MessageCode response_code;
   uint16_t transfer_id_;
   SendCallback callback_;
   FindCallback f_callback_;
@@ -109,10 +109,10 @@ class MethodProxyBase : public IProxy {
       d_callback_(transfer_id_);
       return {};
     }
-    if (response_code == data::MessageCode::kEOk) {
+    if (response_code == com::data::MessageCode::kEOk) {
       return std::move(this->response);
     } else {
-      if (response_code == data::MessageCode::kENotReachable) {
+      if (response_code == com::data::MessageCode::kENotReachable) {
         AppLogger::Error("[ SOMEIP PROXY ](" + instance + "): Access denied !");
       } else {
         AppLogger::Error(
