@@ -26,7 +26,8 @@
 				"ms-vscode.cpptools-extension-pack",
 				"mine.cpplint",
 				"cschlosser.doxdocgen",
-				"MS-CEINTL.vscode-language-pack-pl"
+				"MS-CEINTL.vscode-language-pack-pl",
+				"ms-azuretools.vscode-docker"
 			],
 			"settings": {
 				"C_Cpp.default.cppStandard": "c++23",
