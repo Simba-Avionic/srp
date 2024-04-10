@@ -19,7 +19,7 @@ namespace temp {
 
 std::vector<uint8_t> SubMsgFactory::GetBuffer(
   std::shared_ptr<simba::mw::temp::SubscribeHeader> header,
-  std::vector<uint8_t> payload) {
+  std::vector<uint8_t>&& payload) {
   std::vector<std::uint8_t> res{header->GetBuffor()};
   std::copy(payload.begin(), payload.end(), std::back_inserter(res));
   return res;

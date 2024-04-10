@@ -30,7 +30,7 @@ class SubMsgFactory {
    * @return std::vector<uint8_t>
    */
   std::vector<uint8_t> GetBuffer(std::shared_ptr<simba::mw::temp::SubscribeHeader> header,
-                                 std::vector<uint8_t> payload);
+                                 std::vector<uint8_t>&& payload);
 
   /**
    * @brief Creat header object from raw data

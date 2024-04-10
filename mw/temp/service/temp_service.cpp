@@ -27,6 +27,7 @@ namespace {
 }
 
 simba::core::ErrorCode TempService::Run(std::stop_token token) {
+    ConfigSensors();
     this->StartTempThread();
     AppLogger::Info("Temp Service started!");
     this->SleepMainThread();
@@ -36,8 +37,6 @@ simba::core::ErrorCode TempService::Run(std::stop_token token) {
 simba::core::ErrorCode TempService::Initialize(
     const std::unordered_map<std::string, std::string>& parms) {
     LoadConfig(parms);
-    ConfigSensors();
-
     if (auto ret = this->sub_sock_.Init(
         com::soc::SocketConfig(kTempServiceName, 0, 0))) {
         AppLogger::Error("Couldn't initialize " +
@@ -100,9 +99,8 @@ simba::core::ErrorCode TempService::LoadConfig(
     file >> jsonData;
     file.close();
 
-    for (auto it = jsonData["sensors-temp"].begin();
-        it != jsonData["sensors-temp"].end(); ++it) {
-        sensorPathsToIds[sensor_path+it.key()] = it.value();
+    for (auto sensor : jsonData["sensors-temp"].items()) {
+        sensorPathsToIds[sensor_path+sensor.key()] = sensor.value();
     }
     return simba::core::ErrorCode::kOk;
 }
@@ -118,10 +116,8 @@ std::vector<TempReading> TempService::RetrieveTempReadings() {
         }
 
         std::string line;
-        double sensorValueRaw;
-
         std::getline(file, line);
-        sensorValueRaw = std::stoi(line)/ 1000.0;
+        const double sensorValueRaw = std::stoi(line)/ 1000.0;
         file.close();
 
         AppLogger::Debug("Sensor " + path.first +

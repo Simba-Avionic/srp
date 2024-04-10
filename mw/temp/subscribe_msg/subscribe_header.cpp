@@ -21,7 +21,7 @@ SubscribeHeader::SubscribeHeader(const uint16_t &service_id)
 }
 
 SubscribeHeader::SubscribeHeader()
-    : service_id_(0), length_(sizeof(uint16_t)) {
+    : service_id_(0U), length_(sizeof(uint16_t)) {
     SetData();
 }
 
@@ -39,6 +39,7 @@ void SubscribeHeader::SetLength(const uint8_t& value) {
 
 void SubscribeHeader::SetData() {
     this->AddData(&service_id_);
+    this->AddData(&length_);
 }
 
 }  // namespace temp

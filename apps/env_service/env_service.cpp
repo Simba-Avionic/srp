@@ -16,7 +16,7 @@ namespace simba {
 namespace envService {
 
 
-std::vector<uint8_t> doubleToBytes(const double &value) {
+std::vector<uint8_t> convertPayload(const double &value) {
     std::vector<uint8_t> bytes;
     bytes.resize(sizeof(int16_t));
     const int16_t floatValue = static_cast<int16_t>(value * 10);
@@ -71,15 +71,16 @@ void EnvService::TempRxCallback(const std::string& ip, const std::uint16_t& port
         AppLogger::Info("Receive temp id: "+std::to_string(hdr.first)+",temp:"+std::to_string(hdr.second));
         switch (hdr.first) {
             case 0:
-            this->temp1_event->SetValue(doubleToBytes(hdr.second));
+            this->temp1_event->SetValue(convertPayload(hdr.second));
             break;
             case 1:
-            this->temp2_event->SetValue(doubleToBytes(hdr.second));
+            this->temp2_event->SetValue(convertPayload(hdr.second));
             break;
             case 2:
-            this->temp3_event->SetValue(doubleToBytes(hdr.second));
+            this->temp3_event->SetValue(convertPayload(hdr.second));
             break;
             default:
+            AppLogger::Warning("ID spoza zakresu:"+std::to_string(hdr.first));
             break;
         }
     }
