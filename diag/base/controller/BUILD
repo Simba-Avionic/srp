@@ -23,6 +23,7 @@ cc_library(
     visibility = [
         "//apps:__subpackages__",
         "//core:__subpackages__",
+        "//diag/controller:__subpackages__",
         "//mw:__subpackages__",
     ],
     deps = [

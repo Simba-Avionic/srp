@@ -43,14 +43,14 @@ class EventProxyBase : public IProxy {
   bool is_callback{false};
   bool is_response{false};
   std::vector<uint8_t> response;
-  data::MessageCode response_code;
+  com::data::MessageCode response_code;
   FindCallback f_callback_;
   SubscribeCallback s_callback;
   EventCallback callback_;
   const bool is_event_callback;
   void RxCallback(const std::vector<uint8_t> payload,
                   simba::com::data::MessageCode code, const uint16_t) {
-    if (code == data::MessageCode::kEOk) {
+    if (code == com::data::MessageCode::kEOk) {
       if (is_event_callback) {
         callback_(std::move(payload));
         return;

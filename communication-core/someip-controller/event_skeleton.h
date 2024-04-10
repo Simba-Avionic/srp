@@ -49,7 +49,7 @@ class EventSkeleton : public ISkeleton {
   std::optional<objects::Endpoint> GetEndPoint() const noexcept override {
     return object;
   }
-  std::pair<data::MessageCode, std::optional<std::vector<uint8_t>>> Call(
+  std::pair<com::data::MessageCode, std::optional<std::vector<uint8_t>>> Call(
       std::vector<uint8_t> payload,
       const objects::Endpoint endpoint) noexcept override {
     return {};
@@ -76,7 +76,7 @@ class EventSkeleton : public ISkeleton {
         std::unique_lock lkv{value_mutex};
         if (value.size() > 0) {
           callback_(this->value, object.value(), objects::Interface{"", 0},
-                    data::MessageType::kNotification, nullptr);
+                    com::data::MessageType::kNotification, nullptr);
         }
       }
     }
