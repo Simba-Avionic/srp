@@ -21,31 +21,14 @@ namespace simba {
 namespace router {
 
 core::ErrorCode Router::Run(std::stop_token token) {
-  auto example = std::make_shared<com::someip::MethodSkeleton>(
-      "ExampleApp/exampleMethod",
-      [this](const std::vector<uint8_t> payload)
-          -> std::optional<std::vector<uint8_t>> {
-        return std::vector<uint8_t>{0, 1, 2};
+  auto current_mode_proxy = std::make_shared<com::someip::EventProxyBase>(
+      "ExampleApp/currentMode", [](const std::vector<uint8_t> payload) {
+        AppLogger::Info("Current cpu mode: " + std::to_string(payload[0]));
       });
-  auto example2 = std::make_shared<com::someip::MethodSkeleton>(
-      "ExampleApp/exampleMethod2",
-      [this](const std::vector<uint8_t> payload)
-          -> std::optional<std::vector<uint8_t>> {
-        return std::vector<uint8_t>{0, 1, 2};
-      });
-  com->Add(example);
-  com->Add(example2);
-  auto dtc = std::make_shared<diag::dtc::DTCObject>(20);
-  diag_controller.RegisterDTC(dtc);
+com->Add(current_mode_proxy);
+current_mode_proxy->StartFindService();
   while (true) {
-    AppLogger::Debug("AppLogger::Debug");
-    AppLogger::Info("AppLogger::Info");
-    dtc->Pass();
-    this->gpio_.SetPinValue(1, gpio::Value::HIGH);
-    std::this_thread::sleep_for(std::chrono::seconds(1));
-    this->gpio_.SetPinValue(1, gpio::Value::LOW);
-    dtc->Failed();
-    std::this_thread::sleep_for(std::chrono::seconds(1));
+    this->SleepMainThread();
   }
   return core::ErrorCode::kOk;
 }

@@ -26,9 +26,8 @@ jobs:
         uses: thollander/actions-comment-pull-request@v2
         with:
           message: |
-            Successfully built software for linux
+            Starting built software for linux
           comment_tag: to_delete
-          mode: delete
       - name: Install bazel
         if: contains(steps.pr-labels.outputs.labels, 'check')
         run: |

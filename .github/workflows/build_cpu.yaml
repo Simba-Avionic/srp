@@ -28,19 +28,8 @@ jobs:
         uses: thollander/actions-comment-pull-request@v2
         with:
           message: |
-            Successfully built software for BeagleBone (EC)
+            Starting built software for BeagleBone (EC)
           comment_tag: to_delete
-          mode: delete
-
-      - name: RM 2
-        if: contains(steps.pr-labels.outputs.labels, 'check-bbb')
-        uses: thollander/actions-comment-pull-request@v2
-        with:
-          message: |
-            Successfully built software for BeagleBone (FC)
-          comment_tag: to_delete
-          mode: delete
-
 
       - name: Install bazel
         if: contains(steps.pr-labels.outputs.labels, 'check-bbb')
