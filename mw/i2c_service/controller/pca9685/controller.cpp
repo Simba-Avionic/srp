@@ -137,7 +137,9 @@ core::ErrorCode PCA9685::ReadConfig() {
             ser.mosfet_time = static_cast<uint16_t>(servo["mosfet_time"]);
         }
         if (!servo.contains("on_losening_pos") || !servo.contains("off_losening_pos")) {
-
+            ser.need_losening = true;
+            ser.on_losening_pos = static_cast<uint16_t>(servo["on_losening_pos"]);
+            ser.off_losening_pos = static_cast<uint16_t>(servo["off_losening_pos"]);
         }
         this->db_.insert({actuator_id, ser});
     }
