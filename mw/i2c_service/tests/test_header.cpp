@@ -12,6 +12,7 @@
 #include <gtest/gtest.h>
 
 #include "mw/i2c_service/data/header.h"
+#include "mw/i2c_service/data/i2c_factory.h"
 
 TEST(HEADER, CONSTRUCTOR_CHECK) {
     const uint16_t service_id = 0x11;
