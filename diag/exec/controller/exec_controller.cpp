@@ -46,6 +46,10 @@ ExecController::ExecController() {}
 ExecController::~ExecController() {
 }
 
+void ExecController::ForceStop() {
+    this->thread_.request_stop();
+}
+
 
 }  // namespace exec
 }  // namespace diag
