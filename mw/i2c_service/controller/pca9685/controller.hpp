@@ -20,25 +20,18 @@
 namespace simba {
 namespace i2c {
 
-enum smode_t {
-  AUTO = 0x00,
-  MAN = 0x01
-};
-
-
 struct Servo {
-  smode_t mode{AUTO};
   uint16_t on_pos;
   uint16_t off_pos;
-  bool need_losening{false};
-  uint16_t on_losening_pos{};
-  uint16_t off_losening_pos;
   uint8_t channel;
-  uint16_t position{0};
+  uint8_t position{0};
   bool need_mosfet{false};
   uint8_t mosfet_id;
-  uint16_t servo_delay{0};
-  uint16_t mosfet_time{100};
+  bool need_loosening{false};
+  uint16_t on_loosening;
+  uint16_t off_loosening;
+  uint8_t servo_delay{50};
+  uint8_t mosfet_delay{50};
 };
 
 class PCA9685 {
@@ -53,13 +46,6 @@ class PCA9685 {
   PCA9685();
   void Init(uint16_t service_id, const std::unordered_map<std::string, std::string>& parms);
   core::ErrorCode AutoSetServoPosition(uint8_t actuator_id, uint8_t state);
-  /**
-   * @brief do not use without a valid reason
-   * 
-   * @param actuator_id 
-   * @param position 
-   */
-  core::ErrorCode ManSetServoPosition(uint8_t actuator_id, uint16_t position);
 };
 
 }  // namespace i2c

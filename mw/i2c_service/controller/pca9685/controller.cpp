@@ -10,6 +10,7 @@
  */
 #include <vector>
 #include <string>
+#include <thread>  // NOLINT
 
 #include "mw/i2c_service/controller/pca9685/controller.hpp"
 #include "core/json/json_parser.h"
@@ -47,23 +48,20 @@ core::ErrorCode PCA9685::AutoSetServoPosition(uint8_t actuator_id, uint8_t state
         AppLogger::Warning("Not find service");
         return core::ErrorCode::kNotDefine;
     }
-    if (it->second.position != (state == 0 ? it->second.on_pos : it->second.off_pos)
-                                                || it->second.mode != smode_t::AUTO) {
-        if (it->second.mode != smode_t::AUTO) {
-            it->second.mode = smode_t::AUTO;
-        }
+    if (it->second.position != state) {
         if (it->second.need_mosfet) {
             this->gpio_.SetPinValue(it->second.mosfet_id, gpio::Value::HIGH);
             std::this_thread::sleep_for(std::chrono::milliseconds(it->second.servo_delay));
         }
         this->SetServo(it->second.channel, it->second.position == 1 ? it->second.on_pos : it->second.off_pos);
-        if (it->second.need_losening) {
+        if (it->second.need_loosening) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
             this->SetServo(it->second.channel,
-                    it->second.position == 1 ? it->second.on_losening_pos : it->second.off_losening_pos);
+                        it->second.position == 1 ? it->second.on_loosening : it->second.off_loosening);
         }
         if (it->second.need_mosfet) {
-        std::this_thread::sleep_for(std::chrono::milliseconds(it->second.mosfet_time));
-        this->gpio_.SetPinValue(it->second.mosfet_id, gpio::Value::LOW);
+            std::this_thread::sleep_for(std::chrono::milliseconds(it->second.mosfet_delay));
+            this->gpio_.SetPinValue(it->second.mosfet_id, gpio::Value::LOW);
         }
         it->second.position = state;
     }
@@ -80,33 +78,6 @@ core::ErrorCode PCA9685::SetServo(uint8_t channel, uint16_t pos) {
     static_cast<uint8_t>(LED0_OFF_H+4*channel), static_cast<uint8_t>(pos >> 8)};   // OFF HIGH REG Val;
   return this->i2c_.Write(PCA9685_ADDRESS, data);
 }
-core::ErrorCode PCA9685::ManSetServoPosition(uint8_t actuator_id, uint16_t position) {
-      auto it = this->db_.find(actuator_id);
-    if (it == this->db_.end()) {
-        AppLogger::Warning("Not find service");
-        return core::ErrorCode::kNotDefine;
-    }
-    if (it->second.position != position || it->second.mode == smode_t::AUTO) {
-        if (it->second.mode == smode_t::AUTO) {
-            it->second.mode = smode_t::MAN;
-        }
-        if (it->second.need_mosfet) {
-            this->gpio_.SetPinValue(it->second.mosfet_id, gpio::Value::HIGH);
-            std::this_thread::sleep_for(std::chrono::milliseconds(it->second.servo_delay));
-        }
-        this->SetServo(it->second.channel, position);
-        if (it->second.need_losening) {
-            this->SetServo(it->second.channel,
-                    it->second.position == 1 ? it->second.on_losening_pos : it->second.off_losening_pos);
-        }
-        if (it->second.need_mosfet) {
-        std::this_thread::sleep_for(std::chrono::milliseconds(it->second.mosfet_time));
-        this->gpio_.SetPinValue(it->second.mosfet_id, gpio::Value::LOW);
-        }
-        it->second.position = position;
-    }
-    return core::ErrorCode::kOk;
-}
 
 core::ErrorCode PCA9685::ReadConfig() {
     std::ifstream file("/opt/"+this->app_name+"/etc/config.json");
@@ -119,27 +90,29 @@ core::ErrorCode PCA9685::ReadConfig() {
     }
     for (const auto& servo : data["servos"]) {
         if (!servo.contains("actuator_id") || !servo.contains("channel")
-        || !servo.contains("on_pos") || !servo.contains("off_pos")) {
+        || !servo.contains("on_pos") || !servo.contains("off_pos") || !servo.contains("mosfet_id")) {
             AppLogger::Warning("Invalid servo config");
+            continue;
         }
         Servo ser;
         uint8_t actuator_id = static_cast<uint8_t>(servo["actuator_id"]);
         ser.channel = static_cast<uint8_t>(servo["channel"]);
         ser.on_pos = static_cast<uint16_t>(servo["on_pos"]);
         ser.off_pos = static_cast<uint16_t>(servo["off_pos"]);
-        ser.mosfet_id = static_cast<uint8_t>(servo["mosfet_id"]);
-        ser.on_losening_pos = static_cast<uint8_t>(servo["on_losening_pos"]);
-        ser.off_losening_pos = static_cast<uint8_t>(servo["off_losening_pos"]);
         if (servo.contains("mosfet_id")) {
             ser.need_mosfet = true;
             ser.mosfet_id = static_cast<uint8_t>(servo["mosfet_id"]);
-            ser.servo_delay = static_cast<uint16_t>(servo["servo_delay"]);
-            ser.mosfet_time = static_cast<uint16_t>(servo["mosfet_time"]);
         }
-        if (!servo.contains("on_losening_pos") || !servo.contains("off_losening_pos")) {
-            ser.need_losening = true;
-            ser.on_losening_pos = static_cast<uint16_t>(servo["on_losening_pos"]);
-            ser.off_losening_pos = static_cast<uint16_t>(servo["off_losening_pos"]);
+        if (servo.contains("on_loosening") && servo.contains("off_loosening")) {
+            ser.need_loosening = true;
+            ser.on_loosening = static_cast<uint16_t>(servo["on_loosening"]);
+            ser.off_loosening = static_cast<uint16_t>(servo["off_loosening"]);
+        }
+        if (servo.contains("servo_delay")) {
+            ser.servo_delay = static_cast<uint8_t>(servo["servo_delay"]);
+        }
+        if (servo.contains("mosfet_delay")) {
+            ser.mosfet_delay = static_cast<uint8_t>(servo["mosfet_delay"]);
         }
         this->db_.insert({actuator_id, ser});
     }

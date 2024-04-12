@@ -21,8 +21,6 @@ namespace simba {
 namespace router {
 class Router : public core::ApplicationNoIPC{
  protected:
-  gpio::GPIOController gpio_;
-  std::mutex mtx;
   i2c::PCA9685 servo_;
   /**
    * @brief This function is called to launch the application

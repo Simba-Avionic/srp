@@ -39,7 +39,7 @@ std::vector<uint8_t> I2CController::Read(const uint8_t address, const std::vecto
   std::unique_lock<std::mutex> lock(this->mtx);
   Header header(ACTION::Read, address, this->service_id);
   this->sock_.Transmit("SIMBA.I2C", 0, header.GetBuffor());
-  this->data_condition.wait(lock, [this] { return this->received_data_.size() > 0 });
+  this->data_condition.wait(lock, [this] { return this->received_data_.size() > 0; });
   auto data = this->received_data_;
   this->received_data_ = {};
   return this->received_data_;

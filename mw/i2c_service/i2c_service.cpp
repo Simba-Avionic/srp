@@ -30,30 +30,14 @@ void I2CService::RxCallback(const std::string& ip,
     std::unique_lock<std::mutex> lock(this->i2c_mtx);
     AppLogger::Debug("Receive i2c msg");
     std::shared_ptr<i2c::Header> headerPtr = i2c::I2CFactory::GetHeader(data);
-    this->i2c_.Ioctl(headerPtr->GetAddress());
-    std::vector<uint8_t> payload = i2c::I2CFactory::GetPayload(data);
-    std::optional<std::vector<uint8_t>> result;
-    switch (headerPtr->GetAction()) {
-      case i2c::ACTION::Write:
-        payload = i2c::I2CFactory::GetPayload(data);
-        if (payload.size() <= 0) {
-          return;
-        }
-        i2c_.Write(payload);
-        break;
-      case i2c::ACTION::Read:
-        result = i2c_.Read(headerPtr->GetAddress(), payload);
-        if (result.has_value()) {
-           sock_.Transmit("SIMBA.I2C.RESPONSE." + std::to_string(headerPtr->GetServiceId()), 0, result.value());
-        } else {
-           sock_.Transmit("SIMBA.I2C.RESPONSE." + std::to_string(headerPtr->GetServiceId()), 0, {});
-        }
-      case i2c::ACTION::ReadWrite:
-      // TODO  // NOLINT
-      break;
-      default:
-      break;
-    }
+    if (headerPtr->GetAction() == i2c::ACTION::Write) {
+      AppLogger::Warning("get write action");
+      this->i2c_.Ioctl(headerPtr->GetAddress());
+      AppLogger::Warning(std::to_string(headerPtr->GetAddress()));
+      std::vector<uint8_t> payload = i2c::I2CFactory::GetPayload(data);
+      i2c_.Write(payload);
+      AppLogger::Warning("finish exec write");
+    } else if (headerPtr->GetAction() == i2c::ACTION::Read) {}
 }
 
 core::ErrorCode I2CService::Run(std::stop_token token) {
