@@ -14,7 +14,7 @@
 namespace simba {
 namespace i2c {
 
-Header::Header(ACTION action, uint8_t address, uint8_t service_id) {
+Header::Header(ACTION action, uint8_t address, uint16_t service_id) {
     this->action = action;
     this->address = address;
     this->service_id = service_id;

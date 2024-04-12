@@ -31,8 +31,8 @@ void I2CService::RxCallback(const std::string& ip,
     AppLogger::Debug("Receive i2c msg");
     std::shared_ptr<i2c::Header> headerPtr = i2c::I2CFactory::GetHeader(data);
     this->i2c_.Ioctl(headerPtr->GetAddress());
-    std::vector<uint8_t> payload;
-    std::vector<std::pair<uint8_t, uint8_t>> pairs;
+    std::vector<uint8_t> payload = i2c::I2CFactory::GetPayload(data);
+    std::optional<std::vector<uint8_t>> result;
     switch (headerPtr->GetAction()) {
       case i2c::ACTION::Write:
         payload = i2c::I2CFactory::GetPayload(data);
@@ -42,13 +42,12 @@ void I2CService::RxCallback(const std::string& ip,
         i2c_.Write(payload);
         break;
       case i2c::ACTION::Read:
-      // TODO   // NOLINT
-        // result = i2c_driver_.Read(address, reg);
-        // if (result.has_value()) {
-        //   i2c_sock_.Transmit("SIMBA.I2C.RESPONSE." + std::to_string(service_id), 0, result.value());
-        // } else {
-        //   i2c_sock_.Transmit("SIMBA.I2C.RESPONSE." + std::to_string(service_id), 0, {});
-        // }
+        result = i2c_.Read(headerPtr->GetAddress(), payload);
+        if (result.has_value()) {
+           sock_.Transmit("SIMBA.I2C.RESPONSE." + std::to_string(headerPtr->GetServiceId()), 0, result.value());
+        } else {
+           sock_.Transmit("SIMBA.I2C.RESPONSE." + std::to_string(headerPtr->GetServiceId()), 0, {});
+        }
       case i2c::ACTION::ReadWrite:
       // TODO  // NOLINT
       break;

@@ -30,13 +30,13 @@ class Header : public com::core::network::NetworkDataStructure {
  private:
     com::core::network::uint8_t action;
     com::core::network::uint8_t address;
-    com::core::network::uint8_t service_id;
+    com::core::network::uint16_t service_id;
     void SetData();
  public:
     ACTION GetAction() { return static_cast<ACTION>(this->action.Get()); }
     uint8_t GetAddress() { return this->address.Get(); }
-    uint8_t GetServiceId() { return this->service_id.Get(); }
-    Header(ACTION action, uint8_t address, uint8_t service_id);
+    uint16_t GetServiceId() { return this->service_id.Get(); }
+    Header(ACTION action, uint8_t address, uint16_t service_id);
 };
 
 }  // namespace i2c
