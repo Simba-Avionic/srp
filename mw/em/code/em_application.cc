@@ -48,6 +48,7 @@ core::ErrorCode EmApplication::Run(std::stop_token token) {
  */
 core::ErrorCode EmApplication::Initialize(
     const std::unordered_map<std::string, std::string>& parms) {
+  this->exec_.ForceStop();
   this->em_service.LoadApps();
   this->exec_service.SetApps(this->em_service.GetAppList());
   return core::ErrorCode::kOk;
