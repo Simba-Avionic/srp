@@ -26,14 +26,12 @@ namespace i2c {
 class I2CController{
  private:
   com::soc::IpcSocket sock_;
-  std::mutex data_mutex;
   std::mutex mtx;
   std::vector<uint8_t> received_data_;
   I2CFactory factory_;
   uint16_t service_id;
   void ReceiveCallback(const std::string& ip,
   const std::uint16_t& port, const std::vector<std::uint8_t> data);
-  bool data_ready;
   std::condition_variable data_condition;
 
  public:
@@ -49,7 +47,8 @@ class I2CController{
    * @return core::ErrorCode 
    */
   core::ErrorCode Write(const uint8_t address, const std::vector<uint8_t> data);
-  std::vector<uint8_t> Read(const uint8_t address, const uint8_t reg);
+  std::vector<uint8_t> Read(const uint8_t address, const std::vector<uint8_t> reg);
+  std::optional<uint8_t> Read(const uint8_t address, const uint8_t reg);
 };
 }  // namespace i2c
 }  // namespace simba
