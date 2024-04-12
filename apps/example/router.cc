@@ -33,7 +33,7 @@ core::ErrorCode Router::Run(std::stop_token token) {
   com->Add(example);
   com->Add(proxy_event);
   proxy_event->StartFindService();
-  auto dtc = std::make_shared<diag::dtc::DTCObject>(20);
+  auto dtc = std::make_shared<diag::dtc::DTCObject>(0x20);
   diag_controller.RegisterDTC(dtc);
   while (true) {
     AppLogger::Debug("AppLogger::Debug");
