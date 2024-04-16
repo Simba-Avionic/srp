@@ -26,31 +26,26 @@ EEPROM::EEPROM() {}
 void EEPROM::Init(uint16_t service_id) {
     this->i2c_.Init(service_id);
 }
-std::vector<uint8_t> EEPROM::Read() {
+std::optional<uint8_t> EEPROM::Read(const uint8_t reg) {
+    auto data = this->i2c_.Read(EEPROM_ADDRESS, reg);
+    if (!data.has_value()) {
+        return {};
+    }
+    return data.value();
+}
+
+std::vector<uint8_t> EEPROM::PageRead() {
     auto data = this->i2c_.Read(EEPROM_ADDRESS, 0x00);
     if (!data.has_value()) {
         return {};
     }
-    std::vector<uint8_t> regs;
-    for (int i = 0x01; i < data.value(); i++) {
-        regs.push_back(i);
-    }
-    return this->i2c_.Read(EEPROM_ADDRESS, regs);
+    //TODO // NOLINT
 }
 
-std::vector<uint8_t> EEPROM::PageRead(std::vector<uint8_t> reg) {}
-core::ErrorCode EEPROM::Write(std::vector<uint8_t> data) {
-    uint8_t req = 0x00;
-    std::vector<uint8_t> toSend;
-    toSend.push_back(data.size());
-    for (auto &d : data) {
-        toSend.push_back(req);
-        toSend.push_back(d);
-        req += 1;
-    }
-    return this->i2c_.Write(EEPROM_ADDRESS, toSend);
+core::ErrorCode EEPROM::PageWrite(std::vector<uint8_t> data) {
+    data.insert(data.begin(), static_cast<uint8_t>(data.size()));
+    return this->i2c_.PageWrite(EEPROM_ADDRESS, data);
 }
-core::ErrorCode EEPROM::PageWrite(std::vector<uint8_t> data) {}
 
 }  // namespace i2c
 }  // namespace simba

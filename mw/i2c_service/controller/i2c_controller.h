@@ -47,6 +47,14 @@ class I2CController{
    * @return core::ErrorCode 
    */
   core::ErrorCode Write(const uint8_t address, const std::vector<uint8_t> data);
+  /**
+   * @brief 
+   * 
+   * @param address 
+   * @param data 
+   * @return core::ErrorCode 
+   */
+  core::ErrorCode PageWrite(const uint8_t address, const std::vector<uint8_t> data);
   std::vector<uint8_t> Read(const uint8_t address, const std::vector<uint8_t> reg);
   std::optional<uint8_t> Read(const uint8_t address, const uint8_t reg);
 };

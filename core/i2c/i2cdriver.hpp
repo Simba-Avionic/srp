@@ -40,9 +40,10 @@ class I2CDriver{
    * @param data pair ( req, data)
    * @return core::ErrorCode 
    */
-  core::ErrorCode Write(const std::vector<uint8_t> data);
-  std::optional<uint8_t> Read(const uint8_t address, const uint8_t reg);
-  std::optional<std::vector<uint8_t>> Read(const uint8_t address, const std::vector<uint8_t> reg);
+  core::ErrorCode Write(const std::vector<uint8_t> RegData);
+  core::ErrorCode PageWrite(std::vector<uint8_t> data);
+  std::optional<uint8_t> Read(const uint8_t address, const uint8_t reg, const uint8_t len = 1);
+  std::vector<uint8_t> PageRead(const uint8_t address, const uint8_t startReg, const uint8_t len);
 };
 }  // namespace i2c
 }  // namespace core

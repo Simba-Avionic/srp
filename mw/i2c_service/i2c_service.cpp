@@ -30,14 +30,16 @@ void I2CService::RxCallback(const std::string& ip,
     std::unique_lock<std::mutex> lock(this->i2c_mtx);
     AppLogger::Debug("Receive i2c msg");
     std::shared_ptr<i2c::Header> headerPtr = i2c::I2CFactory::GetHeader(data);
+    this->i2c_.Ioctl(headerPtr->GetAddress());
     if (headerPtr->GetAction() == i2c::ACTION::Write) {
-      AppLogger::Warning("get write action");
-      this->i2c_.Ioctl(headerPtr->GetAddress());
-      AppLogger::Warning(std::to_string(headerPtr->GetAddress()));
       std::vector<uint8_t> payload = i2c::I2CFactory::GetPayload(data);
       i2c_.Write(payload);
       AppLogger::Warning("finish exec write");
-    } else if (headerPtr->GetAction() == i2c::ACTION::Read) {}
+    } else if (headerPtr->GetAction() == i2c::ACTION::PageWrite) {
+      AppLogger::Warning("get Pagewrite action");
+      std::vector<uint8_t> payload = i2c::I2CFactory::GetPayload(data);
+      i2c_.PageWrite(payload);
+    }
 }
 
 core::ErrorCode I2CService::Run(std::stop_token token) {

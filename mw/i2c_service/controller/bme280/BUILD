@@ -1,12 +1,9 @@
 cc_library(
-    name = "eeprom_controller",
+    name = "bmp280_controller",
     deps = [
         "//communication-core/sockets:socket_ipc",
-        "//mw/i2c_service/data:i2c_hdr",
-        "//mw/i2c_service/data:i2c_factory",
         "//core/logger:Logger",
         "//mw/i2c_service/controller:i2c_controller",
-        "//mw/gpio_server/controller:gpio_controller",
         "//core/json:simba_json",
     ],
     srcs = ["controller.cpp"],

@@ -35,10 +35,16 @@ core::ErrorCode I2CController::Write(const uint8_t address, const std::vector<ui
     auto buf = factory_.GetBuffer(std::make_shared<Header>(hdr), data);
     return this->sock_.Transmit("SIMBA.I2C", 0, buf);
 }
+core::ErrorCode I2CController::PageWrite(const uint8_t address, const std::vector<uint8_t> data) {
+    AppLogger::Debug("Sent i2c msg");
+    auto hdr = Header(ACTION::PageWrite, address, this->service_id);
+    auto buf = factory_.GetBuffer(std::make_shared<Header>(hdr), data);
+    return this->sock_.Transmit("SIMBA.I2C", 0, buf);
+}
 std::vector<uint8_t> I2CController::Read(const uint8_t address, const std::vector<uint8_t> reg) {
   std::unique_lock<std::mutex> lock(this->mtx);
   Header header(ACTION::Read, address, this->service_id);
-  this->sock_.Transmit("SIMBA.I2C", 0, header.GetBuffor());
+  this->sock_.Transmit("SIMBA.I2C", 0, factory_.GetBuffer(std::make_shared<Header>(header), {reg}));
   this->data_condition.wait(lock, [this] { return this->received_data_.size() > 0; });
   auto data = this->received_data_;
   this->received_data_ = {};

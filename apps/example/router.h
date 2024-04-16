@@ -17,11 +17,16 @@
 #include "core/application/application_no_ipc.h"
 #include "mw/gpio_server/controller/gpio_controller.hpp"
 #include "mw/i2c_service/controller/pca9685/controller.hpp"
+#include "mw/i2c_service/controller/24aa01/controller.hpp"
 namespace simba {
 namespace router {
 class Router : public core::ApplicationNoIPC{
  protected:
   i2c::PCA9685 servo_;
+  i2c::EEPROM eeprom_;
+  core::i2c::I2CDriver i2c_;
+  gpio::GPIOController gpio_;
+
   /**
    * @brief This function is called to launch the application
    *
