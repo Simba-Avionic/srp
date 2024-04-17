@@ -79,7 +79,7 @@ class App(tk.Tk):
         # buttons
         start_stop_saving_button_frame = tk.Frame(self)
         self.start_saving_button = tk.Button(start_stop_saving_button_frame, text="Start saving data", command=lambda: self.start_save_to_file())
-        stop_saving_button = tk.Button(start_stop_saving_button_frame, text="Stop saving data", command=lambda: self.stop_save_to_file())
+        self.stop_saving_button = tk.Button(start_stop_saving_button_frame, text="Stop saving data", command=lambda: self.stop_save_to_file())
 
         main_valve_button_frame = tk.Frame(self)
         main_valve_set_1_button = tk.Button(main_valve_button_frame, text="Main valve: set 1", command=lambda: self.set_main_valve(value=1))
@@ -140,7 +140,8 @@ class App(tk.Tk):
 
         start_stop_saving_button_frame.pack(side=tk.TOP, pady=button_padding, fill='both')
         self.start_saving_button.pack(side=tk.LEFT, pady=button_padding, fill='both', expand=True)
-        stop_saving_button.pack(side=tk.LEFT, pady=button_padding, fill='both', expand=True)
+        self.stop_saving_button.pack(side=tk.LEFT, pady=button_padding, fill='both', expand=True)
+        self.stop_saving_button.config(state=tk.DISABLED)
 
         launch_rocket_button_frame.pack(side=tk.TOP, pady=button_padding, fill='both')
         launch_rocket_button.pack(side=tk.LEFT, pady=button_padding, fill='both', expand=True)
@@ -152,18 +153,20 @@ class App(tk.Tk):
         self.read_data()
 
     def read_data(self):
-        self.data_reader_thread = threading.Thread(target=self.data_reader.read_data,daemon= True)
+        self.data_reader_thread = threading.Thread(target=self.data_reader.read_data, daemon=True)
         self.data_reader_thread.start()
 
     def start_save_to_file(self):
         self.saving = True
         self.start_saving_button.config(state=tk.DISABLED)
-        self.saving_thread = threading.Thread(target=self._save_to_file,daemon=True)
+        self.stop_saving_button.config(state=tk.NORMAL)
+        self.saving_thread = threading.Thread(target=self._save_to_file, daemon=True)
         self.saving_thread.start()
 
     def stop_save_to_file(self):
         self.saving = False
         self.start_saving_button.config(state=tk.NORMAL)
+        self.stop_saving_button.config(state=tk.DISABLED)
         self.saving_thread.join()
 
     def _save_to_file(self):
