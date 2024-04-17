@@ -1,0 +1,41 @@
+{
+  "service_id": 1,
+  "interface": [
+    {
+      "ip": "127.0.0.1",
+      "port": 10101
+    }
+  ],
+  "pub_methods": {},
+  "pub_event": {},
+  "req_methods": {
+    "PC_APP/setServoValue": {
+      "service_id": 515,
+      "method_id": 1
+    },
+    "PC_APP/readServoValue": {
+      "service_id": 515,
+      "method_id": 2
+    }
+  },
+  "req_events": {
+    "PC_APP/servoStatusEvent": {
+      "service_id": 515,
+      "event_id": 32769
+    },
+    "PC_APP/newTempEvent_1": {
+      "service_id": 514,
+      "event_id": 32769
+    }
+  },
+  "db": {
+    "515": {
+      "ip": "192.168.10.101",
+      "port": 1515
+    },
+    "514": {
+      "ip": "192.168.10.101",
+      "port": 1514
+    }
+  }
+}

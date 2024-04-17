@@ -2,6 +2,7 @@ import csv
 import datetime
 import threading
 import tkinter as tk
+import logging
 
 from data import Data
 from data_reader import DataReader
@@ -173,9 +174,9 @@ class App(tk.Tk):
             writer.writerow(['TIMESTAMP', 'TEMPERATURE_UP', 'TEMPERATURE_DOWN', 'TEMPERATURE_MIDDLE', 'TANK_PRESSURE', 'JET_PRESSURE', 'PRESSURE_DIFFERENCE', 'MAIN_VALVE', 'VENT'])
         start = datetime.datetime.now()
         while self.saving:
-            print("SAVING....")
+            logging.info("SAVING....")
             if self.data_to_save.is_None() is False:
-                print("SAVED")
+                logging.info("SAVED")
                 timestamp = datetime.datetime.now() - start
                 with open(filename, 'a', encoding='UTF-8', newline='') as csvFile:
                     writer = csv.writer(csvFile, delimiter=";")
@@ -191,7 +192,7 @@ class App(tk.Tk):
                 self.data_to_save.main_valve = None
                 self.data_to_save.vent = None
             else:
-                print("NOT SAVED")
+                logging.info("NOT SAVED")
 
     def launch_rocket(self):
         pass
@@ -205,5 +206,4 @@ class App(tk.Tk):
     def exit(self):
         self.stop_reading = True
         self.saving = False
-        self.data_reader_thread.join()
         self.destroy()

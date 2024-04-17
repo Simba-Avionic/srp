@@ -1,6 +1,7 @@
 import unittest
 import sys
 from pathlib import Path
+import struct
 
 # Dodanie katalogu nadrzędnego do ścieżki
 sys.path.append(str(Path(__file__).resolve().parent.parent))
@@ -44,3 +45,15 @@ class TestSomeIpHeader(unittest.TestCase):
         data = b'\x00"\x00#\x00\x00\x00\x08\x00\x01\x00\x01\x01\x01\x01\x00'
         hdr = SomeIPHeader(0x22,0x23,0x1)
         self.assertEqual(b"".join(hdr.get_some_ip_data()),data)
+    def test_get_some_ip_data2(self):
+        data = b'\x00"\x00#\x00\x00\x00\n\x00\x01\x00\x01\x01\x01\x01\x00{\x00'
+        payload = struct.pack('H',123)
+        hdr = SomeIPHeader(0x22,0x23,0x1)
+        hdr.set_payload(payload)
+        self.assertEqual(b"".join(hdr.get_some_ip_data()),data)
+    def test_get_some_ip_data_payload(self):
+        data = b'\x00"\x00#\x00\x00\x00\n\x00\x01\x00\x01\x01\x01\x01\x00{\x00'
+        payload = struct.pack('H',123)
+        hdr = SomeIPHeader(0x22,0x23,0x1)
+        hdr.set_payload(payload)
+        self.assertEqual(b"".join(hdr.get_some_ip_data_payload(payload)),data)
