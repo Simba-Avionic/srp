@@ -8,7 +8,7 @@ from some_ip_header import SomeIPHeader
 
 
 class DataReader:
-    def __init__(self, gui,filename = "someip.json"):
+    def __init__(self, gui, filename="someip.json"):
         self.gui = gui
         self.data = 0
         with open(filename, encoding='UTF-8') as f:
@@ -28,7 +28,7 @@ class DataReader:
     def read_data(self):
         with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
             try:
-                sock.bind((self.ip,self.port))
+                sock.bind((self.ip, self.port))
             except:
                 logging.critical("Port is taken")
             while True:
@@ -74,6 +74,11 @@ class DataReader:
                         main_valve = payload.decode('UTF-8', errors='ignore')
                         self.gui.data_to_save.main_valve = main_valve
                         self.gui.main_valve.config(text=main_valve)
+                    elif data_type == 'PC_APP/newDPressEvent':
+                        # pressure difference
+                        pressure_difference = float(struct.unpack('f', payload)[0])
+                        self.gui.data_to_save.pressure_difference = pressure_difference
+                        self.gui.pressure_difference.config(text=str(round(pressure_difference, 2)))
                 else:
                     print("No data")
                 time.sleep(0.01)

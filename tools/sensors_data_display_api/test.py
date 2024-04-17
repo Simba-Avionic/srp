@@ -42,4 +42,10 @@ with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
         payload = f"test{i}".encode("UTF-8")
         msg = b''.join(hdr.get_some_ip_data_payload(payload))
         sock.sendto(msg, (HOST, PORT))
+        # pressure difference
+        hdr = SomeIPHeader(514, 32774)
+        payload = struct.pack('f', random.uniform(20, 25))
+        msg = b''.join(hdr.get_some_ip_data_payload(payload))
+        sock.sendto(msg, (HOST, PORT))
+
         time.sleep(0.1)

@@ -1,6 +1,7 @@
 import csv
 import datetime
 import threading
+import time
 import tkinter as tk
 import logging
 
@@ -34,6 +35,7 @@ class App(tk.Tk):
         self.data_reader_thread = None
         self.saving_thread = None
         self.data_to_save = Data()
+        self.collection_time = 10
 
         # measurements
         temperature_up_frame = tk.Frame(self)
@@ -173,16 +175,19 @@ class App(tk.Tk):
         timestamp = datetime.datetime.now()
         filename = f"data_{timestamp.hour}_{timestamp.minute}_{timestamp.second}.csv"
         with open(file=filename, mode='w', encoding='UTF-8') as csvFile:
-            writer = csv.writer(csvFile, delimiter=";")
+            writer = csv.writer(csvFile, delimiter=",")
             writer.writerow(['TIMESTAMP', 'TEMPERATURE_UP', 'TEMPERATURE_DOWN', 'TEMPERATURE_MIDDLE', 'TANK_PRESSURE', 'JET_PRESSURE', 'PRESSURE_DIFFERENCE', 'MAIN_VALVE', 'VENT'])
-        start = datetime.datetime.now()
+        start = time.time()
         while self.saving:
             logging.info("SAVING....")
-            if self.data_to_save.is_None() is False:
+            collection_time_difference = time.time() - start
+            logging.info(f"Collection time difference: {collection_time_difference}")
+            if (self.data_to_save.is_none() is False) or collection_time_difference > self.collection_time:
                 logging.info("SAVED")
-                timestamp = datetime.datetime.now() - start
+                timestamp = datetime.datetime.now()
+                start = time.time()
                 with open(filename, 'a', encoding='UTF-8', newline='') as csvFile:
-                    writer = csv.writer(csvFile, delimiter=";")
+                    writer = csv.writer(csvFile, delimiter=",")
                     writer.writerow([timestamp, self.data_to_save.temperature_up, self.data_to_save.temperature_down, self.data_to_save.temperature_middle,
                                      self.data_to_save.tank_pressure, self.data_to_save.jet_pressure, self.data_to_save.pressure_difference,
                                      self.data_to_save.main_valve, self.data_to_save.vent])
