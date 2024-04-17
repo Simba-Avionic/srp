@@ -35,6 +35,9 @@ core::ErrorCode EnvService::Initialize(
     this->temp1_event = std::make_shared<com::someip::EventSkeleton>("EnvApp/newTempEvent_1");
     this->temp2_event = std::make_shared<com::someip::EventSkeleton>("EnvApp/newTempEvent_2");
     this->temp3_event = std::make_shared<com::someip::EventSkeleton>("EnvApp/newTempEvent_3");
+    com->Add(temp1_event);
+    com->Add(temp2_event);
+    com->Add(temp3_event);
     this->dtc_temp_error = std::make_shared<diag::dtc::DTCObject>(0x20);
     this->dtc_temp_connection_error_0xB0 = std::make_shared<diag::dtc::DTCObject>(0xB0);
     diag_controller.RegisterDTC(dtc_temp_connection_error_0xB0);
