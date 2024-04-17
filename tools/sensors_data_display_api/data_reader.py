@@ -66,7 +66,7 @@ class DataReader:
                         self.gui.temperature_middle.config(text=str(round(temperature_middle, 2)))
                     elif data_type == 'PC_APP/newPressEvent':
                         # tank pressure
-                        tank_pressure = float(struct.unpack('<H', payload)[0]/10)
+                        tank_pressure = float(struct.unpack('f', payload)[0])
                         self.gui.data_to_save.tank_pressure = tank_pressure
                         self.gui.tank_pressure.config(text=str(round(tank_pressure, 2)))
                     elif data_type == 'PC_APP/servoStatusEvent':
