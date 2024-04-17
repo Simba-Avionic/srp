@@ -3,10 +3,12 @@ import datetime
 import threading
 import time
 import tkinter as tk
+from tkinter import messagebox
 import logging
 
 from data import Data
 from data_reader import DataReader
+from data_sender import DataSender
 
 
 class App(tk.Tk):
@@ -36,6 +38,7 @@ class App(tk.Tk):
         self.saving_thread = None
         self.data_to_save = Data()
         self.collection_time = 10
+        self.data_sender = DataSender()
 
         # measurements
         temperature_up_frame = tk.Frame(self)
@@ -92,8 +95,8 @@ class App(tk.Tk):
         vent_set_0_button = tk.Button(vent_button_frame, text="Vent: set 0", command=lambda: self.set_vent(value=0))
 
         launch_rocket_button_frame = tk.Frame(self)
-        launch_rocket_button = tk.Button(launch_rocket_button_frame, text="Launch rocket", command=lambda: self.launch_rocket())
-        stop_launch_rocket_button = tk.Button(launch_rocket_button_frame, text="Stop launch rocket", command=lambda: self.stop_launch_rocket())
+        launch_rocket_button = tk.Button(launch_rocket_button_frame, text="Launch rocket", command=lambda: self.launch_rocket(value=1))
+        stop_launch_rocket_button = tk.Button(launch_rocket_button_frame, text="Stop launch rocket", command=lambda: self.launch_rocket(value=0))
 
         exit_button = tk.Button(self, text="Exit", command=lambda: self.exit())
 
@@ -202,14 +205,19 @@ class App(tk.Tk):
             else:
                 logging.info("NOT SAVED")
 
-    def launch_rocket(self):
-        pass
+    def launch_rocket(self, value):
+        if value == 1:
+            result = messagebox.askyesno('Launch rocket', 'Are you sure you want to launch rocket?')
+            if result:
+                self.data_sender.send_data(value=value, service_id=518, method_id=1)
+        else:
+            self.data_sender.send_data(value=value, service_id=518, method_id=1)
 
     def set_main_valve(self, value):
-        pass
+        self.data_sender.send_data(value=value, service_id=515, method_id=1)
 
     def set_vent(self, value):
-        pass
+        self.data_sender.send_data(value=value, service_id=515, method_id=3)
 
     def exit(self):
         self.stop_reading = True

@@ -1,6 +1,6 @@
 import unittest
 
-from gui import App
+from app import App
 import logging
 
 import sys
