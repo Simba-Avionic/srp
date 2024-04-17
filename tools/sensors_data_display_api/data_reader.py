@@ -11,9 +11,11 @@ class DataReader:
     def __init__(self, gui):
         self.gui = gui
         self.data = 0
-        with open('someip.json') as f:
+        with open('someip.json',encoding='UTF-8') as f:
             self.config = json.load(f)
         self.lookup_table = self._prepare_lookup_table()
+        self.ip = self.config["interface"][0].get('ip')
+        self.port = self.config["interface"][0].get("port")
 
     def _prepare_lookup_table(self):
         lookup_table = {}
@@ -26,7 +28,7 @@ class DataReader:
     def read_data(self):
         with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
             try:
-                sock.bind(('192.168.10.100', 10001))
+                sock.bind((self.ip,self.port))
             except:
                 logging.critical("Port is taken")
             while True:

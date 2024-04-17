@@ -151,13 +151,13 @@ class App(tk.Tk):
         self.read_data()
 
     def read_data(self):
-        self.data_reader_thread = threading.Thread(target=self.data_reader.read_data)
+        self.data_reader_thread = threading.Thread(target=self.data_reader.read_data,daemon= True)
         self.data_reader_thread.start()
 
     def start_save_to_file(self):
         self.saving = True
         self.start_saving_button.config(state=tk.DISABLED)
-        self.saving_thread = threading.Thread(target=self._save_to_file)
+        self.saving_thread = threading.Thread(target=self._save_to_file,daemon=True)
         self.saving_thread.start()
 
     def stop_save_to_file(self):
