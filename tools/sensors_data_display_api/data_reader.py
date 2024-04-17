@@ -26,7 +26,7 @@ class DataReader:
     def read_data(self):
         with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
             try:
-                sock.bind(('127.0.0.1', 12345))
+                sock.bind(('192.168.10.100', 10001))
             except:
                 logging.critical("Port is taken")
             while True:
@@ -45,26 +45,26 @@ class DataReader:
 
                 # get data type
                 data_type = self.lookup_table.get((service_id, method_id))
-                print(f'service_id: {service_id}, method_id: {method_id}, payload: {payload}, data_ty[e: {data_type}')
+                print(f'service_id: {service_id}, method_id: {method_id}, payload: {payload}, data_type: {data_type}')
                 if data_type is not None:
                     if data_type == 'PC_APP/newTempEvent_1':
                         # temperature up
-                        temperature_up = struct.unpack('f', payload)[0]
+                        temperature_up = float(struct.unpack('<H', payload)[0]/10)
                         self.gui.data_to_save.temperature_up = temperature_up
                         self.gui.temperature_up.config(text=str(round(temperature_up, 2)))
                     elif data_type == 'PC_APP/newTempEvent_2':
                         # temperature down
-                        temperature_down = struct.unpack('f', payload)[0]
+                        temperature_down = float(struct.unpack('<H', payload)[0]/10)
                         self.gui.data_to_save.temperature_down = temperature_down
                         self.gui.temperature_down.config(text=str(round(temperature_down, 2)))
                     elif data_type == 'PC_APP/newTempEvent_3':
                         # temperature middle
-                        temperature_middle = struct.unpack('f', payload)[0]
+                        temperature_middle = float(struct.unpack('<H', payload)[0]/10)
                         self.gui.data_to_save.temperature_middle = temperature_middle
                         self.gui.temperature_middle.config(text=str(round(temperature_middle, 2)))
                     elif data_type == 'PC_APP/newPressEvent':
                         # tank pressure
-                        tank_pressure = struct.unpack('f', payload)[0]
+                        tank_pressure = float(struct.unpack('<H', payload)[0]/10)
                         self.gui.data_to_save.tank_pressure = tank_pressure
                         self.gui.tank_pressure.config(text=str(round(tank_pressure, 2)))
                     elif data_type == 'PC_APP/servoStatusEvent':
@@ -74,4 +74,4 @@ class DataReader:
                         self.gui.main_valve.config(text=main_valve)
                 else:
                     print("No data")
-                time.sleep(0.5)
+                time.sleep(0.01)
