@@ -8,10 +8,10 @@ from some_ip_header import SomeIPHeader
 
 
 class DataReader:
-    def __init__(self, gui):
+    def __init__(self, gui,filename = "someip.json"):
         self.gui = gui
         self.data = 0
-        with open('someip.json',encoding='UTF-8') as f:
+        with open(filename, encoding='UTF-8') as f:
             self.config = json.load(f)
         self.lookup_table = self._prepare_lookup_table()
         self.ip = self.config["interface"][0].get('ip')

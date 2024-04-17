@@ -1,6 +1,5 @@
 from ctypes import sizeof, c_uint16, c_uint8, c_uint32, c_uint64
 
-
 class SomeIPHeader:
     def __str__(self) -> str:
         return f"""
@@ -21,12 +20,12 @@ class SomeIPHeader:
         self.msg_typ = msg_typ
         self.msg_return = 0x00
 
-    def read(self, hex) -> None:
-        self.service_id = int.from_bytes(hex[0:2], byteorder="big", signed=False)
-        self.methode_id = int.from_bytes(hex[2:4], byteorder="big", signed=False)
-        self.length = int.from_bytes(hex[4:8], byteorder="big", signed=False)
-        self.msg_typ = hex[14]
-        self.raw_payload = hex[16:]
+    def read(self, hex_data) -> None:
+        self.service_id = int.from_bytes(hex_data[0:2], byteorder="big", signed=False)
+        self.methode_id = int.from_bytes(hex_data[2:4], byteorder="big", signed=False)
+        self.length = int.from_bytes(hex_data[4:8], byteorder="big", signed=False)
+        self.msg_typ = hex_data[14]
+        self.raw_payload = hex_data[16:]
 
     def set_payload(self, payload) -> None:
         self.payload = payload
