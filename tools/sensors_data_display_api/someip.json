@@ -13,29 +13,13 @@
       "service_id": 515,
       "method_id": 1
     },
-    "PC_APP/readServoValue": {
+    "PC_APP/setVentValue": {
       "service_id": 515,
-      "method_id": 2
+      "method_id": 3
     },
     "PC_APP/startPrime": {
       "service_id": 516,
       "method_id": 3
-    },
-    "PC_APP/onPrime": {
-      "service_id": 516,
-      "method_id": 1
-    },
-    "PC_APP/offPrime": {
-      "service_id": 516,
-      "method_id": 2
-    },
-    "PC_APP/LoggerStart": {
-      "service_id": 517,
-      "method_id": 1
-    },
-    "PC_APP/LoggerStop": {
-      "service_id": 517,
-      "method_id": 2
     },
     "PC_APP/EngineStart": {
       "service_id": 518,
@@ -45,20 +29,48 @@
       "service_id": 518,
       "method_id": 2
     },
-    "PC_APP/diagMethodRequestJob": {
+    "PC_APP/SetVentValue": {
+      "service_id": 515,
+      "method_id": 3
+    },
+    "PC_APP/EC_diagMethodRequestJob": {
       "service_id": 513,
       "method_id": 1
     },
-    "PC_APP/diagMethodRequestRead": {
+    "PC_APP/EC_diagMethodRequestRead": {
       "service_id": 513,
       "method_id": 2
     },
-    "PC_APP/diagMethodRequestWrite": {
+    "PC_APP/EC_diagMethodRequestWrite": {
       "service_id": 513,
       "method_id": 3
+    },
+    "PC_APP/FC_diagMethodRequestJob": {
+      "service_id": 512,
+      "method_id": 1
+    },
+    "PC_APP/FC_diagMethodRequestRead": {
+      "service_id": 512,
+      "method_id": 2
+    },
+    "PC_APP/FC_diagMethodRequestWrite": {
+      "service_id": 512,
+      "method_id": 3
+    },
+    "PC_APP/LoggerStart": {
+      "service_id": 517,
+      "method_id": 1
+    },
+    "PC_APP/LoggerStop": {
+      "service_id": 517,
+      "method_id": 2
     }
   },
   "req_events": {
+    "PC_APP/servoVentStatusEvent": {
+      "service_id": 515,
+      "event_id": 32770
+    },
     "PC_APP/servoStatusEvent": {
       "service_id": 515,
       "event_id": 32769
@@ -83,6 +95,10 @@
       "service_id": 514,
       "event_id": 32773
     },
+    "PC_APP/newNozzlePressEvent": {
+      "service_id": 514,
+      "event_id": 32773
+    },
     "PC_APP/newDPressEvent": {
       "service_id": 514,
       "event_id": 32774
@@ -91,9 +107,13 @@
       "service_id": 516,
       "event_id": 32769
     },
-    "PC_APP/newDTCEvent": {
+    "PC_APP/EC_newDTCEvent": {
       "service_id": 513,
       "event_id": 32769
+    },
+    "PC_APP/FC_currentCPUMode": {
+      "service_id": 512,
+      "event_id": 32770
     },
     "PC_APP/currentMode": {
       "service_id": 518,
@@ -109,10 +129,6 @@
       "ip": "192.168.10.101",
       "port": 1516
     },
-    "517": {
-      "ip": "192.168.10.101",
-      "port": 1517
-    },
     "518": {
       "ip": "192.168.10.101",
       "port": 1518
@@ -120,6 +136,14 @@
     "513": {
       "ip": "192.168.10.101",
       "port": 1513
+    },
+    "512": {
+      "ip": "192.168.10.102",
+      "port": 1512
+    },
+    "517": {
+      "ip": "192.168.10.101",
+      "port": 1517
     },
     "514": {
       "ip": "192.168.10.101",
