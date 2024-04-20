@@ -4,5 +4,5 @@ cc_binary(
     srcs = ["main.cc",
     "test.cc",
     "test.h"],
-    visibility = ["//deployment/apps/example:__subpackages__"],
+    visibility = ["//deployment/apps/test:__subpackages__"],
 )
