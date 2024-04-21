@@ -15,12 +15,14 @@
 
 #include "communication-core/someip-controller/event_proxy.h"
 #include "communication-core/someip-controller/method_skeleton.h"
+#include "communication-core/someip-controller/method_proxy.h"
 #include "core/logger/Logger.h"
 #include "diag/dtc/controller/dtc.h"
 namespace simba {
 namespace router {
 
 core::ErrorCode Router::Run(std::stop_token token) {
+  uint8_t servo_pos;
   auto proxy_event = std::make_shared<com::someip::EventProxyBase>(
       "ExampleApp/someevent",
       [this](const std::vector<uint8_t>) { AppLogger::Info("EVENT !!!!!!!"); });
@@ -30,18 +32,22 @@ core::ErrorCode Router::Run(std::stop_token token) {
           -> std::optional<std::vector<uint8_t>> {
         return std::vector<uint8_t>{0, 1, 2};
       });
+  auto off_prime = std::make_shared<com::someip::MethodProxyBase>("ExampleApp/offPrime");
+  auto on_prime = std::make_shared<com::someip::MethodProxyBase>("ExampleApp/onPrime");
   com->Add(example);
+  com->Add(on_prime);
+  com->Add(off_prime);
   com->Add(proxy_event);
+  on_prime->StartFindService();
+  off_prime->StartFindService();
   proxy_event->StartFindService();
   auto dtc = std::make_shared<diag::dtc::DTCObject>(0x20);
   diag_controller.RegisterDTC(dtc);
   while (true) {
-    AppLogger::Debug("AppLogger::Debug");
-    AppLogger::Info("AppLogger::Info");
     dtc->Pass();
-    this->gpio_.SetPinValue(1, gpio::Value::HIGH);
+    std::ignore = on_prime->Get();
     std::this_thread::sleep_for(std::chrono::seconds(1));
-    this->gpio_.SetPinValue(1, gpio::Value::LOW);
+    std::ignore = off_prime->Get();
     dtc->Failed();
     std::this_thread::sleep_for(std::chrono::seconds(1));
   }

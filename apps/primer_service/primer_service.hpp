@@ -3,13 +3,13 @@
  * @author Mateusz Krajewski (matikrajek42@gmail.com)
  * @brief 
  * @version 0.1
- * @date 2024-04-16
+ * @date 2024-04-21
  * 
  * @copyright Copyright (c) 2024
  * 
  */
-#ifndef SERVICES_PRIMER_SERVICE_PRIMER_SERVICE_HPP_
-#define SERVICES_PRIMER_SERVICE_PRIMER_SERVICE_HPP_
+#ifndef APPS_PRIMER_SERVICE_PRIMER_SERVICE_HPP_
+#define APPS_PRIMER_SERVICE_PRIMER_SERVICE_HPP_
 
 #include <string>
 #include <unordered_map>
@@ -18,6 +18,11 @@
 #include "mw/gpio_server/controller/gpio_controller.hpp"
 namespace simba {
 namespace primer {
+struct Primer_t {
+  uint8_t actuator_id;
+  gpio::Value state{gpio::Value::LOW};
+};
+
 class PrimerService final : public core::ApplicationNoIPC {
  private:
   /**
@@ -36,11 +41,8 @@ class PrimerService final : public core::ApplicationNoIPC {
 
   gpio::GPIOController gpio_;
   gpio::Value primerState {gpio::Value::LOW};
- public:
-  PrimerService(/* args */);
-  ~PrimerService();
 };
 
 }  // namespace primer
 }  // namespace simba
-#endif  // SERVICES_PRIMER_SERVICE_PRIMER_SERVICE_HPP_
+#endif  // APPS_PRIMER_SERVICE_PRIMER_SERVICE_HPP_

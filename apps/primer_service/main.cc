@@ -8,7 +8,7 @@
  * @copyright Copyright (c) 2024
  * 
  */
-#include "services/primer_service/primer_service.hpp"
+#include "apps/primer_service/primer_service.hpp"
 #include "core/application/application_factory.h"
 
 int main(int argc, char const *argv[]) {
