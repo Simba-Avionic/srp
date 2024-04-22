@@ -12,6 +12,9 @@ namespace simba {
 namespace example {
 core::ErrorCode Test::Run(std::stop_token token) {
   AppLogger::Info("exampleApp::Run() called");
+  while(true){
+    AppLogger::Info("exampleApp::Run() running");
+  }
   return core::ErrorCode::kOk;
 }
 core::ErrorCode Test::Initialize(
