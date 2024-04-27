@@ -94,13 +94,14 @@ class ExecManager{
   com::soc::IpcSocket sock_;
   std::mutex mtx;
   std::unordered_map<uint16_t, Service> db_;
+  uint16_t my_service_id;
   void RxCallback(const std::string& ip, const std::uint16_t& port,
                         std::vector<std::uint8_t> payload);
   std::pair<simba::diag::exec::Status, std::bitset<5>> getStatusAndFlags(uint8_t data);
  public:
   std::queue<uint16_t> CheckAppCondition();
   void SetApps(std::vector<simba::em::service::data::AppConfig> apps);
-  void Init();
+  void Init(uint16_t service_id);
   void RestartedApp(uint16_t appID);
 };
 

@@ -28,11 +28,14 @@ std::pair<simba::diag::exec::Status, std::bitset<5>> ExecManager::getStatusAndFl
 void ExecManager::RxCallback(const std::string& ip, const std::uint16_t& port,
                 std::vector<std::uint8_t> payload) {
     if ( payload.size() <=0 ) { return; }
-    std::lock_guard<std::mutex> lock(mtx);
     diag::exec::ExecHeader hdr{};
     hdr.SetBuffor(payload);
-        AppLogger::Debug("Receive hb:"+std::to_string(hdr.GetServiceID())+
-                    ", timestamp:"+std::to_string(hdr.GetTimestamp()));
+    if (hdr.GetServiceID() == this->my_service_id) {
+        return;
+    }
+    AppLogger::Debug("Receive hb:"+std::to_string(hdr.GetServiceID())+
+                ", timestamp:"+std::to_string(hdr.GetTimestamp()));
+    std::lock_guard<std::mutex> lock(mtx);
     auto it = this->db_.find(hdr.GetServiceID());
     if (it == this->db_.end()) {
         AppLogger::Warning("Invalid service id:"+std::to_string(hdr.GetServiceID()));
@@ -82,7 +85,8 @@ std::queue<uint16_t> ExecManager::CheckAppCondition() {
   return res;
 }
 
-void ExecManager::Init() {
+void ExecManager::Init(uint16_t service_id) {
+    this->my_service_id = service_id;
     if (this->sock_.Init(com::soc::SocketConfig{"SIMBA.EXE", 0, 0}) != core::ErrorCode::kOk) {
         AppLogger::Error("failed to bind ipc");
     } else {
