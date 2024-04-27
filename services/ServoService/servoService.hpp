@@ -24,8 +24,8 @@ namespace simba {
 namespace service {
 class ServoService : public core::ApplicationNoIPC{
  private:
-  std::shared_ptr<simba::com::someip::EventSkeleton> event_servo_status;
-  std::shared_ptr<simba::com::someip::EventSkeleton> event_vent_status;
+  std::shared_ptr<simba::com::someip::EventSkeleton> main_servo_status_event;
+  std::shared_ptr<simba::com::someip::EventSkeleton> vent_servo_status_event;
  protected:
   core::ErrorCode Run(std::stop_token token) final;
 
