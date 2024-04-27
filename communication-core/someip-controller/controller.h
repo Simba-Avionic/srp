@@ -1,12 +1,12 @@
 /**
  * @file controller.h
  * @author Bartosz Snieg (snieg45@gmail.com)
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2024-03-24
- * 
+ *
  * @copyright Copyright (c) 2024
- * 
+ *
  */
 #ifndef COMMUNICATION_CORE_SOMEIP_CONTROLLER_CONTROLLER_H_
 #define COMMUNICATION_CORE_SOMEIP_CONTROLLER_CONTROLLER_H_
@@ -74,6 +74,8 @@ class Controller {
   uint16_t GetTransferID();
   void SendAck(const uint16_t client_id, const uint16_t endpoint_id,
                const uint16_t trans_id);
+  void SendError(std::shared_ptr<SomeIpHeader> rx_header,
+                 data::MessageCode error_code);
   void onRequest(std::shared_ptr<SomeIpHeader> header,
                  const std::vector<uint8_t> payload);
   void onResult(std::shared_ptr<SomeIpHeader> header,
@@ -85,6 +87,7 @@ class Controller {
   void SendEvent(const objects::Endpoint endpoint, const uint16_t client,
                  std::vector<uint8_t> data);
   void ThreadLoop();
+  void onError(std::shared_ptr<SomeIpHeader> header);
 
  public:
   void Add(std::shared_ptr<IProxy> proxy);
