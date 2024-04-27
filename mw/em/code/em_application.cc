@@ -21,7 +21,7 @@ EmApplication::~EmApplication() {}
 core::ErrorCode EmApplication::Run(std::stop_token token) {
   this->em_service.StartApps();
   std::this_thread::sleep_for(std::chrono::seconds(2));
-  this->exec_service.Init();
+  this->exec_service.Init(this->app_id_);
   while (true) {
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
     AppLogger::Info("check if restart needed");
