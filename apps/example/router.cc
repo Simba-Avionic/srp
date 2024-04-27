@@ -37,7 +37,6 @@ core::ErrorCode Router::Run(std::stop_token token) {
         return std::vector<uint8_t>{0, 1, 2};
       });
   auto servo  = std::make_shared<com::someip::MethodProxyBase>("ExampleApp/setServoValue");
-  com->Add(example);
   com->Add(servo);
   com->Add(example2);
   servo->StartFindService();

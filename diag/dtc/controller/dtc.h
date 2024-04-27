@@ -18,7 +18,7 @@ namespace diag {
 namespace dtc {
 class DTCObject : public IDTC {
  protected:
-  const uint8_t id;
+  const uint16_t id;
   DTCSendCallback callback;
 
  public:
