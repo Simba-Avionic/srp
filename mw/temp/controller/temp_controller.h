@@ -45,6 +45,7 @@ class TempController {
  private:
   virtual void SetTempRXCallback();
   virtual simba::core::ErrorCode Subscribe();
+  void ReloadConfig();
  public:
   virtual simba::core::ErrorCode Init(uint16_t service_id, simba::com::soc::RXCallback callback);
 };

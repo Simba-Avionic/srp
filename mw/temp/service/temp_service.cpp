@@ -24,6 +24,14 @@ namespace {
         kSubscriberPrefix = "SIMBA.TEMP.";
     constexpr uint8_t sensor_resolution = 10;
     constexpr const char* sensor_path = "/sys/bus/w1/devices/";
+    static constexpr char const*
+        kTempReload = "SIMBA.TEMP.SERVICE.RELOAD";
+}
+
+void TempService::Reload(const std::string& ip, const std::uint16_t& port,
+    const std::vector<std::uint8_t> data) {
+    this->sensorPathsToIds.clear();
+    LoadConfig(this->parms);
 }
 
 simba::core::ErrorCode TempService::Run(std::stop_token token) {
@@ -36,6 +44,7 @@ simba::core::ErrorCode TempService::Run(std::stop_token token) {
 
 simba::core::ErrorCode TempService::Initialize(
     const std::unordered_map<std::string, std::string>& parms) {
+    this->parms.insert(parms.begin(), parms.end());
     LoadConfig(parms);
     if (auto ret = this->sub_sock_.Init(
         com::soc::SocketConfig(kTempServiceName, 0, 0))) {
@@ -43,11 +52,15 @@ simba::core::ErrorCode TempService::Initialize(
             std::string(kTempServiceName) + "socket!");
         return ret;
     }
-
+    this->reload_sock_.Init(com::soc::SocketConfig(kTempReload, 0, 0));
+    this->reload_sock_.SetRXCallback(
+       std::bind(&simba::mw::temp::TempService::Reload, this,
+            std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
     this->sub_sock_.SetRXCallback(
         std::bind(&simba::mw::temp::TempService::SubCallback, this,
             std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
     this->sub_sock_.StartRXThread();
+    this->reload_sock_.StartRXThread();
     return simba::core::ErrorCode::kOk;
 }
 
