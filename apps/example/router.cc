@@ -26,11 +26,9 @@ namespace router {
 #define DATA_SIZE 128
 
 core::ErrorCode Router::Run(std::stop_token token) {
-  auto example = std::make_shared<com::someip::MethodSkeleton>(
-      "ExampleApp/exampleMethod",
-      [this](const std::vector<uint8_t> payload)
-          -> std::optional<std::vector<uint8_t>> {
-        return std::vector<uint8_t>{0, 1, 2};
+  auto current_mode_proxy = std::make_shared<com::someip::EventProxyBase>(
+      "ExampleApp/currentMode", [](const std::vector<uint8_t> payload) {
+        AppLogger::Info("Current cpu mode: " + std::to_string(payload[0]));
       });
   auto example2 = std::make_shared<com::someip::MethodSkeleton>(
       "ExampleApp/exampleMethod2",

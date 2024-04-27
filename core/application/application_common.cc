@@ -171,7 +171,7 @@ ErrorCode ApplicationCommon::DiagConfig(
   nlohmann::json data = nlohmann::json::parse(file);
   uint16_t app_id_{};
   if (data.contains("app_id")) {
-    if (data.at("app_id").is_string()) {
+    if (data.at("app_id").is_number()) {
       app_id_ = data.at("app_id");
       this->app_id_ = app_id_;
       diag_controller.Init(app_id_);
