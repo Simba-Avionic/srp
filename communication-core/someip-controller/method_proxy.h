@@ -1,12 +1,12 @@
 /**
  * @file method_proxy.h
  * @author Bartosz Snieg (snieg45@gmail.com)
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2024-03-24
- * 
+ *
  * @copyright Copyright (c) 2024
- * 
+ *
  */
 #ifndef COMMUNICATION_CORE_SOMEIP_CONTROLLER_METHOD_PROXY_H_
 #define COMMUNICATION_CORE_SOMEIP_CONTROLLER_METHOD_PROXY_H_
@@ -49,7 +49,7 @@ class MethodProxyBase : public IProxy {
                   const uint16_t transfer_id) {
     if (transfer_id == transfer_id_) {
       is_response = true;
-      response_code == code;
+      response_code = code;
       response = payload;
       request_cv.notify_all();
     }
@@ -112,6 +112,13 @@ class MethodProxyBase : public IProxy {
     if (response_code == data::MessageCode::kEOk) {
       return std::move(this->response);
     } else {
+      if (response_code == data::MessageCode::kENotReachable) {
+        AppLogger::Error("[ SOMEIP PROXY ](" + instance + "): Access denied !");
+      } else {
+        AppLogger::Error(
+            "[ SOMEIP PROXY ](" + instance +
+            "): Response with error: " + std::to_string(response_code));
+      }
       return {};
     }
   }

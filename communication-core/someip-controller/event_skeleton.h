@@ -49,8 +49,9 @@ class EventSkeleton : public ISkeleton {
   std::optional<objects::Endpoint> GetEndPoint() const noexcept override {
     return object;
   }
-  std::optional<std::vector<uint8_t>> Call(
-      std::vector<uint8_t> payload) noexcept override {
+  std::pair<data::MessageCode, std::optional<std::vector<uint8_t>>> Call(
+      std::vector<uint8_t> payload,
+      const objects::Endpoint endpoint) noexcept override {
     return {};
   }
   std::string GetName() const override { return instance_; }

@@ -12,10 +12,12 @@
   ],
   "pub_methods": {
     "ExampleApp/exampleMethod": {
-      "method_id": 10
+      "method_id": 10,
+      "access_list": [15]
     },
     "ExampleApp/exampleMethod2": {
-      "method_id": 100
+      "method_id": 100,
+      "access_list": [1000]
     }
   },
   "pub_event": {

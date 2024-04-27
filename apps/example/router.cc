@@ -21,19 +21,21 @@ namespace simba {
 namespace router {
 
 core::ErrorCode Router::Run(std::stop_token token) {
-  auto proxy_event = std::make_shared<com::someip::EventProxyBase>(
-      "ExampleApp/someevent",
-      [this](const std::vector<uint8_t>) { AppLogger::Info("EVENT !!!!!!!"); });
   auto example = std::make_shared<com::someip::MethodSkeleton>(
       "ExampleApp/exampleMethod",
       [this](const std::vector<uint8_t> payload)
           -> std::optional<std::vector<uint8_t>> {
         return std::vector<uint8_t>{0, 1, 2};
       });
+  auto example2 = std::make_shared<com::someip::MethodSkeleton>(
+      "ExampleApp/exampleMethod2",
+      [this](const std::vector<uint8_t> payload)
+          -> std::optional<std::vector<uint8_t>> {
+        return std::vector<uint8_t>{0, 1, 2};
+      });
   com->Add(example);
-  com->Add(proxy_event);
-  proxy_event->StartFindService();
-  auto dtc = std::make_shared<diag::dtc::DTCObject>(0x20);
+  com->Add(example2);
+  auto dtc = std::make_shared<diag::dtc::DTCObject>(20);
   diag_controller.RegisterDTC(dtc);
   while (true) {
     AppLogger::Debug("AppLogger::Debug");
