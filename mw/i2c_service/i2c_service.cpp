@@ -28,18 +28,16 @@ namespace {
 void I2CService::RxCallback(const std::string& ip,
   const std::uint16_t& port, const std::vector<std::uint8_t> data) {
     std::unique_lock<std::mutex> lock(this->i2c_mtx);
-    AppLogger::Debug("Receive i2c msg");
     std::shared_ptr<i2c::Header> headerPtr = i2c::I2CFactory::GetHeader(data);
     this->i2c_.Ioctl(headerPtr->GetAddress());
     std::vector<uint8_t> payload;
+    AppLogger::Debug("Receive i2c msg");
     switch (headerPtr->GetAction()) {
     case i2c::ACTION::Write:
       payload = i2c::I2CFactory::GetPayload(data);
       i2c_.Write(payload);
-      AppLogger::Debug("finish exec write");
       break;
     case i2c::ACTION::PageWrite:
-      AppLogger::Debug("get Pagewrite action");
       payload = i2c::I2CFactory::GetPayload(data);
       i2c_.PageWrite(payload);
       break;
