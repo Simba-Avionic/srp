@@ -47,20 +47,6 @@ core::ErrorCode I2CDriver::PageWrite(std::vector<uint8_t> data) {
     }
     return core::ErrorCode::kOk;
 }
-std::optional<uint8_t> I2CDriver::Read(const uint8_t address, const uint8_t reg, const uint8_t len) {
-  uint8_t buf;
-  if (read(i2cFile, &buf, len) != len) {
-    return {};
-  }
-  return buf;
-}
-std::vector<uint8_t> I2CDriver::PageRead(const uint8_t address, const uint8_t startReg, const uint8_t len) {
-  std::vector<uint8_t> readBuf(len);
-  if (read(i2cFile, readBuf.data(), len) != len) {
-    return {};
-  }
-  return readBuf;
-}
 }  // namespace i2c
 }  // namespace core
 }  // namespace simba

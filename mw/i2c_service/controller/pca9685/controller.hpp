@@ -46,6 +46,7 @@ class PCA9685 {
   PCA9685();
   void Init(uint16_t service_id, const std::unordered_map<std::string, std::string>& parms);
   core::ErrorCode AutoSetServoPosition(uint8_t actuator_id, uint8_t state);
+  std::optional<uint8_t> ReadServoPosition(uint8_t actuator_id);
 };
 
 }  // namespace i2c

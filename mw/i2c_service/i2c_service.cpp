@@ -31,15 +31,28 @@ void I2CService::RxCallback(const std::string& ip,
     AppLogger::Debug("Receive i2c msg");
     std::shared_ptr<i2c::Header> headerPtr = i2c::I2CFactory::GetHeader(data);
     this->i2c_.Ioctl(headerPtr->GetAddress());
-    if (headerPtr->GetAction() == i2c::ACTION::Write) {
-      std::vector<uint8_t> payload = i2c::I2CFactory::GetPayload(data);
+    std::vector<uint8_t> payload;
+    switch (headerPtr->GetAction()) {
+    case i2c::ACTION::Write:
+      payload = i2c::I2CFactory::GetPayload(data);
       i2c_.Write(payload);
-      AppLogger::Warning("finish exec write");
-    } else if (headerPtr->GetAction() == i2c::ACTION::PageWrite) {
-      AppLogger::Warning("get Pagewrite action");
-      std::vector<uint8_t> payload = i2c::I2CFactory::GetPayload(data);
+      AppLogger::Debug("finish exec write");
+      break;
+    case i2c::ACTION::PageWrite:
+      AppLogger::Debug("get Pagewrite action");
+      payload = i2c::I2CFactory::GetPayload(data);
       i2c_.PageWrite(payload);
-    }
+      break;
+    case i2c::ACTION::Read:
+      break;
+    case i2c::ACTION::ReadWrite:
+      break;
+    case i2c::ACTION::PageRead:
+      break;
+    default:
+      AppLogger::Warning("Invalid type");
+      break;
+  }
 }
 
 core::ErrorCode I2CService::Run(std::stop_token token) {

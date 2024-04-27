@@ -26,6 +26,7 @@ enum ACTION {
     ReadWrite = 0x03,
     RES = 0x04,
     PageWrite = 0x05,
+    PageRead = 0x06,
 };
 
 class Header : public com::core::network::NetworkDataStructure {

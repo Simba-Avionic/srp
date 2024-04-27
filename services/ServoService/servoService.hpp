@@ -18,7 +18,7 @@
 #include "communication-core/someip-controller/method_skeleton.h"
 #include "communication-core/someip-controller/event_skeleton.h"
 #include "communication-core/someip-controller/method_proxy.h"
-
+#include "mw/i2c_service/controller/pca9685/controller.hpp"
 #include "core/application/application_no_ipc.h"
 namespace simba {
 namespace service {
@@ -26,6 +26,7 @@ class ServoService : public core::ApplicationNoIPC{
  private:
   std::shared_ptr<simba::com::someip::EventSkeleton> main_servo_status_event;
   std::shared_ptr<simba::com::someip::EventSkeleton> vent_servo_status_event;
+  i2c::PCA9685 servo_controller;
  protected:
   core::ErrorCode Run(std::stop_token token) final;
 

@@ -12,6 +12,7 @@ cc_binary(
         "//communication-core/someip-controller:proxy",
         "//communication-core/someip-controller:skeleton",
         "//core/application:simba_application",
+        "//mw/i2c_service/controller/pca9685:pca9685_controller",
         "@untar",
     ],
 )

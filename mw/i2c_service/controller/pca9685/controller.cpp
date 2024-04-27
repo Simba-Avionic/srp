@@ -79,9 +79,18 @@ core::ErrorCode PCA9685::SetServo(uint8_t channel, uint16_t pos) {
   return this->i2c_.Write(PCA9685_ADDRESS, data);
 }
 
+std::optional<uint8_t> PCA9685::ReadServoPosition(uint8_t actuator_id) {
+    auto servo = this->db_.find(actuator_id);
+    if (servo != this->db_.end()) {
+        return servo->second.position;
+    }
+    return {};
+}
+
 core::ErrorCode PCA9685::ReadConfig() {
     std::ifstream file("/opt/"+this->app_name+"/etc/config.json");
     if (!file.is_open()) {
+        AppLogger::Warning("Cant find file on path /opt/"+this->app_name+"/etc/config.json");
         return core::ErrorCode::kInitializeError;
     }
     nlohmann::json data = nlohmann::json::parse(file);
@@ -90,7 +99,7 @@ core::ErrorCode PCA9685::ReadConfig() {
     }
     for (const auto& servo : data["servos"]) {
         if (!servo.contains("actuator_id") || !servo.contains("channel")
-        || !servo.contains("on_pos") || !servo.contains("off_pos") || !servo.contains("mosfet_id")) {
+        || !servo.contains("on_pos") || !servo.contains("off_pos")) {
             AppLogger::Warning("Invalid servo config");
             continue;
         }
@@ -99,14 +108,15 @@ core::ErrorCode PCA9685::ReadConfig() {
         ser.channel = static_cast<uint8_t>(servo["channel"]);
         ser.on_pos = static_cast<uint16_t>(servo["on_pos"]);
         ser.off_pos = static_cast<uint16_t>(servo["off_pos"]);
+
         if (servo.contains("mosfet_id")) {
             ser.need_mosfet = true;
             ser.mosfet_id = static_cast<uint8_t>(servo["mosfet_id"]);
         }
-        if (servo.contains("on_loosening") && servo.contains("off_loosening")) {
+        if (servo.contains("on_losening_pos") && servo.contains("off_losening_pos")) {
             ser.need_loosening = true;
-            ser.on_loosening = static_cast<uint16_t>(servo["on_loosening"]);
-            ser.off_loosening = static_cast<uint16_t>(servo["off_loosening"]);
+            ser.on_loosening = static_cast<uint16_t>(servo["on_losening_pos"]);
+            ser.off_loosening = static_cast<uint16_t>(servo["off_losening_pos"]);
         }
         if (servo.contains("servo_delay")) {
             ser.servo_delay = static_cast<uint8_t>(servo["servo_delay"]);
@@ -115,8 +125,8 @@ core::ErrorCode PCA9685::ReadConfig() {
             ser.mosfet_delay = static_cast<uint8_t>(servo["mosfet_delay"]);
         }
         this->db_.insert({actuator_id, ser});
+        AppLogger::Debug("Register servo id:"+std::to_string(static_cast<int>(actuator_id)));
     }
-
     return core::ErrorCode::kOk;
 }
 

@@ -15,6 +15,7 @@
 
 #include "communication-core/someip-controller/event_proxy.h"
 #include "communication-core/someip-controller/method_skeleton.h"
+#include "communication-core/someip-controller/method_proxy.h"
 #include "core/logger/Logger.h"
 #include "mw/i2c_service/controller/pca9685/controller.hpp"
 #include "diag/dtc/controller/dtc.h"
@@ -34,25 +35,25 @@ core::ErrorCode Router::Run(std::stop_token token) {
             this->gpio_.SetPinValue(1, gpio::Value::LOW);
         return std::vector<uint8_t>{0, 1, 2};
       });
+  auto servo = std::make_shared<com::someip::MethodProxyBase>("ExampleApp/setServoValue");
+  com->Add(servo);
   com->Add(example);
   com->Add(proxy_event);
   proxy_event->StartFindService();
   auto dtc = std::make_shared<diag::dtc::DTCObject>(0x20);
   diag_controller.RegisterDTC(dtc);
   while (true) {
-    AppLogger::Debug("AppLogger::Debug");
-    AppLogger::Info("AppLogger::Info");
-    dtc->Pass();
-    dtc->Failed();
+    servo->Get({1});
     std::this_thread::sleep_for(std::chrono::seconds(1));
-  }
+    servo->Get({0});
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+    }
   return core::ErrorCode::kOk;
 }
 
 core::ErrorCode Router::Initialize(
     const std::unordered_map<std::string, std::string>& parms) {
       this->servo_.Init(this->app_id_, parms);
-      this->eeprom_.Init(this->app_id_);
       this->gpio_.Init(this->app_id_);
   return core::ErrorCode::kOk;
 }
