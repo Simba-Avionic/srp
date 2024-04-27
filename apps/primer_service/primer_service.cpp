@@ -10,13 +10,12 @@
  */
 #include <memory>
 #include <vector>
+#include <utility>
 #include <future>  // NOLINT
 
 #include "apps/primer_service/primer_service.hpp"
 #include "communication-core/someip-controller/event_proxy.h"
 #include "communication-core/someip-controller/method_skeleton.h"
-#include "communication-core/someip-controller/event_skeleton.h"
-#include "diag/dtc/controller/dtc.h"
 #include "nlohmann/json.hpp"
 #include "core/json/json_parser.h"
 
@@ -24,34 +23,49 @@ namespace simba {
 namespace primer {
 
 namespace {
-  const constexpr uint8_t IGNITER_PIN = 0x0D;
+  const constexpr uint8_t IGNITER_PIN_ID = 0x0D;
   const constexpr uint16_t IGNITER_ACTIVE_TIME = 500;
 }
 
 
+core::ErrorCode PrimerService::ChangePrimerState(gpio::Value state) {
+  if (this->primerState != state) {
+    core::ErrorCode error;
+    uint8_t i = 0;
+    do {
+    error = this->gpio_.SetPinValue(this->primer_pin_, state);
+    i++;
+    } while ( error != core::ErrorCode::kOk || i > 5);
+    if (i > 5) {
+      this->dtc_31->Failed();
+      return core::ErrorCode::kError;
+    }
+    this->primerState = state;
+    this->primer_event->SetValue({static_cast<uint8_t>(state)});
+    return core::ErrorCode::kOk;
+  }
+  return core::ErrorCode::kNotDefine;
+}
+
+
 core::ErrorCode PrimerService::Run(std::stop_token token) {
-  auto dtc_30 = std::make_shared<diag::dtc::DTCObject>(0x30);
   auto primerOnMethod = std::make_shared<com::someip::MethodSkeleton>(
       "PrimerApp/onPrime",
       [this](const std::vector<uint8_t> payload)
           -> std::optional<std::vector<uint8_t>> {
             AppLogger::Debug("Receive onPrime method");
-            if (this->primerState == gpio::Value::LOW) {
-            this->gpio_.SetPinValue(IGNITER_PIN, gpio::Value::HIGH);
-            this->primerState = gpio::Value::HIGH;
-            return std::vector<uint8_t>{1};
+            if (this->ChangePrimerState(gpio::Value::HIGH) == core::ErrorCode::kOk) {
+              return std::vector<uint8_t>{1};
             }
             return std::vector<uint8_t>{0};
   });
-    auto primerOffMethod = std::make_shared<com::someip::MethodSkeleton>(
+  auto primerOffMethod = std::make_shared<com::someip::MethodSkeleton>(
       "PrimerApp/offPrime",
       [this](const std::vector<uint8_t> payload)
           -> std::optional<std::vector<uint8_t>> {
             AppLogger::Debug("Receive offPrime method");
-            if (this->primerState == gpio::Value::HIGH) {
-            this->gpio_.SetPinValue(IGNITER_PIN, gpio::Value::LOW);
-            this->primerState = gpio::Value::LOW;
-            return std::vector<uint8_t>{1};
+            if (this->ChangePrimerState(gpio::Value::LOW) == core::ErrorCode::kOk) {
+              return std::vector<uint8_t>{1};
             }
             return std::vector<uint8_t>{0};
   });
@@ -60,44 +74,83 @@ core::ErrorCode PrimerService::Run(std::stop_token token) {
       [this](const std::vector<uint8_t> payload)
           -> std::optional<std::vector<uint8_t>> {
             auto future = std::async(std::launch::async, [this](){
-            this->gpio_.SetPinValue(IGNITER_PIN, gpio::Value::HIGH);
-            std::this_thread::sleep_for(std::chrono::milliseconds(IGNITER_ACTIVE_TIME));
-            this->gpio_.SetPinValue(IGNITER_PIN, gpio::Value::LOW);
-            });
-            return std::vector<uint8_t>{0x1};
+            if (this->ChangePrimerState(gpio::Value::HIGH) != core::ErrorCode::kOk) {
+              return std::vector<uint8_t>{0};
+            }
+            std::this_thread::sleep_for(std::chrono::milliseconds(this->active_time));
+            if (this->ChangePrimerState(gpio::Value::HIGH) == core::ErrorCode::kOk) {
+              return std::vector<uint8_t>{1};
+            }
+            return std::vector<uint8_t>{0};
+          });
   });
-  auto event_example =
-      std::make_shared<com::someip::EventSkeleton>("PrimerApp/primeStatusEvent");
-
-  com->Add(primerOnMethod);
   com->Add(primerOffMethod);
+  com->Add(primerOnMethod);
   com->Add(startPrimeMethod);
   while (true) {
-    event_example->SetValue({static_cast<uint8_t>(this->primerState)});
+    this->primer_event->SetValue({static_cast<uint8_t>(this->primerState)});
     AppLogger::Info("send prim Value"+std::to_string(this->primerState));
     std::this_thread::sleep_for(std::chrono::seconds(1));
   }
   return core::ErrorCode::kOk;
 }
-uint8_t ReadConfig(const std::unordered_map<std::string, std::string>& parms) {
+
+core::ErrorCode PrimerService::ReadConfig(const std::unordered_map<std::string, std::string>& parms) {
   std::ifstream file{"/opt/" + parms.at("app_name") + "/etc/config.json"};
   if (!file.is_open()) {
     AppLogger::Warning("cant find config file, use DEFAULT IGNITER ID");
-    return IGNITER_PIN;
+    this->active_time = IGNITER_ACTIVE_TIME;
+    this->primer_pin_ = IGNITER_PIN_ID;
+    return core::ErrorCode::kInitializeError;
   }
   nlohmann::json data = nlohmann::json::parse(file);
+  file.close();
   if (!data.contains("primer")) {
     AppLogger::Warning("invalid config format, use DEFAULT IGNITER ID");
-    return IGNITER_PIN;
+    this->active_time = IGNITER_ACTIVE_TIME;
+    this->primer_pin_ = IGNITER_PIN_ID;
+    return core::ErrorCode::kInitializeError;
   }
-  return static_cast<uint8_t>(data.at("primer"));
+  if (!data.at("primer").contains("active_time")) {
+    AppLogger::Warning("Cant find active_time in config, use default value");
+    this->active_time = IGNITER_ACTIVE_TIME;
+  } else {
+    this->active_time = static_cast<uint16_t>(data.at("primer").at("active_time"));
+  }
+  if (!data.at("primer").contains("id")) {
+    this->primer_pin_ = IGNITER_PIN_ID;
+  } else {
+    this->primer_pin_ = static_cast<uint8_t>(data.at("primer").at("id"));
+  }
+  return core::ErrorCode::kOk;
 }
 
 core::ErrorCode PrimerService::Initialize(
     const std::unordered_map<std::string, std::string>& parms) {
+  /**
+   * @brief define and register errors
+   * 
+   */
+  this->dtc_30 = std::make_shared<diag::dtc::DTCObject>(0x30);
+  this->dtc_31 = std::make_shared<diag::dtc::DTCObject>(0x31);
+  this->diag_controller.RegisterDTC(dtc_30);
+  this->diag_controller.RegisterDTC(dtc_31);
+
   this->gpio_ = gpio::GPIOController(new com::soc::IpcSocket());
   this->gpio_.Init(this->app_id_);
+  ReadConfig(parms);
 
+  /**
+   * @brief register events
+   * 
+   */
+  this->primer_event =
+      std::make_shared<com::someip::EventSkeleton>("PrimerApp/primeStatusEvent");
+  /**
+   * @brief register SOME/IP events in network
+   * 
+   */
+  com->Add(primer_event);
   return core::ErrorCode::kOk;
 }
 
