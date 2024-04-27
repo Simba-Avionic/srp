@@ -54,6 +54,8 @@ TEST(DataBaseParser, ParsingAndFindPubMethod) {
   const auto r = db->FindObject("ExampleApp/exampleMethod");
   EXPECT_EQ(10, r.value().GetEndpointId());
   EXPECT_EQ(0, r.value().GetServiceId());
+  EXPECT_TRUE(r.value().CanPass(15));
+  EXPECT_FALSE(r.value().CanPass(150));
 }
 
 TEST(DataBaseParser, ParsingAndFindReqEvent) {

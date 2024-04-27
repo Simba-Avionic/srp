@@ -1,12 +1,12 @@
 /**
  * @file controller.cc
  * @author Bartosz Snieg (snieg45@gmail.com)
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2024-03-24
- * 
+ *
  * @copyright Copyright (c) 2024
- * 
+ *
  */
 #include "communication-core/someip-controller/controller.h"
 
@@ -114,8 +114,40 @@ void Controller::RXCallback(const std::string& ip, const std::uint16_t& port,
     const auto payload = msg_factory->GetPayload(data);
     this->onEvent(std::move(header), std::move(payload));
     return;
+  } else if (header->GetMessageType() == data::MessageType::kError &&
+             header->GetClientID() == this->service_id) {
+    this->onError(std::move(header));
+    return;
   } else if (header->GetMessageType() == data::MessageType::kRequest) {
     AppLogger::Error("[ SOMEIP CONTROLLER ]: Wrong service ID");
+    SendError(header, data::MessageCode::kEUnknownService);
+  }
+}
+
+void Controller::onError(std::shared_ptr<SomeIpHeader> header) {
+  const auto trans_id = header->GetSessionID();
+  ResultCallback callback;
+  bool exist{false};
+  {
+    std::unique_lock lk{transfer_mutex};
+    auto cal = std::find_if(
+        this->transfer_list.begin(), this->transfer_list.end(),
+        [&trans_id](const std::pair<uint16_t, ResultCallback>& obj) {
+          return obj.first == trans_id;
+        });
+    if (cal != this->transfer_list.end()) {
+      callback = (cal->second);
+      exist = true;
+    }
+  }
+  if (exist) {
+    callback({}, static_cast<data::MessageCode>(header->GetReturnCode()),
+             trans_id);
+    std::unique_lock lk{transfer_mutex};
+    std::remove_if(this->transfer_list.begin(), this->transfer_list.end(),
+                   [&trans_id](const std::pair<uint16_t, ResultCallback>& obj) {
+                     return obj.first == trans_id;
+                   });
   }
 }
 void Controller::onRequest(std::shared_ptr<SomeIpHeader> header,
@@ -127,27 +159,47 @@ void Controller::onRequest(std::shared_ptr<SomeIpHeader> header,
   const auto func = this->callback.find(id);
   if (func == this->callback.end()) {
     AppLogger::Error("[ SOMEIP CONTROLLER ]: Method not found!");
+    SendError(header, data::MessageCode::kEUnknownMethod);
+    return;
   } else {
     AppLogger::Info("[ SOMEIP CONTROLLER ]: Callback found!");
-    auto data = func->second(std::move(payload));
-    if (data.has_value()) {
-      auto res_header = this->header_factory->CreateResponse(
-          header->GetServiceID(), header->GetMethodID(),
-          data::MessageCode::kEOk);
-      auto msg = msg_factory->GetBuffor(res_header, header->GetClientID(),
-                                        header->GetSessionID(), data.value());
-      auto interf = db->FindService(header->GetClientID());
-      if (interf.has_value()) {
-        Transfer(interf.value(), msg);
-      } else {
-        AppLogger::Error("[ SOMEIP CONTROLLER ]: can't find service: " +
-                         std::to_string(header->GetClientID()));
+    auto data = func->second(std::move(payload),
+                             objects::Endpoint{header->GetClientID(), 0});
+    if (data.first == data::MessageCode::kEOk) {
+      if (data.second.has_value()) {
+        auto res_header = this->header_factory->CreateResponse(
+            header->GetServiceID(), header->GetMethodID(),
+            data::MessageCode::kEOk);
+        auto msg =
+            msg_factory->GetBuffor(res_header, header->GetClientID(),
+                                   header->GetSessionID(), data.second.value());
+        auto interf = db->FindService(header->GetClientID());
+        if (interf.has_value()) {
+          Transfer(interf.value(), msg);
+        } else {
+          AppLogger::Error("[ SOMEIP CONTROLLER ]: can't find service: " +
+                           std::to_string(header->GetClientID()));
+        }
       }
     } else {
+      SendError(header, data.first);
     }
   }
 }
-
+void Controller::SendError(std::shared_ptr<SomeIpHeader> rx_header,
+                           data::MessageCode error_code) {
+  auto res_header = this->header_factory->CreateErrorResponse(
+      rx_header->GetServiceID(), rx_header->GetMethodID(), error_code);
+  auto msg = msg_factory->GetBuffor(res_header, rx_header->GetClientID(),
+                                    rx_header->GetSessionID(), {});
+  auto interf = db->FindService(rx_header->GetClientID());
+  if (interf.has_value()) {
+    Transfer(interf.value(), msg);
+  } else {
+    AppLogger::Error("[ SOMEIP CONTROLLER ]: can't find service: " +
+                     std::to_string(rx_header->GetClientID()));
+  }
+}
 void Controller::onResult(std::shared_ptr<SomeIpHeader> header,
                           const std::vector<uint8_t> payload) {
   const auto trans_id = header->GetSessionID();
@@ -277,9 +329,9 @@ void Controller::Add(std::shared_ptr<ISkeleton> skeleton) {
       uint32_t id =
           (static_cast<uint32_t>(endpoint.value().GetServiceId()) << 16) +
           endpoint.value().GetEndpointId();
-
-      this->callback.insert({id, std::bind(&ISkeleton::Call, skeleton.get(),
-                                           std::placeholders::_1)});
+      this->callback.insert(
+          {id, std::bind(&ISkeleton::Call, skeleton.get(),
+                         std::placeholders::_1, std::placeholders::_2)});
       AppLogger::Info("[ SOMEIP CONTROLLER ]: Method skeleton added (" +
                       skeleton->GetName() + ")");
     } else {
