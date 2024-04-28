@@ -10,6 +10,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    container:
+      image: matiko42/simba_github_action:latest
     steps:
       - name: check lable
         id: pr-labels
@@ -20,12 +22,11 @@ jobs:
         with:
           submodules: 'true'
           ssh-key: ${{ secrets.PRIVATE_KEY_FOR_DEPLOY_KEY_IN_SUBMODULE }}
-      - name: Cache bazel directories
+      - name: Cache Bazel data
         uses: actions/cache@v2
         with:
-          path: |
-            /home/runner/.cache/*
-          key: ${{ runner.os }}-bazel-pc-${{ hashFiles('**/lockfiles') }}
+          path: ~/.cache/bazel
+          key: bazel-cache-bbb-${{ runner.os }}-${{ hashFiles('**/BUILD.bazel') }}
       - name: RM 1
         if: contains(steps.pr-labels.outputs.labels, 'check-bbb')
         uses: thollander/actions-comment-pull-request@v2
@@ -33,22 +34,14 @@ jobs:
           message: |
             Starting built software for linux
           comment_tag: to_delete
-      - name: Install bazel
-        if: contains(steps.pr-labels.outputs.labels, 'check')
-        run: |
-          sudo apt install apt-transport-https curl gnupg
-          sudo add-apt-repository ppa:ubuntu-toolchain-r/ppa -y
-          sudo apt update
-          sudo apt install g++-13 gcc-13
-          curl -fsSL https://bazel.build/bazel-release.pub.gpg | gpg --dearmor > bazel.gpg
-          sudo mv bazel.gpg /etc/apt/trusted.gpg.d/
-          echo "deb [arch=amd64] https://storage.googleapis.com/bazel-apt stable jdk1.8" | sudo tee /etc/apt/sources.list.d/bazel.list
-          sudo apt update && sudo apt install bazel-5.4.1
-
       - name: Run build engine computer
         if: contains(steps.pr-labels.outputs.labels, 'check')
         run: |
             bazel build //deployment/cpu/ec:pkg
+      - name: Run build flight computer
+        if: contains(steps.pr-labels.outputs.labels, 'check')
+        run: |
+            bazel build --config=bbb //deployment/cpu/fc:pkg
       - name: Add msg
         if: contains(steps.pr-labels.outputs.labels, 'check')
         uses: thollander/actions-comment-pull-request@v2
