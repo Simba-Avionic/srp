@@ -31,7 +31,6 @@ class ApplicationCommon : public IApplication {
   std::stop_source source;
   diag::exec::ExecController exec_;
   std::unique_ptr<com::someip::Controller> com;
-  uint16_t app_id_;
   /**
    * @brief This is pre-run function only for creting new application
    * interfacess
