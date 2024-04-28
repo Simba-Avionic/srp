@@ -19,7 +19,7 @@ jobs:
 
       - name: Checkout Repository
         if: contains(steps.pr-labels.outputs.labels, 'check-bbb')
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           submodules: 'true'
           ssh-key: ${{ secrets.PRIVATE_KEY_FOR_DEPLOY_KEY_IN_SUBMODULE }}
