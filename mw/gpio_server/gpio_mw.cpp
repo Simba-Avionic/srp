@@ -76,10 +76,7 @@ void GPIOMWService::InitializePins() {
         const std::string direct = gpio.at("direction");
         core::gpio::direction_t direction = direct == "out" ?
             core::gpio::direction_t::OUT : core::gpio::direction_t::IN;
-        this->config.insert({
-            pin_id, {
-                pin_num, direction}
-        });
+        this->config.insert({pin_id, {pin_num, direction}});
     }
     for (auto pin : this->config) {
         this->gpio_driver_.initializePin(pin.second.pinNum, pin.second.direction);

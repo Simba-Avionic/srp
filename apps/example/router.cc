@@ -26,31 +26,37 @@ namespace router {
 #define DATA_SIZE 128
 
 core::ErrorCode Router::Run(std::stop_token token) {
-  auto current_mode_proxy = std::make_shared<com::someip::EventProxyBase>(
-      "ExampleApp/currentMode", [](const std::vector<uint8_t> payload) {
-        AppLogger::Info("Current cpu mode: " + std::to_string(payload[0]));
-      });
-  auto example2 = std::make_shared<com::someip::MethodSkeleton>(
-      "ExampleApp/exampleMethod2",
+  uint8_t servo_pos;
+  auto proxy_event = std::make_shared<com::someip::EventProxyBase>(
+      "ExampleApp/someevent",
+      [this](const std::vector<uint8_t>) { AppLogger::Info("EVENT !!!!!!!"); });
+  auto example = std::make_shared<com::someip::MethodSkeleton>(
+      "ExampleApp/exampleMethod",
       [this](const std::vector<uint8_t> payload)
           -> std::optional<std::vector<uint8_t>> {
         return std::vector<uint8_t>{0, 1, 2};
       });
+  auto off_prime = std::make_shared<com::someip::MethodProxyBase>("ExampleApp/offPrime");
+  auto on_prime = std::make_shared<com::someip::MethodProxyBase>("ExampleApp/onPrime");
   auto servo  = std::make_shared<com::someip::MethodProxyBase>("ExampleApp/setServoValue");
+  com->Add(example);
+  com->Add(on_prime);
   com->Add(servo);
-  com->Add(example2);
+  com->Add(off_prime);
+  com->Add(proxy_event);
+  on_prime->StartFindService();
   servo->StartFindService();
-  auto dtc = std::make_shared<diag::dtc::DTCObject>(20);
+  off_prime->StartFindService();
+  proxy_event->StartFindService();
+  auto dtc = std::make_shared<diag::dtc::DTCObject>(0x20);
   diag_controller.RegisterDTC(dtc);
   while (true) {
-    AppLogger::Debug("AppLogger::Debug");
-    AppLogger::Info("AppLogger::Info");
     dtc->Pass();
-    this->gpio_.SetPinValue(1, gpio::Value::HIGH);
-    servo->Get({1});
+    std::ignore = on_prime->Get();
+    std::ignore = servo->Get({1});
     std::this_thread::sleep_for(std::chrono::seconds(1));
-    this->gpio_.SetPinValue(1, gpio::Value::LOW);
-    servo->Get({0});
+    std::ignore = off_prime->Get();
+    std::ignore = servo->Get({0});
     dtc->Failed();
     std::this_thread::sleep_for(std::chrono::seconds(1));
   }
