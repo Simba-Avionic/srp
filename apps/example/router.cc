@@ -14,12 +14,17 @@
 #include <vector>
 
 #include "communication-core/someip-controller/event_proxy.h"
+#include "communication-core/someip-controller/method_proxy.h"
 #include "communication-core/someip-controller/method_skeleton.h"
 #include "communication-core/someip-controller/method_proxy.h"
 #include "core/logger/Logger.h"
 #include "diag/dtc/controller/dtc.h"
 namespace simba {
 namespace router {
+
+#define EEPROM_DEVICE "/dev/i2c-2"  // Ścieżka do urządzenia I2C
+#define EEPROM_ADDRESS 0x50         // Adres EEPROM
+#define DATA_SIZE 128
 
 core::ErrorCode Router::Run(std::stop_token token) {
   uint8_t servo_pos;
@@ -34,11 +39,14 @@ core::ErrorCode Router::Run(std::stop_token token) {
       });
   auto off_prime = std::make_shared<com::someip::MethodProxyBase>("ExampleApp/offPrime");
   auto on_prime = std::make_shared<com::someip::MethodProxyBase>("ExampleApp/onPrime");
+  auto servo  = std::make_shared<com::someip::MethodProxyBase>("ExampleApp/setServoValue");
   com->Add(example);
   com->Add(on_prime);
+  com->Add(servo);
   com->Add(off_prime);
   com->Add(proxy_event);
   on_prime->StartFindService();
+  servo->StartFindService();
   off_prime->StartFindService();
   proxy_event->StartFindService();
   auto dtc = std::make_shared<diag::dtc::DTCObject>(0x20);
@@ -46,8 +54,10 @@ core::ErrorCode Router::Run(std::stop_token token) {
   while (true) {
     dtc->Pass();
     std::ignore = on_prime->Get();
+    servo->Get({1});
     std::this_thread::sleep_for(std::chrono::seconds(1));
     std::ignore = off_prime->Get();
+    servo->Get({0});
     dtc->Failed();
     std::this_thread::sleep_for(std::chrono::seconds(1));
   }
