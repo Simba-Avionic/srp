@@ -14,13 +14,18 @@ jobs:
       - name: check lable
         id: pr-labels
         uses: joerick/pr-labels-action@v1.0.8
-
       - name: Checkout Repository
         if: contains(steps.pr-labels.outputs.labels, 'check')
         uses: actions/checkout@v2
         with:
           submodules: 'true'
           ssh-key: ${{ secrets.PRIVATE_KEY_FOR_DEPLOY_KEY_IN_SUBMODULE }}
+      - name: Cache bazel directories
+        uses: actions/cache@v2
+        with:
+          path: |
+            /home/runner/.cache/bazel/_bazel_runner/*
+          key: ${{ runner.os }}-bazel-pc-${{ hashFiles('**/lockfiles') }}
       - name: RM 1
         if: contains(steps.pr-labels.outputs.labels, 'check-bbb')
         uses: thollander/actions-comment-pull-request@v2
