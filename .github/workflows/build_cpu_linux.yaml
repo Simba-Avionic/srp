@@ -24,7 +24,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: |
-            /home/runner/.cache/bazel/_bazel_runner/*
+            /home/runner/.cache/bazel/*
           key: ${{ runner.os }}-bazel-pc-${{ hashFiles('**/lockfiles') }}
       - name: RM 1
         if: contains(steps.pr-labels.outputs.labels, 'check-bbb')
