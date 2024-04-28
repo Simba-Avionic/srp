@@ -211,7 +211,6 @@ this->diag_controller.AddMethod(1,
         static_cast<uint8_t>((res.value() >> 8) & 0xFF),
         static_cast<uint8_t>(res.value() & 0xFF)};
 }, diag::DiagMethodType::JOB);
-
 }
 
 
