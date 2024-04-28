@@ -14,6 +14,12 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v2
+      - name: Cache Bazel data
+        if: contains(steps.pr-labels.outputs.labels, 'check-bbb')
+        uses: actions/cache@v2
+        with:
+          path: ~/.cache/bazel
+          key: bazel-cache-${{ runner.os }}-${{ hashFiles('**/BUILD.bazel') }}
       - name: Run ut
         run: |
           gcc --version
