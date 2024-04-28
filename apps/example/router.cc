@@ -53,10 +53,10 @@ core::ErrorCode Router::Run(std::stop_token token) {
   while (true) {
     dtc->Pass();
     std::ignore = on_prime->Get();
-    servo->Get({1});
+    std::ignore = servo->Get({1});
     std::this_thread::sleep_for(std::chrono::seconds(1));
     std::ignore = off_prime->Get();
-    servo->Get({0});
+    std::ignore = servo->Get({0});
     dtc->Failed();
     std::this_thread::sleep_for(std::chrono::seconds(1));
   }

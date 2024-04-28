@@ -91,10 +91,9 @@ core::ErrorCode PrimerService::Run(std::stop_token token) {
   com->Add(primerOffMethod);
   com->Add(primerOnMethod);
   com->Add(startPrimeMethod);
+  this->primer_event->SetValue({static_cast<uint8_t>(this->primerState)});
   while (true) {
-    this->primer_event->SetValue({static_cast<uint8_t>(this->primerState)});
-    AppLogger::Info("send prim Value"+std::to_string(this->primerState));
-    std::this_thread::sleep_for(std::chrono::seconds(1));
+    this->SleepMainThread();
   }
   return core::ErrorCode::kOk;
 }
