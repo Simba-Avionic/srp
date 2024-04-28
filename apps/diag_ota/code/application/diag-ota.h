@@ -18,8 +18,8 @@
 #include <utility>
 #include <vector>
 
+#include "apps/diag_ota/code/application/services/uds_server.h"
 #include "communication-core/someip-controller/event_skeleton.h"
-#include "communication-core/someip-controller/method_skeleton.h"
 #include "core/application/application_no_ipc.h"
 #include "diag/base/controller/idiag_controller.h"
 namespace simba {
@@ -33,9 +33,7 @@ class DiagOta : public core::ApplicationNoIPC {
   uint32_t plant_token{0};
   uint32_t mode{0};
   std::shared_ptr<com::someip::EventSkeleton> mode_event;
-  std::shared_ptr<com::someip::MethodSkeleton> read_someip;
-  std::shared_ptr<com::someip::MethodSkeleton> write_someip;
-  std::shared_ptr<com::someip::MethodSkeleton> job_someip;
+  std::unique_ptr<uds::UdsServer> uds_server;
   /**
    * @brief This function is called to launch the application
    *
@@ -49,12 +47,6 @@ class DiagOta : public core::ApplicationNoIPC {
    */
   core::ErrorCode Initialize(
       const std::unordered_map<std::string, std::string>& parms) final;
-  std::optional<std::vector<uint8_t>> ReadSomeip(
-      const std::vector<uint8_t> payload);
-  std::optional<std::vector<uint8_t>> JobSomeip(
-      const std::vector<uint8_t> payload);
-  std::optional<std::vector<uint8_t>> WriteSomeip(
-      const std::vector<uint8_t> payload);
 
  public:
   ~DiagOta() = default;
