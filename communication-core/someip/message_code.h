@@ -13,7 +13,7 @@
 namespace simba {
 namespace com {
 namespace data {
-enum MessageCode {
+enum MessageCode: uint8_t {
   kEOk = 0x00,
   kENotOk = 0x01,
   kEUnknownService = 0x02,
