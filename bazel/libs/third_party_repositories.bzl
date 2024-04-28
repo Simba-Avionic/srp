@@ -34,3 +34,13 @@ def include_spdlog():
         type = "zip",
         sha256 = "5b69c01e44ca184bf36d7fa4a19b7bb50d8014a256456e74177f221610865028",
     )
+
+    http_archive(
+        name = "doipclient",
+        strip_prefix = "python-doipclient-1.1.1/doipclient",
+        build_file = "//bazel/libs:doipclient.BUILD",
+        urls = ["https://github.com/jacobschaer/python-doipclient/archive/refs/tags/v1.1.1.zip"],
+        type = "zip",
+    )
+
+    

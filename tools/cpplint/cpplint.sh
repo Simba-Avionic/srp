@@ -1,7 +1,7 @@
-cpp_files=$(find . -name "*.cc" -o -name "*.cpp" -o -name "*.h" -o -name "*.hpp")
+cpp_files=$(find . -path "*libdoip/*" -prune -o -name "*.cc" -o -name "*.cpp" -o -name "*.h" -o -name "*.hpp" | grep -vE "^\.\/libdoip\/")
 total_errors=0
 for file in $cpp_files; do
-    errors=$(cpplint --filter=-build/include_subdir --extensions=cc,cpp,h,hpp --linelength=120 --recursive --repository=. --root=src $file | wc -l)
+    errors=$(cpplint --filter=-build/include_subdir --extensions=cc,cpp,h,hpp --linelength=120 --recursive --exclude=*/libdoip/* --repository=. --root=src $file | wc -l)
     if [[ $errors -gt 1 ]]; then
     total_errors=$((total_errors + errors - 1))
     fi

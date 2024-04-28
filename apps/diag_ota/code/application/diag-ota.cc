@@ -11,11 +11,15 @@
 #include "apps/diag_ota/code/application/diag-ota.h"
 
 #include <algorithm>
+#include <iomanip>
+#include <iostream>
+#include <thread>  // NOLINT
 #include <utility>
 #include <vector>
 
 #include "core/json/json_parser.h"
 #include "core/logger/Logger.h"
+#include "apps/diag_ota/code/application/proxy/read_vin_did.h"
 
 namespace simba {
 namespace diag_ota {
@@ -37,7 +41,11 @@ core::ErrorCode DiagOta::Run(std::stop_token token) {
     AppLogger::Info("ECU MODE: Plant mode");
     mode_event->SetValue({0x00});
   }
-  diag_controller.Read(1000, 10);
+  if (uds_server) {
+    uds_server->Start();
+  }
+  read_vin_->StartService();
+  // diag_controller.Read(1000, 10);
   this->SleepMainThread();
 }
 /**
@@ -87,77 +95,38 @@ core::ErrorCode DiagOta::Initialize(
     }
     mode = ip_t.value();
   }
+
+  {
+    uint16_t logic_id{0};
+    std::string vin{""};
+    auto logic_id_t = json_obj.GetNumber<uint16_t>("logic_address");
+    if (logic_id_t.has_value()) {
+      logic_id = logic_id_t.value();
+    }
+
+    auto vin_t = json_obj.GetString("vin");
+    if (vin_t.has_value()) {
+      vin = vin_t.value();
+      AppLogger::Info("VIN: " + vin);
+    }
+
+    if (logic_id != 0x0000 & vin.length() > 0 && vin.length() < 18) {
+      uds_server = std::make_unique<uds::UdsServer>(logic_id, vin);
+    } else {
+      AppLogger::Error("Wrong parms for UDS");
+    }
+  }
+
   if (this->com->GetServiceId() == 512) {
     mode_event = std::make_shared<com::someip::EventSkeleton>(
         "FC_DiagOtaApp/currentMode");
-    write_someip = std::make_shared<com::someip::MethodSkeleton>(
-        "FC_DiagOtaApp/diagMethodRequestWrite",
-        std::bind(&DiagOta::WriteSomeip, this, std::placeholders::_1));
-    read_someip = std::make_shared<com::someip::MethodSkeleton>(
-        "FC_DiagOtaApp/diagMethodRequestRead",
-        std::bind(&DiagOta::ReadSomeip, this, std::placeholders::_1));
-    job_someip = std::make_shared<com::someip::MethodSkeleton>(
-        "FC_DiagOtaApp/diagMethodRequestJob",
-        std::bind(&DiagOta::JobSomeip, this, std::placeholders::_1));
     this->com->Add(mode_event);
-    this->com->Add(write_someip);
-    this->com->Add(read_someip);
-    this->com->Add(job_someip);
   } else {
     mode_event = std::make_shared<com::someip::EventSkeleton>(
         "EC_DiagOtaApp/currentMode");
-    write_someip = std::make_shared<com::someip::MethodSkeleton>(
-        "EC_DiagOtaApp/diagMethodRequestWrite",
-        std::bind(&DiagOta::WriteSomeip, this, std::placeholders::_1));
-    read_someip = std::make_shared<com::someip::MethodSkeleton>(
-        "EC_DiagOtaApp/diagMethodRequestRead",
-        std::bind(&DiagOta::ReadSomeip, this, std::placeholders::_1));
-    job_someip = std::make_shared<com::someip::MethodSkeleton>(
-        "EC_DiagOtaApp/diagMethodRequestJob",
-        std::bind(&DiagOta::JobSomeip, this, std::placeholders::_1));
     this->com->Add(mode_event);
-    this->com->Add(write_someip);
-    this->com->Add(read_someip);
-    this->com->Add(job_someip);
   }
-
-  this->someip_diag_controller = std::make_unique<diag::DiagController>(
-      0x00, std::make_unique<com::soc::IpcSocket>());
-  this->someip_diag_controller->Init();
-}
-
-std::optional<std::vector<uint8_t>> DiagOta::ReadSomeip(
-    const std::vector<uint8_t> payload) {
-  if (payload.size() != 3U) {
-    return {};
-  }
-  uint16_t s_id{payload[0] << 1 + payload[2]};
-  return someip_diag_controller->Read(s_id, payload[3]);
-}
-std::optional<std::vector<uint8_t>> DiagOta::JobSomeip(
-    const std::vector<uint8_t> payload) {
-  if (payload.size() < 3U) {
-    return {};
-  }
-  std::vector<uint8_t> pp{};
-  uint16_t s_id{payload[0] << 1 + payload[2]};
-  std::copy(payload.begin() + 3, payload.end(), std::back_inserter(pp));
-  return someip_diag_controller->Job(s_id, payload[3], std::move(pp));
-}
-std::optional<std::vector<uint8_t>> DiagOta::WriteSomeip(
-    const std::vector<uint8_t> payload) {
-  if (payload.size() < 3U) {
-    return {};
-  }
-  std::vector<uint8_t> pp{};
-  uint16_t s_id{payload[0] << 1 + payload[2]};
-  std::copy(payload.begin() + 3, payload.end(), std::back_inserter(pp));
-  if (someip_diag_controller->Write(s_id, payload[3], std::move(pp)) ==
-      core::ErrorCode::kOk) {
-    return std::vector<uint8_t>{};
-  } else {
-    return {};
-  }
+  this->read_vin_ = std::make_unique<ReadVinDiD>("EC_DiagOtaApp/vin");
 }
 
 }  // namespace diag_ota
