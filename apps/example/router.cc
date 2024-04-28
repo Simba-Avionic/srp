@@ -16,7 +16,6 @@
 #include "communication-core/someip-controller/event_proxy.h"
 #include "communication-core/someip-controller/method_proxy.h"
 #include "communication-core/someip-controller/method_skeleton.h"
-#include "communication-core/someip-controller/method_proxy.h"
 #include "core/logger/Logger.h"
 #include "diag/dtc/controller/dtc.h"
 namespace simba {
