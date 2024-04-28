@@ -38,6 +38,10 @@ jobs:
         if: contains(steps.pr-labels.outputs.labels, 'check')
         run: |
             bazel build //deployment/cpu/ec:pkg
+      - name: Run build flight computer
+        if: contains(steps.pr-labels.outputs.labels, 'check')
+        run: |
+            bazel build --config=bbb //deployment/cpu/fc:pkg
       - name: Add msg
         if: contains(steps.pr-labels.outputs.labels, 'check')
         uses: thollander/actions-comment-pull-request@v2
