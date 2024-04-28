@@ -13,7 +13,7 @@ jobs:
       image: matiko42/simba_github_action:latest
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: Cache Bazel data
         uses: actions/cache@v2
         with:
