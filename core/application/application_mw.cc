@@ -54,6 +54,7 @@ ErrorCode ApplicationMW::MwConfig(
   }
   auto app_ = obj.GetNumber<uint16_t>("app_id");
   if (app_.has_value()) {
+    this->app_id_ = app_.value();
     this->exec_.Init(app_.value());
   } else {
     return ErrorCode::kError;
