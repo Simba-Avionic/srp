@@ -22,10 +22,6 @@
 #include "diag/dtc/controller/dtc.h"
 namespace simba {
 namespace primer {
-struct Primer_t {
-  uint8_t actuator_id;
-  gpio::Value state{gpio::Value::LOW};
-};
 
 class PrimerService final : public core::ApplicationNoIPC {
  private:

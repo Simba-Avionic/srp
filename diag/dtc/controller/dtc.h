@@ -18,13 +18,13 @@ namespace diag {
 namespace dtc {
 class DTCObject : public IDTC {
  protected:
-  const uint16_t id;
+  const uint8_t id;
   DTCSendCallback callback;
 
  public:
   void Pass() const noexcept { callback(id, 2U); }
   void Failed() const noexcept { callback(id, 1U); }
-  explicit DTCObject(const uint16_t id_) : id{id_} {}
+  explicit DTCObject(const uint8_t id_) : id{id_} {}
   void SetCallback(DTCSendCallback callback_) noexcept override {
     callback = callback_;
     callback(id, 0U);

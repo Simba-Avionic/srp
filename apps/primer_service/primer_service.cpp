@@ -23,8 +23,12 @@ namespace simba {
 namespace primer {
 
 namespace {
-  const constexpr uint8_t IGNITER_PIN_ID = 0x0D;
-  const constexpr uint16_t IGNITER_ACTIVE_TIME = 500;
+  /**
+   * @brief domyślne wartości
+   * 
+   */
+  const constexpr uint8_t IGNITER_PIN_ID = 5;
+  const constexpr uint16_t IGNITER_ACTIVE_TIME = 250;
 }
 
 
