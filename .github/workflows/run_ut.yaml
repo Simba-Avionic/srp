@@ -7,29 +7,13 @@ on:
       - master
 
 jobs:
-  build-and-test:
+  build:
     runs-on: ubuntu-latest
-
+    container:
+      image: matiko42/simba_github_action:latest
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v2
-      - name: Cache bazel directories
-        uses: actions/cache@v2
-        with:
-          path: |
-            /home/runner/.cache/bazel/_bazel_runner/*
-          key: ${{ runner.os }}-bazel-ut-${{ hashFiles('**/lockfiles') }}
-
-      - name: Install bazel
-        run: |
-          sudo apt install apt-transport-https curl gnupg
-          sudo add-apt-repository ppa:ubuntu-toolchain-r/ppa -y
-          sudo apt update
-          sudo apt install g++-13 gcc-13
-          curl -fsSL https://bazel.build/bazel-release.pub.gpg | gpg --dearmor > bazel.gpg
-          sudo mv bazel.gpg /etc/apt/trusted.gpg.d/
-          echo "deb [arch=amd64] https://storage.googleapis.com/bazel-apt stable jdk1.8" | sudo tee /etc/apt/sources.list.d/bazel.list
-          sudo apt update && sudo apt install bazel-5.4.1
       - name: Run ut
         run: |
           gcc --version
