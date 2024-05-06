@@ -7,7 +7,7 @@ cc_binary(
         
     ],
 
-    visibility = ["//deployment/apps/example:__subpackages__"],
+    visibility = ["//deployment/apps/exampleApp:__subpackages__"],
     deps = [
         "//core/application:simba_application",
     ],
