@@ -3,12 +3,12 @@ cc_binary(
     srcs = [
         "exampleApp.cc",
         "exampleApp.h",
-	"main.cc"
+	    "main.cc",
         
     ],
 
     visibility = ["//deployment/apps/example:__subpackages__"],
     deps = [
-        "//core/application/simba_application",
+        "//core/application:simba_application",
     ],
 )
