@@ -23,4 +23,4 @@ jobs:
           username: ${{ secrets.JENKINS_USER }}
           api_token: ${{ secrets.JENKINS_TOKEN }}
           timeout: "1000"
-          parameters: "{ 'field1':'value1' }"
+          parameters: '''{"field1":"value1"}'''
