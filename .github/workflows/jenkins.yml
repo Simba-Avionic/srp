@@ -15,6 +15,10 @@ jobs:
     name: Build
     runs-on: ubuntu-latest
     steps:
+      - name: Extract branch name
+        shell: bash
+        run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
+        id: extract_branch
       - name: Trigger jenkins job
         uses: joshlk/jenkins-githubaction@master
         with:
@@ -23,4 +27,4 @@ jobs:
           username: ${{ secrets.JENKINS_USER }}
           api_token: ${{ secrets.JENKINS_TOKEN }}
           timeout: "1000"
-          parameters: '{"branch":"value1"}'
+          parameters: '{"branch":"${{ steps.extract_branch.outputs.branch }}"}'
