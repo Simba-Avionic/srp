@@ -86,7 +86,7 @@ void IpcSocket::StartRXThread() {
 
 void IpcSocket::Loop(std::stop_token stoken) {
   struct timeval tv;
-  tv.tv_sec = 2;
+  tv.tv_sec = 1;
   tv.tv_usec = 0;
   setsockopt(server_sock, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
   rc = bind(server_sock, (struct sockaddr*)&server_sockaddr, len);

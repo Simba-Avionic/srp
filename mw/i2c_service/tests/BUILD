@@ -7,5 +7,5 @@ cc_test(
     deps=[
         "@com_google_googletest//:gtest_main",
         "//mw/i2c_service/data:i2c_factory"
-    ]
+    ],
 )

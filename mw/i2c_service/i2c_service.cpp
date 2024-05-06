@@ -16,13 +16,8 @@ namespace simba {
 namespace mw {
 
 namespace {
-    constexpr uint8_t PCA9685_ADDRESS = 0x70;
-    constexpr uint8_t MODE1_REG = 0x00;
-    constexpr uint8_t PRESCALE_REG = 0xFE;
-    constexpr uint8_t LED0_ON_L = 0x06;
-    constexpr uint8_t LED0_ON_H = 0x07;
-    constexpr uint8_t LED0_OFF_L = 0x08;
-    constexpr uint8_t LED0_OFF_H = 0x09;
+    const constexpr char* I2C_IPC_ADDR = "SIMBA.I2C";
+    const constexpr char* I2C_RES_IPC_ADDR = "SIMBA.I2C.";
 }
 
 void I2CService::RxCallback(const std::string& ip,
@@ -30,20 +25,33 @@ void I2CService::RxCallback(const std::string& ip,
     std::unique_lock<std::mutex> lock(this->i2c_mtx);
     std::shared_ptr<i2c::Header> headerPtr = i2c::I2CFactory::GetHeader(data);
     this->i2c_.Ioctl(headerPtr->GetAddress());
-    std::vector<uint8_t> payload;
+    std::vector<uint8_t> payload = i2c::I2CFactory::GetPayload(data);
+    std::vector<uint8_t> i2cRes;
     AppLogger::Debug("Receive i2c msg");
     switch (headerPtr->GetAction()) {
     case i2c::ACTION::Write:
-      payload = i2c::I2CFactory::GetPayload(data);
       i2c_.Write(payload);
       break;
     case i2c::ACTION::PageWrite:
-      payload = i2c::I2CFactory::GetPayload(data);
       i2c_.PageWrite(payload);
       break;
     case i2c::ACTION::Read:
       break;
     case i2c::ACTION::ReadWrite:
+      AppLogger::Warning("Receive READ WRITE request"+std::to_string(static_cast<int>(headerPtr->GetPayloadSize())));
+      if (payload.size() < 2 || payload.size()%2 != 0) {
+        this->sock_.Transmit(I2C_RES_IPC_ADDR+std::to_string(headerPtr->GetServiceId()), 0, {0});
+        return;
+      }
+      for (size_t i = 0; i < payload.size() - 1; i+=2) {
+        i2cRes = i2c_.ReadWrite(payload[i], payload[i+1]);
+        if (i2cRes.size() != payload[i+1]) {
+        this->sock_.Transmit(I2C_RES_IPC_ADDR+std::to_string(headerPtr->GetServiceId()), 0, {0});
+        return;
+      }
+      }
+      AppLogger::Warning("Send response to " +std::to_string(headerPtr->GetServiceId()));
+      this->sock_.Transmit(I2C_RES_IPC_ADDR+std::to_string(headerPtr->GetServiceId()), 0, i2cRes);
       break;
     case i2c::ACTION::PageRead:
       break;
@@ -60,7 +68,7 @@ core::ErrorCode I2CService::Run(std::stop_token token) {
 core::ErrorCode I2CService::Initialize(
       const std::unordered_map<std::string, std::string>& parms) {
     this->i2c_.Init();
-    this->sock_.Init(com::soc::SocketConfig("SIMBA.I2C", 0, 0));
+    this->sock_.Init(com::soc::SocketConfig(I2C_IPC_ADDR, 0, 0));
     this->sock_.SetRXCallback(std::bind(&I2CService::RxCallback, this, std::placeholders::_1,
                 std::placeholders::_2, std::placeholders::_3));
     this->sock_.StartRXThread();

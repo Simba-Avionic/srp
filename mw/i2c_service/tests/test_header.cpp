@@ -24,19 +24,19 @@ EXPECT_EQ(hdr.GetServiceId(), service_id);
 EXPECT_EQ(hdr.GetAddress(), address);
 }
 
-
-TEST(FACTORY, FACTORY_CHECK) {
+TEST(FACTORY, FACTORY_CHECK_1) {
     const uint16_t service_id = 0x22;
     const auto action =  simba::i2c::ACTION::Write;
     const uint16_t address = 0x11;
-    simba::i2c::I2CFactory factory;
-    simba::i2c::Header hdr{action, address, service_id};
     std::vector<uint8_t> payload = {0, 1, 2, 3, 4};
-    auto buf = factory.GetBuffer(std::make_shared<simba::i2c::Header>(hdr), payload);
-    auto hdr2 = factory.GetHeader(buf);
-    auto payload2 = factory.GetPayload(buf);
-    EXPECT_EQ(hdr.GetAction(), hdr2->GetAction());
-    EXPECT_EQ(hdr.GetServiceId(), hdr2->GetServiceId());
-    EXPECT_EQ(hdr.GetAddress(), hdr2->GetAddress());
+    auto buf = simba::i2c::I2CFactory::GetBuffer(
+                 std::make_shared<simba::i2c::Header>(action, address, service_id), payload);
+    auto hdr2 = simba::i2c::I2CFactory::GetHeader(buf);
+    auto payload2 = simba::i2c::I2CFactory::GetPayload(buf);
+    EXPECT_EQ(action, hdr2->GetAction());
+    EXPECT_EQ(service_id, hdr2->GetServiceId());
+    EXPECT_EQ(address, hdr2->GetAddress());
+    EXPECT_EQ(payload.size(), hdr2->GetPayloadSize());
+    EXPECT_EQ(payload2.size(), payload.size());
     EXPECT_EQ(payload, payload2);
 }

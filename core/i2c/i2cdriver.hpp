@@ -42,6 +42,7 @@ class I2CDriver{
    */
   core::ErrorCode Write(const std::vector<uint8_t> RegData);
   core::ErrorCode PageWrite(std::vector<uint8_t> data);
+  std::vector<uint8_t> ReadWrite(const uint8_t reg, const uint8_t size = 1);
 };
 }  // namespace i2c
 }  // namespace core

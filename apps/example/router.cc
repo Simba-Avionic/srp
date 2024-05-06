@@ -12,6 +12,10 @@
 
 #include <memory>
 #include <vector>
+#include <fcntl.h>
+#include <sys/ioctl.h>
+#include <linux/i2c-dev.h>
+#include <unistd.h>
 
 #include "communication-core/someip-controller/event_proxy.h"
 #include "communication-core/someip-controller/method_proxy.h"
@@ -21,52 +25,101 @@
 namespace simba {
 namespace router {
 
-#define EEPROM_DEVICE "/dev/i2c-2"  // Ścieżka do urządzenia I2C
-#define EEPROM_ADDRESS 0x50         // Adres EEPROM
-#define DATA_SIZE 128
+namespace {
+  const constexpr uint8_t BME280_ADDR = 0x76;
+  const constexpr uint8_t BME280_PRESS_REG = 0xF7;
+}
 
 core::ErrorCode Router::Run(std::stop_token token) {
-  uint8_t servo_pos;
-  auto proxy_event = std::make_shared<com::someip::EventProxyBase>(
-      "ExampleApp/someevent",
-      [this](const std::vector<uint8_t>) { AppLogger::Info("EVENT !!!!!!!"); });
-  auto example = std::make_shared<com::someip::MethodSkeleton>(
-      "ExampleApp/exampleMethod",
-      [this](const std::vector<uint8_t> payload)
-          -> std::optional<std::vector<uint8_t>> {
-        return std::vector<uint8_t>{0, 1, 2};
-      });
-  auto off_prime = std::make_shared<com::someip::MethodProxyBase>("ExampleApp/offPrime");
-  auto on_prime = std::make_shared<com::someip::MethodProxyBase>("ExampleApp/onPrime");
-  auto servo  = std::make_shared<com::someip::MethodProxyBase>("ExampleApp/setServoValue");
-  com->Add(example);
-  com->Add(on_prime);
-  com->Add(servo);
-  com->Add(off_prime);
-  com->Add(proxy_event);
-  on_prime->StartFindService();
-  servo->StartFindService();
-  off_prime->StartFindService();
-  proxy_event->StartFindService();
-  auto dtc = std::make_shared<diag::dtc::DTCObject>(0x20);
-  diag_controller.RegisterDTC(dtc);
   while (true) {
-    dtc->Pass();
-    std::ignore = on_prime->Get();
-    std::ignore = servo->Get({1});
-    std::this_thread::sleep_for(std::chrono::seconds(1));
-    std::ignore = off_prime->Get();
-    std::ignore = servo->Get({0});
-    dtc->Failed();
-    std::this_thread::sleep_for(std::chrono::seconds(1));
+  auto res = this->i2c_.Read(76, BME280_PRESS_REG, 3);
+  AppLogger::Warning("Receive response");
+  if (!res.has_value()) {
+    AppLogger::Warning("NO VALUE IN RES");
   }
+  std::string str;
+  for (uint8_t c: res.value()) {
+    str+=std::to_string(static_cast<int>(c));
+    str+=";";
+  }
+  AppLogger::Warning("RES:"+str);
+  std::this_thread::sleep_for(std::chrono::seconds(2));
+  } 
+  // int i2c_fd = open("/dev/i2c-2", O_RDWR);
+  //   if (i2c_fd < 0) {
+  //     exit(1);
+  //   }
+  //   if (ioctl(i2c_fd, I2C_SLAVE, BME280_ADDR) < 0) {
+  //       exit(2);
+  //   }
+  //      // Konfiguracja rejestru kontrolnego (register control) dla czujnika BME280
+  //   unsigned char ctrl_reg[2] = {0xF2, 0x05}; // Ustawienie oversamplingu dla pomiaru temperatury (x1)
+  //   if (write(i2c_fd, ctrl_reg, 2) != 2) {
+  //       exit(9);
+  //   }
+
+  //   // Konfiguracja rejestru konfiguracyjnego (configuration) dla czujnika BME280
+  //   unsigned char config_reg[2] = {0xF4, 0xB7}; // Ustawienie trybu pracy (normal mode), czasy próbkowania dla temperatury
+  //   if (write(i2c_fd, config_reg, 2) != 2) {
+  //       exit(8);
+  //   }
+  //   // Konfiguracja rejestru konfiguracyjnego (configuration) dla czujnika BME280
+  //   unsigned char config_reg2[2] = {0xF5, 0}; // Ustawienie trybu pracy (normal mode), czasy próbkowania dla temperatury
+  //   if (write(i2c_fd, config_reg2, 2) != 2) {
+  //       exit(8);
+  //   }
+  //   while (true) {
+  //   unsigned char buf[3];
+  //   if (write(i2c_fd, &BME280_PRESS_REG, 1) != 1) {
+  //       exit(3);
+  //   }
+  //   if (read(i2c_fd, buf, 3) != 3) {
+  //       exit(4);
+  //   }
+
+  //   uint64_t press_raw = (buf[0] << 12) | (buf[1] << 4) | (buf[2] >> 4);
+  //   float pressure = press_raw / 512;
+  //   AppLogger::Warning("raw:"+std::to_string(press_raw));
+  //   AppLogger::Warning(std::to_string(pressure));
+  //   // Odczyt danych temperatury
+  //   unsigned char reg[1] = {0xFA}; // Rejestr, w którym przechowywana jest temperatura
+  //   if (write(i2c_fd, reg, 1) != 1) {
+  //       exit(5);
+  //   }
+
+  //   char data[3];
+  //   if (read(i2c_fd, data, 2) != 2) {
+  //       exit(6);
+  //   }
+
+  //   // Konwersja danych na wartość temperatury w stopniach Celsjusza
+  //   int temp_raw = (data[0] << 12) | (data[1] << 4) | (data[2] >> 4);
+  //   float temperature = static_cast<float>(temp_raw / 16000.0);
+
+  //   AppLogger::Warning("Temperature: "+std::to_string(temperature)+" °C");
+
+  //   unsigned char re[1] = {0xFD};
+  //   if (write(i2c_fd,re,1)!=1) {
+  //     exit(11);
+  //   }
+  //   char data3[2];
+  //   if (read(i2c_fd,data3,2)!=2) {
+  //     exit(12);
+  //   }
+  //   int raw_hum = (data[0] << 8) | data[1];
+  //   float hum = static_cast<float>(raw_hum/1024.0);
+  //   AppLogger::Warning("Humidity"+std::to_string(hum));
+
+
+  //   std::this_thread::sleep_for(std::chrono::seconds(2));
+  //   }
+
   return core::ErrorCode::kOk;
 }
 
 core::ErrorCode Router::Initialize(
     const std::unordered_map<std::string, std::string>& parms) {
-  this->gpio_ = gpio::GPIOController(new com::soc::IpcSocket());
-  this->gpio_.Init(12);
+      this->i2c_.Init(this->app_id_);
   return core::ErrorCode::kOk;
 }
 }  // namespace router

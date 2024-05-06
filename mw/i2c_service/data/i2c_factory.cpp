@@ -15,20 +15,21 @@ namespace simba {
 namespace i2c {
 
 namespace {
-    const constexpr uint8_t HDR_SIZE = 0x04;
+    const constexpr uint8_t HDR_SIZE = 0x05;
 }
 
 std::vector<uint8_t> I2CFactory::GetBuffer(std::shared_ptr<Header> header, const std::vector<uint8_t>& payload) {
+        header->SetPaylaodSize(payload.size());
         std::vector<uint8_t> buffer = header->GetBuffor();
         buffer.insert(buffer.end(), payload.begin(), payload.end());
         return buffer;
     }
 
 std::shared_ptr<Header> I2CFactory::GetHeader(const std::vector<uint8_t>& raw_data) {
-        if (raw_data.size() < 4) {
+        if (raw_data.size() < HDR_SIZE) {
             return nullptr;
         }
-        Header hdr(i2c::ACTION::Read, 0x00, 0x00);
+        Header hdr(ACTION::Write, 0, 0);
         hdr.SetBuffor(raw_data);
         return std::make_shared<Header>(hdr);
     }

@@ -14,6 +14,10 @@
 #include <vector>
 #include <string>
 #include <utility>
+#include <optional>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 #include <condition_variable>  // NOLINT
 #include "core/i2c/i2cdriver.hpp"
 #include "communication-core/sockets/ipc_socket.h"
@@ -27,8 +31,9 @@ class I2CController{
  private:
   com::soc::IpcSocket sock_;
   std::mutex mtx;
-  I2CFactory factory_;
   uint16_t service_id;
+  std::string my_addr_ipc{""};
+  std::optional<std::vector<uint8_t>> ReceiveFunc(std::string socketPath);
 
  public:
   I2CController();
@@ -51,6 +56,8 @@ class I2CController{
    * @return core::ErrorCode 
    */
   core::ErrorCode PageWrite(const uint8_t address, const std::vector<uint8_t> data);
+
+  std::optional<std::vector<uint8_t>> Read(const uint8_t address, const uint8_t reg, const uint8_t size = 1);
 };
 }  // namespace i2c
 }  // namespace simba

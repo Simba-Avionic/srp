@@ -10,12 +10,15 @@
  */
 
 #include "core/i2c/i2cdriver.hpp"
-
-#define path "/dev/i2c-2"
+#include "core/logger/Logger.h"
 
 namespace simba {
 namespace core {
 namespace i2c {
+
+namespace {
+  const constexpr char *path = "/dev/i2c-2";
+}
 
 core::ErrorCode I2CDriver::Init() {
     if ((this->i2cFile = open(path, O_RDWR)) < 0) {
@@ -46,6 +49,18 @@ core::ErrorCode I2CDriver::PageWrite(std::vector<uint8_t> data) {
       return core::ErrorCode::kInitializeError;
     }
     return core::ErrorCode::kOk;
+}
+std::vector<uint8_t> I2CDriver::ReadWrite(const uint8_t reg, const uint8_t size) {
+  AppLogger::Warning("rozmiar bufora to:"+std::to_string(static_cast<int>(size)));
+    if (write(i2cFile, &reg, 1) != 1) {
+      return {};
+    }
+    std::vector<uint8_t> buf(size);
+    if (read(i2cFile, buf.data(), size) != size) {
+      return {};
+    }
+    AppLogger::Warning(std::to_string(static_cast<int>(buf.size())));
+    return buf;
 }
 }  // namespace i2c
 }  // namespace core
