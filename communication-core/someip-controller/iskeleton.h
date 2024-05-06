@@ -14,6 +14,7 @@
 #include <optional>
 #include <string>
 #include <vector>
+#include <utility>
 
 #include "communication-core/someip-controller/callbacks.h"
 #include "communication-core/someip-database/code/endpoint.h"
@@ -24,8 +25,8 @@ class ISkeleton {
  public:
   virtual void SetCallback(SendCallback callback) {}
   virtual std::optional<objects::Endpoint> GetEndPoint() const noexcept = 0;
-  virtual std::optional<std::vector<uint8_t>> Call(
-      std::vector<uint8_t>) noexcept = 0;
+  virtual std::pair<data::MessageCode, std::optional<std::vector<uint8_t>>> Call(
+      std::vector<uint8_t>, const objects::Endpoint) noexcept = 0;
   virtual std::string GetName() const = 0;
   virtual ~ISkeleton() = default;
 };

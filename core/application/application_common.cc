@@ -169,10 +169,9 @@ ErrorCode ApplicationCommon::DiagConfig(
     return ErrorCode::kError;
   }
   nlohmann::json data = nlohmann::json::parse(file);
-  uint16_t app_id_{};
   if (data.contains("app_id")) {
     if (data.at("app_id").is_string()) {
-      app_id_ = data.at("app_id");
+      this->app_id_ = data.at("app_id");
       diag_controller.Init(app_id_);
       return ErrorCode::kOk;
     } else {

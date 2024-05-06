@@ -1,12 +1,12 @@
 /**
  * @file method_proxy.h
  * @author Bartosz Snieg (snieg45@gmail.com)
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2024-03-24
- * 
+ *
  * @copyright Copyright (c) 2024
- * 
+ *
  */
 #ifndef COMMUNICATION_CORE_SOMEIP_CONTROLLER_METHOD_PROXY_H_
 #define COMMUNICATION_CORE_SOMEIP_CONTROLLER_METHOD_PROXY_H_
@@ -38,7 +38,7 @@ class MethodProxyBase : public IProxy {
   bool is_callback{false};
   bool is_response{false};
   std::vector<uint8_t> response;
-  data::MessageCode response_code;
+  com::data::MessageCode response_code;
   uint16_t transfer_id_;
   SendCallback callback_;
   FindCallback f_callback_;
@@ -49,7 +49,7 @@ class MethodProxyBase : public IProxy {
                   const uint16_t transfer_id) {
     if (transfer_id == transfer_id_) {
       is_response = true;
-      response_code == code;
+      response_code = code;
       response = payload;
       request_cv.notify_all();
     }
@@ -109,9 +109,16 @@ class MethodProxyBase : public IProxy {
       d_callback_(transfer_id_);
       return {};
     }
-    if (response_code == data::MessageCode::kEOk) {
+    if (response_code == com::data::MessageCode::kEOk) {
       return std::move(this->response);
     } else {
+      if (response_code == com::data::MessageCode::kENotReachable) {
+        AppLogger::Error("[ SOMEIP PROXY ](" + instance + "): Access denied !");
+      } else {
+        AppLogger::Error(
+            "[ SOMEIP PROXY ](" + instance +
+            "): Response with error: " + std::to_string(response_code));
+      }
       return {};
     }
   }

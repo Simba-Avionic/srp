@@ -13,6 +13,7 @@
 
 #include <iostream>
 #include <memory>
+#include <vector>
 
 #include "communication-core/someip-database/code/config_db.h"
 #include "communication-core/someip-database/code/endpoint.h"
@@ -99,7 +100,17 @@ class ConfigDbParser {
     if (obj.contains("service_id")) {
       service_id = obj["service_id"];
     }
-    return objects::Endpoint{service_id, method_id};
+    if (obj.contains("access_list")) {
+      auto list = obj["access_list"];
+      std::vector<uint16_t> access_list{};
+      for (auto& [key, val] : list.items()) {
+        const uint16_t id = val;
+        access_list.push_back(id);
+      }
+      return objects::Endpoint{service_id, method_id, access_list};
+    } else {
+      return objects::Endpoint{service_id, method_id};
+    }
   }
 };
 

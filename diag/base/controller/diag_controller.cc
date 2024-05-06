@@ -49,6 +49,7 @@ simba::core::ErrorCode DiagController::AddMethod(
 
 simba::core::ErrorCode DiagController::Init() {
   if (this->socket_driver == nullptr) {
+    AppLogger::Error("[DIAG_CONTROLLER] No socket!!");
     return core::ErrorCode::kError;
   }
 

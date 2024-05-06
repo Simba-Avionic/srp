@@ -1,12 +1,12 @@
 /**
  * @file callbacks.h
  * @author Bartosz Snieg (snieg45@gmail.com)
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2024-03-24
- * 
+ *
  * @copyright Copyright (c) 2024
- * 
+ *
  */
 #ifndef COMMUNICATION_CORE_SOMEIP_CONTROLLER_CALLBACKS_H_
 #define COMMUNICATION_CORE_SOMEIP_CONTROLLER_CALLBACKS_H_
@@ -14,6 +14,7 @@
 #include <functional>
 #include <optional>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "communication-core/someip-database/code/endpoint.h"
@@ -33,7 +34,11 @@ using SendCallback = std::function<uint16_t(
     const std::vector<uint8_t> payload, const objects::Endpoint& endpoint,
     const objects::Interface& interface, data::MessageType type,
     ResultCallback result)>;
-using MethodCallback = std::function<std::optional<std::vector<uint8_t>>(
+using MethodCallback = std::function<
+    std::pair<data::MessageCode, std::optional<std::vector<uint8_t>>>(
+        const std::vector<uint8_t> payload, const objects::Endpoint endpoint)>;
+
+using LocalMethodCallback = std::function<std::optional<std::vector<uint8_t>>(
     const std::vector<uint8_t> payload)>;
 
 using DropTransferCallback = std::function<void(const uint16_t transfer_id)>;

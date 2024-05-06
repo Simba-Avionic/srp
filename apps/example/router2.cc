@@ -20,15 +20,17 @@ namespace router {
 core::ErrorCode Router::Run(std::stop_token token) {
   auto example =
       std::make_shared<com::someip::MethodProxyBase>("ExampleApp2/someproxy");
-  auto event_example =
-      std::make_shared<com::someip::EventSkeleton>("ExampleApp2/exampleEvent");
+  auto example2 =
+      std::make_shared<com::someip::MethodProxyBase>("ExampleApp2/someproxy2");
+
   com->Add(example);
-  com->Add(event_example);
+  com->Add(example2);
   example->StartFindService();
-  event_example->SetValue({10, 11, 12, 13, 14, 15});
+  example2->StartFindService();
   while (true) {
     // this->gpio_.SetPinValue(5,gpio::Value::HIGH);
     std::ignore = example->Get();
+    std::ignore = example2->Get();
     // this->gpio_.SetPinValue(5,gpio::Value::LOW);
     std::this_thread::sleep_for(std::chrono::seconds(1));
   }

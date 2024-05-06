@@ -13,7 +13,7 @@
 namespace simba {
 namespace com {
 namespace data {
-enum MessageType {
+enum MessageType: uint8_t {
   kRequest = 0x00,
   kRequestNoReturn = 0x01,
   kNotification = 0x02,
