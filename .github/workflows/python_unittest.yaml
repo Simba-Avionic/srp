@@ -1,0 +1,33 @@
+name: Python Unit Test
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+      
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.11'
+        
+    - name: Install dependencies
+      run: |
+          pip install -r tools/sensors_data_display_api/requirements.txt
+          python3 -m pip install coverage
+        
+    - name: Run unit tests
+      run: |
+        cd tools/sensors_data_display_api/tests/
+        coverage run -m unittest discover -s . -v
+        coverage report -m
