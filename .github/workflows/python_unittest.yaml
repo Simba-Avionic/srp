@@ -30,13 +30,14 @@ jobs:
       run: |
         cd tools/sensors_data_display_api/tests/
         coverage run -m unittest discover -s . -v
-    - name: Check Code coverange
+    - name: Check Code Coverage
       run: |
         cd tools/sensors_data_display_api/tests/
         coverage_report=$(coverage report -m)
-        total_coverage=$(echo "$coverage_report" | grep "TOTAL" | awk '{print $NF}')
-        echo "Całkowita procentowa pokrywalność kodu: $total_coverage"
-        if [[ $total_coverage -lt 90 ]]; then
+        total_coverage=$(echo "$coverage_report" | grep "TOTAL" | awk '{print $NF}' | tr -d '%') # Usuwanie procentu
+        echo "Całkowita procentowa pokrywalność kodu: $total_coverage%"
+        if [ $total_coverage -lt 90 ]; then
           echo "Zbyt małe pokrycie kodu"
           exit 1
         fi
+      shell: bash
