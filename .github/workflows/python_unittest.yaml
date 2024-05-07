@@ -36,6 +36,7 @@ jobs:
         coverage_report=$(coverage report -m)
         total_coverage=$(echo "$coverage_report" | grep "TOTAL" | awk '{print $NF}')
         echo "Całkowita procentowa pokrywalność kodu: $total_coverage"
-        if (( $(echo "$total_coverage < 90" | bc -l) )); then
+        if [[ $total_coverage -lt 90 ]]; then
+          echo "Zbyt małe pokrycie kodu"
           exit 1
         fi
