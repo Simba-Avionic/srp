@@ -1,0 +1,56 @@
+name: Python Pylint Analysis
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  pylint-analysis:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pylint
+
+      - name: Run pylint and count errors
+        id: pylint
+        run: |
+          # Lista folderów, w których przeprowadzana jest analiza Pylint
+          folders=("tools")
+
+          total_errors=0
+
+          for folder in "${folders[@]}"; do
+            find "$folder" -type f -name "*.py" | while read -r file; do
+              errors=$(pylint --output-format=text "$file" | grep -c '^\*\*\*')
+              total_errors=$((total_errors + errors))
+            done
+          done
+
+          echo "::set-output name=total_errors::$total_errors"
+
+      - name: Display total errors
+        run: |
+          echo "Total errors: ${{ steps.pylint.outputs.total_errors }}"
+
+      - name: Check for errors and return error if any
+        run: |
+          total_errors=${{ steps.pylint.outputs.total_errors }}
+          if [ "$total_errors" -gt 0 ]; then
+            echo "Errors found. Exiting with status code 1."
+            exit 1
+          fi
