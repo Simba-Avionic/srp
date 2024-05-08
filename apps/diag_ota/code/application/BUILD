@@ -9,6 +9,5 @@ cc_library(
         "//communication-core/someip-controller:skeleton",
         "//core/application:simba_application",
         "//core/json:simba_json",
-        "//diag/base/controller:diag_controller",
     ],
 )

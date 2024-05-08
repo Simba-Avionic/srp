@@ -21,13 +21,11 @@
 #include "apps/diag_ota/code/application/services/uds_server.h"
 #include "communication-core/someip-controller/event_skeleton.h"
 #include "core/application/application_no_ipc.h"
-#include "diag/base/controller/idiag_controller.h"
 namespace simba {
 namespace diag_ota {
 
 class DiagOta : public core::ApplicationNoIPC {
  protected:
-  std::unique_ptr<diag::IDiagController> someip_diag_controller;
   uint32_t ecu_id{0};
   uint32_t eng_token{0};
   uint32_t plant_token{0};

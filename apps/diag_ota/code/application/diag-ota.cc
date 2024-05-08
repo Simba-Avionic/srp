@@ -124,10 +124,6 @@ core::ErrorCode DiagOta::Initialize(
         "EC_DiagOtaApp/currentMode");
     this->com->Add(mode_event);
   }
-
-  this->someip_diag_controller = std::make_unique<diag::DiagController>(
-      0x00, std::make_unique<com::soc::IpcSocket>());
-  this->someip_diag_controller->Init();
 }
 
 }  // namespace diag_ota
