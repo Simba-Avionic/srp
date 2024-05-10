@@ -26,8 +26,9 @@ void I2CService::RxCallback(const std::string& ip,
     std::shared_ptr<i2c::Header> headerPtr = i2c::I2CFactory::GetHeader(data);
     this->i2c_.Ioctl(headerPtr->GetAddress());
     std::vector<uint8_t> payload = i2c::I2CFactory::GetPayload(data);
-    std::vector<uint8_t> i2cRes;
+    std::optional<std::vector<uint8_t>> i2cRes;
     AppLogger::Debug("Receive i2c msg");
+    i2c::Header hdr(i2c::ACTION::RES,headerPtr->GetAddress(),headerPtr->GetServiceId());
     switch (headerPtr->GetAction()) {
     case i2c::ACTION::Write:
       i2c_.Write(payload);
@@ -39,19 +40,21 @@ void I2CService::RxCallback(const std::string& ip,
       break;
     case i2c::ACTION::ReadWrite:
       AppLogger::Warning("Receive READ WRITE request"+std::to_string(static_cast<int>(headerPtr->GetPayloadSize())));
-      if (payload.size() < 2 || payload.size()%2 != 0) {
-        this->sock_.Transmit(I2C_RES_IPC_ADDR+std::to_string(headerPtr->GetServiceId()), 0, {0});
+      if (payload.size() != 2) {
+        this->sock_.Transmit(I2C_RES_IPC_ADDR+std::to_string(headerPtr->GetServiceId()), 0,
+                  i2c::I2CFactory::GetBuffer(std::make_shared<i2c::Header>(hdr),{}));
         return;
       }
-      for (size_t i = 0; i < payload.size() - 1; i+=2) {
-        i2cRes = i2c_.ReadWrite(payload[i], payload[i+1]);
-        if (i2cRes.size() != payload[i+1]) {
-        this->sock_.Transmit(I2C_RES_IPC_ADDR+std::to_string(headerPtr->GetServiceId()), 0, {0});
+        i2cRes = i2c_.ReadWrite(payload[0], payload[1]);
+        if (!i2cRes.has_value()) {
+        this->sock_.Transmit(I2C_RES_IPC_ADDR+std::to_string(headerPtr->GetServiceId()), 0,
+                  i2c::I2CFactory::GetBuffer(std::make_shared<i2c::Header>(hdr),{}));
         return;
-      }
       }
       AppLogger::Warning("Send response to " +std::to_string(headerPtr->GetServiceId()));
-      this->sock_.Transmit(I2C_RES_IPC_ADDR+std::to_string(headerPtr->GetServiceId()), 0, i2cRes);
+      hdr.SetPaylaodSize(i2cRes.value().size());
+      this->sock_.Transmit(I2C_RES_IPC_ADDR+std::to_string(headerPtr->GetServiceId()), 0,
+                  i2c::I2CFactory::GetBuffer(std::make_shared<i2c::Header>(hdr), i2cRes.value()));
       break;
     case i2c::ACTION::PageRead:
       break;

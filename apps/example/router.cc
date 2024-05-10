@@ -22,6 +22,7 @@
 #include "communication-core/someip-controller/method_skeleton.h"
 #include "core/logger/Logger.h"
 #include "diag/dtc/controller/dtc.h"
+#include "mw/i2c_service/data/i2c_factory.h"
 namespace simba {
 namespace router {
 
@@ -37,9 +38,11 @@ core::ErrorCode Router::Run(std::stop_token token) {
   if (!res.has_value()) {
     AppLogger::Warning("NO VALUE IN RES");
   }
+  auto hdr = i2c::I2CFactory::GetHeader(res.value());
+  auto payload = i2c::I2CFactory::GetPayload(res.value());
   std::string str;
-  for (uint8_t c: res.value()) {
-    str+=std::to_string(static_cast<int>(c));
+  for (auto i = 0; i < hdr->GetPayloadSize(); i++) {
+    str+=std::to_string(static_cast<int>(payload[i]));
     str+=";";
   }
   AppLogger::Warning("RES:"+str);
