@@ -34,10 +34,11 @@ std::shared_ptr<Header> I2CFactory::GetHeader(const std::vector<uint8_t>& raw_da
         return std::make_shared<Header>(hdr);
     }
 std::vector<uint8_t> I2CFactory::GetPayload(const std::vector<uint8_t>& raw_data) {
-        if (raw_data.size() <= HDR_SIZE) {
+    if (raw_data.size() <= HDR_SIZE) {
             return {};
         }
-        return std::vector<uint8_t>(raw_data.begin() + HDR_SIZE, raw_data.end());
+        auto hdr = GetHeader(raw_data);
+        return std::vector<uint8_t>(raw_data.begin() + HDR_SIZE,raw_data.begin() + HDR_SIZE + hdr->GetPayloadSize());
     }
 }  // namespace i2c
 }  // namespace simba

@@ -30,16 +30,16 @@ namespace i2c {
 class I2CController{
  private:
   com::soc::IpcSocket sock_;
-  std::mutex mtx;
+  std::mutex mtx_;
+  std::condition_variable cv_;
+  bool response_received_ = false;
+  std::vector<uint8_t> response_data_;
   uint16_t service_id;
-  std::string my_addr_ipc{""};
-  std::optional<std::vector<uint8_t>> ReceiveFunc(std::string socketPath);
+  void RXCallback(const std::string& ip, const std::uint16_t& port,
+                            std::vector<std::uint8_t> data);
 
  public:
-  I2CController();
-  void Init(uint16_t service_id) {
-    this->service_id = service_id;
-  }
+  void Init(uint16_t service_id);
   /**
    * @brief 
    * 

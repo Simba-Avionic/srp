@@ -19,16 +19,17 @@ namespace i2c {
 namespace {
     const constexpr char* I2C_IPC_ADDR = "SIMBA.I2C";
 }
-static bool SocketExist(const std::string path) {
-  struct stat buffer;
-  return (stat(path.c_str(), &buffer) == 0);
+
+void I2CController::Init(uint16_t service_id) {
+    this->service_id = service_id;
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+    this->sock_.Init(com::soc::SocketConfig(I2C_IPC_ADDR + '.' + std::to_string(service_id), 0, 0));
+    this->sock_.SetRXCallback(
+          std::bind(&I2CController::RXCallback, this, std::placeholders::_1,
+                    std::placeholders::_2, std::placeholders::_3));
+    this->sock_.StartRXThread();
 }
 
-
-I2CController::I2CController() {
-    this->my_addr_ipc = I2C_IPC_ADDR + '.' + std::to_string(this->service_id);
-    AppLogger::Warning(my_addr_ipc);
-}
 core::ErrorCode I2CController::Write(const uint8_t address, const std::vector<uint8_t> data) {
     AppLogger::Debug("Sent i2c msg");
     auto hdr = Header(ACTION::Write, address, this->service_id);
@@ -42,48 +43,26 @@ core::ErrorCode I2CController::PageWrite(const uint8_t address, const std::vecto
     return this->sock_.Transmit(I2C_IPC_ADDR, 0, buf);
 }
 
+void I2CController::RXCallback(const std::string& ip, const std::uint16_t& port,
+                            std::vector<std::uint8_t> data) {
+    std::lock_guard<std::mutex> lock(mtx_);
+    response_data_ = std::move(data);
+    response_received_ = true;
+    cv_.notify_one();
+}
+
 std::optional<std::vector<uint8_t>> I2CController::Read(const uint8_t address, const uint8_t reg, const uint8_t size) {
     AppLogger::Warning("Sent i2c msg");
     auto buf = I2CFactory::GetBuffer(
                 std::make_shared<Header>(ACTION::ReadWrite, address, this->service_id), {reg, size});
     auto err = this->sock_.Transmit(I2C_IPC_ADDR, 0, buf);
-    AppLogger::Warning("Wait for response");
-    return ReceiveFunc(this->my_addr_ipc);
-}
-std::optional<std::vector<uint8_t>> I2CController::ReceiveFunc(std::string socketPath) {
-  int server_sock, len, rc;
-  int bytes_rec = 0;
-  struct sockaddr_un server_sockaddr, peer_sock;
-memset(&server_sockaddr, 0, sizeof(struct sockaddr_un));
-  server_sock = socket(AF_UNIX, SOCK_DGRAM, 0);
-  if (server_sock == -1) {
+    std::unique_lock<std::mutex> lock(mtx_);
+    cv_.wait_for(lock, std::chrono::seconds(2), [this] { return response_received_; });
+    if (response_received_){
+        response_received_ = false;
+        return response_data_;
+    }
     return {};
-  }
-  umask(0);
-  server_sockaddr.sun_family = AF_UNIX;
-  if (SocketExist("/run/" + socketPath)) {
-    remove(("/run/" + socketPath).c_str());
-  }
-  strcpy(server_sockaddr.sun_path,             // NOLINT
-         ("/run/" + socketPath).c_str());  // NOLINT
-  len = sizeof(server_sockaddr);
-  unlink(("/run/" + socketPath).c_str());
-  struct timeval tv;
-  tv.tv_sec = 1;
-  tv.tv_usec = 0;
-  setsockopt(server_sock, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
-  rc = bind(server_sock, (struct sockaddr*)&server_sockaddr, len);
-  if (rc == -1) {
-    return {};
-  }
-  std::array<char, 256 * 2> buffor;
-  uint8_t t = 0;
-  do {
-    bytes_rec =
-        recvfrom(server_sock, reinterpret_cast<char*>(&buffor), 256 * 2, 0,
-                 (struct sockaddr*)&peer_sock, (socklen_t*)&len);  // NOLINT
-  } while (bytes_rec >= 0 || t > 5);
-    return std::vector<uint8_t>{std::begin(buffor), std::end(buffor)};
 }
 
 }  // namespace i2c

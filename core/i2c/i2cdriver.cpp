@@ -29,6 +29,7 @@ core::ErrorCode I2CDriver::Init() {
 
 core::ErrorCode I2CDriver::Ioctl(const uint8_t address, const uint16_t type) {
     if (ioctl(this->i2cFile, type, address) < 0) {
+      AppLogger::Warning("Cant ioctl device");
         return core::ErrorCode::kInitializeError;
     }
     return core::ErrorCode::kOk;
@@ -50,18 +51,19 @@ core::ErrorCode I2CDriver::PageWrite(std::vector<uint8_t> data) {
     }
     return core::ErrorCode::kOk;
 }
-std::optional<std::vector<uint8_t>> I2CDriver::ReadWrite(const uint8_t reg, const uint8_t size) {
+std::optional<std::vector<uint8_t>> I2CDriver::ReadWrite(uint8_t reg, const uint8_t size) {
   AppLogger::Warning("rozmiar bufora to:"+std::to_string(static_cast<int>(size)));
-    if (write(i2cFile, &reg, 1) != 1) {
-      AppLogger::Warning("Cant select reg"+ std::to_string(static_cast<int>(reg)));
-      return {};
+    if (write(i2cFile, &reg, 1) == -1) {
+      AppLogger::Warning("Cant select reg "+ std::to_string(static_cast<int>(reg)));
     }
-    uint8_t buf[size];
-    if (read(i2cFile, buf, size) != size) {
+    std::vector<uint8_t> res;
+    res.reserve(size);
+    if (read(i2cFile, res.data(), size) != size) {
       AppLogger::Warning("Cant read data");
       return {};
     }
-    return std::vector<uint8_t>(buf, buf + size);
+    AppLogger::Warning("Returned vector size"+std::to_string(res.size())+":"+std::to_string(res[0]));
+    return res;
 }
 }  // namespace i2c
 }  // namespace core
