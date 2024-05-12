@@ -24,7 +24,7 @@ class Homework : public core::ApplicationNoIPC{
   core::ErrorCode Initialize(
       const std::unordered_map<std::string, std::string>& parms) final;
  private:
- public: 
+ public:
   ~Homework() = default;
 };
 }  // namespace simba
