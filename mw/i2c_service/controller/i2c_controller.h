@@ -31,10 +31,13 @@ class I2CController{
  private:
   com::soc::IpcSocket sock_;
   std::mutex mtx_;
+  uint16_t transmission_id{0};
+  uint16_t service_id;
+
   std::condition_variable cv_;
   bool response_received_ = false;
-  std::vector<uint8_t> response_data_;
-  uint16_t service_id;
+  std::shared_ptr<i2c::Header> response_hdr;
+  std::optional<std::vector<uint8_t>> response_payload;
   void RXCallback(const std::string& ip, const std::uint16_t& port,
                             std::vector<std::uint8_t> data);
 

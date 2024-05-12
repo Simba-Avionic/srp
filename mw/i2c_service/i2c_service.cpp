@@ -31,36 +31,46 @@ void I2CService::RxCallback(const std::string& ip,
       AppLogger::Warning("Cant ioctl i2c device");
       return;
     }
-    std::vector<uint8_t> payload = i2c::I2CFactory::GetPayload(data);
+    std::optional<std::vector<uint8_t>> payload = i2c::I2CFactory::GetPayload(data);
     if (headerPtr->GetAction() == i2c::ACTION::Write) {
-      i2c_.Write(payload);
+      if (payload.has_value()) {
+        i2c_.Write(payload.value());
+      }
       return;
     } else if (headerPtr->GetAction() == i2c::ACTION::PageWrite) {
-      i2c_.PageWrite(payload);
+      if (payload.has_value()) {
+        i2c_.PageWrite(payload.value());
+      }
       return;
     } else if (headerPtr->GetAction() == i2c::ACTION::ReadWrite) {
+      if (payload.has_value()) {
         AppLogger::Warning("Receive READ WRITE request"+std::to_string(static_cast<int>(headerPtr->GetPayloadSize())));
-      if (payload.size() != 2) {
+      if (payload.value().size() != 2) {
+        AppLogger::Warning("first error");
         this->sock_.Transmit(I2C_RES_IPC_ADDR+std::to_string(
-              headerPtr->GetServiceId()), 0, i2c::I2CFactory::GetBuffer(std::make_shared<i2c::Header>(
-                            i2c::ACTION::RES, headerPtr->GetAddress(), headerPtr->GetServiceId()), {}));
+              headerPtr->GetServiceId()), 0, i2c::I2CFactory::GetBuffer(std::make_shared<i2c::Header>(i2c::ACTION::RES,
+                            headerPtr->GetAddress(), headerPtr->GetServiceId(), headerPtr->GetTransmisionID()), {}));
         return;
       }
-      AppLogger::Warning("p1"+std::to_string(payload[0])+",p2:"+std::to_string(payload[1]));
-      auto i2cRes = i2c_.ReadWrite(payload[0], payload[1]);
+      AppLogger::Warning("p1"+std::to_string(payload.value()[0])+",p2:"+std::to_string(payload.value()[1]));
+      auto i2cRes = i2c_.ReadWrite(payload.value()[0], payload.value()[1]);
       if (!i2cRes.has_value()) {
         AppLogger::Warning("i2cRes dont have value???????????QOJFNBSIFAHBIHFB(ASFBF)");
         this->sock_.Transmit(I2C_RES_IPC_ADDR+std::to_string(
-              headerPtr->GetServiceId()), 0, i2c::I2CFactory::GetBuffer(std::make_shared<i2c::Header>(
-                            i2c::ACTION::RES, headerPtr->GetAddress(), headerPtr->GetServiceId()), {}));
+              headerPtr->GetServiceId()), 0, i2c::I2CFactory::GetBuffer(std::make_shared<i2c::Header>(i2c::ACTION::RES,
+                            headerPtr->GetAddress(), headerPtr->GetServiceId(), headerPtr->GetTransmisionID()), {}));
+        AppLogger::Warning("second error");
         return;
       }
       AppLogger::Warning("Send response to " +std::to_string(headerPtr->GetServiceId())+
                 "size:"+std::to_string(i2cRes.value().size()) +"with payload:"+std::to_string(i2cRes.value()[0]));
-      i2c::Header hdr(i2c::ACTION::RES, headerPtr->GetAddress(), headerPtr->GetServiceId());
+      AppLogger::Warning(I2C_RES_IPC_ADDR+std::to_string(headerPtr->GetServiceId()));
+      i2c::Header hdr(i2c::ACTION::RES, headerPtr->GetAddress(),
+                        headerPtr->GetServiceId(), headerPtr->GetTransmisionID());
       hdr.SetPaylaodSize(i2cRes.value().size());
       this->sock_.Transmit(I2C_RES_IPC_ADDR+std::to_string(headerPtr->GetServiceId()), 0,
                   i2c::I2CFactory::GetBuffer(std::make_shared<i2c::Header>(hdr), i2cRes.value()));
+    }
     }
 }
 

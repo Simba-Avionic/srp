@@ -38,9 +38,10 @@ core::ErrorCode Router::Run(std::stop_token token) {
   if (!res.has_value()) {
     AppLogger::Warning("NO VALUE IN RES");
   } else {
+  AppLogger::Warning("RES:"+std::to_string(res.value()[0]));
   auto hdr = i2c::I2CFactory::GetHeader(res.value());
   auto payload = i2c::I2CFactory::GetPayload(res.value());
-  AppLogger::Warning("RES:"+std::to_string(payload[0]));
+
   std::this_thread::sleep_for(std::chrono::seconds(2));
   }
   }
