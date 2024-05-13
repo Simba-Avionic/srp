@@ -10,14 +10,14 @@
  */
 #ifndef MW_I2C_SERVICE_CONTROLLER_I2C_CONTROLLER_H_
 #define MW_I2C_SERVICE_CONTROLLER_I2C_CONTROLLER_H_
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 #include <memory>
 #include <vector>
 #include <string>
 #include <utility>
 #include <optional>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
 #include <condition_variable>  // NOLINT
 #include "core/i2c/i2cdriver.hpp"
 #include "communication-core/sockets/ipc_socket.h"

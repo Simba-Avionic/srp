@@ -15,6 +15,7 @@
 #include <unordered_map>
 #include <string>
 #include <vector>
+#include <future> // NOLINT
 
 #include "mw/i2c_service/controller/i2c_controller.h"
 #include "mw/gpio_server/controller/gpio_controller.hpp"

@@ -11,6 +11,8 @@
 #include <vector>
 #include <string>
 #include <thread>  // NOLINT
+#include <future>  // NOLINT
+#include <chrono> // NOLINT
 
 #include "mw/i2c_service/controller/pca9685/controller.hpp"
 #include "core/json/json_parser.h"

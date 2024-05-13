@@ -10,13 +10,13 @@
  */
 #include "apps/example/router.h"
 
-#include <memory>
-#include <vector>
 #include <fcntl.h>
 #include <sys/ioctl.h>
 #include <linux/i2c-dev.h>
 #include <unistd.h>
 
+#include <memory>
+#include <vector>
 #include "communication-core/someip-controller/event_proxy.h"
 #include "communication-core/someip-controller/method_proxy.h"
 #include "communication-core/someip-controller/method_skeleton.h"
@@ -33,12 +33,13 @@ namespace {
 
 core::ErrorCode Router::Run(std::stop_token token) {
   while (true) {
-  auto res = this->i2c_.Read(BME280_ADDR, 0x00, 1);
+  auto res = this->i2c_.Read(BME280_ADDR, 0x00, 3);
   AppLogger::Warning("Receive response");
   if (!res.has_value()) {
     AppLogger::Warning("NO VALUE IN RES");
   } else {
-  AppLogger::Warning("RES:"+std::to_string(res.value()[0]));
+  AppLogger::Warning("RES:"+std::to_string(res.value()[0])+":"
+  +std::to_string(res.value()[1])+":"+std::to_string(res.value()[2]));
   auto hdr = i2c::I2CFactory::GetHeader(res.value());
   auto payload = i2c::I2CFactory::GetPayload(res.value());
 

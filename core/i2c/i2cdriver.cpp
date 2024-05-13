@@ -52,18 +52,15 @@ core::ErrorCode I2CDriver::PageWrite(std::vector<uint8_t> data) {
     return core::ErrorCode::kOk;
 }
 std::optional<std::vector<uint8_t>> I2CDriver::ReadWrite(uint8_t reg, const uint8_t size) {
-  AppLogger::Warning("rozmiar bufora to:"+std::to_string(static_cast<int>(size)));
     if (write(i2cFile, &reg, 1) == -1) {
       AppLogger::Warning("Cant select reg "+ std::to_string(static_cast<int>(reg)));
     }
-    std::vector<uint8_t> res;
-    res.reserve(size);
-    if (read(i2cFile, res.data(), size) != size) {
+    std::vector<uint8_t> buffer(size);
+    if (read(i2cFile, buffer.data(), size) != size) {
       AppLogger::Warning("Cant read data");
       return {};
     }
-    AppLogger::Warning("Returned vector size"+std::to_string(res.size())+":"+std::to_string(res[0]));
-    return res;
+    return std::vector<uint8_t>(buffer);
 }
 }  // namespace i2c
 }  // namespace core

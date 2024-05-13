@@ -38,7 +38,7 @@ std::optional<std::vector<uint8_t>> I2CFactory::GetPayload(const std::vector<uin
             return {};
         }
         auto hdr = GetHeader(raw_data);
-        return std::vector<uint8_t>(raw_data.begin() + HDR_SIZE,raw_data.begin() + HDR_SIZE + hdr->GetPayloadSize());
+        return std::vector<uint8_t>(raw_data.begin() + HDR_SIZE, raw_data.begin() + HDR_SIZE + hdr->GetPayloadSize());
     }
 }  // namespace i2c
 }  // namespace simba

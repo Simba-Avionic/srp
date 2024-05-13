@@ -55,7 +55,7 @@ TEST(TESTCheckServoPOS, TestPOS) {
   wrapper.Init();
   EXPECT_FALSE(wrapper.read_pos(0).has_value());
   EXPECT_TRUE(wrapper.read_pos(1).has_value());
-  EXPECT_EQ(wrapper.read_pos(1).value(),0);
+  EXPECT_EQ(wrapper.read_pos(1).value(), 0);
 }
 
 TEST(TestPCAController, DataCreateTest) {

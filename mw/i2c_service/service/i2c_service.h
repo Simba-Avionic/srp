@@ -8,8 +8,8 @@
  * @copyright Copyright (c) 2024
  * 
  */
-#ifndef MW_I2C_SERVICE_I2C_SERVICE_H_
-#define MW_I2C_SERVICE_I2C_SERVICE_H_
+#ifndef MW_I2C_SERVICE_SERVICE_I2C_SERVICE_H_
+#define MW_I2C_SERVICE_SERVICE_I2C_SERVICE_H_
 #include <vector>
 #include <string>
 #include <unordered_map>
@@ -39,4 +39,4 @@ class I2CService : public core::ApplicationMW {
 }  // namespace mw
 }  // namespace simba
 
-#endif  // MW_I2C_SERVICE_I2C_SERVICE_H_
+#endif  // MW_I2C_SERVICE_SERVICE_I2C_SERVICE_H_
