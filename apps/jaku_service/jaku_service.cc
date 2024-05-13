@@ -23,11 +23,36 @@ std::vector<uint8_t> floatToBytes(float value) {
 }
 
 core::ErrorCode JakuService::Run(std::stop_token token) {
+    bool sendDiode = true;
+    uint8_t diodeCounter = 0;
+    uint8_t success;
+    auto diode_method = 
+        std::make_shared<com::someip::MethodProxyBase>("HomeworkApp/diodeMethod");
+    com->Add(diode_method);
+    diode_method->StartFindService();
     while(true){
         this->temp_event_1->SetValue(temp_vector_1);
         this->temp_event_2->SetValue(temp_vector_2);
         this->temp_event_3->SetValue(temp_vector_3);
-        std::this_thread::sleep_for(std::chrono::seconds(2));
+        if (diodeCounter == 3){
+            if(sendDiode){
+                success = diode_method->Get({0});
+                sendDiode = false;
+            }
+            else{
+                success = diode_method->Get({1});
+                sendDiode = true;
+            }
+            diodeCounter = 0;
+            if success[0] == 1{
+                AppLogger::Info("Diode change successfull");
+            }
+            else{
+                AppLogger::Info("Diode error");
+            }
+        }
+        std::this_thread::sleep_for(std::chrono::seconds(1));
+        diodeCounter++;
     }
     return core::ErrorCode::kOk;
 }
