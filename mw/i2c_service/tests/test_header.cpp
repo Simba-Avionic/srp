@@ -43,11 +43,11 @@ TEST_P(HeaderConstructorTest, ConstructorCheck) {
     EXPECT_EQ(hdr.GetTransmisionID(), transmitionID);
 }
 
-TEST(FACTORY, FACTORY_CHECK_1) {
+TEST(FACTORY, FactoryCheckTestWithoudPayload) {
     const uint16_t service_id = 0x22;
     const auto action =  simba::i2c::ACTION::Write;
     const uint16_t address = 0x11;
-    std::vector<uint8_t> payload = {0, 1, 2, 3, 4};
+    std::vector<uint8_t> payload = {};
     auto buf = simba::i2c::I2CFactory::GetBuffer(
                  std::make_shared<simba::i2c::Header>(action, address, service_id), payload);
     auto hdr2 = simba::i2c::I2CFactory::GetHeader(buf);
@@ -57,8 +57,7 @@ TEST(FACTORY, FACTORY_CHECK_1) {
     EXPECT_EQ(0, hdr2->GetTransmisionID());
     EXPECT_EQ(address, hdr2->GetAddress());
     EXPECT_EQ(payload.size(), hdr2->GetPayloadSize());
-    EXPECT_EQ(payload2.size(), payload.size());
-    EXPECT_EQ(payload, payload2);
+    EXPECT_EQ(payload2.has_value(), false);
 }
 
 class FactoryCheckTest : public ::testing::TestWithParam<
@@ -67,7 +66,6 @@ class FactoryCheckTest : public ::testing::TestWithParam<
 
 INSTANTIATE_TEST_SUITE_P(FactoryCheckTestParameters, FactoryCheckTest,
     ::testing::Values(
-        std::make_tuple(0x00, simba::i2c::ACTION::Write, 0x00, std::vector<uint8_t>{}),
         std::make_tuple(0xFF, simba::i2c::ACTION::PageRead, 0xFF, std::vector<uint8_t>{0}),
         std::make_tuple(0xAF, simba::i2c::ACTION::PageWrite, 0xAF, std::vector<uint8_t>{0, 1}),
         std::make_tuple(0xFA, simba::i2c::ACTION::Read, 0xFB, std::vector<uint8_t>{0, 1, 2}),
@@ -86,6 +84,7 @@ TEST_P(FactoryCheckTest, FactoryCheck) {
     EXPECT_EQ(0, hdr2->GetTransmisionID());
     EXPECT_EQ(address, hdr2->GetAddress());
     EXPECT_EQ(payload.size(), hdr2->GetPayloadSize());
-    EXPECT_EQ(payload2.size(), payload.size());
+    EXPECT_EQ(payload2.value().size(), payload.size());
     EXPECT_EQ(payload, payload2);
 }
+

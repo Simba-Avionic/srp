@@ -49,6 +49,7 @@ class Header : public com::core::network::NetworkDataStructure {
     uint8_t GetPayloadSize() { return this->payload_size.Get(); }
     void SetTransmitionID(uint16_t transmisionID) { this->transmission_id.Set(transmisionID); }
     void SetPaylaodSize(uint8_t payload_size) { this->payload_size.Set(payload_size); }
+    void SetAction(ACTION action) { this->action.Set(static_cast<uint8_t>(action)); }
     Header(ACTION action, uint8_t address, uint16_t service_id, uint16_t transmissionID = 0);
 };
 

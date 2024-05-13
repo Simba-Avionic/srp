@@ -70,11 +70,12 @@ std::optional<std::vector<uint8_t>> I2CController::Read(const uint8_t address, c
     auto buf = I2CFactory::GetBuffer(
                 std::make_shared<Header>(ACTION::ReadWrite,
                             address, this->service_id, current_transmission_id), {reg, size});
-    auto err = this->sock_.Transmit(I2C_IPC, 0, buf);
+    this->sock_.Transmit(I2C_IPC, 0, buf);
     if (cv_.wait_for(lock, std::chrono::seconds(3), [this, current_transmission_id] {
         return response_received_ && response_hdr->GetTransmisionID() == current_transmission_id;
     })) {
-        AppLogger::Warning("Received: " + std::to_string(response_hdr->GetTransmisionID()) + ":" + std::to_string(current_transmission_id));
+        AppLogger::Warning("Received: " +
+                std::to_string(response_hdr->GetTransmisionID()) + ":" + std::to_string(current_transmission_id));
         if (response_received_ && response_hdr->GetTransmisionID() == current_transmission_id) {
             response_received_ = false;
             this->transmission_id++;
