@@ -38,7 +38,7 @@ jobs:
       - name: Run build engine computer
         if: contains(steps.pr-labels.outputs.labels, 'check-bbb')
         run: |
-            bazel build --config=bbb //deployment/cpu/ec:pkg
+            bazel build --platforms=//bazel/platforms:bbb //deployment/cpu/ec:pkg
       - name: Add msg
         if: contains(steps.pr-labels.outputs.labels, 'check')
         uses: thollander/actions-comment-pull-request@v2
@@ -48,7 +48,7 @@ jobs:
       - name: Run build flight computer
         if: contains(steps.pr-labels.outputs.labels, 'check-bbb')
         run: |
-            bazel build --config=bbb //deployment/cpu/fc:pkg
+            bazel build --platforms=//bazel/platforms:bbb //deployment/cpu/fc:pkg
       - name: Add msg_2
         if: contains(steps.pr-labels.outputs.labels, 'check')
         uses: thollander/actions-comment-pull-request@v2

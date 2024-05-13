@@ -7,14 +7,13 @@
 	"image": "matiko42/simba_dev_container",
 	// Features to add to the dev container. More info: https://containers.dev/features.
 	"features": {
-        "ghcr.io/balazs23/devcontainers-features/bazel":1
     },
 
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	// "forwardPorts": [],
 
 	// Use 'postCreateCommand' to run commands after the container is created.
-	"postCreateCommand": "sh /workspaces/srp/.devcontainer/start.sh",
+	// "postCreateCommand": "sh /workspaces/srp/.devcontainer/start.sh",
 
 	// Configure tool-specific properties.
 	"customizations": {
