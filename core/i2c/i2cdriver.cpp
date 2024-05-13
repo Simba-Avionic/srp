@@ -10,9 +10,8 @@
  */
 
 #include "core/i2c/i2cdriver.hpp"
-#include "core/logger/Logger.h"
 #include <cstdint>
-
+#include "core/logger/Logger.h"
 
 namespace simba {
 namespace core {
@@ -38,7 +37,7 @@ core::ErrorCode I2CDriver::Ioctl(const uint8_t address, const uint16_t type) {
 }
 
 core::ErrorCode I2CDriver::Write(const std::vector<uint8_t> RegData) {
-  for (int i = 0; i < RegData.size(); i += 2) {
+  for (uint16_t i = 0; i < RegData.size(); i += 2) {
     uint8_t buf[2] = {RegData[i], RegData[i + 1]};
     if (write(i2cFile, buf, 2) != 2) {
       return core::ErrorCode::kInitializeError;
