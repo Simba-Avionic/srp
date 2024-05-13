@@ -26,31 +26,48 @@
 namespace simba {
 namespace router {
 
-namespace {
-  const constexpr uint8_t BME280_ADDR = 0x50;
-  const constexpr uint8_t BME280_TEMP_REG = 0xFA;
-}
-
 core::ErrorCode Router::Run(std::stop_token token) {
+  uint8_t servo_pos;
+  auto proxy_event = std::make_shared<com::someip::EventProxyBase>(
+      "ExampleApp/someevent",
+      [this](const std::vector<uint8_t>) { AppLogger::Info("EVENT !!!!!!!"); });
+  auto example = std::make_shared<com::someip::MethodSkeleton>(
+      "ExampleApp/exampleMethod",
+      [this](const std::vector<uint8_t> payload)
+          -> std::optional<std::vector<uint8_t>> {
+        return std::vector<uint8_t>{0, 1, 2};
+      });
+  auto off_prime = std::make_shared<com::someip::MethodProxyBase>("ExampleApp/offPrime");
+  auto on_prime = std::make_shared<com::someip::MethodProxyBase>("ExampleApp/onPrime");
+  auto servo  = std::make_shared<com::someip::MethodProxyBase>("ExampleApp/setServoValue");
+  com->Add(example);
+  com->Add(on_prime);
+  com->Add(servo);
+  com->Add(off_prime);
+  com->Add(proxy_event);
+  on_prime->StartFindService();
+  servo->StartFindService();
+  off_prime->StartFindService();
+  proxy_event->StartFindService();
+  auto dtc = std::make_shared<diag::dtc::DTCObject>(0x20);
+  diag_controller.RegisterDTC(dtc);
   while (true) {
-  auto res = this->i2c_.Read(BME280_ADDR, 0x00, 3);
-  AppLogger::Warning("Receive response");
-  if (!res.has_value()) {
-    AppLogger::Warning("NO VALUE IN RES");
-  } else {
-  AppLogger::Warning("RES:"+std::to_string(res.value()[0])+":"
-  +std::to_string(res.value()[1])+":"+std::to_string(res.value()[2]));
-  auto hdr = i2c::I2CFactory::GetHeader(res.value());
-  auto payload = i2c::I2CFactory::GetPayload(res.value());
-
-  std::this_thread::sleep_for(std::chrono::seconds(2));
+    dtc->Pass();
+    std::ignore = on_prime->Get();
+    std::ignore = servo->Get({1});
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+    std::ignore = off_prime->Get();
+    std::ignore = servo->Get({0});
+    dtc->Failed();
+    std::this_thread::sleep_for(std::chrono::seconds(1));
   }
-  }
+  return core::ErrorCode::kOk;
 }
 
 core::ErrorCode Router::Initialize(
     const std::unordered_map<std::string, std::string>& parms) {
-      this->i2c_.Init(12);
+  this->gpio_ = gpio::GPIOController(new com::soc::IpcSocket());
+  this->gpio_.Init(12);
   return core::ErrorCode::kOk;
 }
 }  // namespace router
