@@ -11,8 +11,8 @@
 #ifndef APPS_JAKU_SERVICE_JAKU_SERVICE_H_
 #define APPS_JAKU_SERVICE_JAKU_SERVICE_H_
 
-#include "core/application/application_no_ipc.h"
 #include "mw/temp/controller/temp_controller.h"
+#include "core/application/application_no_ipc.h"
 #include "communication-core/someip-controller/event_skeleton.h"
 
 namespace simba {

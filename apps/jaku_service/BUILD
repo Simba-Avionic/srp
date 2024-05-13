@@ -11,7 +11,7 @@ cc_binary(
     deps = [
         "//mw/temp/controller:temp_controller_mw",
         "//communication-core/someip-controller:skeleton",
-        # "//communication-core/someip-controller:",
+        "//communication-core/someip-controller:proxy",
         "//core/application:simba_application",
         "@untar",
     ]

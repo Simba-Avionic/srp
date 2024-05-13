@@ -10,6 +10,7 @@
  */
 #include "apps/jaku_service/jaku_service.h"
 #include "mw/temp/temp_reading_msg/temp_reading_msg_factory.h"
+#include "communication-core/someip-controller/method_proxy.h"
 #include <chrono>
 #include <thread>
 
@@ -25,7 +26,7 @@ std::vector<uint8_t> floatToBytes(float value) {
 core::ErrorCode JakuService::Run(std::stop_token token) {
     bool sendDiode = true;
     uint8_t diodeCounter = 0;
-    uint8_t success;
+    std::vector<uint8_t> success;
     auto diode_method = 
         std::make_shared<com::someip::MethodProxyBase>("HomeworkApp/diodeMethod");
     com->Add(diode_method);
@@ -36,16 +37,29 @@ core::ErrorCode JakuService::Run(std::stop_token token) {
         this->temp_event_3->SetValue(temp_vector_3);
         if (diodeCounter == 3){
             if(sendDiode){
-                success = diode_method->Get({0});
+                
+                auto result = diode_method->Get({0});
+                if(result.has_value()){
+                    success = result.value();
+                }
+                else{
+                    AppLogger::Info("Response not received");
+                }
                 sendDiode = false;
             }
             else{
-                success = diode_method->Get({1});
+                auto result = diode_method->Get({1});
+                if(result.has_value()){
+                    success = result.value();
+                }
+                else{
+                    AppLogger::Info("Response not received");
+                }
                 sendDiode = true;
             }
             diodeCounter = 0;
-            if success[0] == 1{
-                AppLogger::Info("Diode change successfull");
+            if (success[0] == 1){
+                AppLogger::Info("Diode change successful");
             }
             else{
                 AppLogger::Info("Diode error");
@@ -59,9 +73,9 @@ core::ErrorCode JakuService::Run(std::stop_token token) {
 
 core::ErrorCode JakuService::Initialize(
     const std::unordered_map<std::string, std::string>& params){
-    this->temp_event_1 = std::make_shared<com::someip::EventSkeleton>("JakuApp/newTempEvent_1");
-    this->temp_event_2 = std::make_shared<com::someip::EventSkeleton>("JakuApp/newTempEvent_2");
-    this->temp_event_3 = std::make_shared<com::someip::EventSkeleton>("JakuApp/newTempEvent_3");
+    this->temp_event_1 = std::make_shared<com::someip::EventSkeleton>("JakuApp/sentTempEvent_1");
+    this->temp_event_2 = std::make_shared<com::someip::EventSkeleton>("JakuApp/sentTempEvent_2");
+    this->temp_event_3 = std::make_shared<com::someip::EventSkeleton>("JakuApp/sentTempEvent_3");
     com->Add(temp_event_1);
     com->Add(temp_event_2);
     com->Add(temp_event_3);
