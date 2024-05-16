@@ -4,6 +4,7 @@ cc_library(
     hdrs = ["i2cdriver.hpp",],
     deps = [
         "//core/common:common_types",
+        "//core/logger:Logger",
     ],
     visibility = ["//core:__subpackages__",
     "//mw:__subpackages__",

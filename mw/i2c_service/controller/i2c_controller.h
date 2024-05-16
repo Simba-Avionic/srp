@@ -10,10 +10,14 @@
  */
 #ifndef MW_I2C_SERVICE_CONTROLLER_I2C_CONTROLLER_H_
 #define MW_I2C_SERVICE_CONTROLLER_I2C_CONTROLLER_H_
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 #include <memory>
 #include <vector>
 #include <string>
 #include <utility>
+#include <optional>
 #include <condition_variable>  // NOLINT
 #include "core/i2c/i2cdriver.hpp"
 #include "communication-core/sockets/ipc_socket.h"
@@ -26,15 +30,19 @@ namespace i2c {
 class I2CController{
  private:
   com::soc::IpcSocket sock_;
-  std::mutex mtx;
-  I2CFactory factory_;
+  std::mutex mtx_;
+  uint16_t transmission_id{0};
   uint16_t service_id;
 
+  std::condition_variable cv_;
+  bool response_received_ = false;
+  std::shared_ptr<i2c::Header> response_hdr;
+  std::optional<std::vector<uint8_t>> response_payload;
+  void RXCallback(const std::string& ip, const std::uint16_t& port,
+                            std::vector<std::uint8_t> data);
+
  public:
-  I2CController();
-  void Init(uint16_t service_id) {
-    this->service_id = service_id;
-  }
+  void Init(uint16_t service_id);
   /**
    * @brief 
    * 
@@ -51,6 +59,8 @@ class I2CController{
    * @return core::ErrorCode 
    */
   core::ErrorCode PageWrite(const uint8_t address, const std::vector<uint8_t> data);
+
+  std::optional<std::vector<uint8_t>> Read(const uint8_t address, const uint8_t reg, const uint8_t size = 1);
 };
 }  // namespace i2c
 }  // namespace simba
