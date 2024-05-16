@@ -16,17 +16,17 @@
 
 // Definicja testu parametryzowanego
 class HeaderConstructorTest : public ::testing::TestWithParam<
-                        std::tuple<uint16_t, simba::i2c::ACTION, uint16_t, uint16_t>> {
+                        std::tuple<uint16_t, simba::i2c::ACTION, uint16_t>> {
 };
 
 // Definicja parametrów testu
 INSTANTIATE_TEST_SUITE_P(HeaderConstructorTestParameters, HeaderConstructorTest,
     ::testing::Values(
-        std::make_tuple(0xAF, simba::i2c::ACTION::Write, 0x00, 0x00),
-        std::make_tuple(0x11, simba::i2c::ACTION::RES, 0xFF, 0x01),
-        std::make_tuple(0x55, simba::i2c::ACTION::Read, 0xFA, 0xFF),
-        std::make_tuple(0xFF, simba::i2c::ACTION::PageRead, 0xAF, 0xAF),
-        std::make_tuple(0xFA, simba::i2c::ACTION::PageWrite, 0x55, 0xFA)
+        std::make_tuple(0xAF, simba::i2c::ACTION::Write, 0x00),
+        std::make_tuple(0x11, simba::i2c::ACTION::RES, 0xFF),
+        std::make_tuple(0x55, simba::i2c::ACTION::Read, 0xFA),
+        std::make_tuple(0xFF, simba::i2c::ACTION::PageRead, 0xAF),
+        std::make_tuple(0xFA, simba::i2c::ACTION::PageWrite, 0x55)
     )
 );
 
@@ -35,12 +35,10 @@ TEST_P(HeaderConstructorTest, ConstructorCheck) {
     const uint16_t service_id = std::get<0>(params);
     const simba::i2c::ACTION action = std::get<1>(params);
     const uint8_t address = std::get<2>(params);
-    const uint16_t transmitionID = std::get<3>(params);
-    simba::i2c::Header hdr{action, address, service_id, transmitionID};
+    simba::i2c::Header hdr{action, address, service_id};
     EXPECT_EQ(hdr.GetAction(), action);
     EXPECT_EQ(hdr.GetServiceId(), service_id);
     EXPECT_EQ(hdr.GetAddress(), address);
-    EXPECT_EQ(hdr.GetTransmisionID(), transmitionID);
 }
 
 TEST(FACTORY, FactoryCheckTestWithoudPayload) {
@@ -54,7 +52,6 @@ TEST(FACTORY, FactoryCheckTestWithoudPayload) {
     auto payload2 = simba::i2c::I2CFactory::GetPayload(buf);
     EXPECT_EQ(action, hdr2->GetAction());
     EXPECT_EQ(service_id, hdr2->GetServiceId());
-    EXPECT_EQ(0, hdr2->GetTransmisionID());
     EXPECT_EQ(address, hdr2->GetAddress());
     EXPECT_EQ(payload.size(), hdr2->GetPayloadSize());
     EXPECT_EQ(payload2.has_value(), false);
@@ -81,7 +78,6 @@ TEST_P(FactoryCheckTest, FactoryCheck) {
     auto payload2 = simba::i2c::I2CFactory::GetPayload(buf);
     EXPECT_EQ(action, hdr2->GetAction());
     EXPECT_EQ(service_id, hdr2->GetServiceId());
-    EXPECT_EQ(0, hdr2->GetTransmisionID());
     EXPECT_EQ(address, hdr2->GetAddress());
     EXPECT_EQ(payload.size(), hdr2->GetPayloadSize());
     EXPECT_EQ(payload2.value().size(), payload.size());
