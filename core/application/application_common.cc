@@ -14,6 +14,7 @@
 #include <iostream>
 #include <memory>
 #include <vector>
+#include <utility>
 
 #include "boost/algorithm/string.hpp"
 #include "communication-core/someip-database/code/com_config.h"

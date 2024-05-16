@@ -118,4 +118,4 @@ class ConfigDbParser {
 }  // namespace someip
 }  // namespace com
 }  // namespace simba
-#endif /* COMMUNICATION_CORE_SOMEIP_DATABASE_CODE_CONFIG_DB_PARSER_H_ */
+#endif  // COMMUNICATION_CORE_SOMEIP_DATABASE_CODE_CONFIG_DB_PARSER_H_

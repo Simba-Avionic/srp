@@ -16,7 +16,7 @@
 #include <vector>
 #include <memory>
 #include <optional>
-#include "header.h"
+#include "mw/i2c_service/data/header.h"
 namespace simba {
 namespace i2c {
 class I2CFactory {
