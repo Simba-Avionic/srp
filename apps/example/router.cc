@@ -10,20 +10,21 @@
  */
 #include "apps/example/router.h"
 
+#include <fcntl.h>
+#include <sys/ioctl.h>
+#include <linux/i2c-dev.h>
+#include <unistd.h>
+
 #include <memory>
 #include <vector>
-
 #include "communication-core/someip-controller/event_proxy.h"
 #include "communication-core/someip-controller/method_proxy.h"
 #include "communication-core/someip-controller/method_skeleton.h"
 #include "core/logger/Logger.h"
 #include "diag/dtc/controller/dtc.h"
+#include "mw/i2c_service/data/i2c_factory.h"
 namespace simba {
 namespace router {
-
-#define EEPROM_DEVICE "/dev/i2c-2"  // Ścieżka do urządzenia I2C
-#define EEPROM_ADDRESS 0x50         // Adres EEPROM
-#define DATA_SIZE 128
 
 core::ErrorCode Router::Run(std::stop_token token) {
   uint8_t servo_pos;

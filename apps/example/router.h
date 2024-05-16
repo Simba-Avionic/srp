@@ -15,11 +15,13 @@
 
 #include "core/application/application_no_ipc.h"
 #include "mw/gpio_server/controller/gpio_controller.hpp"
+#include "mw/i2c_service/controller/i2c_controller.h"
 namespace simba {
 namespace router {
 class Router : public core::ApplicationNoIPC{
  protected:
   gpio::GPIOController gpio_;
+  i2c::I2CController i2c_;
   /**
    * @brief This function is called to launch the application
    *
