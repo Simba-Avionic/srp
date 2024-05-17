@@ -55,11 +55,11 @@ std::optional<std::vector<uint8_t>> I2CController::Read(const uint8_t address, c
     return this->sock_.Transmit(I2C_IPC, 0, buf);
 }
 
-std::optional<std::vector<uint8_t>> I2CController::WriteRead(const uint8_t address, const uint8_t ReadReg,
-                                const uint8_t ReadSize, const uint8_t WriteReg, const uint8_t WriteData) {
+std::optional<std::vector<uint8_t>> I2CController::WriteRead(const uint8_t address,
+                                                        const uint8_t WriteData, const uint8_t ReadSize) {
     std::unique_lock<std::mutex> lock(mtx_);
     auto hdr = std::make_shared<Header>(ACTION::WriteRead, address, this->service_id);
-    auto buf = I2CFactory::GetBuffer(hdr, {WriteReg, WriteData, ReadReg, ReadSize});
+    auto buf = I2CFactory::GetBuffer(hdr, {ReadSize, WriteData});
     return this->sock_.Transmit(I2C_IPC, 0, buf);
 }
 

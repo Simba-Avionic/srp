@@ -53,8 +53,8 @@ class I2CController{
   core::ErrorCode PageWrite(const uint8_t address, const std::vector<uint8_t> data);
 
   std::optional<std::vector<uint8_t>> Read(const uint8_t address, const uint8_t reg, const uint8_t size = 1);
-  std::optional<std::vector<uint8_t>> WriteRead(const uint8_t address, const uint8_t ReadReg,
-                                const uint8_t ReadSize = 1, const uint8_t WriteReg, const uint8_t WriteData);
+  std::optional<std::vector<uint8_t>> WriteRead(const uint8_t address,
+                                                        const uint8_t WriteData, const uint8_t ReadSize = 1);
 };
 }  // namespace i2c
 }  // namespace simba
