@@ -8,7 +8,7 @@
  * @copyright Copyright (c) 2024
  * 
  */
-#ifndefMW_I2C_SERVICE_CONTROLLER_MAX11615_CONTROLLER_HPP_
+#ifndef MW_I2C_SERVICE_CONTROLLER_MAX11615_CONTROLLER_HPP_
 #define MW_I2C_SERVICE_CONTROLLER_MAX11615_CONTROLLER_HPP_
 
 #include <unordered_map>
@@ -39,18 +39,19 @@ class MAX11615 {
    * @param channel from 0-7
    * @return uint8_t 
    */
-  uint8_t GetConfigData(uint8_t channel);
-
- public:
-  MAX11615();
-  void Init(const uint16_t &service_id, const std::unordered_map<std::string, std::string>& parms);
+  uint8_t GetConfigData(const uint8_t& channel);
   /**
    * @brief Get the Adc Read object
    * 
    * @param channel  (0-7)
    * @return std::optional<uint16_t> 
    */
-  std::optional<uint16_t> GetAdcRead(uint8_t channel);
+  std::optional<uint16_t> GetAdcRawRead(const uint8_t& channel);
+
+ public:
+  MAX11615();
+  void Init(const uint16_t &service_id, const std::unordered_map<std::string, std::string>& parms);
+  std::optional<float> GetAdcVoltage(const uint8_t& channel);
 };
 
 }  // namespace i2c
