@@ -1,3 +1,4 @@
+import json
 import socket
 import struct
 
@@ -5,11 +6,10 @@ from some_ip_header import SomeIPHeader
 
 
 class DataSender:
-    def __init__(self):
-        self.receiver_host = '127.0.0.1'
-        self.receiver_port = 10101
+    def __init__(self, receiver_host, receiver_port):
+        self.receiver_host = receiver_host
+        self.receiver_port = receiver_port
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.socket.connect((self.receiver_host, self.receiver_port))
 
     def send_data(self, value: int, service_id: int, method_id: int):
         hdr = SomeIPHeader(service_id, method_id)

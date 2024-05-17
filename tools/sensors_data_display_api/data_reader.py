@@ -24,6 +24,18 @@ class DataReader:
             method_id = value.get('event_id')
             lookup_table[(service_id, method_id)] = key
         return lookup_table
+    
+    def get_service_id(self, request_name):
+        req_methods = self.config.get('req_methods', {})
+        if request_name in req_methods:
+            return req_methods[request_name]['service_id']
+        return None, None
+    
+    def get_method_id(self, request_name):
+        req_methods = self.config.get('req_methods', {})
+        if request_name in req_methods:
+            return req_methods[request_name]['method_id']
+        return None, None
 
     def read_data(self):
         with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:

@@ -38,7 +38,6 @@ class App(tk.Tk):
         self.saving_thread = None
         self.data_to_save = Data()
         self.collection_time = 10
-        self.data_sender = DataSender()
 
         # measurements
         temperature_up_frame = tk.Frame(self)
@@ -157,6 +156,9 @@ class App(tk.Tk):
         self.data_reader = DataReader(gui=self)
         self.read_data()
 
+        # initiate variable sender
+        self.data_sender = DataSender(self.data_reader.ip, self.data_reader.port)
+
     def read_data(self):
         self.data_reader_thread = threading.Thread(target=self.data_reader.read_data, daemon=True)
         self.data_reader_thread.start()
@@ -206,18 +208,21 @@ class App(tk.Tk):
                 logging.info("NOT SAVED")
 
     def launch_rocket(self, value):
+        req_method="PC_APP/EngineStart"
         if value == 1:
             result = messagebox.askyesno('Launch rocket', 'Are you sure you want to launch rocket?')
             if result:
-                self.data_sender.send_data(value=value, service_id=518, method_id=1)
+                self.data_sender.send_data(value=value, method_id=self.get_method_id(req_method), service_id=self.get_service_id(req_method))
         else:
-            self.data_sender.send_data(value=value, service_id=518, method_id=1)
+            self.data_sender.send_data(value=value, method_id=self.get_method_id(req_method), service_id=self.get_service_id(req_method))
 
     def set_main_valve(self, value):
-        self.data_sender.send_data(value=value, service_id=515, method_id=1)
+        req_method="PC_APP/setServoValue"
+        self.data_sender.send_data(value=value, method_id=self.get_method_id(req_method), service_id=self.get_service_id(req_method))
 
     def set_vent(self, value):
-        self.data_sender.send_data(value=value, service_id=515, method_id=3)
+        req_method="PC_APP/setVentValue"
+        self.data_sender.send_data(value=value, method_id=self.get_method_id(req_method), service_id=self.get_service_id(req_method))
 
     def exit(self):
         self.stop_reading = True
