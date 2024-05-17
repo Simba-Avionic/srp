@@ -23,10 +23,9 @@ namespace i2c {
 enum ACTION:uint8_t {
     Read = 0x01,
     Write = 0x02,
-    ReadWrite = 0x03,
+    WriteRead = 0x03,
     RES = 0x04,
     PageWrite = 0x05,
-    PageRead = 0x06,
 };
 
 class Header : public com::core::network::NetworkDataStructure {

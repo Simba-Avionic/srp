@@ -50,9 +50,16 @@ core::ErrorCode I2CController::PageWrite(const uint8_t address, const std::vecto
 
 std::optional<std::vector<uint8_t>> I2CController::Read(const uint8_t address, const uint8_t reg, const uint8_t size) {
     std::unique_lock<std::mutex> lock(mtx_);
-    auto buf = I2CFactory::GetBuffer(
-                std::make_shared<Header>(ACTION::ReadWrite,
-                            address, this->service_id), {reg, size});
+    auto hdr = std::make_shared<Header>(ACTION::Read, address, this->service_id);
+    auto buf = I2CFactory::GetBuffer(hdr, {reg, size});
+    return this->sock_.Transmit(I2C_IPC, 0, buf);
+}
+
+std::optional<std::vector<uint8_t>> I2CController::WriteRead(const uint8_t address, const uint8_t ReadReg,
+                                const uint8_t ReadSize, const uint8_t WriteReg, const uint8_t WriteData) {
+    std::unique_lock<std::mutex> lock(mtx_);
+    auto hdr = std::make_shared<Header>(ACTION::WriteRead, address, this->service_id);
+    auto buf = I2CFactory::GetBuffer(hdr, {WriteReg, WriteData, ReadReg, ReadSize});
     return this->sock_.Transmit(I2C_IPC, 0, buf);
 }
 

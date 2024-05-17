@@ -9,6 +9,7 @@
  * 
  */
 #include <utility>
+#include <algorithm>
 #include "mw/i2c_service/service/i2c_service.h"
 #include "mw/i2c_service/data/i2c_factory.h"
 #include "core/logger/Logger.h"
@@ -21,13 +22,36 @@ namespace {
 
 std::optional<std::vector<uint8_t>> I2CService::ReadWrite(
                   const std::vector<uint8_t> &payload, std::shared_ptr<i2c::Header> headerPtr) {
-  AppLogger::Debug("Receive READ WRITE request from:"+std::to_string(static_cast<int>(headerPtr->GetServiceId())));
+  AppLogger::Debug("Receive READ request from:"+std::to_string(static_cast<int>(headerPtr->GetServiceId())));
       if (payload.size()%2 != 0) {
         AppLogger::Warning("Invalid payload size");
         return {};
       }
       return i2c_.ReadWrite(payload[0], payload[1]);
 }
+std::optional<std::vector<uint8_t>> I2CService::WriteRead(const std::vector<uint8_t> &payload,
+                                                          std::shared_ptr<i2c::Header> headerPtr) {
+  /*  format payload
+   *  reg to write data (uint8_t)
+   *  data to write (0-255B)
+   *  reg to read data (uint8_t)
+   *  size data to read (uint8_t)
+   */
+  AppLogger::Debug("Receive Write Read request from :"+std::to_string(static_cast<int>(headerPtr->GetServiceId())));
+  if (payload.size() != 4) {
+    return {};
+  }
+  uint8_t regToWrite = payload[0];
+  uint8_t dataToWrite = payload[1];
+  uint8_t regToRead = payload[2];
+  uint8_t readSize = payload[3];
+  auto res = this->i2c_.Write(std::vector<uint8_t>{regToWrite, dataToWrite});
+  if (res != core::ErrorCode::kOk) {
+    return;
+  }
+  return this->i2c_.ReadWrite(headerPtr->GetAddress(), readSize);
+}
+
 
 std::vector<uint8_t> I2CService::RxCallback(const std::string& ip, const std::uint16_t& port,
                                          std::vector<std::uint8_t> data) {
@@ -59,7 +83,7 @@ std::vector<uint8_t> I2CService::RxCallback(const std::string& ip, const std::ui
       }
       return {};
 
-    } else if (headerPtr->GetAction() == i2c::ACTION::ReadWrite) {
+    } else if (headerPtr->GetAction() == i2c::ACTION::Read) {
       auto res = this->ReadWrite(payload.value(), headerPtr);
       auto hdr = i2c::Header(i2c::ACTION::RES, headerPtr->GetAddress(),
                     headerPtr->GetServiceId());
@@ -68,6 +92,15 @@ std::vector<uint8_t> I2CService::RxCallback(const std::string& ip, const std::ui
       }
       AppLogger::Debug("Send response to " +std::to_string(headerPtr->GetServiceId())+
                 ",payload size:"+std::to_string(res.value().size()));
+      hdr.SetPaylaodSize(res.value().size());
+      return res.value();
+    } else if (headerPtr->GetAction() == i2c::ACTION::WriteRead) {
+      auto hdr = i2c::Header(i2c::ACTION::RES, headerPtr->GetAction(),
+                    headerPtr->GetServiceId());
+      auto res = this->WriteRead(payload.value(), headerPtr);
+      if (!res.has_value()) {
+        return {};
+      }
       hdr.SetPaylaodSize(res.value().size());
       return res.value();
     }

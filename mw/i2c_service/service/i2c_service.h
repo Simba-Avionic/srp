@@ -29,7 +29,8 @@ class I2CService : public core::ApplicationMW {
                                          std::vector<std::uint8_t> data);
     std::optional<std::vector<uint8_t>> ReadWrite(
             const std::vector<uint8_t> &payload, std::shared_ptr<i2c::Header> headerPtr);
-
+    std::optional<std::vector<uint8_t>> WriteRead(const std::vector<uint8_t> &payload,
+                                                          std::shared_ptr<i2c::Header> headerPtr);
 
  public:
   core::ErrorCode Run(std::stop_token token) final;
