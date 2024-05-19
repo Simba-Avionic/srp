@@ -25,6 +25,7 @@ namespace i2c {
 namespace {
     constexpr uint8_t ADS7828_ADDRESS = 0x90;
     constexpr uint8_t ADS7828_REF_VOLTAGE = 5;
+    constexpr uint8_t ADC_RESOLUTION = 4096;  // for 12 Bit
 }
 namespace {  // CONFIG
     constexpr uint8_t PD0 = 0;
@@ -32,25 +33,59 @@ namespace {  // CONFIG
 }
 
 ADS7828::ADS7828() {}
-void ADS7828::Init(const uint16_t &service_id, const std::unordered_map<std::string, std::string>& parms) {
+void ADS7828::Init(const uint16_t &service_id) {
     this->i2c_.Init(service_id);
 }
 
-uint8_t ADS7828::GetConfigData(const uint8_t& channel) {
+std::optional<uint8_t> ADS7828::GetConfigData(const uint8_t& channel) {
+    uint8_t rawChannel;
+    switch (channel) {
+        case 0:
+        rawChannel = 0;
+        break;
+        case 1:
+        rawChannel = 4;
+        break;
+        case 2:
+        rawChannel = 1;
+        break;
+        case 3:
+        rawChannel = 5;
+        break;
+        case 4:
+        rawChannel = 2;
+        break;
+        case 5:
+        rawChannel = 6;
+        break;
+        case 6:
+        rawChannel = 3;
+        break;
+        case 7:
+        rawChannel = 7;
+        break;
+        default:
+        return {};
+    }
+
     uint8_t res = 0;  // [0:1] unused
     res |= (PD0 << 2);
     res |= (PD1 << 3);
-    res |= (channel << 6);
+    res |= (rawChannel << 6);
     res |= (1 << 7);  // [7] Single-Ennded / Differencial Input
     return res;
 }
 std::optional<uint16_t> ADS7828::GetAdcRawRead(const uint8_t& channel) {
-    auto res = this->i2c_.WriteRead(ADS7828_ADDRESS, 2, GetConfigData(channel));
+    auto configData = GetConfigData(channel);
+    if (!configData.has_value()) {
+        return {};
+    }
+    auto res = this->i2c_.WriteRead(ADS7828_ADDRESS, 2, configData.value());
     if (!res.has_value()) {
         return {};
     }
-    uint16_t data = ((res.value()[0] & 0x000f) << 8);
-    data += (res.value()[1] & 0xff);
+    uint16_t data = ((res.value()[0]) << 8);
+    data |= res.value()[1];
     return data;
 }
 std::optional<float> ADS7828::GetAdcVoltage(const uint8_t& channel) {
@@ -58,7 +93,7 @@ std::optional<float> ADS7828::GetAdcVoltage(const uint8_t& channel) {
     if (!res.has_value()) {
         return {};
     }
-    return static_cast<float>((res.value()/4096)*ADS7828_REF_VOLTAGE);
+    return static_cast<float>((res.value()/ADC_RESOLUTION)*ADS7828_REF_VOLTAGE);
 }
 
 }  // namespace i2c

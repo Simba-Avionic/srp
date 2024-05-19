@@ -32,7 +32,7 @@ class ADS7828 {
    * @param channel from 0-7
    * @return uint8_t 
    */
-  uint8_t GetConfigData(const uint8_t& channel);
+  std::optional<uint8_t> GetConfigData(const uint8_t& channel);
   /**
    * @brief Get the Adc Read object
    * 
@@ -43,7 +43,7 @@ class ADS7828 {
 
  public:
   ADS7828();
-  void Init(const uint16_t &service_id, const std::unordered_map<std::string, std::string>& parms);
+  void Init(const uint16_t &service_id);
   std::optional<float> GetAdcVoltage(const uint8_t& channel);
 };
 
