@@ -8,8 +8,8 @@
  * @copyright Copyright (c) 2024
  * 
  */
-#ifndef MW_I2C_SERVICE_CONTROLLER_MAX11615_CONTROLLER_HPP_
-#define MW_I2C_SERVICE_CONTROLLER_MAX11615_CONTROLLER_HPP_
+#ifndef MW_I2C_SERVICE_CONTROLLER_ADS7828_CONTROLLER_HPP_
+#define MW_I2C_SERVICE_CONTROLLER_ADS7828_CONTROLLER_HPP_
 
 #include <unordered_map>
 #include <string>
@@ -21,18 +21,11 @@
 namespace simba {
 namespace i2c {
 
-class MAX11615 {
+class ADS7828 {
  private:
   I2CController i2c_;
 
  protected:
- /**
-  * @brief Get the Setup Data object
-  * 
-  * @param reset restart config to default
-  * @return uint8_t 
-  */
-  uint8_t GetSetupData(bool reset = false);
   /**
    * @brief Get the Config Data object
    * 
@@ -49,7 +42,7 @@ class MAX11615 {
   std::optional<uint16_t> GetAdcRawRead(const uint8_t& channel);
 
  public:
-  MAX11615();
+  ADS7828();
   void Init(const uint16_t &service_id, const std::unordered_map<std::string, std::string>& parms);
   std::optional<float> GetAdcVoltage(const uint8_t& channel);
 };
@@ -57,4 +50,4 @@ class MAX11615 {
 }  // namespace i2c
 }  // namespace simba
 
-#endif  // MW_I2C_SERVICE_CONTROLLER_MAX11615_CONTROLLER_HPP_
+#endif  // MW_I2C_SERVICE_CONTROLLER_ADS7828_CONTROLLER_HPP_

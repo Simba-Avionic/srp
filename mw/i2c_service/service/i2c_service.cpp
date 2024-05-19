@@ -67,8 +67,14 @@ std::vector<uint8_t> I2CService::RxCallback(const std::string& ip, const std::ui
     }
 
     if (headerPtr->GetAction() == i2c::ACTION::Write) {
-      if (i2c_.Write(payload.value()) == core::ErrorCode::kOk) {
-        return {1};
+      if (payload.value().size() == 1) {
+        if (i2c_.Write(payload.value()[0]) == core::ErrorCode::kOk) {
+          return {1};
+        }
+      } else {
+        if (i2c_.Write(payload.value()) == core::ErrorCode::kOk) {
+          return {1};
+        }
       }
       return {};
 

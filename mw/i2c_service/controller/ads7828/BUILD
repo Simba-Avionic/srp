@@ -1,5 +1,5 @@
 cc_library(
-    name = "max11615_controller",
+    name = "adc_controller",
     deps = [
         "//communication-core/sockets:socket_ipc",
         "//core/logger:Logger",
