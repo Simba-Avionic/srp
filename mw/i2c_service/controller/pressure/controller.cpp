@@ -22,8 +22,16 @@ namespace simba {
 namespace i2c {
 
 namespace {
-    constexpr uint8_t DEFAULT_A = 42.0833;
-    constexpr uint8_t DEFAULT_B = 25.25;
+    static constexpr float R = 150.0f;
+    static constexpr float A_MIN = 4.0f;
+    static constexpr float A_MAX = 20.0f;
+    static constexpr float PRESS_MIN = 0.0f;
+    static constexpr float PRESS_MAX = 100.0f;
+}
+
+namespace {
+    static constexpr float DEFAULT_A = (PRESS_MAX - PRESS_MIN) * 1000.0f / ((A_MAX - A_MIN) * R);
+    static constexpr float DEFAULT_B = - (DEFAULT_A * A_MIN * R / 1000.0f);
 }
 
 PressureController::PressureController() {}

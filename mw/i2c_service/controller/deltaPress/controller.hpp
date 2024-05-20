@@ -41,6 +41,12 @@ class DeltaPressureController {
  public:
   DeltaPressureController();
   void Init(const uint16_t &service_id, const std::unordered_map<std::string, std::string>& parms);
+  /**
+   * @brief Get the Delta Pressure object [Bar]
+   * 
+   * @param sensor_id 
+   * @return std::optional<float> 
+   */
   std::optional<float> GetDeltaPressure(const uint8_t sensor_id);
 };
 

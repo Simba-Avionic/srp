@@ -21,6 +21,22 @@
 namespace simba {
 namespace i2c {
 
+/**
+ * @brief dane potrzebne do obliczeń dla PD-33
+ */
+namespace {
+    static constexpr float R = 160.0f;
+    static constexpr float A_MIN = 4.0f;
+    static constexpr float A_MAX = 20.0f;
+    static constexpr float D_PRESS_MIN = 0.0f;
+    static constexpr float D_PRESS_MAX = 0.3f;
+}
+
+namespace {
+    static constexpr float DEFAULT_A = (D_PRESS_MAX - D_PRESS_MIN) * 1000.0f / ((A_MAX - A_MIN) * R);
+    static constexpr float DEFAULT_B = - (DEFAULT_A * A_MIN * R / 1000.0f);
+}
+
 DeltaPressureController::DeltaPressureController() {}
 
 void DeltaPressureController::Init(const uint16_t &service_id,
@@ -42,16 +58,19 @@ std::unordered_map<uint8_t, DeltaPressureSensorConfig> DeltaPressureController::
         return {};
     }
     for (const auto &sensor : data["sensors"]) {
-        if (!(sensor.contains("actuator_id") && sensor.contains("channel")
-                && sensor.contains("a") && sensor.contains("b"))) {
+        if (!(sensor.contains("actuator_id") && sensor.contains("channel"))) {
             AppLogger::Warning("Invalid  pressure sensor config");
             continue;
         }
         DeltaPressureSensorConfig config;
         config.channel = sensor.at("channel");
+        if (!(sensor.contains("a") && sensor.contains("b"))) {
+            config.a = DEFAULT_A;
+            config.b = DEFAULT_B;
+        } else {
         config.a = sensor.at("a");
         config.b = sensor.at("b");
-
+        }
         db.insert({sensor.at("actuator_id"), config});
     }
     return db;

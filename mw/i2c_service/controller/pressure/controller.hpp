@@ -43,6 +43,12 @@ class PressureController {
  public:
   PressureController();
   void Init(const uint16_t &service_id, const std::unordered_map<std::string, std::string>& parms);
+  /**
+   * @brief Get the Pressure object [Bar]
+   * 
+   * @param sensor_id 
+   * @return std::optional<float> 
+   */
   std::optional<float> GetPressure(const uint8_t sensor_id);
 };
 
