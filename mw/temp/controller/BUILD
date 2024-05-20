@@ -7,6 +7,7 @@ cc_library(
     visibility = [
         "//deployment:__subpackages__",
         "//apps/env_service:__subpackages__",
+        "//apps/jaku_service:__subpackages__"
         ],
     
     deps = [
