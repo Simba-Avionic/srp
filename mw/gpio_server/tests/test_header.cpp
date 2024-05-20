@@ -13,30 +13,27 @@
 #include <iostream>
 
 #include "mw/gpio_server/data/header.hpp"
+struct gpio_params{
+    uint16_t service_id;
+    uint16_t pin_id;
+    uint8_t value;
+};
 
 TEST(GPIO_DATA_STRUCTURE, CONSTRUCTOR_CHECK) {
-    uint16_t service_id = 0x1111;
-    uint16_t pin_id = 0x11;
-    uint8_t value = 0x1;
-simba::gpio::Header hdr{service_id, pin_id, value};
-EXPECT_EQ(hdr.GetServiceID(), service_id);
-EXPECT_EQ(hdr.GetPinID(), pin_id);
-EXPECT_EQ(hdr.GetValue(), value);
-    service_id = 12;
-    pin_id = 1;
-    value = 0;
-simba::gpio::Header hdr2{service_id, pin_id, value};
-EXPECT_EQ(hdr2.GetServiceID(), service_id);
-EXPECT_EQ(hdr2.GetPinID(), pin_id);
-EXPECT_EQ(hdr2.GetValue(), value);
-    service_id = 7;
-    pin_id = 5;
-    value = 0;
-simba::gpio::Header hdr3{service_id, pin_id, value};
-EXPECT_EQ(hdr3.GetServiceID(), service_id);
-EXPECT_EQ(hdr3.GetPinID(), pin_id);
-EXPECT_EQ(hdr3.GetValue(), value);
+    
+std::vector<gpio_params> payload = {
+    {0x1111, 0x11, 0x1},
+    {12, 1, 0},
+    {7, 5, 0}
+};
+for(const auto& p : payload) {
+    simba::gpio::Header hdr{p.service_id, p.pin_id, p.value};
+    EXPECT_EQ(hdr.GetServiceID(), p.service_id);
+    EXPECT_EQ(hdr.GetPinID(), p.pin_id);
+    EXPECT_EQ(hdr.GetValue(), p.value);
 }
+}
+
 
 TEST(GPIO_MSG_FACTORY, CHECK_BUFFOR) {
     simba::gpio::Header hdr(12, 12, 1);
