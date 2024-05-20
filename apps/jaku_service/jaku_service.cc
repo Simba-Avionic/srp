@@ -36,10 +36,22 @@ core::ErrorCode JakuService::Run(std::stop_token token) {
     diode_method->StartFindService();
     AppLogger::Info("diode method StartFindService");
     while(true){
+        AppLogger::Info("Vector1 size: " + std::to_string(temp_vector_1.size()));
+        for(auto n : temp_vector_1) {
+            AppLogger::Info(std::to_string(n));
+        }
         this->temp_event_1->SetValue(temp_vector_1);
         AppLogger::Info("sent temp1");
+        AppLogger::Info("Vector2 size: " + std::to_string(temp_vector_2.size()));
+        for(auto n : temp_vector_2) {
+            AppLogger::Info(std::to_string(n));
+        }
         this->temp_event_2->SetValue(temp_vector_2);
         AppLogger::Info("sent temp 2");
+        AppLogger::Info("Vector3 size: " + std::to_string(temp_vector_3.size()));
+        for(auto n : temp_vector_3) {
+            AppLogger::Info(std::to_string(n));
+        }
         this->temp_event_3->SetValue(temp_vector_3);
         AppLogger::Info("sent temp 3");
         if (diodeCounter == 3){
@@ -88,6 +100,14 @@ core::ErrorCode JakuService::Initialize(
     com->Add(temp_event_1);
     com->Add(temp_event_2);
     com->Add(temp_event_3);
+    core::ErrorCode res;
+    do {
+        std::this_thread::sleep_for(std::chrono::milliseconds(500));
+        res = this->temp_.Init(514, std::bind(&JakuService::TempRxCallback,
+            this, std::placeholders::_1, std::placeholders::_2,
+                                        std::placeholders::_3));
+    } while (res != core::ErrorCode::kOk);
+        
     return core::ErrorCode::kOk;
 }
 

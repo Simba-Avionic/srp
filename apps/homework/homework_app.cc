@@ -39,11 +39,10 @@ core::ErrorCode Homework::Run(std::stop_token token) {
             }
             return std::vector<uint8_t>{1};
       });
-  AppLogger::Info("diode method done");
+
   auto temp1 = std::make_shared<com::someip::EventProxyBase>(
       "HomeworkApp/temp1",
       [this](const std::vector<uint8_t> data) {
-        AppLogger::Info("Temp1 START");
         float temp;
         std::memcpy(&temp, data.data(), sizeof(temp));
         if (temp > 30) {
@@ -52,11 +51,10 @@ core::ErrorCode Homework::Run(std::stop_token token) {
           this->dtc_temp_error->Pass();
         }
         AppLogger::Info("Sensor 1: " + std::to_string(temp));});
-  AppLogger::Info("temp 1 done");
+
   auto temp2 = std::make_shared<com::someip::EventProxyBase>(
       "HomeworkApp/temp2",
       [this](const std::vector<uint8_t> data) {
-        AppLogger::Info("Temp2 START");
         float temp;
         std::memcpy(&temp, data.data(), sizeof(temp));
         if (temp > 30) {
@@ -65,11 +63,10 @@ core::ErrorCode Homework::Run(std::stop_token token) {
           this->dtc_temp_error->Pass();
         }
         AppLogger::Info("Sensor 2: " + std::to_string(temp));});
-  AppLogger::Info("temp 2 done");
+
   auto temp3 = std::make_shared<com::someip::EventProxyBase>(
       "HomeworkApp/temp3",
       [this](const std::vector<uint8_t> data) {
-        AppLogger::Info("Temp3 START");
         float temp;
         std::memcpy(&temp, data.data(), sizeof(temp));
         if (temp > 30) {
@@ -78,17 +75,14 @@ core::ErrorCode Homework::Run(std::stop_token token) {
           this->dtc_temp_error->Pass();
         }
         AppLogger::Info("Sensor 3: " + std::to_string(temp));});
-  AppLogger::Info("temp 3 done");
+
   com->Add(temp1);
   com->Add(temp2);
   com->Add(temp3);
-  AppLogger::Info("temps com added");
   temp1->StartFindService();
   temp2->StartFindService();
   temp3->StartFindService();
-  AppLogger::Info("temp StartFindService done");
   com->Add(diodeMethod);
-  AppLogger::Info("diodeMethod com added");
   this->SleepMainThread();
   return core::ErrorCode::kOk;
 }
