@@ -13,13 +13,16 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+#include <memory>
 
 #include "core/application/application_no_ipc.h"
 #include "mw/gpio_server/controller/gpio_controller.hpp"
+#include "diag/dtc/controller/dtc.h"
 namespace simba {
 class Homework : public core::ApplicationNoIPC{
  protected:
   gpio::GPIOController gpio_;
+  std::shared_ptr<simba::diag::dtc::DTCObject> dtc_temp_error;
   core::ErrorCode Run(std::stop_token token) final;
   core::ErrorCode Initialize(
       const std::unordered_map<std::string, std::string>& parms) final;

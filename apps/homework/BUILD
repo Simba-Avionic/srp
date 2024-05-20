@@ -11,6 +11,7 @@ cc_binary(
         "//mw/gpio_server/controller:gpio_controller",
         "//communication-core/someip-controller:proxy",
         "//communication-core/someip-controller:skeleton",
+        "//diag/dtc/controller:diag_dtc_",
 
     ],
 )

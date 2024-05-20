@@ -19,7 +19,9 @@
 
 namespace simba {
 core::ErrorCode Homework::Run(std::stop_token token) {
-    auto diodeMethod = std::make_shared<com::someip::MethodSkeleton>(
+  this->dtc_temp_error = std::make_shared<diag::dtc::DTCObject>(0x22);
+  diag_controller.RegisterDTC(dtc_temp_error);
+  auto diodeMethod = std::make_shared<com::someip::MethodSkeleton>(
       "HomeworkApp/diodeMethod",
       [this](const std::vector<uint8_t> payload)
           -> std::optional<std::vector<uint8_t>> {
@@ -36,27 +38,55 @@ core::ErrorCode Homework::Run(std::stop_token token) {
             }
             return std::vector<uint8_t>{1};
       });
-    uint8_t sensorAmount = 3;
-    std::vector<std::shared_ptr<com::someip::EventProxyBase>> events;
-    for (uint8_t i = 1; i <= sensorAmount; i++) {
-      events.push_back(std::make_shared<com::someip::EventProxyBase>(
-      "HomeworkApp/temp" + std::to_string(i),
-      [this, i](const std::vector<uint8_t> data) {
+  auto temp1 = std::make_shared<com::someip::EventProxyBase>(
+      "HomeworkApp/temp1",
+      [this](const std::vector<uint8_t> data) {
         float temp;
         std::memcpy(&temp, data.data(), sizeof(temp));
-        AppLogger::Info("Sensor " + std::to_string(i) + ": " + std::to_string(temp));}));
-    }
-    for (const auto& event : events) {
-      com->Add(event);
-      event->StartFindService();
-    }
-    com->Add(diodeMethod);
-    return core::ErrorCode::kOk;
+        if (temp > 30) {
+          this->dtc_temp_error->Failed();
+        } else {
+          this->dtc_temp_error->Pass();
+        }
+        AppLogger::Info("Sensor 1: " + std::to_string(temp));});
+  auto temp2 = std::make_shared<com::someip::EventProxyBase>(
+      "HomeworkApp/temp2",
+      [this](const std::vector<uint8_t> data) {
+        float temp;
+        std::memcpy(&temp, data.data(), sizeof(temp));
+        if (temp > 30) {
+          this->dtc_temp_error->Failed();
+        } else {
+          this->dtc_temp_error->Pass();
+        }
+        AppLogger::Info("Sensor 2: " + std::to_string(temp));});
+
+  auto temp3 = std::make_shared<com::someip::EventProxyBase>(
+      "HomeworkApp/temp3",
+      [this](const std::vector<uint8_t> data) {
+        float temp;
+        std::memcpy(&temp, data.data(), sizeof(temp));
+        if (temp > 30) {
+          this->dtc_temp_error->Failed();
+        } else {
+          this->dtc_temp_error->Pass();
+        }
+        AppLogger::Info("Sensor 3: " + std::to_string(temp));});
+
+  com->Add(temp1);
+  com->Add(temp2);
+  com->Add(temp3);
+  temp1->StartFindService();
+  temp2->StartFindService();
+  temp3->StartFindService();
+  com->Add(diodeMethod);
+  this->SleepMainThread();
+  return core::ErrorCode::kOk;
 }
 core::ErrorCode Homework::Initialize(
-    const std::unordered_map<std::string, std::string>& parms) {
-    this->gpio_ = gpio::GPIOController(new com::soc::IpcSocket());
-    this->gpio_.Init(666);
-    return core::ErrorCode::kOk;
+  const std::unordered_map<std::string, std::string>& parms) {
+  this->gpio_ = gpio::GPIOController(new com::soc::IpcSocket());
+  this->gpio_.Init(666);
+  return core::ErrorCode::kOk;
 }
 }  // namespace simba
