@@ -24,7 +24,7 @@ jobs:
           submodules: 'true'
           ssh-key: ${{ secrets.PRIVATE_KEY_FOR_DEPLOY_KEY_IN_SUBMODULE }}
       - name: Cache Bazel data
-        uses: actions/cache@v2
+        uses: actions/cache@v4.0.2
         with:
           path: ~/.cache/bazel
           key: bazel-cache-cpu-${{ runner.os }}-${{ hashFiles('**/BUILD.bazel') }}
