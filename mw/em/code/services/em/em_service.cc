@@ -172,6 +172,16 @@ std::optional<pid_t> EmService::RestartApp(const uint16_t appID) {
       if (kill(app.GetPid(), SIGKILL) != 0) {
         return {};
       }
+      int status;
+      uint8_t i = 0;
+      do {
+        waitpid(app.GetPid(), &status, 0);
+        i++;
+      } while (status == -1 && i < 5);
+      if (status == -1) {
+        AppLogger::Warning("App with PID: "+std::to_string(app.GetPid())+"change  to zombie");
+        return {};
+      }
       pid_t pid = this->StartApp(app);
       if (pid == 0) {
         AppLogger::Error("Failed to start app");
