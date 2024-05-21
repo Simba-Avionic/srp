@@ -40,6 +40,8 @@ class PressureController {
   std::unordered_map<uint8_t, PressureSensorConfig> db_;
  protected:
   std::unordered_map<uint8_t, PressureSensorConfig> ReadConfig(nlohmann::json data);
+  float calculateB(float R, float A, float A_MIN);
+  float calculateA(float R, float PRESS_MAX, float PRESS_MIN, float A_MAX, float A_MIN);
  public:
   PressureController();
   void Init(const uint16_t &service_id, const std::unordered_map<std::string, std::string>& parms);

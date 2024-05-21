@@ -21,17 +21,12 @@
 namespace simba {
 namespace i2c {
 
-namespace {
-    static constexpr float R = 150.0f;
-    static constexpr float A_MIN = 4.0f;
-    static constexpr float A_MAX = 20.0f;
-    static constexpr float PRESS_MIN = 0.0f;
-    static constexpr float PRESS_MAX = 100.0f;
+float PressureController::calculateA(float R, float PRESS_MAX, float PRESS_MIN, float A_MAX, float A_MIN) {
+    return (PRESS_MAX - PRESS_MIN) * 1000.0f / ((A_MAX - A_MIN) * R);
 }
 
-namespace {
-    static constexpr float DEFAULT_A = (PRESS_MAX - PRESS_MIN) * 1000.0f / ((A_MAX - A_MIN) * R);
-    static constexpr float DEFAULT_B = - (DEFAULT_A * A_MIN * R / 1000.0f);
+float PressureController::calculateB(float R, float A, float A_MIN) {
+    return -((A * A_MIN * R) / 1000.0f);
 }
 
 PressureController::PressureController() {}
@@ -60,13 +55,19 @@ std::unordered_map<uint8_t, PressureSensorConfig> PressureController::ReadConfig
         }
         PressureSensorConfig config;
         config.channel = sensor.at("channel");
-        if (!(sensor.contains("a") && sensor.contains("b"))) {
-            config.a = DEFAULT_A;
-            config.b = DEFAULT_B;
+        if ((sensor.contains("a") && sensor.contains("b"))) {
+            config.a = sensor.at("a");
+            config.b = sensor.at("b");
+        } else if (sensor.contains("R") && sensor.contains("PRESS_MIN") &&
+            sensor.contains("PRESS_MAX") && sensor.contains("A_MAX") && sensor.contains("A_MIN")) {
+            config.a = calculateA(sensor.at("R"), sensor.at("PRESS_MAX"),
+                        sensor.at("PRESS_MIN"), sensor.at("A_MAX"), sensor.at("A_MIN"));
+            config.b = calculateB(sensor.at("R"), config.a, sensor.at("A_MIN"));
+        } else {
+            AppLogger::Warning("Invalid config for sensor with id:"+
+                                std::to_string(static_cast<int>(sensor.at("actuator_id"))));
+            continue;
         }
-        config.a = sensor.at("a");
-        config.b = sensor.at("b");
-
         db.insert({sensor.at("actuator_id"), config});
     }
     return db;

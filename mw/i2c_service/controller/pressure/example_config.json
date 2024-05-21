@@ -1,0 +1,19 @@
+{
+    "sensors": [
+        {
+            "actuator_id": 10,
+            "channel":1,
+            "a": 123,
+            "b": -12
+        },
+        {
+            "actuator_id": 11,
+            "channel": 2,
+            "R": 150,
+            "PRESS_MIN":0,
+            "PRESS_MAX":0.3,
+            "A_MIN": 4,
+            "A_MAX": 20
+        }
+    ]
+}
