@@ -9,12 +9,11 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    container:
+      image: matiko42/simba_github_action:latest
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
-      - name: Install CppLint
-        run: |
-          apt install cpplint -y
       - name: Check C++ Syntax
         run: |
           cpp_files=$(find . -name "*.cc" -o -name "*.cpp" -o -name "*.h" -o -name "*.hpp")
