@@ -10,33 +10,38 @@
  */
 
 #include <gtest/gtest.h>
-#include <iostream>
 
 #include "mw/gpio_server/data/header.hpp"
-struct gpio_params{
-    uint16_t service_id;
-    uint16_t pin_id;
-    uint8_t value;
+
+class HeaderConstructorTest : public ::testing::TestWithParam<
+                        std::tuple<uint16_t, uint16_t,  uint8_t>> {
 };
 
-TEST(GPIO_DATA_STRUCTURE, CONSTRUCTOR_CHECK) {
-    
-std::vector<gpio_params> payload = {
-    {0x1111, 0x11, 0x1},
-    {12, 1, 0},
-    {7, 5, 0}
-};
-for(const auto& p : payload) {
-    simba::gpio::Header hdr{p.service_id, p.pin_id, p.value};
-    EXPECT_EQ(hdr.GetServiceID(), p.service_id);
-    EXPECT_EQ(hdr.GetPinID(), p.pin_id);
-    EXPECT_EQ(hdr.GetValue(), p.value);
-}
+INSTANTIATE_TEST_SUITE_P(HeaderConstructorTestParameters, HeaderConstructorTest,
+    ::testing::Values(
+        std::make_tuple(0x1111, 0x11, 0x1),
+        std::make_tuple(12, 1, 0),
+        std::make_tuple(7, 5, 0)
+    )
+);
+
+TEST_P(HeaderConstructorTest, CONSTRUCTOR_CHECK) {
+    auto params = GetParam();
+    const uint16_t service_id = std::get<0>(params);
+    const uint16_t pin_id = std::get<1>(params);
+    const uint8_t value = std::get<2>(params);
+    simba::gpio::Header hdr{service_id, pin_id, value};
+    EXPECT_EQ(hdr.GetServiceID(), service_id);
+    EXPECT_EQ(hdr.GetPinID(), pin_id);
+    EXPECT_EQ(hdr.GetValue(), value);
 }
 
-
-TEST(GPIO_MSG_FACTORY, CHECK_BUFFOR) {
-    simba::gpio::Header hdr(12, 12, 1);
+TEST_P(HeaderConstructorTest, CHECK_BUFFOR) {
+    auto params = GetParam();
+    const uint16_t service_id = std::get<0>(params);
+    const uint16_t pin_id = std::get<1>(params);
+    const uint8_t value = std::get<2>(params);
+    simba::gpio::Header hdr{service_id, pin_id, value};
     auto data = hdr.GetBuffor();
     simba::gpio::Header hdr2(0x00, 0x00, 0x0);
     hdr2.SetBuffor(data);
