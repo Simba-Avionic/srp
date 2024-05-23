@@ -17,7 +17,7 @@
 #include <unordered_map>
 #include <optional>
 
-#include "communication-core/sockets/ipc_socket.h"
+#include "communication-core/sockets/stream_ipc_socket.h"
 #include "core/gpio/GPIO_digital_driver.h"
 #include "mw/gpio_server/data/header.hpp"
 #include "core/logger/Logger.h"
@@ -25,22 +25,15 @@
 namespace simba {
 namespace gpio {
 
-enum Value{
-  ERROR = -1,
-  LOW = 0,
-  HIGH = 1,
-};
 
 class GPIOController {
  private:
-    com::soc::ISocket* sock_;
-    uint16_t service_id;
+    com::soc::ISocketStream* sock_;
  public:
-    explicit GPIOController(com::soc::ISocket* socket);
+    explicit GPIOController(com::soc::ISocketStream* socket);
     GPIOController();
-    core::ErrorCode SetPinValue(uint16_t pinID, Value value);
-    Value GetPinValue(uint16_t pinID);
-    core::ErrorCode Init(uint16_t service_id);
+    core::ErrorCode SetPinValue(uint8_t actuatorID, int8_t value);
+    std::optional<int8_t> GetPinValue(uint8_t actuatorID);
 };
 
 }  // namespace gpio

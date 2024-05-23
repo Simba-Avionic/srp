@@ -31,8 +31,18 @@ core::ErrorCode Router::Run(std::stop_token token) {
   while (true) {
     std::this_thread::sleep_for(std::chrono::seconds(1));
     this->pwm_.AutoSetServoPosition(61, 1);
+    this->gpio_.SetPinValue(2, 1);
+    auto res2 = this->gpio_.GetPinValue(2);
+    if (res2.has_value()) {
+      AppLogger::Warning("val:"+std::to_string(res2.value()));
+    }
     std::this_thread::sleep_for(std::chrono::seconds(1));
     this->pwm_.AutoSetServoPosition(61, 0);
+    this->gpio_.SetPinValue(2, 0);
+    auto res = this->gpio_.GetPinValue(2);
+    if (res.has_value()) {
+      AppLogger::Warning("val:"+std::to_string(res.value()));
+    }
   }
   return core::ErrorCode::kOk;
 }

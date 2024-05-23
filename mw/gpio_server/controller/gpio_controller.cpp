@@ -19,32 +19,47 @@
 namespace simba {
 namespace gpio {
 
+namespace {
+    constexpr char* PATH = "SIMBA.GPIO";
+}
 
-GPIOController::GPIOController(com::soc::ISocket* socket) {
+GPIOController::GPIOController(com::soc::ISocketStream* socket) {
     this->sock_ = socket;
 }
 GPIOController::GPIOController() {
-    this->sock_ = new com::soc::IpcSocket();
+    this->sock_ = new com::soc::StreamIpcSocket();
 }
 
-core::ErrorCode GPIOController::Init(uint16_t service_id) {
-    this->service_id = service_id;
-    return core::ErrorCode::kOk;
-}
 
-core::ErrorCode GPIOController::SetPinValue(uint16_t pinID, Value value) {
-    if (value == Value::ERROR) {
-        return core::ErrorCode::kError;
-    }
+core::ErrorCode GPIOController::SetPinValue(uint8_t actuatorID, int8_t value) {
     if (this->sock_== nullptr) {
         return core::ErrorCode::kInitializeError;
     }
-    gpio::Header hdr(this->service_id, pinID, value);
-    return this->sock_->Transmit("SIMBA.GPIO.SET", 0, hdr.GetBuffor());
+    gpio::Header hdr(actuatorID, value, ACTION::SET);
+    auto res = this->sock_->Transmit(PATH, 0, hdr.GetBuffor());
+    if (res.has_value()) {
+        if (res.value()[0] == 1) {
+          return core::ErrorCode::kOk;
+        } else {
+          return core::ErrorCode::kError;
+        }
+    }
+    return core::ErrorCode::kConnectionError;
 }
 
-Value GPIOController::GetPinValue(uint16_t actuatorID) {
-    return Value::HIGH;
+std::optional<int8_t> GPIOController::GetPinValue(uint8_t actuatorID) {
+    if (this->sock_ == nullptr) {
+        return {};
+    }
+    gpio::Header hdr(actuatorID, 0, gpio::ACTION::GET);
+    auto res = this->sock_->Transmit(PATH, 0, hdr.GetBuffor());
+    if (!res.has_value()) {
+        return {};
+    }
+    gpio::Header resHdr(0, 0, gpio::ACTION::RES);
+    resHdr.SetBuffor(res.value());
+    AppLogger::Warning(std::to_string(resHdr.GetValue()));
+    return resHdr.GetValue();
 }
 
 

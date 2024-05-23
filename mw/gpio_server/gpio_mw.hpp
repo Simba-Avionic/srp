@@ -17,7 +17,7 @@
 #include <unordered_map>
 
 #include "core/gpio/GPIO_digital_driver.h"
-#include "communication-core/sockets/ipc_socket.h"
+#include "communication-core/sockets/stream_ipc_socket.h"
 #include "core/application/application_mw.h"
 #include "nlohmann/json.hpp"
 
@@ -31,10 +31,10 @@ struct GpioConf{
 
 class GPIOMWService : public simba::core::ApplicationMW {
  private:
-    com::soc::IpcSocket sock_;
+    com::soc::StreamIpcSocket sock_;
     core::gpio::GpioDigitalDriver gpio_driver_;
     std::unordered_map<uint16_t, GpioConf> config;
-    void RxCallback(const std::string& ip, const std::uint16_t& port,
+    std::vector<uint8_t> RxCallback(const std::string& ip, const std::uint16_t& port,
           const std::vector<std::uint8_t> data);
     void InitializePins();
  public:

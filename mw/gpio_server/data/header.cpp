@@ -15,15 +15,22 @@
 namespace simba {
 namespace gpio {
 
-Header::Header(uint16_t service_id, uint16_t pin_id, uint8_t value) {
-    this->service_id = service_id;
-    this->pin_id = pin_id;
+Header::Header(uint8_t actuator_id, int8_t value, ACTION action) {
+    this->pin_id = actuator_id;
     this->value = value;
+    this->action = static_cast<uint8_t>(action);
     this->SetData();
 }
 
+void Header::SetValue(int8_t value) {
+    this->value.Set(value);
+}
+void Header::SetAction(ACTION action) {
+    this->action.Set(static_cast<uint8_t>(action));
+}
+
 void Header::SetData() {
-    this->AddData(&service_id);
+    this->AddData(&action);
     this->AddData(&pin_id);
     this->AddData(&value);
 }
