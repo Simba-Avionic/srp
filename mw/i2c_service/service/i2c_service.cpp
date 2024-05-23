@@ -68,7 +68,7 @@ std::vector<uint8_t> I2CService::RxCallback(const std::string& ip, const std::ui
       return {};
     }
     AppLogger::Warning("Receive i2c req with payload size:"+std::to_string(payload.value().size()));
-    if (headerPtr->GetAction() == i2c::ACTION::Write) {
+    if (headerPtr->GetAction() == i2c::ACTION::kWrite) {
       AppLogger::Warning("receive write req");
       if (payload.value().size() == 1) {
         if (i2c_.Write(payload.value()[0]) == core::ErrorCode::kOk) {
@@ -83,19 +83,19 @@ std::vector<uint8_t> I2CService::RxCallback(const std::string& ip, const std::ui
       }
       return {};
 
-    } else if (headerPtr->GetAction() == i2c::ACTION::PageWrite) {
+    } else if (headerPtr->GetAction() == i2c::ACTION::kPageWrite) {
       if (i2c_.PageWrite(payload.value()) == core::ErrorCode::kOk) {
         return {1};
       }
       return {};
 
-    } else if (headerPtr->GetAction() == i2c::ACTION::Read) {
+    } else if (headerPtr->GetAction() == i2c::ACTION::kRead) {
       auto res = this->ReadWrite(payload.value(), headerPtr);
       if (!res.has_value()) {
         return {};
       }
       return res.value();
-    } else if (headerPtr->GetAction() == i2c::ACTION::WriteRead) {
+    } else if (headerPtr->GetAction() == i2c::ACTION::kWriteRead) {
       auto res = this->WriteRead(payload.value(), headerPtr);
       if (!res.has_value()) {
         return {};

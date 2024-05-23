@@ -21,11 +21,11 @@
 namespace simba {
 namespace i2c {
 
-float ADCSensorController::calculateA(float R, float RES_MAX, float RES_MIN, float A_MAX, float A_MIN) {
+float ADCSensorController::calculateA(float R, float RES_MAX, float RES_MIN, float A_MAX, float A_MIN) const {
     return (RES_MAX - RES_MIN) * 1000.0f / ((A_MAX - A_MIN) * R);
 }
 
-float ADCSensorController::calculateB(float R, float A, float A_MIN) {
+float ADCSensorController::calculateB(float R, float A, float A_MIN) const {
     return -((A * A_MIN * R) / 1000.0f);
 }
 

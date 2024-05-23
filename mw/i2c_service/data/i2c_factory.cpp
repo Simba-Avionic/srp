@@ -30,7 +30,7 @@ std::shared_ptr<Header> I2CFactory::GetHeader(const std::vector<uint8_t>& raw_da
     if (raw_data.size() < HDR_SIZE) {
         return nullptr;
     }
-    Header hdr(ACTION::Write, 0);
+    Header hdr(ACTION::kWrite, 0);
     hdr.SetBuffor(raw_data);
     return std::make_shared<Header>(hdr);
 }

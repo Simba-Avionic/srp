@@ -40,8 +40,8 @@ class ADCSensorController {
   std::unordered_map<uint8_t, SensorConfig> db_;
  protected:
   std::unordered_map<uint8_t, SensorConfig> ReadConfig(nlohmann::json data);
-  float calculateB(float R, float A, float A_MIN);
-  float calculateA(float R, float RES_MAX, float RES_MIN, float A_MAX, float A_MIN);
+  float calculateB(float R, float A, float A_MIN) const;
+  float calculateA(float R, float RES_MAX, float RES_MIN, float A_MAX, float A_MIN) const;
  public:
   ADCSensorController();
   void Init(const std::unordered_map<std::string, std::string>& parms);

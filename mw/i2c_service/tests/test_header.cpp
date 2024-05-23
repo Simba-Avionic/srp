@@ -22,10 +22,10 @@ class HeaderConstructorTest : public ::testing::TestWithParam<
 // Definicja parametrów testu
 INSTANTIATE_TEST_SUITE_P(HeaderConstructorTestParameters, HeaderConstructorTest,
     ::testing::Values(
-        std::make_tuple(simba::i2c::ACTION::Write, 0x00),
-        std::make_tuple(simba::i2c::ACTION::RES, 0xFF),
-        std::make_tuple(simba::i2c::ACTION::Read, 0xFA),
-        std::make_tuple(simba::i2c::ACTION::PageWrite, 0x55)
+        std::make_tuple(simba::i2c::ACTION::kWrite, 0x00),
+        std::make_tuple(simba::i2c::ACTION::kRES, 0xFF),
+        std::make_tuple(simba::i2c::ACTION::kRead, 0xFA),
+        std::make_tuple(simba::i2c::ACTION::kPageWrite, 0x55)
     )
 );
 
@@ -40,7 +40,7 @@ TEST_P(HeaderConstructorTest, ConstructorCheck) {
 }
 
 TEST(FACTORY, FactoryCheckTestWithoudPayload) {
-    const auto action =  simba::i2c::ACTION::Write;
+    const auto action =  simba::i2c::ACTION::kWrite;
     const uint16_t address = 0x11;
     std::vector<uint8_t> payload = {};
     auto buf = simba::i2c::I2CFactory::GetBuffer(
@@ -59,10 +59,10 @@ class FactoryCheckTest : public ::testing::TestWithParam<
 
 INSTANTIATE_TEST_SUITE_P(FactoryCheckTestParameters, FactoryCheckTest,
     ::testing::Values(
-        std::make_tuple(simba::i2c::ACTION::Write, 0xFF, std::vector<uint8_t>{0}),
-        std::make_tuple(simba::i2c::ACTION::PageWrite, 0xAF, std::vector<uint8_t>{0, 1}),
-        std::make_tuple(simba::i2c::ACTION::Read, 0xFB, std::vector<uint8_t>{0, 1, 2}),
-        std::make_tuple(simba::i2c::ACTION::RES, 0x14, std::vector<uint8_t>{0, 1, 2, 3, 4})
+        std::make_tuple(simba::i2c::ACTION::kWrite, 0xFF, std::vector<uint8_t>{0}),
+        std::make_tuple(simba::i2c::ACTION::kPageWrite, 0xAF, std::vector<uint8_t>{0, 1}),
+        std::make_tuple(simba::i2c::ACTION::kRead, 0xFB, std::vector<uint8_t>{0, 1, 2}),
+        std::make_tuple(simba::i2c::ACTION::kRES, 0x14, std::vector<uint8_t>{0, 1, 2, 3, 4})
     )
 );
 
@@ -80,14 +80,14 @@ TEST_P(FactoryCheckTest, FactoryCheck) {
 }
 
 TEST(HEADER, SETTER_PAYLOAD_SIZE) {
-    simba::i2c::Header hdr(simba::i2c::ACTION::PageWrite, 0);
+    simba::i2c::Header hdr(simba::i2c::ACTION::kPageWrite, 0);
     hdr.SetPaylaodSize(12);
     EXPECT_EQ(hdr.GetPayloadSize(), 12);
 }
 
 TEST(HEADER, SETTER_PAYLOAD_SIZE2) {
     auto buf = simba::i2c::I2CFactory::GetBuffer(
-                std::make_shared<simba::i2c::Header>(simba::i2c::ACTION::PageWrite, 0), {123});
+                std::make_shared<simba::i2c::Header>(simba::i2c::ACTION::kPageWrite, 0), {123});
     auto hdr = simba::i2c::I2CFactory::GetHeader(buf);
     EXPECT_EQ(hdr->GetPayloadSize(), 1);
 }

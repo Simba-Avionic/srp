@@ -21,11 +21,11 @@
 namespace simba {
 namespace i2c {
 enum ACTION:uint8_t {
-    Read = 0x01,
-    Write = 0x02,
-    WriteRead = 0x03,
-    RES = 0x04,
-    PageWrite = 0x05,
+    kRead = 0x01,
+    kWrite = 0x02,
+    kWriteRead = 0x03,
+    kRES = 0x04,
+    kPageWrite = 0x05,
 };
 
 class Header : public com::core::network::NetworkDataStructure {
