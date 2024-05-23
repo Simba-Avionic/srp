@@ -37,16 +37,12 @@ core::ErrorCode I2CDriver::Ioctl(const uint8_t address, const uint16_t type) {
 }
 
 core::ErrorCode I2CDriver::Write(const std::vector<uint8_t>& RegData) {
-  AppLogger::Warning("2");
   for (uint16_t i = 0; i < RegData.size(); i += 2) {
-    AppLogger::Warning("3");
     uint8_t buf[2] = {RegData[i], RegData[i + 1]};
     if (write(i2cFile, buf, 2) != 2) {
-      AppLogger::Warning("4");
       return core::ErrorCode::kInitializeError;
     }
   }
-  AppLogger::Warning("5");
   return core::ErrorCode::kOk;
 }
 core::ErrorCode I2CDriver::Write(const uint8_t& data) {
