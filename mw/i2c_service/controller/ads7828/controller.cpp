@@ -24,8 +24,8 @@ namespace i2c {
 
 namespace {
     constexpr uint8_t ADS7828_ADDRESS = 0x90;
-    constexpr uint8_t ADS7828_REF_VOLTAGE = 5;
-    constexpr auto ADC_RESOLUTION = 4096;  // for 12 Bit
+    constexpr float ADS7828_REF_VOLTAGE = 5.0f;
+    constexpr float ADC_RESOLUTION = 4096.0f;  // for 12 Bit
 }
 namespace {  // CONFIG
     constexpr uint8_t PD0 = 0;

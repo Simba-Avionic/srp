@@ -30,7 +30,10 @@ namespace i2c {
 class I2CController{
  private:
   com::soc::StreamIpcSocket sock_;
-  std::mutex mtx_;
+
+ protected:
+std::optional<std::vector<uint8_t>> SendData(ACTION action,
+                        uint8_t address, const std::vector<uint8_t>& payload);
 
  public:
   /**
