@@ -23,7 +23,7 @@ class SocketConfig {
   const std::uint16_t tx_port_;
 
  public:
-  SocketConfig(const std::string& ip, const std::uint16_t rx_port,
+  SocketConfig(const std::string& ip,const std::uint16_t rx_port,
                const std::uint16_t tx_port)
       : ip_{ip}, rx_port_{rx_port}, tx_port_{tx_port} {}
   SocketConfig(const SocketConfig& other)
