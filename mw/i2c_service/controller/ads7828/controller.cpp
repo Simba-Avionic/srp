@@ -33,9 +33,6 @@ namespace {  // CONFIG
 }
 
 ADS7828::ADS7828() {}
-void ADS7828::Init(const uint16_t &service_id) {
-    this->i2c_.Init(service_id);
-}
 
 std::optional<uint8_t> ADS7828::GetConfigData(const uint8_t& channel) {
     uint8_t rawChannel;

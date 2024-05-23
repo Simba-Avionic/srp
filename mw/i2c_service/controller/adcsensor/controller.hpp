@@ -44,7 +44,7 @@ class ADCSensorController {
   float calculateA(float R, float RES_MAX, float RES_MIN, float A_MAX, float A_MIN);
  public:
   ADCSensorController();
-  void Init(const uint16_t &service_id, const std::unordered_map<std::string, std::string>& parms);
+  void Init(const std::unordered_map<std::string, std::string>& parms);
   /**
    * @brief Get the res object [Bar]
    * 

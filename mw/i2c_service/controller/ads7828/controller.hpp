@@ -43,7 +43,6 @@ class ADS7828 {
 
  public:
   ADS7828();
-  void Init(const uint16_t &service_id);
   std::optional<float> GetAdcVoltage(const uint8_t& channel);
 };
 

@@ -36,14 +36,31 @@ core::ErrorCode I2CDriver::Ioctl(const uint8_t address, const uint16_t type) {
     return core::ErrorCode::kOk;
 }
 
-core::ErrorCode I2CDriver::Write(const std::vector<uint8_t> RegData) {
+core::ErrorCode I2CDriver::Write(const std::vector<uint8_t>& RegData) {
+  AppLogger::Warning("2");
   for (uint16_t i = 0; i < RegData.size(); i += 2) {
+    AppLogger::Warning("3");
     uint8_t buf[2] = {RegData[i], RegData[i + 1]};
     if (write(i2cFile, buf, 2) != 2) {
+      AppLogger::Warning("4");
       return core::ErrorCode::kInitializeError;
     }
   }
+  AppLogger::Warning("5");
   return core::ErrorCode::kOk;
+}
+core::ErrorCode I2CDriver::Write(const uint8_t& data) {
+  if (write(i2cFile, &data, 1) != 1) {
+    return core::ErrorCode::kConnectionError;
+  }
+  return core::ErrorCode::kOk;
+}
+std::optional<std::vector<uint8_t>> I2CDriver::Read(const uint8_t size) {
+  std::vector<uint8_t> data(size);
+  if (read(i2cFile, data.data(), size) != size) {
+    return {};
+  }
+  return data;
 }
 core::ErrorCode I2CDriver::PageWrite(std::vector<uint8_t> data) {
   data.insert(data.begin(), 0x00);
@@ -52,7 +69,7 @@ core::ErrorCode I2CDriver::PageWrite(std::vector<uint8_t> data) {
   }
   return core::ErrorCode::kOk;
 }
-std::optional<std::vector<uint8_t>> I2CDriver::ReadWrite(uint8_t reg, const uint8_t size) {
+std::optional<std::vector<uint8_t>> I2CDriver::ReadWrite(const uint8_t& reg, const uint8_t size) {
     if (write(i2cFile, &reg, 1) == -1) {
       AppLogger::Warning("Cant select reg "+ std::to_string(static_cast<int>(reg)));
     }

@@ -31,9 +31,8 @@ float ADCSensorController::calculateB(float R, float A, float A_MIN) {
 
 ADCSensorController::ADCSensorController() {}
 
-void ADCSensorController::Init(const uint16_t &service_id, const std::unordered_map<std::string, std::string>& parms) {
+void ADCSensorController::Init(const std::unordered_map<std::string, std::string>& parms) {
   this->app_name = parms.at("app_name");
-  this->adc_.Init(service_id);
   std::string file_path = "/opt/"+this->app_name+"/etc/config.json";
   std::ifstream file(file_path);
   if (!file.is_open()) {

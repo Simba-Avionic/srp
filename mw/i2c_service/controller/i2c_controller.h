@@ -31,15 +31,13 @@ class I2CController{
  private:
   com::soc::StreamIpcSocket sock_;
   std::mutex mtx_;
-  uint16_t service_id;
 
  public:
-  void Init(uint16_t service_id);
   /**
    * @brief 
    * 
-   * @param address (reg,data)
-   * @param data 
+   * @param address
+   * @param data (reg,data)
    * @return core::ErrorCode 
    */
   core::ErrorCode Write(const uint8_t address, const std::vector<uint8_t> data);

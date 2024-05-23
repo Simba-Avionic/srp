@@ -25,8 +25,10 @@ class I2CService : public core::ApplicationMW {
     std::mutex i2c_mtx;
     core::i2c::I2CDriver i2c_;
     com::soc::StreamIpcSocket sock_;
+
+ protected:
     std::vector<uint8_t> RxCallback(const std::string& ip, const std::uint16_t& port,
-                                         std::vector<std::uint8_t> data);
+                                         const std::vector<std::uint8_t> data);
     std::optional<std::vector<uint8_t>> ReadWrite(
             const std::vector<uint8_t> &payload, std::shared_ptr<i2c::Header> headerPtr);
     std::optional<std::vector<uint8_t>> WriteRead(const std::vector<uint8_t> &payload,

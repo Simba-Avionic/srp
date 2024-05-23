@@ -18,19 +18,14 @@ namespace i2c {
 
 namespace {
     const constexpr char* I2C_IPC = "SIMBA.I2C";
-    const constexpr char* I2C_MY_IPC = "SIMBA.I2C.";
 }
 
-void I2CController::Init(uint16_t service_id) {
-    this->service_id = service_id;
-    std::this_thread::sleep_for(std::chrono::seconds(1));
-    AppLogger::Warning(I2C_MY_IPC+std::to_string(service_id));
-    this->sock_.Init(com::soc::SocketConfig(I2C_MY_IPC+std::to_string(service_id), 0, 0));
-}
 
 core::ErrorCode I2CController::Write(const uint8_t address, const std::vector<uint8_t> data) {
-    auto hdr = Header(ACTION::Write, address, this->service_id);
+    AppLogger::Warning("wywołano write z pca9685");
+    auto hdr = Header(ACTION::Write, address);
     auto buf = I2CFactory::GetBuffer(std::make_shared<Header>(hdr), data);
+    AppLogger::Warning("SIZE::"+std::to_string(buf.size()));
     auto res = this->sock_.Transmit(I2C_IPC, 0, buf);
     if (res.has_value()) {
         return core::ErrorCode::kOk;
@@ -38,7 +33,7 @@ core::ErrorCode I2CController::Write(const uint8_t address, const std::vector<ui
     return core::ErrorCode::kConnectionError;
 }
 core::ErrorCode I2CController::PageWrite(const uint8_t address, const std::vector<uint8_t> data) {
-    auto hdr = Header(ACTION::PageWrite, address, this->service_id);
+    auto hdr = Header(ACTION::PageWrite, address);
     auto buf = I2CFactory::GetBuffer(std::make_shared<Header>(hdr), data);
     auto res = this->sock_.Transmit(I2C_IPC, 0, buf);
     if (res.has_value()) {
@@ -50,7 +45,7 @@ core::ErrorCode I2CController::PageWrite(const uint8_t address, const std::vecto
 
 std::optional<std::vector<uint8_t>> I2CController::Read(const uint8_t address, const uint8_t reg, const uint8_t size) {
     std::unique_lock<std::mutex> lock(mtx_);
-    auto hdr = std::make_shared<Header>(ACTION::Read, address, this->service_id);
+    auto hdr = std::make_shared<Header>(ACTION::Read, address);
     auto buf = I2CFactory::GetBuffer(hdr, {reg, size});
     return this->sock_.Transmit(I2C_IPC, 0, buf);
 }
@@ -58,7 +53,7 @@ std::optional<std::vector<uint8_t>> I2CController::Read(const uint8_t address, c
 std::optional<std::vector<uint8_t>> I2CController::WriteRead(const uint8_t address,
                                                         const uint8_t WriteData, const uint8_t ReadSize) {
     std::unique_lock<std::mutex> lock(mtx_);
-    auto hdr = std::make_shared<Header>(ACTION::WriteRead, address, this->service_id);
+    auto hdr = std::make_shared<Header>(ACTION::WriteRead, address);
     auto buf = I2CFactory::GetBuffer(hdr, {ReadSize, WriteData});
     return this->sock_.Transmit(I2C_IPC, 0, buf);
 }
