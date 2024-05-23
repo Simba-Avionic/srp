@@ -58,9 +58,9 @@ void PCA9685::Init(const std::unordered_map<std::string, std::string>& parms) {
   }
 }
 void PCA9685::MosfetFunc(const uint8_t &mosfet_id, const uint8_t &mosfet_time) {
-    //this->gpio_.SetPinValue(mosfet_id, 1);
+    this->gpio_.SetPinValue(mosfet_id, 1);
     std::this_thread::sleep_for(std::chrono::milliseconds(mosfet_time));
-    //this->gpio_.SetPinValue(mosfet_id, 0);
+    this->gpio_.SetPinValue(mosfet_id, 0);
 }
 
 core::ErrorCode PCA9685::AutoSetServoPosition(const uint8_t &actuator_id, const uint8_t &state) {

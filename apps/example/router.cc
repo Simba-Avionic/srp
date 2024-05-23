@@ -27,7 +27,6 @@ namespace simba {
 namespace router {
 
 core::ErrorCode Router::Run(std::stop_token token) {
-
   while (true) {
     std::this_thread::sleep_for(std::chrono::seconds(1));
     this->pwm_.AutoSetServoPosition(61, 1);
