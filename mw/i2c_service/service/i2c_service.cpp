@@ -9,6 +9,7 @@
  * 
  */
 #include <utility>
+#include <algorithm>
 #include "mw/i2c_service/service/i2c_service.h"
 #include "mw/i2c_service/data/i2c_factory.h"
 #include "core/logger/Logger.h"
@@ -17,70 +18,88 @@ namespace mw {
 
 namespace {
     const constexpr char* I2C_IPC_ADDR = "SIMBA.I2C";
-    const constexpr char* I2C_RES_IPC_ADDR = "SIMBA.I2C.";
 }
 
 std::optional<std::vector<uint8_t>> I2CService::ReadWrite(
                   const std::vector<uint8_t> &payload, std::shared_ptr<i2c::Header> headerPtr) {
-  AppLogger::Debug("Receive READ WRITE request from:"+std::to_string(static_cast<int>(headerPtr->GetServiceId())));
+  AppLogger::Debug("Receive READ request from:"+std::to_string(static_cast<int>(headerPtr->GetServiceId())));
       if (payload.size()%2 != 0) {
         AppLogger::Warning("Invalid payload size");
-        this->sock_.Transmit(I2C_RES_IPC_ADDR+std::to_string(
-              headerPtr->GetServiceId()), 0, i2c::I2CFactory::GetBuffer(std::make_shared<i2c::Header>(i2c::ACTION::RES,
-                            headerPtr->GetAddress(), headerPtr->GetServiceId(), headerPtr->GetTransmisionID()), {}));
         return {};
       }
-        auto i2c__data = i2c_.ReadWrite(payload[0], payload[1]);
-        if (!i2c__data.has_value()) {
-          AppLogger::Warning("I2C dont return value for:" +std::to_string(payload[0]));
-          return {};
-        }
-      return i2c__data.value();
+      return i2c_.ReadWrite(payload[0], payload[1]);
+}
+std::optional<std::vector<uint8_t>> I2CService::WriteRead(const std::vector<uint8_t> &payload,
+                                                          std::shared_ptr<i2c::Header> headerPtr) {
+  /*  format payload
+   *  size data to read (uint8_t)
+   *  data to write (0-255B)
+   */
+  AppLogger::Debug("Receive Write Read request from :"+std::to_string(static_cast<int>(headerPtr->GetServiceId())));
+  if (payload.size() != 2) {
+    return {};
+  }
+  uint8_t readSize = payload[0];
+  uint8_t dataToWrite = payload[1];
+  auto res = this->i2c_.Write(dataToWrite);
+  if (res != core::ErrorCode::kOk) {
+    return;
+  }
+  return this->i2c_.Read(2);
 }
 
-void I2CService::RxCallback(const std::string& ip,
-  const std::uint16_t& port, const std::vector<uint8_t> data) {
+
+std::vector<uint8_t> I2CService::RxCallback(const std::string& ip, const std::uint16_t& port,
+                                         std::vector<std::uint8_t> data) {
     std::unique_lock<std::mutex> lock(this->i2c_mtx);
     std::shared_ptr<i2c::Header> headerPtr = i2c::I2CFactory::GetHeader(data);
     if (!headerPtr) {
-      return;
+      return {};
     }
     AppLogger::Debug("ServiceID:"+ std::to_string(static_cast<int>(headerPtr->GetServiceId()))+
                           "Address:"+std::to_string(static_cast<int>(headerPtr->GetAddress())));
     if (this->i2c_.Ioctl(headerPtr->GetAddress()) != core::ErrorCode::kOk) {
-      this->sock_.Transmit(I2C_RES_IPC_ADDR + std::to_string(headerPtr->GetServiceId()), 0,
-                                                  i2c::I2CFactory::GetBuffer(headerPtr, {}));
-      return;
+      return {};
     }
     auto payload = i2c::I2CFactory::GetPayload(data);
     if (!payload.has_value()) {
-      this->sock_.Transmit(I2C_RES_IPC_ADDR + std::to_string(headerPtr->GetServiceId()), 0,
-                                                  i2c::I2CFactory::GetBuffer(headerPtr, {}));
-      return;
+      return {};
     }
+
     if (headerPtr->GetAction() == i2c::ACTION::Write) {
-      i2c_.Write(payload.value());
-      return;
+      if (payload.value().size() == 1) {
+        if (i2c_.Write(payload.value()[0]) == core::ErrorCode::kOk) {
+          return {1};
+        }
+      } else {
+        if (i2c_.Write(payload.value()) == core::ErrorCode::kOk) {
+          return {1};
+        }
+      }
+      return {};
+
     } else if (headerPtr->GetAction() == i2c::ACTION::PageWrite) {
-      i2c_.PageWrite(payload.value());
-      return;
-    } else if (headerPtr->GetAction() == i2c::ACTION::ReadWrite) {
+      if (i2c_.PageWrite(payload.value()) == core::ErrorCode::kOk) {
+        return {1};
+      }
+      return {};
+
+    } else if (headerPtr->GetAction() == i2c::ACTION::Read) {
       auto res = this->ReadWrite(payload.value(), headerPtr);
-      headerPtr->SetAction(i2c::ACTION::RES);
-      auto hdr = i2c::Header(i2c::ACTION::RES, headerPtr->GetAddress(),
-                    headerPtr->GetServiceId(), headerPtr->GetTransmisionID());
       if (!res.has_value()) {
-        this->sock_.Transmit(I2C_RES_IPC_ADDR + std::to_string(headerPtr->GetServiceId()), 0,
-                                                  i2c::I2CFactory::GetBuffer(std::make_shared<i2c::Header>(hdr), {}));
-        return;
+        return {};
       }
       AppLogger::Debug("Send response to " +std::to_string(headerPtr->GetServiceId())+
                 ",payload size:"+std::to_string(res.value().size()));
-      hdr.SetPaylaodSize(res.value().size());
-      this->sock_.Transmit(I2C_RES_IPC_ADDR + std::to_string(headerPtr->GetServiceId()), 0,
-                          i2c::I2CFactory::GetBuffer(std::make_shared<i2c::Header>(hdr), res.value()));
-      return;
+      return res.value();
+    } else if (headerPtr->GetAction() == i2c::ACTION::WriteRead) {
+      auto res = this->WriteRead(payload.value(), headerPtr);
+      if (!res.has_value()) {
+        return {};
+      }
+      return res.value();
     }
+    return {};
 }
 
 core::ErrorCode I2CService::Run(std::stop_token token) {

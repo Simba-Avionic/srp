@@ -54,7 +54,7 @@ std::optional<std::vector<uint8_t>> StreamIpcSocket::Transmit(
   const int server_socket = socket(AF_UNIX, SOCK_STREAM, 0);
   struct sockaddr_un server_addr;
   server_addr.sun_family = AF_UNIX;
-  strcpy(server_addr.sun_path, ("/run/" + ip).c_str());
+  strcpy(server_addr.sun_path, ("/run/" + ip).c_str());  // NOLINT
   if (connect(server_socket, (struct sockaddr*)&server_addr,
               sizeof(server_addr)) == -1) {
     return {};
@@ -90,7 +90,7 @@ void StreamIpcSocket::Loop(std::stop_token stoken) {
     std::array<char, 256 * 2> buffer;
     int clen = sizeof(client_addr);
     client_socket =
-        accept(server_sock, (sockaddr*)&client_addr, (socklen_t*)&clen);
+        accept(server_sock, (sockaddr*)&client_addr, (socklen_t*)&clen);  // NOLINT
     bytes_rec = read(client_socket, reinterpret_cast<char*>(&buffer), 256 * 2);
 
     if (bytes_rec >= 0) {

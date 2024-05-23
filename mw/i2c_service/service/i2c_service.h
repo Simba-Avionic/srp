@@ -15,7 +15,7 @@
 #include <unordered_map>
 #include <memory>
 #include "core/application/application_mw.h"
-#include "communication-core/sockets/ipc_socket.h"
+#include "communication-core/sockets/stream_ipc_socket.h"
 #include "core/i2c/i2cdriver.hpp"
 #include "mw/i2c_service/data/header.h"
 namespace simba {
@@ -24,12 +24,13 @@ class I2CService : public core::ApplicationMW {
  private:
     std::mutex i2c_mtx;
     core::i2c::I2CDriver i2c_;
-    com::soc::IpcSocket sock_;
-    void RxCallback(const std::string& ip, const std::uint16_t& port,
-    const std::vector<std::uint8_t> data);
+    com::soc::StreamIpcSocket sock_;
+    std::vector<uint8_t> RxCallback(const std::string& ip, const std::uint16_t& port,
+                                         std::vector<std::uint8_t> data);
     std::optional<std::vector<uint8_t>> ReadWrite(
             const std::vector<uint8_t> &payload, std::shared_ptr<i2c::Header> headerPtr);
-
+    std::optional<std::vector<uint8_t>> WriteRead(const std::vector<uint8_t> &payload,
+                                                          std::shared_ptr<i2c::Header> headerPtr);
 
  public:
   core::ErrorCode Run(std::stop_token token) final;
