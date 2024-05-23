@@ -8,7 +8,7 @@
  * @copyright Copyright (c) 2024
  * 
  */
-#include <mutex>
+#include <mutex>  // NOLINT
 #include "exec_controller.hpp"
 #include "core/logger/Logger.h"
 #include "communication-core/sockets/ipc_socket.h"
