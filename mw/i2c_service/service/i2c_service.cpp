@@ -51,32 +51,25 @@ std::optional<std::vector<uint8_t>> I2CService::WriteRead(const std::vector<uint
 
 std::vector<uint8_t> I2CService::RxCallback(const std::string& ip, const std::uint16_t& port,
                                          const std::vector<std::uint8_t> data) {
-    AppLogger::Warning("size12:"+std::to_string(data.size()));
     std::unique_lock<std::mutex> lock(this->i2c_mtx);
     std::shared_ptr<i2c::Header> headerPtr = i2c::I2CFactory::GetHeader(data);
-    AppLogger::Warning("size13:"+std::to_string(data.size()));
     if (!headerPtr) {
       return {};
     }
     if (this->i2c_.Ioctl(headerPtr->GetAddress()) != core::ErrorCode::kOk) {
       return {};
     }
-    AppLogger::Warning("size14:"+std::to_string(data.size()));
     auto payload = i2c::I2CFactory::GetPayload(data);
-    AppLogger::Warning("size15:"+std::to_string(data.size()));
     if (!payload.has_value()) {
       return {};
     }
     AppLogger::Warning("Receive i2c req with payload size:"+std::to_string(payload.value().size()));
     if (headerPtr->GetAction() == i2c::ACTION::kWrite) {
-      AppLogger::Warning("receive write req");
       if (payload.value().size() == 1) {
         if (i2c_.Write(payload.value()[0]) == core::ErrorCode::kOk) {
           return {1};
         }
       } else {
-        AppLogger::Warning("1");
-        AppLogger::Warning("size2:"+std::to_string(payload.value().size()));
         if (i2c_.Write(payload.value()) == core::ErrorCode::kOk) {
           return {1};
         }

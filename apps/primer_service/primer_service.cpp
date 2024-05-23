@@ -39,8 +39,8 @@ core::ErrorCode PrimerService::ChangePrimerState(int8_t state) {
     do {
     error = this->gpio_.SetPinValue(this->primer_pin_, state);
     i++;
-    } while ( error != core::ErrorCode::kOk || i > 5);
-    if (i > 5) {
+    } while ( error != core::ErrorCode::kOk && i < 5);
+    if (error != core::ErrorCode::kOk) {
       this->dtc_31->Failed();
       return core::ErrorCode::kError;
     }
@@ -82,10 +82,10 @@ core::ErrorCode PrimerService::Run(std::stop_token token) {
               return std::vector<uint8_t>{0};
             }
             std::this_thread::sleep_for(std::chrono::milliseconds(this->active_time));
-            if (this->ChangePrimerState(0) == core::ErrorCode::kOk) {
-              return std::vector<uint8_t>{1};
+            if (this->ChangePrimerState(0) != core::ErrorCode::kOk) {
+              return std::vector<uint8_t>{0};
             }
-            return std::vector<uint8_t>{0};
+            return std::vector<uint8_t>{1};
           });
   });
   com->Add(primerOffMethod);
