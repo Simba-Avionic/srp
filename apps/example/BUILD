@@ -14,6 +14,7 @@ cc_binary(
         "//mw/gpio_server/controller:gpio_controller",
         "//mw/i2c_service/controller:i2c_controller",
         "@untar",
+        "//mw/i2c_service/controller/pca9685:pca9685_controller",
     ],
 )
 
