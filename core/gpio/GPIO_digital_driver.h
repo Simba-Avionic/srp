@@ -45,8 +45,9 @@ class GpioDigitalDriver: public IgpioDigitalDriver{
    */
   core::ErrorCode setDirection(uint8_t pinNumber,
                direction_t direction) override;
+
   /**
-   * @brief Get the Value object
+   * @brief Get Pin Value
    * 
    * @param pinNumber 
    * @return uint8_t 

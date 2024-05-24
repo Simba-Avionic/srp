@@ -29,10 +29,13 @@ namespace {
    */
   const constexpr uint8_t IGNITER_PIN_ID = 5;
   const constexpr uint16_t IGNITER_ACTIVE_TIME = 250;
-}
+
+  const constexpr uint8_t ON_INGITER = 1;
+  const constexpr uint8_t OFF_INGITER = 0;
+}  // namespace
 
 
-core::ErrorCode PrimerService::ChangePrimerState(int8_t state) {
+core::ErrorCode PrimerService::ChangePrimerState(uint8_t state) {
   if (this->primerState != state) {
     core::ErrorCode error;
     uint8_t i = 0;
@@ -58,7 +61,7 @@ core::ErrorCode PrimerService::Run(std::stop_token token) {
       [this](const std::vector<uint8_t> payload)
           -> std::optional<std::vector<uint8_t>> {
             AppLogger::Debug("Receive onPrime method");
-            if (this->ChangePrimerState(1) == core::ErrorCode::kOk) {
+            if (this->ChangePrimerState(ON_INGITER) == core::ErrorCode::kOk) {
               return std::vector<uint8_t>{1};
             }
             return std::vector<uint8_t>{0};
@@ -68,7 +71,7 @@ core::ErrorCode PrimerService::Run(std::stop_token token) {
       [this](const std::vector<uint8_t> payload)
           -> std::optional<std::vector<uint8_t>> {
             AppLogger::Debug("Receive offPrime method");
-            if (this->ChangePrimerState(0) == core::ErrorCode::kOk) {
+            if (this->ChangePrimerState(OFF_INGITER) == core::ErrorCode::kOk) {
               return std::vector<uint8_t>{1};
             }
             return std::vector<uint8_t>{0};
@@ -78,11 +81,11 @@ core::ErrorCode PrimerService::Run(std::stop_token token) {
       [this](const std::vector<uint8_t> payload)
           -> std::optional<std::vector<uint8_t>> {
             auto future = std::async(std::launch::async, [this](){
-            if (this->ChangePrimerState(1) != core::ErrorCode::kOk) {
+            if (this->ChangePrimerState(ON_INGITER) != core::ErrorCode::kOk) {
               return std::vector<uint8_t>{0};
             }
             std::this_thread::sleep_for(std::chrono::milliseconds(this->active_time));
-            if (this->ChangePrimerState(0) != core::ErrorCode::kOk) {
+            if (this->ChangePrimerState(OFF_INGITER) != core::ErrorCode::kOk) {
               return std::vector<uint8_t>{0};
             }
             return std::vector<uint8_t>{1};
@@ -139,7 +142,7 @@ core::ErrorCode PrimerService::Initialize(
   this->diag_controller.RegisterDTC(dtc_30);
   this->diag_controller.RegisterDTC(dtc_31);
 
-  this->gpio_ = gpio::GPIOController();
+  this->gpio_ = gpio::GPIOController(std::make_shared<com::soc::StreamIpcSocket>());
   ReadConfig(parms);
   this->primerState = 0;
   /**

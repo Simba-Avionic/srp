@@ -13,6 +13,7 @@
 #include <netinet/in.h>
 #include <unistd.h>
 #include <arpa/inet.h>
+#include <utility>
 
 #include "gpio_controller.hpp"
 
@@ -20,16 +21,15 @@ namespace simba {
 namespace gpio {
 
 namespace {
-    constexpr char* PATH = "SIMBA.GPIO";
+    constexpr auto PATH = "SIMBA.GPIO";
 }
 
-GPIOController::GPIOController(com::soc::ISocketStream* socket) {
-    this->sock_ = socket;
+GPIOController::GPIOController(std::shared_ptr<com::soc::ISocketStream> socket)
+                                                    : sock_(std::move(socket)) {
 }
 GPIOController::GPIOController() {
-    this->sock_ = new com::soc::StreamIpcSocket();
+    this->sock_ = std::make_shared<com::soc::StreamIpcSocket>();
 }
-
 
 core::ErrorCode GPIOController::SetPinValue(uint8_t actuatorID, int8_t value) {
     if (this->sock_== nullptr) {
@@ -58,7 +58,6 @@ std::optional<int8_t> GPIOController::GetPinValue(uint8_t actuatorID) {
     }
     gpio::Header resHdr(0, 0, gpio::ACTION::RES);
     resHdr.SetBuffor(res.value());
-    AppLogger::Warning(std::to_string(resHdr.GetValue()));
     return resHdr.GetValue();
 }
 

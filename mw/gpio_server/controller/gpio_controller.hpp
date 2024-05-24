@@ -16,6 +16,7 @@
 #include <vector>
 #include <unordered_map>
 #include <optional>
+#include <memory>
 
 #include "communication-core/sockets/stream_ipc_socket.h"
 #include "core/gpio/GPIO_digital_driver.h"
@@ -28,10 +29,10 @@ namespace gpio {
 
 class GPIOController {
  private:
-    com::soc::ISocketStream* sock_;
+    std::shared_ptr<com::soc::ISocketStream> sock_;
  public:
-    explicit GPIOController(com::soc::ISocketStream* socket);
     GPIOController();
+    explicit GPIOController(std::shared_ptr<com::soc::ISocketStream> socket);
     core::ErrorCode SetPinValue(uint8_t actuatorID, int8_t value);
     std::optional<int8_t> GetPinValue(uint8_t actuatorID);
 };

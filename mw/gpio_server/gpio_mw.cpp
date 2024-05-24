@@ -44,7 +44,6 @@ std::vector<uint8_t> GPIOMWService::RxCallback(const std::string& ip, const std:
         return {0};
     } else if (hdr.GetAction() == gpio::ACTION::GET) {
         auto val = this->gpio_driver_.getValue(it->second.pinNum);
-        AppLogger::Warning(std::to_string(val));
         gpio::Header resHeader(hdr.GetActuatorID(), val, gpio::ACTION::RES);
         return resHeader.GetBuffor();
     } else {

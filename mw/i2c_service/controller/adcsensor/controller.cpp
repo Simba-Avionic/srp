@@ -21,11 +21,11 @@
 namespace simba {
 namespace i2c {
 
-float ADCSensorController::calculateA(float R, float RES_MAX, float RES_MIN, float A_MAX, float A_MIN) const {
+float ADCSensorController::CalculateA(float R, float RES_MAX, float RES_MIN, float A_MAX, float A_MIN) const {
     return (RES_MAX - RES_MIN) * 1000.0f / ((A_MAX - A_MIN) * R);
 }
 
-float ADCSensorController::calculateB(float R, float A, float A_MIN) const {
+float ADCSensorController::CalculateB(float R, float A, float A_MIN) const {
     return -((A * A_MIN * R) / 1000.0f);
 }
 
@@ -34,40 +34,52 @@ ADCSensorController::ADCSensorController() {}
 void ADCSensorController::Init(const std::unordered_map<std::string, std::string>& parms) {
   this->app_name = parms.at("app_name");
   std::string file_path = "/opt/"+this->app_name+"/etc/config.json";
-  std::ifstream file(file_path);
-  if (!file.is_open()) {
-      AppLogger::Warning("Cant find file on path "+file_path);
-      return;
+  auto obj_r = core::json::JsonParser::Parser(file_path);
+  if (!obj_r.has_value()) {
+    AppLogger::Warning("Cant find file on path "+file_path);
+    return;
   }
-  nlohmann::json data = nlohmann::json::parse(file);
-  this->db_ = this->ReadConfig(data);
+  this->db_ = this->ReadConfig(obj_r.value().GetObject());
 }
 std::unordered_map<uint8_t, SensorConfig> ADCSensorController::ReadConfig(nlohmann::json data) {
     std::unordered_map<uint8_t, SensorConfig> db;
     if (!data.contains("sensors")) {
         return {};
     }
-    for (const auto &sensor : data["sensors"]) {
-        if (!(sensor.contains("actuator_id") && sensor.contains("channel"))) {
-            AppLogger::Warning("Invalid  pressure sensor config");
+    for (const auto &sensor__ : data["sensors"]) {
+        auto parser = core::json::JsonParser::Parser(sensor__);
+        if (!parser.has_value()) {
             continue;
         }
+        auto sensor = parser.value();
+        auto actuator_id = sensor.GetNumber<uint8_t>("actuator_id");
+        auto channel = sensor.GetNumber<uint8_t>("channel");
+        if (!(actuator_id.has_value() && channel.has_value())) {
+            AppLogger::Warning("Missing actuator_id or channel");
+            continue;
+        }
+        auto a = sensor.GetNumber<float>("a");
+        auto b = sensor.GetNumber<float>("b");
         SensorConfig config;
-        config.channel = sensor.at("channel");
-        if ((sensor.contains("a") && sensor.contains("b"))) {
-            config.a = sensor.at("a");
-            config.b = sensor.at("b");
-        } else if (sensor.contains("R") && sensor.contains("RES_MIN") &&
-            sensor.contains("RES_MAX") && sensor.contains("A_MAX") && sensor.contains("A_MIN")) {
-            config.a = calculateA(sensor.at("R"), sensor.at("RES_MAX"),
-                        sensor.at("RES_MIN"), sensor.at("A_MAX"), sensor.at("A_MIN"));
-            config.b = calculateB(sensor.at("R"), config.a, sensor.at("A_MIN"));
+        if (a.has_value() && b.has_value()) {
+            config.a = a.value();
+            config.b = b.value();
         } else {
-            AppLogger::Warning("Invalid config for sensor with id:"+
-                                std::to_string(static_cast<int>(sensor.at("actuator_id"))));
-            continue;
+            auto r = sensor.GetNumber<float>("R");
+            auto resMin = sensor.GetNumber<float>("RES_MIN");
+            auto resMax = sensor.GetNumber<float>("RES_MAX");
+            auto AMin = sensor.GetNumber<float>("A_MIN");
+            auto AMax = sensor.GetNumber<float>("A_MAX");
+            if (!r.has_value() || !resMin.has_value() || !resMax.has_value()
+            || !AMax.has_value() || !AMin.has_value()) {
+                AppLogger::Warning("Invalid config for actuatorID:"
+                                            + std::to_string(actuator_id.value()));
+                continue;
+            }
+            config.a = CalculateA(r.value(), resMax.value(), resMin.value(), AMax.value(), AMin.value());
+            config.b = CalculateB(r.value(), config.a, AMin.value());
+            db.insert({actuator_id.value(), config});
         }
-        db.insert({sensor.at("actuator_id"), config});
     }
     return db;
 }
