@@ -90,8 +90,8 @@ class App(tk.Tk):
         main_valve_set_0_button = tk.Button(main_valve_button_frame, text="Main valve: set 0", command=lambda: self.set_main_valve(value=0))
 
         vent_button_frame = tk.Frame(self)
-        vent_set_1_button = tk.Button(vent_button_frame, text="Vent: set 1", command=lambda: self.set_vent(value=1))
-        vent_set_0_button = tk.Button(vent_button_frame, text="Vent: set 0", command=lambda: self.set_vent(value=0))
+        vent_set_1_button = tk.Button(vent_button_frame, text="Vent: set 1", command=lambda: self.set_vent(self, value=1))
+        vent_set_0_button = tk.Button(vent_button_frame, text="Vent: set 0", command=lambda: self.set_vent(self, value=0))
 
         launch_rocket_button_frame = tk.Frame(self)
         launch_rocket_button = tk.Button(launch_rocket_button_frame, text="Launch rocket", command=lambda: self.launch_rocket(value=1))
