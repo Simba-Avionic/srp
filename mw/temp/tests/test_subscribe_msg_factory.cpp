@@ -1,8 +1,9 @@
 /**
  * @file test_subscribe_msg_factory.cpp
  * @author Jacek Kukawski (jacekka6@gmail.com)
+ * @author Michał Mańkowski (m.mankowski2004@gmail.com)
  * @brief 
- * @version 1.0
+ * @version 0.1
  * @date 2024-05-27
  * 
  * @copyright Copyright (c) 2024
@@ -30,7 +31,10 @@ class SUBSCRIBE_MSG_FACTORIES : public ::testing::TestWithParam<
 INSTANTIATE_TEST_SUITE_P(SUBSCRIBE_MSG_FACTORIES_TEST,
                          SUBSCRIBE_MSG_FACTORIES,
                          ::testing::Values(
-                             std::make_tuple(0x0001, std::vector<uint8_t>{0x0, 0x1, 0x2, 0x3, 0x4, 0x5})
+                            std::make_tuple(0x0001, std::vector<uint8_t>{0x0, 0x1, 0x2, 0x3, 0x4, 0x5}),
+                            std::make_tuple(std::vector<uint8_t>{0x0, 0x1, 0x2, 0x3, 0x4, 0x5}, 0x0001),
+                            std::make_tuple(std::vector<uint8_t>{0x0, 0x0, 0x0, 0x0, 0x0, 0x5}, 0x0000),
+                            std::make_tuple(std::vector<uint8_t>{255, 255, 255, 255, 255, 255}, 32767)
                          )
 );
 
