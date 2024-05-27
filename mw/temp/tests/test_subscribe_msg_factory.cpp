@@ -1,9 +1,9 @@
 /**
  * @file test_subscribe_msg_factory.cpp
- * @author Maciek Matuszewski (maciej.matuszewsky@gmail.com)
+ * @author Jacek Kukawski (jacekka6@gmail.com)
  * @brief 
- * @version 0.1
- * @date 2024-03-02
+ * @version 1.0
+ * @date 2024-05-27
  * 
  * @copyright Copyright (c) 2024
  * 
@@ -13,10 +13,28 @@
 #include "mw/temp/subscribe_msg/subscribe_header.h"
 #include "mw/temp/subscribe_msg/subscribe_msg_factory.h"
 
-TEST(SUBSCRIBE_MSG_FACTORIES, SUBSCRIBE_MSG_FACTORIES_TEST) {
-    simba::mw::temp::SubMsgFactory factory;
-    std::vector<uint8_t> payload = {0x0, 0x1, 0x2, 0x3, 0x4, 0x5};
-    const uint16_t id = 0x0001;
+class SUBSCRIBE_MSG_FACTORIES : public ::testing::TestWithParam<
+                        std::tuple<uint16_t, std::vector<uint8_t>>> {
+    protected:
+        simba::mw::temp::SubMsgFactory factory;
+        uint16_t id;
+        std::vector<uint8_t> payload;
+
+        void SetUp() override {
+            auto params = GetParam();
+            id = std::get<0>(params);
+            payload = std::get<1>(params);
+        }
+};
+
+INSTANTIATE_TEST_SUITE_P(SUBSCRIBE_MSG_FACTORIES_TEST,
+                         SUBSCRIBE_MSG_FACTORIES,
+                         ::testing::Values(
+                             std::make_tuple(0x0001, std::vector<uint8_t>{0x0, 0x1, 0x2, 0x3, 0x4, 0x5})
+                         )
+);
+
+TEST_P(SUBSCRIBE_MSG_FACTORIES, SUBSCRIBE_MSG_FACTORIES_TEST) {
     simba::mw::temp::SubscribeHeader hdr{id};
     const std::vector<uint8_t> data = factory.GetBuffer(
         std::make_shared<simba::mw::temp::SubscribeHeader>(hdr), std::move(payload));
