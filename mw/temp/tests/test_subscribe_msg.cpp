@@ -1,9 +1,9 @@
 /**
  * @file test_subscribe_msg.cpp
- * @author Maciek Matuszewski (maciej.matuszewsky@gmail.com)
+ * @author Jacek Kukawski (jacekka6@gmail.com)
  * @brief 
- * @version 0.1
- * @date 2024-03-02
+ * @version 1.0
+ * @date 2024-05-27
  * 
  * @copyright Copyright (c) 2024
  * 
@@ -12,10 +12,22 @@
 
 #include "mw/temp/subscribe_msg/subscribe_header.h"
 
-TEST(SUBSCRIBE_HEADER, CONSTRUCTOR_CHECK) {
-    const uint16_t id = 0x0010;
-    simba::mw::temp::SubscribeHeader hdr{id};
-    const std::vector<uint8_t> payload{0x01, 0x02, 0x03};
+class SUBSCRIBE_HEADER : public ::testing::TestWithParam<uint16_t> {
+    protected:
+        uint16_t id;
+        simba::mw::temp::SubscribeHeader hdr;
+        
+        void SetUp() override {
+            id = GetParam();
+        }
+};
+
+INSTANTIATE_TEST_SUITE_P(SUBSCRIBE_HEADER_PARAMS,
+                         SUBSCRIBE_HEADER,
+                         ::testing::Values(0x0010));
+
+TEST_P(SUBSCRIBE_HEADER, CONSTRUCTOR_CHECK) {
+    hdr = simba::mw::temp::SubscribeHeader{id};
     EXPECT_EQ(id, hdr.GetServiceID());
     EXPECT_EQ(02, hdr.GetLength());
 }
