@@ -28,7 +28,7 @@ core::ErrorCode JakuService::Run(std::stop_token token) {
     uint8_t diodeCounter = 0;
     std::vector<uint8_t> success;
     auto diode_method = 
-        std::make_shared<com::someip::MethodProxyBase>("HomeworkApp/diodeMethod");
+        std::make_shared<com::someip::MethodProxyBase>("diodeMethod");
     com->Add(diode_method);
     diode_method->StartFindService();
     while(true){
@@ -54,6 +54,7 @@ core::ErrorCode JakuService::Run(std::stop_token token) {
                 }
                 else{
                     AppLogger::Info("Response not received");
+                    success = new std::vector<uint8_t>{0};
                 }
                 sendDiode = true;
             }
@@ -79,7 +80,25 @@ core::ErrorCode JakuService::Initialize(
     com->Add(temp_event_1);
     com->Add(temp_event_2);
     com->Add(temp_event_3);
+    core::ErrorCode res;
+    do {
+        std::this_thread::sleep_for(std::chrono::milliseconds(500));
+        res = this->temp_.Init(514, std::bind(&JakuService::TempRxCallback,
+            this, std::placeholders::_1, std::placeholders::_2,
+                                        std::placeholders::_3));
+    } while (res != core::ErrorCode::kOk);
+    }
     return core::ErrorCode::kOk;
+}
+
+bool EnvService::CheckTempError(const double &value) {
+    if (value > 30) {
+        dtc_temp_error->Failed();
+        return false;
+    } else {
+        dtc_temp_error->Pass();
+        return true;
+    }
 }
 
 void JakuService::TempRxCallback(const std::string& ip, const std::uint16_t& port,
@@ -88,6 +107,7 @@ void JakuService::TempRxCallback(const std::string& ip, const std::uint16_t& por
 mw::temp::TempReadingMsgFactory factory_;
 auto hdrs = factory_.GetPayload(data);
 for (auto &hdr : hdrs) {
+    this->CheckTempError(hdr.second);
     AppLogger::Info("Received temp data: " + std::to_string(hdr.first) + " " + std::to_string(hdr.second));
     switch (hdr.first)
     {

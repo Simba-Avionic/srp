@@ -14,6 +14,7 @@
 #include "mw/temp/controller/temp_controller.h"
 #include "core/application/application_no_ipc.h"
 #include "communication-core/someip-controller/event_skeleton.h"
+#include "diag/dtc/controller/dtc.h"
 
 namespace simba {
 namespace jakuService {
@@ -47,6 +48,7 @@ class JakuService : public core::ApplicationNoIPC {
                                   const std::vector<std::uint8_t> data);
   std::optional<std::vector<uint8_t>> WriteSomeip(
       const std::vector<uint8_t> payload);
+  bool CheckTempError(const double &value);
  
  public:
   ~JakuService() = default;
