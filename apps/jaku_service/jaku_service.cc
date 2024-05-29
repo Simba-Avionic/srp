@@ -54,7 +54,7 @@ core::ErrorCode JakuService::Run(std::stop_token token) {
                 }
                 else{
                     AppLogger::Info("Response not received");
-                    success = new std::vector<uint8_t>{0};
+                    success = {0};
                 }
                 sendDiode = true;
             }
@@ -73,25 +73,34 @@ core::ErrorCode JakuService::Run(std::stop_token token) {
 }
 
 core::ErrorCode JakuService::Initialize(
-    const std::unordered_map<std::string, std::string>& params){
+        const std::unordered_map<std::string, std::string>& params) {
     this->temp_event_1 = std::make_shared<com::someip::EventSkeleton>("JakuApp/sentTempEvent_1");
     this->temp_event_2 = std::make_shared<com::someip::EventSkeleton>("JakuApp/sentTempEvent_2");
     this->temp_event_3 = std::make_shared<com::someip::EventSkeleton>("JakuApp/sentTempEvent_3");
     com->Add(temp_event_1);
     com->Add(temp_event_2);
     com->Add(temp_event_3);
+    this->dtc_temp_error = std::make_shared<diag::dtc::DTCObject>(0x21);
+    this->dtc_temp_connection_error_0xB1 = std::make_shared<diag::dtc::DTCObject>(0xB1);
+    diag_controller.RegisterDTC(dtc_temp_connection_error_0xB1);
+    diag_controller.RegisterDTC(dtc_temp_error);
     core::ErrorCode res;
+    uint8_t i = 0;
     do {
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
         res = this->temp_.Init(514, std::bind(&JakuService::TempRxCallback,
             this, std::placeholders::_1, std::placeholders::_2,
                                         std::placeholders::_3));
-    } while (res != core::ErrorCode::kOk);
+    } while (res != core::ErrorCode::kOk && i < 6);
+    if (res != core::ErrorCode::kOk) {
+        this->dtc_temp_connection_error_0xB1->Failed();
+        return res;
     }
     return core::ErrorCode::kOk;
 }
 
-bool EnvService::CheckTempError(const double &value) {
+
+bool JakuService::CheckTempError(const double &value) {
     if (value > 30) {
         dtc_temp_error->Failed();
         return false;
@@ -100,6 +109,8 @@ bool EnvService::CheckTempError(const double &value) {
         return true;
     }
 }
+
+
 
 void JakuService::TempRxCallback(const std::string& ip, const std::uint16_t& port,
                                 const std::vector<std::uint8_t> data) {

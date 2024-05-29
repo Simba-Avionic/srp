@@ -28,6 +28,8 @@ class JakuService : public core::ApplicationNoIPC {
     std::vector<uint8_t> temp_vector_1;
     std::vector<uint8_t> temp_vector_2;
     std::vector<uint8_t> temp_vector_3;
+    std::shared_ptr<simba::diag::dtc::DTCObject> dtc_temp_error;
+    std::shared_ptr<diag::dtc::DTCObject> dtc_temp_connection_error_0xB1;
 
     /* data */
  protected:
