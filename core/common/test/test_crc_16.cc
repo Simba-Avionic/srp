@@ -53,3 +53,15 @@ TEST(CRC16, value_uint32) {
 TEST(CRC16, value_uint64) {
   ASSERT_EQ(0xCE00, simba::core::CRC16::calculate((uint64_t)0xF1));
 }
+TEST(CRC16, value_int8) {
+  ASSERT_EQ(0x1ECE, simba::core::CRC16::calculate((int8_t)0xF1));
+}
+TEST(CRC16, value_int16) {
+  ASSERT_EQ(0xE231, simba::core::CRC16::calculate((int16_t)0xF1));
+}
+TEST(CRC16, value_int32) {
+  ASSERT_EQ(0x7BFE, simba::core::CRC16::calculate((int32_t)0xF1));
+}
+TEST(CRC16, value_int64) {
+  ASSERT_EQ(0xCE00, simba::core::CRC16::calculate((int64_t)0xF1));
+}
