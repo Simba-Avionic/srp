@@ -21,17 +21,25 @@
 namespace simba {
 namespace gpio {
 
+enum ACTION : uint8_t {
+  SET = 0,
+  GET = 1,
+  RES = 2
+};
+
 class Header : public com::core::network::NetworkDataStructure {
  private:
-    com::core::network::uint16_t service_id;
-    com::core::network::uint16_t pin_id;
+    com::core::network::uint8_t action;
+    com::core::network::uint8_t pin_id;
     com::core::network::uint8_t value;
     void SetData();
  public:
-    uint16_t GetServiceID() { return this->service_id.Get(); }
-    uint16_t GetPinID() { return this->pin_id.Get(); }
+    uint16_t GetActuatorID() { return this->pin_id.Get(); }
     uint8_t GetValue() { return this->value.Get(); }
-    Header(uint16_t service_id, uint16_t pin_id, uint8_t value);
+    ACTION GetAction() { return static_cast<ACTION>(this->action.Get());}
+    void SetValue(uint8_t value);
+    void SetAction(ACTION action);
+    Header(uint8_t actuator_id, uint8_t value, ACTION action);
 };
 
 }  // namespace gpio

@@ -15,78 +15,73 @@
 #include "core/common/error_code.h"
 
 class SetPinTest : public ::testing::TestWithParam<
-                        std::tuple<uint16_t, simba::gpio::Value, simba::core::ErrorCode>> {
+                        std::tuple<uint8_t, int8_t>> {
 };
+
 
 INSTANTIATE_TEST_SUITE_P(SetPinTestParameters, SetPinTest,
     ::testing::Values(
-        std::make_tuple(0, simba::gpio::Value::ERROR, simba::core::ErrorCode::kError),
-        std::make_tuple(0, simba::gpio::Value::LOW, simba::core::ErrorCode::kOk),
-        std::make_tuple(0, simba::gpio::Value::HIGH, simba::core::ErrorCode::kOk),
-        std::make_tuple(0, simba::gpio::Value::ERROR, simba::core::ErrorCode::kError),
-        std::make_tuple(12, simba::gpio::Value::ERROR, simba::core::ErrorCode::kError),
-        std::make_tuple(14, simba::gpio::Value::HIGH, simba::core::ErrorCode::kOk),
-        std::make_tuple(21, simba::gpio::Value::LOW, simba::core::ErrorCode::kOk),
-        std::make_tuple(255, simba::gpio::Value::ERROR, simba::core::ErrorCode::kError),
-        std::make_tuple(255, simba::gpio::Value::LOW, simba::core::ErrorCode::kOk),
-        std::make_tuple(255, simba::gpio::Value::HIGH, simba::core::ErrorCode::kOk)
+        std::make_tuple(0, 0),
+        std::make_tuple(0, 1),
+        std::make_tuple(0, 0),
+        std::make_tuple(0, 1),
+        std::make_tuple(12, 0),
+        std::make_tuple(14, 1),
+        std::make_tuple(21, 0),
+        std::make_tuple(255, 1),
+        std::make_tuple(255, 0),
+        std::make_tuple(255, 1)
     )
 );
 
 
 TEST_P(SetPinTest, CONTROLLER_SET_PIN_VALUE_CHECK) {
-  MockSocket sock_;
+  auto sock_ = std::make_shared<MockStreamSocket>();
   auto params = GetParam();
   uint16_t actuatorID = std::get<0>(params);
-  simba::gpio::Value value = std::get<1>(params);
-  simba::core::ErrorCode ExpectedErrorCode = std::get<2>(params);
+  int8_t value = std::get<1>(params);
+  simba::gpio::GPIOController gpio_(sock_);
 
-  if (value != simba::gpio::Value::ERROR) {
-      EXPECT_CALL(sock_, Transmit(::testing::_, ::testing::_, ::testing::_))
-          .WillOnce(::testing::Return(simba::core::ErrorCode::kError))
-          .WillOnce(::testing::Return(ExpectedErrorCode));
-  }
-  simba::gpio::GPIOController gpio_(&sock_);
+  EXPECT_CALL(*sock_, Transmit(::testing::_, ::testing::_, ::testing::_))
+      .WillOnce(::testing::Return(std::vector<uint8_t>{1}))
+      .WillOnce(::testing::Return(std::vector<uint8_t>{0}));
+
+  EXPECT_EQ(gpio_.SetPinValue(actuatorID, value), simba::core::ErrorCode::kOk);
   EXPECT_EQ(gpio_.SetPinValue(actuatorID, value), simba::core::ErrorCode::kError);
-  EXPECT_EQ(gpio_.SetPinValue(actuatorID, value), ExpectedErrorCode);
 }
-
 
 TEST(GPIO_CONTROLLER, TEST_NULLPTR) {
     simba::gpio::GPIOController gpio_(nullptr);
-    EXPECT_EQ(gpio_.SetPinValue(0, simba::gpio::Value::HIGH),
+    EXPECT_EQ(gpio_.SetPinValue(0, 1),
     simba::core::ErrorCode::kInitializeError);
 }
 
 class GetPinTest : public ::testing::TestWithParam<
-                         std::tuple<uint16_t, simba::gpio::Value>> {
+                         std::tuple<uint8_t, int8_t>> {
  protected:
   void SetUp() override {
-    GTEST_SKIP();
   }
 };
 
 INSTANTIATE_TEST_SUITE_P(GetPinTestParameters, GetPinTest,
     ::testing::Values(
-        std::make_tuple(0, simba::gpio::Value::HIGH),
-        std::make_tuple(0, simba::gpio::Value::LOW),
-        std::make_tuple(12, simba::gpio::Value::ERROR),
-        std::make_tuple(14, simba::gpio::Value::HIGH),
-        std::make_tuple(21, simba::gpio::Value::LOW),
-        std::make_tuple(255, simba::gpio::Value::HIGH),
-        std::make_tuple(255, simba::gpio::Value::LOW)
+        std::make_tuple(0, 1),
+        std::make_tuple(0, 0),
+        std::make_tuple(14, 1),
+        std::make_tuple(21, 0),
+        std::make_tuple(255, 1),
+        std::make_tuple(255, 0)
     )
 );
 
 TEST_P(GetPinTest, CONTROLLER_GET_PIN_VALUE_CHECK) {
-  MockSocket sock_;
-  ON_CALL(sock_, Transmit(::testing::_, ::testing::_ , ::testing::_))
-            .WillByDefault(::testing::Return(simba::core::ErrorCode::kOk));
-  simba::gpio::GPIOController gpio_(&sock_);
   auto params = GetParam();
   uint16_t actuatorID = std::get<0>(params);
-  simba::gpio::Value value = std::get<1>(params);
-
-  gpio_.SetPinValue(actuatorID, value);
+  int8_t value = std::get<1>(params);
+  auto sock_ = std::make_shared<MockStreamSocket>();
+  EXPECT_CALL(*sock_, Transmit(::testing::_, ::testing::_, ::testing::_))
+            .WillOnce(::testing::Return(std::vector<uint8_t>{
+                        simba::gpio::Header(actuatorID, value, simba::gpio::ACTION::RES).GetBuffor()}));
+  simba::gpio::GPIOController gpio_(sock_);
   EXPECT_EQ(gpio_.GetPinValue(actuatorID), value);
 }

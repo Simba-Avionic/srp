@@ -14,21 +14,17 @@
 namespace simba {
 namespace i2c {
 
-Header::Header(ACTION action, uint8_t address, uint16_t service_id, uint16_t transmissionID) {
+Header::Header(ACTION action, uint8_t address) {
     this->action = action;
     this->address = address;
-    this->service_id = service_id;
     this->payload_size = 0;
-    this->transmission_id = transmissionID;
     this->SetData();
 }
 
 void Header::SetData() {
     this->AddData(&action);
     this->AddData(&address);
-    this->AddData(&service_id);
     this->AddData(&payload_size);
-    this->AddData(&transmission_id);
 }
 
 }  // namespace i2c

@@ -10,35 +10,39 @@
  */
 
 #include "mw/i2c_service/data/i2c_factory.h"
+#include "core/logger/Logger.h"
 
 namespace simba {
 namespace i2c {
 
 namespace {
-    const constexpr uint8_t HDR_SIZE = 0x07;
+    const constexpr uint8_t HDR_SIZE = 0x03;
 }
 
 std::vector<uint8_t> I2CFactory::GetBuffer(std::shared_ptr<Header> header, const std::vector<uint8_t>& payload) {
-        header->SetPaylaodSize(payload.size());
-        std::vector<uint8_t> buffer = header->GetBuffor();
-        buffer.insert(buffer.end(), payload.begin(), payload.end());
-        return buffer;
-    }
+    header->SetPaylaodSize(payload.size());
+    std::vector<uint8_t> buffer = header->GetBuffor();
+    buffer.insert(buffer.end(), payload.begin(), payload.end());
+    return buffer;
+}
 
 std::shared_ptr<Header> I2CFactory::GetHeader(const std::vector<uint8_t>& raw_data) {
-        if (raw_data.size() < HDR_SIZE) {
-            return nullptr;
-        }
-        Header hdr(ACTION::Write, 0, 0);
-        hdr.SetBuffor(raw_data);
-        return std::make_shared<Header>(hdr);
+    if (raw_data.size() < HDR_SIZE) {
+        return nullptr;
     }
+    Header hdr(ACTION::kWrite, 0);
+    hdr.SetBuffor(raw_data);
+    return std::make_shared<Header>(hdr);
+}
+
 std::optional<std::vector<uint8_t>> I2CFactory::GetPayload(const std::vector<uint8_t>& raw_data) {
     if (raw_data.size() <= HDR_SIZE) {
-            return {};
-        }
-        auto hdr = GetHeader(raw_data);
-        return std::vector<uint8_t>(raw_data.begin() + HDR_SIZE, raw_data.begin() + HDR_SIZE + hdr->GetPayloadSize());
+        return {};
     }
+    auto hdr = GetHeader(raw_data);
+    std::vector<uint8_t> vec(raw_data.begin() + HDR_SIZE, raw_data.end());
+    return vec;
+}
+
 }  // namespace i2c
 }  // namespace simba

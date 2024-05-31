@@ -29,18 +29,21 @@ namespace {
    */
   const constexpr uint8_t IGNITER_PIN_ID = 5;
   const constexpr uint16_t IGNITER_ACTIVE_TIME = 250;
-}
+
+  const constexpr uint8_t ON_INGITER = 1;
+  const constexpr uint8_t OFF_INGITER = 0;
+}  // namespace
 
 
-core::ErrorCode PrimerService::ChangePrimerState(gpio::Value state) {
+core::ErrorCode PrimerService::ChangePrimerState(uint8_t state) {
   if (this->primerState != state) {
     core::ErrorCode error;
     uint8_t i = 0;
     do {
     error = this->gpio_.SetPinValue(this->primer_pin_, state);
     i++;
-    } while ( error != core::ErrorCode::kOk || i > 5);
-    if (i > 5) {
+    } while ( error != core::ErrorCode::kOk && i < 5);
+    if (error != core::ErrorCode::kOk) {
       this->dtc_31->Failed();
       return core::ErrorCode::kError;
     }
@@ -58,7 +61,7 @@ core::ErrorCode PrimerService::Run(std::stop_token token) {
       [this](const std::vector<uint8_t> payload)
           -> std::optional<std::vector<uint8_t>> {
             AppLogger::Debug("Receive onPrime method");
-            if (this->ChangePrimerState(gpio::Value::HIGH) == core::ErrorCode::kOk) {
+            if (this->ChangePrimerState(ON_INGITER) == core::ErrorCode::kOk) {
               return std::vector<uint8_t>{1};
             }
             return std::vector<uint8_t>{0};
@@ -68,7 +71,7 @@ core::ErrorCode PrimerService::Run(std::stop_token token) {
       [this](const std::vector<uint8_t> payload)
           -> std::optional<std::vector<uint8_t>> {
             AppLogger::Debug("Receive offPrime method");
-            if (this->ChangePrimerState(gpio::Value::LOW) == core::ErrorCode::kOk) {
+            if (this->ChangePrimerState(OFF_INGITER) == core::ErrorCode::kOk) {
               return std::vector<uint8_t>{1};
             }
             return std::vector<uint8_t>{0};
@@ -78,14 +81,14 @@ core::ErrorCode PrimerService::Run(std::stop_token token) {
       [this](const std::vector<uint8_t> payload)
           -> std::optional<std::vector<uint8_t>> {
             auto future = std::async(std::launch::async, [this](){
-            if (this->ChangePrimerState(gpio::Value::HIGH) != core::ErrorCode::kOk) {
+            if (this->ChangePrimerState(ON_INGITER) != core::ErrorCode::kOk) {
               return std::vector<uint8_t>{0};
             }
             std::this_thread::sleep_for(std::chrono::milliseconds(this->active_time));
-            if (this->ChangePrimerState(gpio::Value::HIGH) == core::ErrorCode::kOk) {
-              return std::vector<uint8_t>{1};
+            if (this->ChangePrimerState(OFF_INGITER) != core::ErrorCode::kOk) {
+              return std::vector<uint8_t>{0};
             }
-            return std::vector<uint8_t>{0};
+            return std::vector<uint8_t>{1};
           });
   });
   com->Add(primerOffMethod);
@@ -139,10 +142,9 @@ core::ErrorCode PrimerService::Initialize(
   this->diag_controller.RegisterDTC(dtc_30);
   this->diag_controller.RegisterDTC(dtc_31);
 
-  this->gpio_ = gpio::GPIOController(new com::soc::IpcSocket());
-  this->gpio_.Init(this->app_id_);
+  this->gpio_ = gpio::GPIOController(std::make_shared<com::soc::StreamIpcSocket>());
   ReadConfig(parms);
-
+  this->primerState = 0;
   /**
    * @brief register events
    * 

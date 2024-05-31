@@ -20,34 +20,27 @@
 #include <optional>
 #include <condition_variable>  // NOLINT
 #include "core/i2c/i2cdriver.hpp"
-#include "communication-core/sockets/ipc_socket.h"
 #include "mw/i2c_service/data/header.h"
 #include "mw/i2c_service/data/i2c_factory.h"
+#include "communication-core/sockets/stream_ipc_socket.h"
 
 
 namespace simba {
 namespace i2c {
 class I2CController{
  private:
-  com::soc::IpcSocket sock_;
-  std::mutex mtx_;
-  uint16_t transmission_id{0};
-  uint16_t service_id;
+  com::soc::StreamIpcSocket sock_;
 
-  std::condition_variable cv_;
-  bool response_received_ = false;
-  std::shared_ptr<i2c::Header> response_hdr;
-  std::optional<std::vector<uint8_t>> response_payload;
-  void RXCallback(const std::string& ip, const std::uint16_t& port,
-                            std::vector<std::uint8_t> data);
+ protected:
+std::optional<std::vector<uint8_t>> SendData(ACTION action,
+                        uint8_t address, const std::vector<uint8_t>& payload);
 
  public:
-  void Init(uint16_t service_id);
   /**
    * @brief 
    * 
-   * @param address (reg,data)
-   * @param data 
+   * @param address
+   * @param data (reg,data)
    * @return core::ErrorCode 
    */
   core::ErrorCode Write(const uint8_t address, const std::vector<uint8_t> data);
@@ -61,6 +54,8 @@ class I2CController{
   core::ErrorCode PageWrite(const uint8_t address, const std::vector<uint8_t> data);
 
   std::optional<std::vector<uint8_t>> Read(const uint8_t address, const uint8_t reg, const uint8_t size = 1);
+  std::optional<std::vector<uint8_t>> WriteRead(const uint8_t address,
+                                                        const uint8_t WriteData, const uint8_t ReadSize = 1);
 };
 }  // namespace i2c
 }  // namespace simba

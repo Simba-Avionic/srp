@@ -24,24 +24,30 @@ using json = nlohmann::json;
 namespace simba {
 namespace mw {
 
-void GPIOMWService::RxCallback(const std::string& ip, const std::uint16_t& port,
+std::vector<uint8_t> GPIOMWService::RxCallback(const std::string& ip, const std::uint16_t& port,
   const std::vector<std::uint8_t> data) {
-    gpio::Header hdr(0, 0, 0);
+    gpio::Header hdr(0, 0, gpio::ACTION::GET);
     hdr.SetBuffor(data);
-    auto it = this->config.find(hdr.GetPinID());
+    auto it = this->config.find(hdr.GetActuatorID());
     if (it == this->config.end()) {
-        AppLogger::Warning("Unknown pin with ID: "+std::to_string(hdr.GetPinID()));
-        return;
+        AppLogger::Warning("Unknown pin with ID: "+std::to_string(hdr.GetActuatorID()));
+        return {0};
     }
-    if (it->second.direction != core::gpio::direction_t::OUT) {
-        AppLogger::Warning("Try to set IN pin value, ID: "+std::to_string(hdr.GetPinID()));
-        return;
-    }
-    if (this->gpio_driver_.getValue(it->second.pinNum) != hdr.GetValue()) {
-        AppLogger::Debug("set pin to position:"+std::to_string(hdr.GetValue()));
-        if (this->gpio_driver_.setValue(it->second.pinNum, hdr.GetValue()) != core::ErrorCode::kOk) {
-            AppLogger::Warning("pin state not change");
+    if (hdr.GetAction() == gpio::ACTION::SET) {
+        if (it->second.direction != core::gpio::direction_t::OUT) {
+            AppLogger::Warning("Try to set IN pin value, ID: "+std::to_string(hdr.GetActuatorID()));
+            return {0};
         }
+        if (this->gpio_driver_.setValue(it->second.pinNum, hdr.GetValue()) == core::ErrorCode::kOk) {
+            return {1};
+        }
+        return {0};
+    } else if (hdr.GetAction() == gpio::ACTION::GET) {
+        auto val = this->gpio_driver_.getValue(it->second.pinNum);
+        gpio::Header resHeader(hdr.GetActuatorID(), val, gpio::ACTION::RES);
+        return resHeader.GetBuffor();
+    } else {
+        return {};
     }
 }
 
@@ -52,7 +58,7 @@ core::ErrorCode GPIOMWService::Run(std::stop_token token) {
 
 core::ErrorCode GPIOMWService::Initialize(
       const std::unordered_map<std::string, std::string>& parms) {
-        this->sock_.Init({"SIMBA.GPIO.SET", 0, 0});
+        this->sock_.Init({"SIMBA.GPIO", 0, 0});
         this->sock_.SetRXCallback(std::bind(&GPIOMWService::RxCallback, this, std::placeholders::_1,
                 std::placeholders::_2, std::placeholders::_3));
         this->InitializePins();

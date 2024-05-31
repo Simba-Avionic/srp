@@ -16,6 +16,7 @@
 #include <string>
 #include <vector>
 #include <future> // NOLINT
+#include <memory>
 
 #include "mw/i2c_service/controller/i2c_controller.h"
 #include "mw/gpio_server/controller/gpio_controller.hpp"
@@ -40,7 +41,7 @@ struct Servo {
 class PCA9685 {
  private:
   I2CController i2c_;
-  gpio::GPIOController gpio_{};
+  gpio::GPIOController gpio_;
   std::string app_name;
  protected:
   std::unordered_map<uint8_t, Servo> db_;
@@ -50,7 +51,7 @@ class PCA9685 {
   std::vector<uint8_t> GenerateData(const uint8_t &channel, const uint16_t &pos);
  public:
   PCA9685();
-  void Init(const uint16_t &service_id, const std::unordered_map<std::string, std::string>& parms);
+  void Init(const std::unordered_map<std::string, std::string>& parms);
   core::ErrorCode AutoSetServoPosition(const uint8_t &actuator_id, const uint8_t &state);
   std::optional<uint8_t> ReadServoPosition(const uint8_t &actuator_id);
 };
