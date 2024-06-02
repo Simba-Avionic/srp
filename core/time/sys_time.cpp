@@ -9,10 +9,8 @@
  * 
  */
 
-#include <iostream>
 #include <cstdio>
 #include <memory>
-#include <stdexcept>
 #include <array>
 #include "core/time/sys_time.hpp"
 #include "core/logger/Logger.h"
@@ -40,7 +38,7 @@ std::optional<std::string> TimeChanger::exec(const std::string& cmd) {
     return result;
 }
 
-std::optional<Date_t> parseDate(const std::string& dateStr) {
+Date_t TimeChanger::ParseDate(const std::string& dateStr) {
     Date_t date;
     char monthStr[4];
     int day, hour, minute, second, year;
@@ -49,10 +47,6 @@ std::optional<Date_t> parseDate(const std::string& dateStr) {
     uint8_t parsed = sscanf(dateStr.c_str(), "%*s %3s %d %d:%d:%d %*s %d",
            monthStr, &day, &hour, &minute, &second, &year);
 
-    if (parsed != 6) {
-        return {};
-    }
-    // Mapa miesiąców
     const std::string months = "JanFebMarAprMayJunJulAugSepOctNovDec";
     date.month = (months.find(monthStr) / 3) + 1;
     date.day = static_cast<uint8_t>(day);
@@ -65,14 +59,15 @@ std::optional<Date_t> parseDate(const std::string& dateStr) {
 
 std::string TimeChanger::ConvertVariableToCommand(Date_t date) {
     std::string command = DATE_CMD;
-    command += date.month;
-    command += date.day;
-    command += date.hour;
-    command += date.minute;
-    command += date.year;
-    command += "."+date.seconds;
+    command += (date.month < 10) ? "0" + std::to_string(date.month) : std::to_string(date.month);
+    command += (date.day < 10) ? "0" + std::to_string(date.day) : std::to_string(date.day);
+    command += (date.hour < 10) ? "0" + std::to_string(date.hour) : std::to_string(date.hour);
+    command += (date.minute < 10) ? "0" + std::to_string(date.minute) : std::to_string(date.minute);
+    command += std::to_string(date.year);
+    command += "." + ((date.seconds < 10) ? "0" + std::to_string(date.seconds) : std::to_string(date.seconds));
     return command;
 }
+
 core::ErrorCode TimeChanger::ChangeSystemTime(std::string time) {
     std::string command = DATE_CMD;
     command += time;
@@ -97,7 +92,7 @@ std::optional<Date_t> TimeChanger::ReadSystemTime() {
         return {};
     }
     AppLogger::Info("Current time: "+res.value());
-    return parseDate(res.value());
+    return ParseDate(res.value());
 }
 }  // namespace  time
 }  // namespace  core

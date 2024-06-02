@@ -38,7 +38,7 @@ class TimeChanger {
  protected:
   std::string ConvertVariableToCommand(Date_t date);
   std::optional<std::string> exec(const std::string& cmd);
-  std::optional<Date_t> parseDate(const std::string& dateStr);
+  Date_t ParseDate(const std::string& dateStr);
  public:
  /**
   * @brief 
