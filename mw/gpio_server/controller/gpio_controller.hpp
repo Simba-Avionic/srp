@@ -31,7 +31,7 @@ class GPIOController {
  private:
     std::unique_ptr<com::soc::ISocketStream> sock_;
  public:
-    GPIOController();
+    GPIOController() {}
     explicit GPIOController(std::unique_ptr<com::soc::ISocketStream> socket);
     core::ErrorCode SetPinValue(uint8_t actuatorID, int8_t value);
     std::optional<int8_t> GetPinValue(uint8_t actuatorID);
