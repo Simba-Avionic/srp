@@ -9,7 +9,6 @@
  * 
  */
 #include "gtest/gtest.h"
-#include <iostream>
 
 #include "mw/gpio_server/controller/gpio_controller.hpp"
 #include "communication-core/sockets/mock/mockSocket.h"
