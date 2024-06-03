@@ -51,7 +51,7 @@ core::ErrorCode ServoService::Initialize(
     [this](const std::vector<uint8_t> payload)
           -> std::optional<std::vector<uint8_t>> {
     if (payload.size() == 1) {
-    AppLogger::Debug("move servo id: 60 to pos"+std::to_string(static_cast<int>(payload[0])));
+    AppLogger::Info("move servo id: 60 to pos"+std::to_string(static_cast<int>(payload[0])));
     this->servo_controller.AutoSetServoPosition(60, payload[0]);
     return std::vector<uint8_t>{1};
     }
@@ -62,7 +62,7 @@ this->set_vent_val = std::make_shared<com::someip::MethodSkeleton>(
     [this](const std::vector<uint8_t> payload)
           -> std::optional<std::vector<uint8_t>> {
     if (payload.size() == 1) {
-    AppLogger::Debug("move servo id: 61 to pos"+std::to_string(static_cast<int>(payload[0])));
+    AppLogger::Info("move servo id: 61 to pos"+std::to_string(static_cast<int>(payload[0])));
     this->servo_controller.AutoSetServoPosition(61, payload[0]);
     return std::vector<uint8_t>{1};
     }

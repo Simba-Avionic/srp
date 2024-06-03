@@ -90,6 +90,7 @@ core::ErrorCode PrimerService::Run(std::stop_token token) {
             }
             return std::vector<uint8_t>{1};
           });
+          return {};
   });
   com->Add(primerOffMethod);
   com->Add(primerOnMethod);
@@ -142,7 +143,7 @@ core::ErrorCode PrimerService::Initialize(
   this->diag_controller.RegisterDTC(dtc_30);
   this->diag_controller.RegisterDTC(dtc_31);
 
-  this->gpio_ = gpio::GPIOController(std::make_shared<com::soc::StreamIpcSocket>());
+  this->gpio_ = gpio::GPIOController(std::make_unique<com::soc::StreamIpcSocket>());
   ReadConfig(parms);
   this->primerState = 0;
   /**
