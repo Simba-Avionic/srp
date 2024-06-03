@@ -27,7 +27,7 @@ core::ErrorCode JakuService::Run(std::stop_token token) {
     bool sendDiode = true;
     uint8_t diodeCounter = 0;
     std::vector<uint8_t> success;
-    auto diode_method = 
+    auto diode_method =
         std::make_shared<com::someip::MethodProxyBase>("diodeMethod");
     com->Add(diode_method);
     diode_method->StartFindService();
@@ -44,6 +44,7 @@ core::ErrorCode JakuService::Run(std::stop_token token) {
                 }
                 else{
                     AppLogger::Info("Response not received");
+                    success = {0};
                 }
                 sendDiode = false;
             }
@@ -59,13 +60,7 @@ core::ErrorCode JakuService::Run(std::stop_token token) {
                 sendDiode = true;
             }
             diodeCounter = 0;
-            if (success[0] == 1){
-                AppLogger::Info("Diode change successful");
-            }
-            else{
-                AppLogger::Info("Diode error");
-            }
-        }
+         }
         std::this_thread::sleep_for(std::chrono::seconds(1));
         diodeCounter++;
     }
@@ -88,7 +83,7 @@ core::ErrorCode JakuService::Initialize(
     uint8_t i = 0;
     do {
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
-        res = this->temp_.Init(514, std::bind(&JakuService::TempRxCallback,
+        res = this->temp_.Init(this->app_id_, std::bind(&JakuService::TempRxCallback,
             this, std::placeholders::_1, std::placeholders::_2,
                                         std::placeholders::_3));
     } while (res != core::ErrorCode::kOk && i < 6);
