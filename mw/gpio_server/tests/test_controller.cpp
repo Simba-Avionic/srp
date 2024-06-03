@@ -9,6 +9,7 @@
  * 
  */
 #include "gtest/gtest.h"
+#include <iostream>
 
 #include "mw/gpio_server/controller/gpio_controller.hpp"
 #include "communication-core/sockets/mock/mockSocket.h"
@@ -37,15 +38,13 @@ INSTANTIATE_TEST_SUITE_P(SetPinTestParameters, SetPinTest,
 
 TEST_P(SetPinTest, CONTROLLER_SET_PIN_VALUE_CHECK) {
   auto sock_ = std::make_unique<MockStreamSocket>();
+  EXPECT_CALL(*sock_, Transmit(::testing::_, ::testing::_, ::testing::_))
+    .WillOnce(::testing::Return(std::vector<uint8_t>{1}))
+    .WillOnce(::testing::Return(std::vector<uint8_t>{0}));
   auto params = GetParam();
   uint16_t actuatorID = std::get<0>(params);
   int8_t value = std::get<1>(params);
   simba::gpio::GPIOController gpio_(std::move(sock_));
-
-  EXPECT_CALL(*sock_, Transmit(::testing::_, ::testing::_, ::testing::_))
-      .WillOnce(::testing::Return(std::vector<uint8_t>{1}))
-      .WillOnce(::testing::Return(std::vector<uint8_t>{0}));
-
   EXPECT_EQ(gpio_.SetPinValue(actuatorID, value), simba::core::ErrorCode::kOk);
   EXPECT_EQ(gpio_.SetPinValue(actuatorID, value), simba::core::ErrorCode::kError);
 }
