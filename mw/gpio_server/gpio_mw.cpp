@@ -12,6 +12,7 @@
 #include <vector>
 #include <unordered_map>
 #include <iostream>
+#include <utility>
 
 #include "gpio_mw.hpp"
 #include "mw/gpio_server/data/header.hpp"
@@ -23,6 +24,21 @@ using json = nlohmann::json;
 
 namespace simba {
 namespace mw {
+
+namespace {
+    constexpr auto FILE_PATH = "/opt/gpio/etc/config.json";
+    constexpr auto SOCKET_PATH = "SIMBA.GPIO";
+}
+
+core::ErrorCode GPIOMWService::Init(std::unique_ptr<com::soc::ISocketStream> socket,
+                              std::unique_ptr<core::gpio::IgpioDigitalDriver> gpio) {
+  if (!socket || !gpio) {
+    return core::ErrorCode::kInitializeError;
+  }
+  this->sock_ = std::move(socket);
+  this->gpio_driver_ = std::move(gpio);
+  return core::ErrorCode::kOk;
+}
 
 std::vector<uint8_t> GPIOMWService::RxCallback(const std::string& ip, const std::uint16_t& port,
   const std::vector<std::uint8_t> data) {
@@ -38,12 +54,12 @@ std::vector<uint8_t> GPIOMWService::RxCallback(const std::string& ip, const std:
             AppLogger::Warning("Try to set IN pin value, ID: "+std::to_string(hdr.GetActuatorID()));
             return {0};
         }
-        if (this->gpio_driver_.setValue(it->second.pinNum, hdr.GetValue()) == core::ErrorCode::kOk) {
+        if (this->gpio_driver_->setValue(it->second.pinNum, hdr.GetValue()) == core::ErrorCode::kOk) {
             return {1};
         }
         return {0};
     } else if (hdr.GetAction() == gpio::ACTION::GET) {
-        auto val = this->gpio_driver_.getValue(it->second.pinNum);
+        auto val = this->gpio_driver_->getValue(it->second.pinNum);
         gpio::Header resHeader(hdr.GetActuatorID(), val, gpio::ACTION::RES);
         return resHeader.GetBuffor();
     } else {
@@ -58,23 +74,31 @@ core::ErrorCode GPIOMWService::Run(std::stop_token token) {
 
 core::ErrorCode GPIOMWService::Initialize(
       const std::unordered_map<std::string, std::string>& parms) {
-        this->sock_.Init({"SIMBA.GPIO", 0, 0});
-        this->sock_.SetRXCallback(std::bind(&GPIOMWService::RxCallback, this, std::placeholders::_1,
-                std::placeholders::_2, std::placeholders::_3));
-        this->InitializePins();
-        this->sock_.StartRXThread();
-    return core::ErrorCode::kOk;
-}
-void GPIOMWService::InitializePins() {
-    std::ifstream file("/opt/gpio/etc/config.json");
+    this->Init(std::make_unique<com::soc::StreamIpcSocket>(), std::make_unique<core::gpio::GpioDigitalDriver>());
+    this->sock_->Init({SOCKET_PATH, 0, 0});
+    this->sock_->SetRXCallback(std::bind(&GPIOMWService::RxCallback, this, std::placeholders::_1,
+            std::placeholders::_2, std::placeholders::_3));
+    std::ifstream file(FILE_PATH);
     if (!file.is_open()) {
-        AppLogger::Warning("file not found");
-        return;
+    AppLogger::Warning("Cant find file on path /opt/gpio/etc/config.json");
+    return core::ErrorCode::kError;
     }
     nlohmann::json data = nlohmann::json::parse(file);
+    auto res = this->ReadConfig(data);
+    if (!res.has_value()) {
+        AppLogger::Warning("Cant read Config");
+        return core::ErrorCode::kInitializeError;
+    }
+    this->config = res.value();
+    this->InitPins();
+    this->sock_->StartRXThread();
+    return core::ErrorCode::kOk;
+}
+std::optional<std::unordered_map<uint16_t, GpioConf>> GPIOMWService::ReadConfig(nlohmann::json data) {
+    std::unordered_map<uint16_t, GpioConf> db;
     if (!data.contains("gpio")) {
         AppLogger::Warning("cant find config file");
-        return;
+        return {};
     }
     for (const auto& gpio : data["gpio"]) {
         uint16_t pin_id = static_cast<uint16_t>(gpio["id"]);
@@ -82,11 +106,21 @@ void GPIOMWService::InitializePins() {
         const std::string direct = gpio.at("direction");
         core::gpio::direction_t direction = direct == "out" ?
             core::gpio::direction_t::OUT : core::gpio::direction_t::IN;
-        this->config.insert({pin_id, {pin_num, direction}});
+        db.insert({pin_id, {pin_num, direction}});
     }
+    return db;
+}
+
+core::ErrorCode GPIOMWService::InitPins() {
+    auto res = core::ErrorCode::kOk;
     for (auto pin : this->config) {
-        this->gpio_driver_.initializePin(pin.second.pinNum, pin.second.direction);
+        auto r = this->gpio_driver_->initializePin(pin.second.pinNum, pin.second.direction);
+        if (r != core::ErrorCode::kOk) {
+            AppLogger::Warning("Cant Initialize pin with actuator_ID" + std::to_string(pin.first));
+            res = r;
+        }
     }
+    return res;
 }
 
 

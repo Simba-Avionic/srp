@@ -24,6 +24,7 @@ namespace {
         kSubscriberPrefix = "SIMBA.TEMP.";
     constexpr uint8_t sensor_resolution = 10;
     constexpr const char* sensor_path = "/sys/bus/w1/devices/";
+    constexpr auto SENSOR_TIMEOUT = 650;
 }
 
 simba::core::ErrorCode TempService::Run(std::stop_token token) {
@@ -149,7 +150,7 @@ simba::core::ErrorCode TempService::Loop(std::stop_token stoken) {
         readings = RetrieveTempReadings();
         SendTempReadings(readings);
         readings.clear();
-        std::this_thread::sleep_for(this->temp_timeout);
+        std::this_thread::sleep_for(std::chrono::milliseconds(SENSOR_TIMEOUT));
     }
 }
 

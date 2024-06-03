@@ -23,16 +23,19 @@ namespace mw {
 class I2CService : public core::ApplicationMW {
  private:
     std::mutex i2c_mtx;
-    core::i2c::I2CDriver i2c_;
-    com::soc::StreamIpcSocket sock_;
+    std::unique_ptr<core::i2c::II2CDriver> i2c_;
+    std::unique_ptr<com::soc::ISocketStream> sock_;
 
  protected:
+    core::ErrorCode Init(std::unique_ptr<core::i2c::II2CDriver> i2c, std::unique_ptr<com::soc::ISocketStream> socket);
     std::vector<uint8_t> RxCallback(const std::string& ip, const std::uint16_t& port,
                                          const std::vector<std::uint8_t> data);
     std::optional<std::vector<uint8_t>> ReadWrite(
             const std::vector<uint8_t> &payload, std::shared_ptr<i2c::Header> headerPtr);
     std::optional<std::vector<uint8_t>> WriteRead(const std::vector<uint8_t> &payload,
                                                           std::shared_ptr<i2c::Header> headerPtr);
+    std::vector<uint8_t> ActionLogic(const std::shared_ptr<simba::i2c::Header> headerPtr,
+                                                   std::optional<std::vector<uint8_t>> payload);
 
  public:
   core::ErrorCode Run(std::stop_token token) final;
