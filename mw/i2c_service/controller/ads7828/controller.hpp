@@ -14,6 +14,7 @@
 #include <unordered_map>
 #include <string>
 #include <vector>
+#include <memory>
 #include <future> // NOLINT
 
 #include "mw/i2c_service/controller/i2c_controller.h"
@@ -23,8 +24,7 @@ namespace i2c {
 
 class ADS7828 {
  private:
-  I2CController i2c_;
-
+  std::unique_ptr<I2CController> i2c_;
  protected:
   /**
    * @brief Get the Config Data object
@@ -43,6 +43,7 @@ class ADS7828 {
 
  public:
   ADS7828();
+  core::ErrorCode Init(std::unique_ptr<I2CController> i2c);
   std::optional<float> GetAdcVoltage(const uint8_t& channel);
 };
 

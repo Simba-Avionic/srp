@@ -40,18 +40,17 @@ namespace temp {
 
 class TempService final : public simba::core::ApplicationMW {
  protected:
-  com::soc::IpcSocket sub_sock_{};
+  std::unique_ptr<com::soc::IpcSocket> sub_sock_{};
 
  private:
   std::unique_ptr<std::jthread> temp_thread;
   std::set<std::uint16_t> subscribers{};
   std::unordered_map<std::string, std::uint8_t> sensorPathsToIds{};
-  simba::mw::temp::SubMsgFactory factory;
 
   void StartTempThread();
 
   simba::core::ErrorCode LoadConfig(
-    const std::unordered_map<std::string, std::string>& parms);
+    const std::unordered_map<std::string, std::string>& parms, std::unique_ptr<com::soc::IpcSocket> sock);
   simba::core::ErrorCode ConfigSensors();
 
   /**

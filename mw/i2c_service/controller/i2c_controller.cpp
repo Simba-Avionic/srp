@@ -20,7 +20,10 @@ namespace {
     const constexpr char* I2C_IPC = "SIMBA.I2C";
 }
 
-
+core::ErrorCode I2CController::Init(std::unique_ptr<com::soc::StreamIpcSocket> socket) {
+    this->sock_ = std::move(socket);
+    return core::ErrorCode::kOk;
+}
 core::ErrorCode I2CController::Write(const uint8_t address, const std::vector<uint8_t> data) {
     auto res = SendData(ACTION::kWrite, address, data);
     if (res.has_value()) {
@@ -52,7 +55,7 @@ std::optional<std::vector<uint8_t>> I2CController::WriteRead(const uint8_t addre
 std::optional<std::vector<uint8_t>> I2CController::SendData(
             ACTION action, uint8_t address, const std::vector<uint8_t>& payload) {
     auto buf = I2CFactory::GetBuffer(std::make_shared<Header>(action, address), payload);
-    return this->sock_.Transmit(I2C_IPC, 0, buf);
+    return this->sock_->Transmit(I2C_IPC, 0, buf);
 }
 
 

@@ -14,6 +14,7 @@
 #include <thread>  // NOLINT
 #include <future>  // NOLINT
 #include <chrono> // NOLINT
+#include <utility>
 
 #include "mw/i2c_service/controller/ads7828/controller.hpp"
 #include "core/json/json_parser.h"
@@ -30,6 +31,11 @@ namespace {
 
 ADS7828::ADS7828() {}
 
+core::ErrorCode ADS7828::Init(std::unique_ptr<I2CController> i2c) {
+    this->i2c_ = std::move(i2c);
+    return core::ErrorCode::kOk;
+}
+
 std::optional<uint8_t> ADS7828::GetConfigData(const uint8_t& channel) {
     if (channel > 7) {
         return {};
@@ -45,7 +51,7 @@ std::optional<uint16_t> ADS7828::GetAdcRawRead(const uint8_t& channel) {
     if (!configData.has_value()) {
         return {};
     }
-    auto res = this->i2c_.WriteRead(ADS7828_ADDRESS, 2, configData.value());
+    auto res = this->i2c_->WriteRead(ADS7828_ADDRESS, 2, configData.value());
     if (!res.has_value()) {
         return {};
     }

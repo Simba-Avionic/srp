@@ -10,6 +10,7 @@
  */
 #include <vector>
 #include <string>
+#include <utility>
 #include <thread>  // NOLINT
 #include <future>  // NOLINT
 #include <chrono> // NOLINT
@@ -38,7 +39,9 @@ namespace {
 
 PCA9685::PCA9685() {
 }
-void PCA9685::Init(const std::unordered_map<std::string, std::string>& parms) {
+void PCA9685::Init(const std::unordered_map<std::string, std::string>& parms, std::unique_ptr<I2CController> i2c) {
+  this->i2c_ = std::move(i2c);
+  this->i2c_->Init(std::make_unique<com::soc::StreamIpcSocket>());
   this->app_name = parms.at("app_name");
   std::string file_path = "/opt/"+this->app_name+"/etc/config.json";
   std::ifstream file(file_path);
@@ -98,7 +101,7 @@ std::vector<uint8_t> PCA9685::GenerateData(const uint8_t &channel, const uint16_
 }
 
 core::ErrorCode PCA9685::SetServo(uint8_t channel, uint16_t pos) {
-  return this->i2c_.Write(PCA9685_ADDRESS, GenerateData(channel, pos));
+  return this->i2c_->Write(PCA9685_ADDRESS, GenerateData(channel, pos));
 }
 
 std::optional<uint8_t> PCA9685::ReadServoPosition(const uint8_t &actuator_id) {

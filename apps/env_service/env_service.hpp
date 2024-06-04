@@ -28,7 +28,7 @@ class EnvService : public core::ApplicationNoIPC{
  private:
   std::shared_ptr<simba::diag::dtc::DTCObject> dtc_temp_error;
   std::shared_ptr<diag::dtc::DTCObject> dtc_temp_connection_error_0xB0;
-  mw::temp::TempController temp_{};
+  std::unique_ptr<mw::temp::TempController> temp_{};
   std::shared_ptr<com::someip::EventSkeleton> temp1_event;
   std::shared_ptr<com::someip::EventSkeleton> temp2_event;
   std::shared_ptr<com::someip::EventSkeleton> temp3_event;
@@ -40,6 +40,7 @@ class EnvService : public core::ApplicationNoIPC{
    * @param token stop token
    */
   core::ErrorCode Run(std::stop_token token) final;
+  core::ErrorCode Init(std::unique_ptr<mw::temp::TempController> temp);
   /**
    * @brief This function is called to initialiaze the application
    *

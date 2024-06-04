@@ -13,6 +13,7 @@
 #include <thread>  // NOLINT
 #include <future>  // NOLINT
 #include <chrono> // NOLINT
+#include <utility>
 
 #include "mw/i2c_service/controller/adcsensor/controller.hpp"
 #include "core/json/json_parser.h"
@@ -31,7 +32,9 @@ float ADCSensorController::CalculateB(float R, float A, float A_MIN) const {
 
 ADCSensorController::ADCSensorController() {}
 
-void ADCSensorController::Init(const std::unordered_map<std::string, std::string>& parms) {
+void ADCSensorController::Init(const std::unordered_map<std::string,
+                            std::string>& parms, std::unique_ptr<ADS7828> adc) {
+  this->adc_ = std::move(adc);
   this->app_name = parms.at("app_name");
   std::string file_path = "/opt/"+this->app_name+"/etc/config.json";
   auto obj_r = core::json::JsonParser::Parser(file_path);
@@ -90,7 +93,7 @@ std::optional<float> ADCSensorController::GetValue(const uint8_t sensor_id) {
         AppLogger::Warning("Invalid pressure sensor request");
         return {};
     }
-    auto res = this->adc_.GetAdcVoltage(sensor->second.channel);
+    auto res = this->adc_->GetAdcVoltage(sensor->second.channel);
     if (!res.has_value()) {
         return {};
     }

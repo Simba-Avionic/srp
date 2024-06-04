@@ -16,6 +16,7 @@
 #include <string>
 #include <vector>
 #include <future> // NOLINT
+#include <memory>
 
 #include "mw/i2c_service/controller/ads7828/controller.hpp"
 #include "core/json/json_parser.h"
@@ -31,7 +32,7 @@ struct SensorConfig {
 
 class ADCSensorController {
  private:
-  ADS7828 adc_;
+  std::unique_ptr<ADS7828> adc_;
   std::string app_name;
   /**
    * @brief actuator_id, config
@@ -44,7 +45,7 @@ class ADCSensorController {
   float CalculateA(float R, float RES_MAX, float RES_MIN, float A_MAX, float A_MIN) const;
  public:
   ADCSensorController();
-  void Init(const std::unordered_map<std::string, std::string>& parms);
+  void Init(const std::unordered_map<std::string, std::string>& parms, std::unique_ptr<ADS7828> adc);
   /**
    * @brief Get the res object [Bar]
    * 

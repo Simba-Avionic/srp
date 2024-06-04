@@ -8,16 +8,18 @@
  * @copyright Copyright (c) 2024
  * 
  */
-#include "temp_controller.h"
+#include "mw/temp/controller/temp_controller.h"
 #include <cstring>
 #include <sys/types.h>  // NOLINT
 #include <sys/socket.h>  // NOLINT
 #include <netinet/in.h>  // NOLINT
-#include <iostream>
+#include <utility>
 
 namespace simba {
 namespace mw {
 namespace temp {
+
+using temp_sub_factory = simba::mw::temp::SubMsgFactory;
 
 namespace {
     static constexpr char const*
@@ -27,10 +29,11 @@ namespace {
 }
 
 simba::core::ErrorCode TempController::Init(
-    uint16_t service_id, simba::com::soc::RXCallback callback) {
+    uint16_t service_id, simba::com::soc::RXCallback callback, std::unique_ptr<com::soc::IpcSocket> sock) {
+    this->sub_sock_ = std::move(sock);
     auto res = core::ErrorCode::kOk;
     this->service_id = service_id;
-    if (res = this->sub_sock_.Init(
+    if (res = this->sub_sock_->Init(
         com::soc::SocketConfig(
             kSubscriberPrefix + std::to_string(this->service_id), 0, 0))) {
         AppLogger::Error("Couldn't initialize socket!");
@@ -42,16 +45,15 @@ simba::core::ErrorCode TempController::Init(
     if (res != core::ErrorCode::kOk) {
         return res;
     }
-    this->sub_sock_.StartRXThread();
+    this->sub_sock_->StartRXThread();
     return res;
 }
 
 simba::core::ErrorCode TempController::Subscribe() {
     static simba::mw::temp::SubMsgFactory factory;
     SubscribeHeader hdr{this->service_id};
-    std::vector<uint8_t> data =
-        factory.GetBuffer(std::make_shared<SubscribeHeader>(hdr), {});
-    if (auto res = sub_sock_.Transmit(kTempServiceName, 0, data)) {
+    std::vector<uint8_t> data = temp_sub_factory::GetBuffer(std::make_shared<SubscribeHeader>(hdr), {});
+    if (auto res = sub_sock_->Transmit(kTempServiceName, 0, data)) {
         AppLogger::Error("Failed to subscribe to " + std::string(kTempServiceName)+":::"+std::to_string(res));
         return res;
     }
@@ -64,7 +66,7 @@ void TempController::SetTempRXCallback() {
             const std::vector<std::uint8_t> data) {
         this->callback_(ip, port, data);
     };
-    this->sub_sock_.SetRXCallback(lambdaCallback);
+    this->sub_sock_->SetRXCallback(lambdaCallback);
 }
 
 }  // namespace temp
