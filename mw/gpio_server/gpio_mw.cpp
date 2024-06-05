@@ -83,7 +83,7 @@ core::ErrorCode GPIOMWService::Initialize(
     AppLogger::Warning("Cant find file on path /opt/gpio/etc/config.json");
     return core::ErrorCode::kError;
     }
-    nlohmann::json data = nlohmann::json::parse(file);
+    json data = json::parse(file);
     auto res = this->ReadConfig(data);
     if (!res.has_value()) {
         AppLogger::Warning("Cant read Config");
@@ -94,14 +94,25 @@ core::ErrorCode GPIOMWService::Initialize(
     this->sock_->StartRXThread();
     return core::ErrorCode::kOk;
 }
-std::optional<std::unordered_map<uint16_t, GpioConf>> GPIOMWService::ReadConfig(nlohmann::json data) {
-    std::unordered_map<uint16_t, GpioConf> db;
+std::optional<std::unordered_map<uint8_t, GpioConf>> GPIOMWService::ReadConfig(nlohmann::json data) {
+    std::unordered_map<uint8_t, GpioConf> db;
     if (!data.contains("gpio")) {
         AppLogger::Warning("cant find config file");
         return {};
     }
+    if (!data.at("gpio").is_array()) {
+        AppLogger::Warning("cant find config file");
+        return {};
+    }
     for (const auto& gpio : data["gpio"]) {
-        uint16_t pin_id = static_cast<uint16_t>(gpio["id"]);
+        if (!gpio.contains("id") || !gpio.contains("num") || !gpio.contains("direction")) {
+            continue;
+        }
+        if (!gpio.at("id").is_number_unsigned() ||
+                !gpio.at("num").is_number_unsigned() || !gpio.at("direction").is_string()) {
+            continue;
+        }
+        uint8_t pin_id = static_cast<uint8_t>(gpio["id"]);
         uint16_t pin_num = static_cast<uint16_t>(gpio["num"]);
         const std::string direct = gpio.at("direction");
         core::gpio::direction_t direction = direct == "out" ?
