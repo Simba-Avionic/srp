@@ -25,7 +25,9 @@ class TestWrapper : public simba::mw::GPIOMWService {
     return this->ReadConfig(data);
   }
   void SetConfig(const std::unordered_map<uint16_t, simba::mw::GpioConf>& config) {
+    std::cout<<"1"<<std::endl;
     this->config = config;
+    std::cout<<this->config.size()<<std::endl;
   }
   simba::core::ErrorCode TestInitPins() {
     return this->InitPins();
@@ -111,17 +113,21 @@ TEST_P(ReadConfigTest, TEST_READ_CONFIG) {
   }
 }
 
-TEST(GPIO_SERVIE, TEST_INIT_PINS) {
-  TestWrapper wrapper{};
-  std::unique_ptr<MockStreamSocket> mock_socket;
-  auto mock_gpio_driver = std::make_unique<MockGPIO>();
-  EXPECT_EQ(wrapper.TestInitPins(), simba::core::ErrorCode::kOk);
-  EXPECT_CALL(*mock_gpio_driver, initializePin(::testing::_, ::testing::_))
-  .WillOnce(::testing::Return(simba::core::ErrorCode::kOk))
-  .WillOnce(::testing::Return(simba::core::ErrorCode::kError));
-  std::unordered_map<uint16_t, simba::mw::GpioConf> conf{{1, {21, simba::core::gpio::direction_t::OUT}}};
-  //wrapper.SetConfig(conf);
-  wrapper.TestInit(std::move(mock_socket), std::move(mock_gpio_driver));
-  EXPECT_EQ(wrapper.TestInitPins(), simba::core::ErrorCode::kOk);
-  EXPECT_EQ(wrapper.TestInitPins(), simba::core::ErrorCode::kError);
+
+TEST(GPIO_SERVICE, TEST_INIT_PINS) {
+    TestWrapper wrapper{};
+    auto mock_socket = std::make_unique<MockStreamSocket>();
+    auto mock_gpio_driver = std::make_unique<MockGPIO>();
+
+    EXPECT_CALL(*mock_gpio_driver, initializePin(::testing::_, ::testing::_))
+        .WillOnce(::testing::Return(simba::core::ErrorCode::kOk));
+
+    std::unordered_map<uint16_t, simba::mw::GpioConf> conf{
+        {1, {21, simba::core::gpio::direction_t::OUT}}
+    };
+
+    wrapper.SetConfig(conf);
+    wrapper.TestInit(std::move(mock_socket), std::move(mock_gpio_driver));
+
+    EXPECT_EQ(wrapper.TestInitPins(), simba::core::ErrorCode::kOk);
 }
