@@ -32,8 +32,10 @@ class EnvService : public core::ApplicationNoIPC{
   std::shared_ptr<com::someip::EventSkeleton> temp1_event;
   std::shared_ptr<com::someip::EventSkeleton> temp2_event;
   std::shared_ptr<com::someip::EventSkeleton> temp3_event;
+  std::unordered_map<uint8_t, uint16_t> temp_hist;
 
  protected:
+  core::ErrorCode InitDiag();
   /**
    * @brief This function is called to launch the application
    *

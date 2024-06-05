@@ -24,6 +24,8 @@ namespace {
         kTempServiceName = "SIMBA.TEMP.SERVICE";
     static constexpr char const*
         kSubscriberPrefix = "SIMBA.TEMP.";
+    static constexpr char const*
+        kTempReload = "SIMBA.TEMP.SERVICE.RELOAD";
 }
 
 simba::core::ErrorCode TempController::Init(
@@ -44,6 +46,9 @@ simba::core::ErrorCode TempController::Init(
     }
     this->sub_sock_.StartRXThread();
     return res;
+}
+void TempController::ReloadConfig() {
+    this->sub_sock_.Transmit(kTempReload, 0, {});
 }
 
 simba::core::ErrorCode TempController::Subscribe() {
