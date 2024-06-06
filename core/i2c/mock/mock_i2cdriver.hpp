@@ -16,7 +16,7 @@
 #include "core/i2c/i2cdriver.hpp"
 namespace simba {
 namespace mock {
-class MockI2C : simba::core::i2c::I2CDriver {
+class I2CDriverMock : simba::core::i2c::II2CDriver {
  public:
   MOCK_METHOD(simba::core::ErrorCode, Init, ());
   MOCK_METHOD(simba::core::ErrorCode, Ioctl, (const uint8_t address, const uint16_t type));

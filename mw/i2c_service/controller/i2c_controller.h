@@ -29,13 +29,14 @@ namespace simba {
 namespace i2c {
 class I2CController{
  private:
-  com::soc::StreamIpcSocket sock_;
+  std::unique_ptr<com::soc::StreamIpcSocket> sock_;
 
  protected:
-std::optional<std::vector<uint8_t>> SendData(ACTION action,
+  std::optional<std::vector<uint8_t>> SendData(ACTION action,
                         uint8_t address, const std::vector<uint8_t>& payload);
 
  public:
+  core::ErrorCode Init(std::unique_ptr<com::soc::StreamIpcSocket> socket);
   /**
    * @brief 
    * 
