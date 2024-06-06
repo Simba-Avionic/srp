@@ -32,7 +32,7 @@ class TempReadingMsgFactory {
    * @param payload
    * @return std::vector<uint8_t>
    */
-  std::vector<uint8_t> GetBuffer(std::vector<TempReading> payload);
+  static std::vector<uint8_t> GetBuffer(std::vector<TempReading> payload);
 
   /**
    * @brief Get payload from raw data
@@ -40,7 +40,7 @@ class TempReadingMsgFactory {
    * @param raw_data
    * @return std::vector<uint8_t>
    */
-  std::vector<TempReading> GetPayload(std::vector<uint8_t> raw_data);
+  static std::vector<TempReading> GetPayload(std::vector<uint8_t> raw_data);
 };
 
 }  // namespace temp

@@ -24,7 +24,11 @@ namespace {
         kSubscriberPrefix = "SIMBA.TEMP.";
     constexpr uint8_t sensor_resolution = 10;
     constexpr const char* sensor_path = "/sys/bus/w1/devices/";
+    constexpr auto SENSOR_TIMEOUT = 650;
 }
+
+using temp_sub_factory = simba::mw::temp::SubMsgFactory;
+using temp_read_factory = simba::mw::temp::TempReadingMsgFactory;
 
 simba::core::ErrorCode TempService::Run(std::stop_token token) {
     ConfigSensors();
@@ -36,18 +40,18 @@ simba::core::ErrorCode TempService::Run(std::stop_token token) {
 
 simba::core::ErrorCode TempService::Initialize(
     const std::unordered_map<std::string, std::string>& parms) {
-    LoadConfig(parms);
-    if (auto ret = this->sub_sock_.Init(
+    LoadConfig(parms, std::make_unique<com::soc::IpcSocket>());
+    if (auto ret = this->sub_sock_->Init(
         com::soc::SocketConfig(kTempServiceName, 0, 0))) {
         AppLogger::Error("Couldn't initialize " +
             std::string(kTempServiceName) + "socket!");
         return ret;
     }
 
-    this->sub_sock_.SetRXCallback(
+    this->sub_sock_->SetRXCallback(
         std::bind(&simba::mw::temp::TempService::SubCallback, this,
             std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
-    this->sub_sock_.StartRXThread();
+    this->sub_sock_->StartRXThread();
     return simba::core::ErrorCode::kOk;
 }
 
@@ -76,7 +80,7 @@ void TempService::StartTempThread() {
 
 void TempService::SubCallback(const std::string& ip, const std::uint16_t& port,
     const std::vector<std::uint8_t> data) {
-    auto hdr = factory.GetHeader(data);
+    auto hdr = temp_sub_factory::GetHeader(data);
 
     std::uint16_t service_id = hdr->GetServiceID();
 
@@ -88,7 +92,8 @@ void TempService::SubCallback(const std::string& ip, const std::uint16_t& port,
 }
 
 simba::core::ErrorCode TempService::LoadConfig(
-    const std::unordered_map<std::string, std::string>& parms) {
+    const std::unordered_map<std::string, std::string>& parms, std::unique_ptr<com::soc::IpcSocket> sock) {
+    this->sub_sock_ = std::move(sock);
     std::ifstream file{"/opt/" + parms.at("app_name") + "/etc/config.json"};
     if (!file) {
         AppLogger::Error("Couldn't load temperature sensors config!");
@@ -131,12 +136,11 @@ std::vector<TempReading> TempService::RetrieveTempReadings() {
 void TempService::SendTempReadings(
     const std::vector<TempReading>& readings) {
     for (const auto& client_id : this->subscribers) {
-        simba::mw::temp::TempReadingMsgFactory factory;
         std::string ip = kSubscriberPrefix + std::to_string(client_id);
 
-        std::vector<uint8_t> data = factory.GetBuffer(readings);
+        std::vector<uint8_t> data = temp_read_factory::GetBuffer(readings);
 
-        if (this->sub_sock_.Transmit(ip, 0, data)) {
+        if (this->sub_sock_->Transmit(ip, 0, data)) {
             AppLogger::Error("Can't send message to: " + ip);
             break;
         }
@@ -149,7 +153,7 @@ simba::core::ErrorCode TempService::Loop(std::stop_token stoken) {
         readings = RetrieveTempReadings();
         SendTempReadings(readings);
         readings.clear();
-        std::this_thread::sleep_for(this->temp_timeout);
+        std::this_thread::sleep_for(std::chrono::milliseconds(SENSOR_TIMEOUT));
     }
 }
 
