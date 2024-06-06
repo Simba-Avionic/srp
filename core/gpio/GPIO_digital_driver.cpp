@@ -84,7 +84,7 @@ uint8_t GpioDigitalDriver::getValue(uint8_t pinNumber) {
     std::ifstream file;
     file.open(this->getEndpointPath(pinNumber, "value"));
     if (!file.is_open()) {
-        return 0;
+        return 2;
     }
     std::string value;
     file >> value;
