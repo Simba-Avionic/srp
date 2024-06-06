@@ -18,66 +18,41 @@ namespace i2c {
 
 namespace {
     const constexpr char* I2C_IPC = "SIMBA.I2C";
-    const constexpr char* I2C_MY_IPC = "SIMBA.I2C.";
 }
 
-void I2CController::Init(uint16_t service_id) {
-    this->service_id = service_id;
-    std::this_thread::sleep_for(std::chrono::seconds(1));
-    AppLogger::Warning(I2C_MY_IPC+std::to_string(service_id));
-    this->sock_.Init(com::soc::SocketConfig(I2C_MY_IPC+std::to_string(service_id), 0, 0));
-    this->sock_.SetRXCallback(
-          std::bind(&I2CController::RXCallback, this, std::placeholders::_1,
-                    std::placeholders::_2, std::placeholders::_3));
-    this->sock_.StartRXThread();
-}
 
 core::ErrorCode I2CController::Write(const uint8_t address, const std::vector<uint8_t> data) {
-    auto hdr = Header(ACTION::Write, address, this->service_id);
-    auto buf = I2CFactory::GetBuffer(std::make_shared<Header>(hdr), data);
-    return this->sock_.Transmit(I2C_IPC, 0, buf);
+    auto res = SendData(ACTION::kWrite, address, data);
+    if (res.has_value()) {
+        return core::ErrorCode::kOk;
+    }
+    return core::ErrorCode::kConnectionError;
 }
 core::ErrorCode I2CController::PageWrite(const uint8_t address, const std::vector<uint8_t> data) {
-    auto hdr = Header(ACTION::PageWrite, address, this->service_id);
-    auto buf = I2CFactory::GetBuffer(std::make_shared<Header>(hdr), data);
-    return this->sock_.Transmit(I2C_IPC, 0, buf);
+    auto res = SendData(ACTION::kPageWrite, address, data);
+    if (res.has_value()) {
+        return core::ErrorCode::kOk;
+    }
+    return core::ErrorCode::kConnectionError;
 }
 
-void I2CController::RXCallback(const std::string& ip, const std::uint16_t& port,
-                            std::vector<std::uint8_t> data) {
-    std::lock_guard<std::mutex> lock(mtx_);
-    auto hdr  = i2c::I2CFactory::GetHeader(data);
-    if (hdr->GetTransmisionID() == this->transmission_id) {
-        response_hdr = std::move(hdr);
-        response_payload = i2c::I2CFactory::GetPayload(data);
-        response_received_ = true;
-        cv_.notify_one();
-    } else {
-        AppLogger::Warning("Error: Incorrect transmission ID received.");
-    }
-}
 
 std::optional<std::vector<uint8_t>> I2CController::Read(const uint8_t address, const uint8_t reg, const uint8_t size) {
-    std::unique_lock<std::mutex> lock(mtx_);
-    auto current_transmission_id = this->transmission_id;
-    auto buf = I2CFactory::GetBuffer(
-                std::make_shared<Header>(ACTION::ReadWrite,
-                            address, this->service_id, current_transmission_id), {reg, size});
-    this->sock_.Transmit(I2C_IPC, 0, buf);
-    if (cv_.wait_for(lock, std::chrono::seconds(3), [this, current_transmission_id] {
-        return response_received_ && response_hdr->GetTransmisionID() == current_transmission_id;
-    })) {
-        if (response_received_ && response_hdr->GetTransmisionID() == current_transmission_id) {
-            response_received_ = false;
-            this->transmission_id++;
-            return response_payload;
-        }
-    } else {
-        AppLogger::Warning("Error: Timeout occurred.");
-    }
-    this->transmission_id++;
-    AppLogger::Warning("Error: Incorrect response received.");
-    return {};
+    return SendData(ACTION::kRead, address, {reg, size});
+}
+
+
+
+std::optional<std::vector<uint8_t>> I2CController::WriteRead(const uint8_t address,
+                                                        const uint8_t WriteData, const uint8_t ReadSize) {
+    return SendData(ACTION::kWriteRead, address, {ReadSize, WriteData});
+}
+
+
+std::optional<std::vector<uint8_t>> I2CController::SendData(
+            ACTION action, uint8_t address, const std::vector<uint8_t>& payload) {
+    auto buf = I2CFactory::GetBuffer(std::make_shared<Header>(action, address), payload);
+    return this->sock_.Transmit(I2C_IPC, 0, buf);
 }
 
 

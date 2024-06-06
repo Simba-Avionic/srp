@@ -40,7 +40,7 @@ class StreamIpcSocket : public ISocketStream {
   bool SocketExist(const std::string path);
 
  public:
- StreamIpcSocket() = default;
+  StreamIpcSocket() = default;
   /**
    * @brief Socket init function
    *

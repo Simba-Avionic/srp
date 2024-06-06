@@ -39,7 +39,7 @@ core::ErrorCode ServoService::Run(std::stop_token token) {
 
 core::ErrorCode ServoService::Initialize(
       const std::unordered_map<std::string, std::string>& parms) {
-    this->servo_controller.Init(this->app_id_, parms);
+    this->servo_controller.Init(parms);
 // Dodanie publikowanych eventów
     main_servo_status_event =
       std::make_shared<com::someip::EventSkeleton>("ServoApp/servoStatusEvent");

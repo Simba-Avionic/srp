@@ -52,19 +52,27 @@ std::optional<std::vector<uint8_t>> StreamIpcSocket::Transmit(
     const std::string& ip, const std::uint16_t port,
     std::vector<std::uint8_t> payload) {
   const int server_socket = socket(AF_UNIX, SOCK_STREAM, 0);
+  struct timeval timeout;
+  timeout.tv_sec = 2;
+  timeout.tv_usec = 0;
+  setsockopt(server_sock, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout));
   struct sockaddr_un server_addr;
   server_addr.sun_family = AF_UNIX;
-  strcpy(server_addr.sun_path, ("/run/" + ip).c_str());
+  strcpy(server_addr.sun_path, ("/run/" + ip).c_str());  // NOLINT
   if (connect(server_socket, (struct sockaddr*)&server_addr,
               sizeof(server_addr)) == -1) {
+    close(server_sock);
     return {};
   }
-  write(server_socket, payload.data(), payload.size());
+  if (write(server_socket, payload.data(), payload.size()) < 0) {
+    close(server_sock);
+    return {};
+  }
   std::array<char, 256 * 2> buffer;
   const auto size =
       read(server_socket, reinterpret_cast<char*>(&buffer), 256 * 2);
+  close(server_socket);
   if (size < 0) {
-    close(server_socket);
     return {};
   }
   return std::vector<uint8_t>{buffer.begin(), buffer.begin() + size};
@@ -90,7 +98,7 @@ void StreamIpcSocket::Loop(std::stop_token stoken) {
     std::array<char, 256 * 2> buffer;
     int clen = sizeof(client_addr);
     client_socket =
-        accept(server_sock, (sockaddr*)&client_addr, (socklen_t*)&clen);
+        accept(server_sock, (sockaddr*)&client_addr, (socklen_t*)&clen);  // NOLINT
     bytes_rec = read(client_socket, reinterpret_cast<char*>(&buffer), 256 * 2);
 
     if (bytes_rec >= 0) {

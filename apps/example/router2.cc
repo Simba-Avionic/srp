@@ -39,7 +39,6 @@ core::ErrorCode Router::Run(std::stop_token token) {
 
 core::ErrorCode Router::Initialize(
     const std::unordered_map<std::string, std::string>& parms) {
-  this->gpio_.Init(12);
   return core::ErrorCode::kOk;
 }
 }  // namespace router

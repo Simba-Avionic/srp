@@ -17,7 +17,7 @@
 
 static void ParamConvertBenchmark(benchmark::State& state) {  // NOLINT
   for (auto _ : state) {
-    simba::core::Parm parm{"abc=123"};
+    simba::core::Parm parm{"abc12341243=123"};
     parm.GetValue();
     parm.GetName();
   }

@@ -38,10 +38,8 @@ namespace {
 
 PCA9685::PCA9685() {
 }
-void PCA9685::Init(const uint16_t &service_id, const std::unordered_map<std::string, std::string>& parms) {
+void PCA9685::Init(const std::unordered_map<std::string, std::string>& parms) {
   this->app_name = parms.at("app_name");
-  this->i2c_.Init(service_id);
-  this->gpio_.Init(service_id);
   std::string file_path = "/opt/"+this->app_name+"/etc/config.json";
   std::ifstream file(file_path);
   if (!file.is_open()) {
@@ -60,9 +58,9 @@ void PCA9685::Init(const uint16_t &service_id, const std::unordered_map<std::str
   }
 }
 void PCA9685::MosfetFunc(const uint8_t &mosfet_id, const uint8_t &mosfet_time) {
-    this->gpio_.SetPinValue(mosfet_id, gpio::Value::HIGH);
+    this->gpio_.SetPinValue(mosfet_id, 1);
     std::this_thread::sleep_for(std::chrono::milliseconds(mosfet_time));
-    this->gpio_.SetPinValue(mosfet_id, gpio::Value::LOW);
+    this->gpio_.SetPinValue(mosfet_id, 0);
 }
 
 core::ErrorCode PCA9685::AutoSetServoPosition(const uint8_t &actuator_id, const uint8_t &state) {
@@ -84,8 +82,9 @@ core::ErrorCode PCA9685::AutoSetServoPosition(const uint8_t &actuator_id, const 
             this->SetServo(it->second.channel,
                         it->second.position == 1 ? it->second.on_loosening : it->second.off_loosening);
         }
+        return core::ErrorCode::kOk;
     }
-    return core::ErrorCode::kOk;
+    return core::ErrorCode::kError;
 }
 
 std::vector<uint8_t> PCA9685::GenerateData(const uint8_t &channel, const uint16_t &pos) {
@@ -149,7 +148,7 @@ std::optional<std::unordered_map<uint8_t, Servo>> PCA9685::ReadConfig(nlohmann::
             ser.mosfet_time = MOSFET_DEFAULT_ON_TIME;
         }
         db.insert({actuator_id, ser});
-        AppLogger::Debug("Register servo id:"+std::to_string(static_cast<int>(actuator_id)));
+        AppLogger::Info("Register servo id:"+std::to_string(static_cast<int>(actuator_id)));
     }
     return db;
 }

@@ -20,9 +20,11 @@ class MockI2C : simba::core::i2c::I2CDriver {
  public:
   MOCK_METHOD(simba::core::ErrorCode, Init, ());
   MOCK_METHOD(simba::core::ErrorCode, Ioctl, (const uint8_t address, const uint16_t type));
-  MOCK_METHOD(simba::core::ErrorCode, Write, (const std::vector<uint8_t> RegData));
+  MOCK_METHOD(simba::core::ErrorCode, Write, (const std::vector<uint8_t>& RegData));
+  MOCK_METHOD(simba::core::ErrorCode, Write, (const uint8_t& data));
+  MOCK_METHOD(std::optional<std::vector<uint8_t>>, Read, (const uint8_t size));
   MOCK_METHOD(simba::core::ErrorCode, PageWrite, (std::vector<uint8_t> data));
-  MOCK_METHOD(std::optional<std::vector<uint8_t>>, ReadWrite, (uint8_t reg, const uint8_t size));
+  MOCK_METHOD(std::optional<std::vector<uint8_t>>, ReadWrite, (const uint8_t& reg, uint8_t size));
 };
 }  // namespace mock
 }  // namespace simba
