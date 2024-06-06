@@ -85,8 +85,7 @@ INSTANTIATE_TEST_SUITE_P(ReadConfigTestParameters, ReadConfigTest,
             "direction":"out"
         }
         ]})", std::optional<std::unordered_map<uint8_t, simba::mw::GpioConf>>
-        {{{1, {21, simba::core::gpio::direction_t::OUT}}}})
-        ));
+        {{{1, {21, simba::core::gpio::direction_t::OUT}}}})));
 
 
 TEST_P(ReadConfigTest, TEST_READ_CONFIG) {
@@ -149,15 +148,15 @@ INSTANTIATE_TEST_SUITE_P(RXCallbackTestParameters, RXCallbackTest,
 
   std::make_tuple(1, 0, simba::gpio::ACTION::GET, std::unordered_map<uint8_t, simba::mw::GpioConf>
       {{1, {21, simba::core::gpio::direction_t::OUT}}}, std::vector<uint8_t>{0}),
-  
+
   std::make_tuple(1, 0, simba::gpio::ACTION::RES, std::unordered_map<uint8_t, simba::mw::GpioConf>
       {{1, {21, simba::core::gpio::direction_t::OUT}}}, std::vector<uint8_t>{}),
 
   std::make_tuple(1, 0, simba::gpio::ACTION::RES, std::unordered_map<uint8_t, simba::mw::GpioConf>
       {}, std::vector<uint8_t>{0})
- ));
+));
 
- TEST_P(RXCallbackTest, RXCALLBACK_TEST) {
+TEST_P(RXCallbackTest, RXCALLBACK_TEST) {
     TestWrapper wrapper{};
     auto params = GetParam();
     auto mock_socket = std::make_unique<MockStreamSocket>();
@@ -169,13 +168,11 @@ INSTANTIATE_TEST_SUITE_P(RXCallbackTestParameters, RXCallbackTest,
     auto config = std::get<3>(params);
     std::vector<uint8_t> result = std::get<4>(params);
 
-    simba::gpio::Header hdr{actuatorID, value, action}; 
+    simba::gpio::Header hdr{actuatorID, value, action};
     auto data = hdr.GetBuffor();
 
     if (config.find(actuatorID) != config.end()) {
-
-      if(action == simba::gpio::ACTION::SET && config[actuatorID].direction == simba::core::gpio::direction_t::OUT) {
-
+      if (action == simba::gpio::ACTION::SET && config[actuatorID].direction == simba::core::gpio::direction_t::OUT) {
         EXPECT_CALL(*mock_gpio_driver, setValue(::testing::_, ::testing::_))
           .WillOnce(::testing::Return(simba::core::ErrorCode::kOk))
           .WillOnce(::testing::Return(simba::core::ErrorCode::kError));
@@ -185,10 +182,8 @@ INSTANTIATE_TEST_SUITE_P(RXCallbackTestParameters, RXCallbackTest,
 
         EXPECT_EQ(wrapper.TestRxCallback(data), result);
         EXPECT_EQ(wrapper.TestRxCallback(data)[0], 0);
-
       }
-      if(action == simba::gpio::ACTION::GET) {
-
+      if (action == simba::gpio::ACTION::GET) {
         EXPECT_CALL(*mock_gpio_driver, getValue(::testing::_))
           .WillOnce(::testing::Return(0))
           .WillOnce(::testing::Return(1))
@@ -199,14 +194,12 @@ INSTANTIATE_TEST_SUITE_P(RXCallbackTestParameters, RXCallbackTest,
         wrapper.SetConfig(config);
 
         for (const auto& response : responses) {
-
           auto Callback = wrapper.TestRxCallback(data);
           simba::gpio::Header hdr2(0, 0, simba::gpio::ACTION::GET);
           hdr2.SetBuffor(Callback);
           EXPECT_EQ(hdr2.GetAction(), simba::gpio::ACTION::RES);
           EXPECT_EQ(hdr2.GetActuatorID(), actuatorID);
           EXPECT_EQ(hdr2.GetValue(), response);
-
         }
       }
       if (action == simba::gpio::ACTION::RES) {
@@ -217,4 +210,4 @@ INSTANTIATE_TEST_SUITE_P(RXCallbackTestParameters, RXCallbackTest,
     } else {
       EXPECT_EQ(wrapper.TestRxCallback(data), result);
     }
- }
+}
