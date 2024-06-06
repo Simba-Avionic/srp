@@ -9,6 +9,7 @@
  * 
  */
 #include <memory>
+#include <utility>
 #include "apps/env_service/env_service.hpp"
 #include "mw/temp/temp_reading_msg/temp_reading_msg_factory.h"
 
@@ -29,8 +30,17 @@ core::ErrorCode EnvService::Run(std::stop_token token) {
     return core::ErrorCode::kOk;
 }
 
+core::ErrorCode EnvService::Init(std::unique_ptr<mw::temp::TempController> temp) {
+    if (this->temp_ || !temp) {
+      return core::ErrorCode::kInitializeError;
+    }
+    this->temp_ = std::move(temp);
+    return core::ErrorCode::kOk;
+}
+
 core::ErrorCode EnvService::Initialize(
       const std::unordered_map<std::string, std::string>& parms) {
+    this->Init(std::make_unique<mw::temp::TempController>());
     core::ErrorCode res;
     this->temp1_event = std::make_shared<com::someip::EventSkeleton>("EnvApp/newTempEvent_1");
     this->temp2_event = std::make_shared<com::someip::EventSkeleton>("EnvApp/newTempEvent_2");
@@ -45,9 +55,9 @@ core::ErrorCode EnvService::Initialize(
     uint8_t i = 0;
     do {
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
-        res = this->temp_.Init(514, std::bind(&EnvService::TempRxCallback,
+        res = this->temp_->Init(514, std::bind(&EnvService::TempRxCallback,
             this, std::placeholders::_1, std::placeholders::_2,
-                                        std::placeholders::_3));
+                                        std::placeholders::_3), std::make_unique<com::soc::IpcSocket>());
     } while (res != core::ErrorCode::kOk && i < 6);
     if (res != core::ErrorCode::kOk) {
         this->dtc_temp_connection_error_0xB0->Failed();
