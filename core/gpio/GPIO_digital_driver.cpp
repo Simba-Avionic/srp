@@ -64,9 +64,9 @@ core::ErrorCode GpioDigitalDriver::setValue(uint8_t pinNumber , uint8_t value) {
     file << std::to_string(value);
     file.close();
     if (this->getValue(pinNumber) != value) {
-        return core::ErrorCode::kOk;
+        return core::ErrorCode::kError;
     }
-    return core::ErrorCode::kError;
+    return core::ErrorCode::kOk;
 }
 
 core::ErrorCode GpioDigitalDriver::setDirection(uint8_t pinNumber , direction_t direction) {
@@ -84,12 +84,13 @@ uint8_t GpioDigitalDriver::getValue(uint8_t pinNumber) {
     std::ifstream file;
     file.open(this->getEndpointPath(pinNumber, "value"));
     if (!file.is_open()) {
-        return 0;
+        return 2;
     }
-    uint8_t value;
+    std::string value;
     file >> value;
     file.close();
-    return value;
+    AppLogger::Debug("Value is:" + value);
+    return atoi(value.c_str());
 }
 
 direction_t GpioDigitalDriver::getDirection(uint8_t pinNumber) {

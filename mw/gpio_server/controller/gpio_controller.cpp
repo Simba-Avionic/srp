@@ -13,38 +13,49 @@
 #include <netinet/in.h>
 #include <unistd.h>
 #include <arpa/inet.h>
+#include <utility>
 
 #include "gpio_controller.hpp"
 
 namespace simba {
 namespace gpio {
 
-
-GPIOController::GPIOController(com::soc::ISocket* socket) {
-    this->sock_ = socket;
-}
-GPIOController::GPIOController() {
-    this->sock_ = new com::soc::IpcSocket();
+namespace {
+    constexpr auto PATH = "SIMBA.GPIO";
 }
 
-core::ErrorCode GPIOController::Init(uint16_t service_id) {
-    this->service_id = service_id;
-    return core::ErrorCode::kOk;
+GPIOController::GPIOController(std::unique_ptr<com::soc::ISocketStream> socket)
+                                                    : sock_(std::move(socket)) {
 }
 
-core::ErrorCode GPIOController::SetPinValue(uint16_t pinID, Value value) {
-    if (value == Value::ERROR) {
-        return core::ErrorCode::kError;
-    }
+core::ErrorCode GPIOController::SetPinValue(uint8_t actuatorID, int8_t value) {
     if (this->sock_== nullptr) {
         return core::ErrorCode::kInitializeError;
     }
-    gpio::Header hdr(this->service_id, pinID, value);
-    return this->sock_->Transmit("SIMBA.GPIO.SET", 0, hdr.GetBuffor());
+    gpio::Header hdr(actuatorID, value, ACTION::SET);
+    auto res = this->sock_->Transmit(PATH, 0, hdr.GetBuffor());
+    if (res.has_value()) {
+        if (res.value()[0] == 1) {
+          return core::ErrorCode::kOk;
+        } else {
+          return core::ErrorCode::kError;
+        }
+    }
+    return core::ErrorCode::kConnectionError;
 }
 
-Value GPIOController::GetPinValue(uint16_t actuatorID) {
-    return Value::HIGH;
+std::optional<int8_t> GPIOController::GetPinValue(uint8_t actuatorID) {
+    if (this->sock_ == nullptr) {
+        return std::nullopt;
+    }
+    gpio::Header hdr(actuatorID, 0, gpio::ACTION::GET);
+    auto res = this->sock_->Transmit(PATH, 0, hdr.GetBuffor());
+    if (!res.has_value()) {
+        return std::nullopt;
+    }
+    gpio::Header resHdr(0, 0, gpio::ACTION::RES);
+    resHdr.SetBuffor(res.value());
+    return resHdr.GetValue();
 }
 
 

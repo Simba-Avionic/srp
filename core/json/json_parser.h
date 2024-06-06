@@ -28,8 +28,11 @@ class JsonParser {
  public:
   static std::optional<JsonParser> Parser(const std::string& path) noexcept;
   explicit JsonParser(std::ifstream& f);
+  explicit JsonParser(nlohmann::json json);
+  static std::optional<JsonParser> Parser(nlohmann::json obj) noexcept;
   nlohmann::json GetObject() const;
   std::optional<std::string> GetString(const std::string& name) const noexcept;
+  std::optional<nlohmann::json> GetArray(const std::string& name);
   template <typename T>
   std::optional<T> GetNumber(const std::string& name) const noexcept {
     try {
