@@ -8,8 +8,8 @@
  * @copyright Copyright (c) 2024
  * 
  */
-#ifndef SERVICES_SERVOSERVICE_SERVOSERVICE_HPP_
-#define SERVICES_SERVOSERVICE_SERVOSERVICE_HPP_
+#ifndef APPS_SERVOSERVICE_SERVOSERVICE_HPP_
+#define APPS_SERVOSERVICE_SERVOSERVICE_HPP_
 #include <string>
 #include <unordered_map>
 #include <memory>
@@ -41,4 +41,4 @@ class ServoService : public core::ApplicationNoIPC{
 
 }  // namespace service
 }  // namespace simba
-#endif  // SERVICES_SERVOSERVICE_SERVOSERVICE_HPP_
+#endif  // APPS_SERVOSERVICE_SERVOSERVICE_HPP_
