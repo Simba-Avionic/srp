@@ -67,25 +67,19 @@ TEST_P(DltFrameStringTest, DLT_FRAME_WITH_DLT_STRING) {
 }
 
 class DltStringTest : public ::testing::TestWithParam<
-                        std::string> {
+                        std::tuple<std::string, std::vector<uint8_t>>> {
 };
 
 INSTANTIATE_TEST_SUITE_P(DltStringTestParemeters, DltStringTest,
 ::testing::Values(
-    "",
-    "abc",
-    "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    std::make_tuple("", std::vector<uint8_t>{0x00, 0x00, 0x82, 0x00, 0x00, 0x01, 0x00}),
+    std::make_tuple("abc", std::vector<uint8_t>{0x00, 0x00, 0x82, 0x00, 0x00, 0x04, 0x61, 0x62, 0x63, 0x00})
 ));
 
 TEST_P(DltStringTest, DLT_STRING_PARSE) {
-    std::string log = GetParam();
+    auto params = GetParam();
+    std::string log = std::get<0>(params);
+    std::vector<uint8_t> expected = std::get<1>(params);
     simba::dlt::data::DltString test_string(log);
-    const auto p_length = static_cast<uint16_t>(log.size()) + 1;
-    std::vector<uint8_t> expected{0x00, 0x00, 0x82, 0x00,
-     static_cast<uint8_t>(p_length >> 8U), static_cast<uint8_t>(p_length & 0xFF)};
-    for (char ch : log) {
-        expected.push_back(static_cast<uint8_t>(ch));
-    }
-    expected.push_back(0x00);
     EXPECT_EQ(expected, test_string.ParseArg());
 }
