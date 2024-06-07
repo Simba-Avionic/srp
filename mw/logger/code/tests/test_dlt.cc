@@ -81,7 +81,7 @@ TEST_P(DltStringTest, DLT_STRING_PARSE) {
     std::string log = GetParam();
     simba::dlt::data::DltString test_string(log);
     const auto p_length = static_cast<uint16_t>(log.size()) + 1;
-    std::vector<uint8_t> expected{0x00, 0x00, 0x82,0x00, 
+    std::vector<uint8_t> expected{0x00, 0x00, 0x82, 0x00,
      static_cast<uint8_t>(p_length >> 8U), static_cast<uint8_t>(p_length & 0xFF)};
     for (char ch : log) {
         expected.push_back(static_cast<uint8_t>(ch));
