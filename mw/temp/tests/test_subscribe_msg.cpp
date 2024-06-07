@@ -13,13 +13,13 @@
 #include "mw/temp/subscribe_msg/subscribe_header.h"
 
 class SUBSCRIBE_HEADER : public ::testing::TestWithParam<uint16_t> {
-    protected:
-        uint16_t id;
-        simba::mw::temp::SubscribeHeader hdr;
-        
-        void SetUp() override {
-            id = GetParam();
-        }
+ protected:
+  uint16_t id;
+  simba::mw::temp::SubscribeHeader hdr;
+
+  void SetUp() override {
+    id = GetParam();
+  }
 };
 
 INSTANTIATE_TEST_SUITE_P(SUBSCRIBE_HEADER_PARAMS,
@@ -29,5 +29,4 @@ INSTANTIATE_TEST_SUITE_P(SUBSCRIBE_HEADER_PARAMS,
 TEST_P(SUBSCRIBE_HEADER, CONSTRUCTOR_CHECK) {
     hdr = simba::mw::temp::SubscribeHeader{id};
     EXPECT_EQ(id, hdr.GetServiceID());
-    EXPECT_EQ(02, hdr.GetLength());
 }

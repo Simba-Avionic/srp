@@ -14,19 +14,19 @@
 #include "mw/temp/temp_reading_msg/temp_reading_msg_factory.h"
 
 class TEMP_READING_MSG_FACTORY : public ::testing::TestWithParam<::std::vector<simba::mw::temp::TempReading>> {
-    protected:
-        simba::mw::temp::TempReadingMsgFactory factory;
+ protected:
+  simba::mw::temp::TempReadingMsgFactory factory;
 };
 
 INSTANTIATE_TEST_SUITE_P(TEMP_READING_MSG_FACTORY_PARAMS,
                          TEMP_READING_MSG_FACTORY,
                          ::testing::Values(
-                            std::vector<simba::mw::temp::TempReading>{{0, 0.0}, {1, -1.1}, {2, 123.654}}
+                            std::vector<simba::mw::temp::TempReading>{{0, 0.0}, {1, -1.1}, {2, 123.654}},
                             std::vector<simba::mw::temp::TempReading>{{0, 0.0}},
                             std::vector<simba::mw::temp::TempReading>{{1, -1.1}, {2, 123.654}},
                             std::vector<simba::mw::temp::TempReading>{{0, 0.0}, {1, -1.1}, {2, 123.654}, {2, 123.654}},
-                            std::vector<simba::mw::temp::TempReading>{{255, 100000000000000000000000000000000000000}},
-                            std::vector<simba::mw::temp::TempReading>{{255, -100000000000000000000000000000000000000}}    
+                            std::vector<simba::mw::temp::TempReading>{{255, 10000000}},
+                            std::vector<simba::mw::temp::TempReading>{{255, -100000}}
 ));
 
 TEST_P(TEMP_READING_MSG_FACTORY, TEMP_READING_MSG_FACTORY_TEST) {

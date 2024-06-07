@@ -26,11 +26,9 @@ class SubMsgFactory {
    * @brief  This function return ready bit stream to send
    *
    * @param header
-   * @param payload
    * @return std::vector<uint8_t>
    */
-  std::vector<uint8_t> GetBuffer(std::shared_ptr<simba::mw::temp::SubscribeHeader> header,
-                                 std::vector<uint8_t>&& payload);
+  std::vector<uint8_t> GetBuffer(std::shared_ptr<simba::mw::temp::SubscribeHeader> header);
 
   /**
    * @brief Creat header object from raw data
@@ -40,14 +38,6 @@ class SubMsgFactory {
    */
   std::shared_ptr<simba::mw::temp::SubscribeHeader> GetHeader(
     std::vector<uint8_t> raw_data);
-
-  /**
-   * @brief Get payload from raw data
-   *
-   * @param raw_data
-   * @return std::vector<uint8_t>
-   */
-  std::vector<uint8_t> GetPayload(std::vector<uint8_t> raw_data);
 };
 
 }  // namespace temp

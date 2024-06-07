@@ -1,6 +1,9 @@
 cc_test(
     name = "subscribe_msg_factory",
-    srcs = ["test_subscribe_msg_factory.cpp"],
+    srcs = [
+        "test_subscribe_msg_factory.cpp",
+        "test_subscribe_msg.cpp"
+    ],
     visibility = ["//visibility:public"],
     deps=[
         "@com_google_googletest//:gtest_main",
