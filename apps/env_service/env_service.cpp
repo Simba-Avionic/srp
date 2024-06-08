@@ -55,7 +55,7 @@ core::ErrorCode EnvService::Initialize(
     uint8_t i = 0;
     do {
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
-        res = this->temp_->Init(514, std::bind(&EnvService::TempRxCallback,
+        res = this->temp_->Initialize(514, std::bind(&EnvService::TempRxCallback,
             this, std::placeholders::_1, std::placeholders::_2,
                                         std::placeholders::_3), std::make_unique<com::soc::IpcSocket>());
     } while (res != core::ErrorCode::kOk && i < 6);
