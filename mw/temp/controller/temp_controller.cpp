@@ -22,20 +22,24 @@ namespace temp {
 using temp_sub_factory = simba::mw::temp::SubMsgFactory;
 
 namespace {
-    static constexpr char const*
-        kTempServiceName = "SIMBA.TEMP.SERVICE";
-    static constexpr char const*
-        kSubscriberPrefix = "SIMBA.TEMP.";
+    constexpr auto kTempServiceName = "SIMBA.TEMP.SERVICE";
+    constexpr auto kSubscriberPrefix = "SIMBA.TEMP.";
 }
 
-simba::core::ErrorCode TempController::Init(
-    uint16_t service_id, simba::com::soc::RXCallback callback, std::unique_ptr<com::soc::IpcSocket> sock) {
+simba::core::ErrorCode TempController::Init(uint16_t service_id, std::unique_ptr<com::soc::IpcSocket> sock) {
+    if (!sock) {
+        return core::ErrorCode::kInitializeError;
+    }
     this->sub_sock_ = std::move(sock);
-    auto res = core::ErrorCode::kOk;
     this->service_id = service_id;
-    if (res = this->sub_sock_->Init(
+    return core::ErrorCode::kOk;
+}
+
+simba::core::ErrorCode TempController::SetUp(simba::com::soc::RXCallback callback) {
+    auto res = core::ErrorCode::kOk;
+    if ((res = this->sub_sock_->Init(
         com::soc::SocketConfig(
-            kSubscriberPrefix + std::to_string(this->service_id), 0, 0))) {
+            kSubscriberPrefix + std::to_string(this->service_id), 0, 0)))) {
         AppLogger::Error("Couldn't initialize socket!");
         return res;
     }
@@ -50,7 +54,6 @@ simba::core::ErrorCode TempController::Init(
 }
 
 simba::core::ErrorCode TempController::Subscribe() {
-    static simba::mw::temp::SubMsgFactory factory;
     SubscribeHeader hdr{this->service_id};
     std::vector<uint8_t> data = temp_sub_factory::GetBuffer(std::make_shared<SubscribeHeader>(hdr), {});
     if (auto res = sub_sock_->Transmit(kTempServiceName, 0, data)) {
@@ -69,6 +72,13 @@ void TempController::SetTempRXCallback() {
     this->sub_sock_->SetRXCallback(lambdaCallback);
 }
 
+simba::core::ErrorCode TempController::Initialize(uint16_t service_id,
+                simba::com::soc::RXCallback callback, std::unique_ptr<com::soc::IpcSocket> sock) {
+    if (this->Init(service_id, std::move(sock)) != core::ErrorCode::kOk) {
+        return core::ErrorCode::kInitializeError;
+    }
+    return this->SetUp(std::move(callback));
+}
 }  // namespace temp
 }  // namespace mw
 }  // namespace simba

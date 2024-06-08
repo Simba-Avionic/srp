@@ -36,17 +36,19 @@ namespace mw {
 namespace temp {
 
 class TempController {
- protected:
+ private:
   uint16_t service_id;
   std::unique_ptr<com::soc::IpcSocket> sub_sock_{};
   simba::com::soc::RXCallback callback_;
 
- private:
-  virtual void SetTempRXCallback();
-  virtual simba::core::ErrorCode Subscribe();
+ protected:
+  void SetTempRXCallback();
+  simba::core::ErrorCode Subscribe();
+  simba::core::ErrorCode Init(uint16_t service_id, std::unique_ptr<com::soc::IpcSocket> sock);
+  simba::core::ErrorCode SetUp(simba::com::soc::RXCallback callback);
  public:
-  virtual simba::core::ErrorCode Init(uint16_t service_id,
-          simba::com::soc::RXCallback callback, std::unique_ptr<com::soc::IpcSocket> sock);
+  simba::core::ErrorCode Initialize(uint16_t service_id,
+                simba::com::soc::RXCallback callback, std::unique_ptr<com::soc::IpcSocket> sock);
 };
 
 }  // namespace temp
