@@ -9,8 +9,9 @@
  * 
  */
 
-#include <memory>
 #include <gtest/gtest.h>
+
+#include <memory>
 
 #include "mw/temp/controller/temp_controller.h"
 #include "communication-core/sockets/mock/mockSocket.h"
