@@ -15,6 +15,8 @@
 #include <string>
 #include <vector>
 #include <future> // NOLINT
+#include <memory>
+#include <utility>
 
 #include "mw/i2c_service/controller/i2c_controller.h"
 #include "core/json/json_parser.h"
@@ -23,7 +25,7 @@ namespace i2c {
 
 class ADS7828 {
  private:
-  I2CController i2c_;
+  std::unique_ptr<I2CController> i2c_{};
 
  protected:
   /**
@@ -40,6 +42,8 @@ class ADS7828 {
    * @return std::optional<uint16_t> 
    */
   std::optional<uint16_t> GetAdcRawRead(const uint8_t& channel);
+
+  core::ErrorCode Init(std::unique_ptr<I2CController> i2c_);
 
  public:
   ADS7828();
