@@ -20,20 +20,16 @@
 namespace simba {
 namespace mock {
 
-class MockI2CController : public i2c::I2CController {
+class MockI2CController : public i2c::II2CController {
  public:
   MOCK_METHOD(std::optional<std::vector<uint8_t>>, SendData,
-      (i2c::ACTION action, uint8_t address, const std::vector<uint8_t>& payload));
-  MOCK_METHOD(core::ErrorCode, Write, (const uint8_t address, const std::vector<uint8_t> data));
-  MOCK_METHOD(core::ErrorCode, PageWrite, (const uint8_t address, const std::vector<uint8_t> data));
+      (i2c::ACTION action, uint8_t address, const std::vector<uint8_t>& payload), (override));
+  MOCK_METHOD(core::ErrorCode, Write, (const uint8_t address, const std::vector<uint8_t> data), (override));
+  MOCK_METHOD(core::ErrorCode, PageWrite, (const uint8_t address, const std::vector<uint8_t> data), (override));
   MOCK_METHOD(std::optional<std::vector<uint8_t>>, Read,
-        (const uint8_t address, const uint8_t reg, const uint8_t size));
-  MOCK_METHOD(std::optional<std::vector<uint8_t>>, Read,
-        (const uint8_t address, const uint8_t reg));
+        (const uint8_t address, const uint8_t reg, const uint8_t size), (override));
   MOCK_METHOD(std::optional<std::vector<uint8_t>>, WriteRead, (const uint8_t address,
-        const uint8_t WriteData, const uint8_t ReadSize));
-  MOCK_METHOD(std::optional<std::vector<uint8_t>>, WriteRead, (const uint8_t address,
-        const uint8_t WriteData));
+        const uint8_t WriteData, const uint8_t ReadSize), (override));
 };
 }  // namespace mock
 }  // namespace simba

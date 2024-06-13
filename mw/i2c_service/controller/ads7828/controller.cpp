@@ -30,7 +30,7 @@ namespace {
 
 ADS7828::ADS7828() {}
 
-core::ErrorCode ADS7828::Init(std::unique_ptr<I2CController> i2c_) {
+core::ErrorCode ADS7828::Init(std::unique_ptr<II2CController> i2c_) {
     if (!i2c_) {
         return core::ErrorCode::kInitializeError;
     }
@@ -53,7 +53,7 @@ std::optional<uint16_t> ADS7828::GetAdcRawRead(const uint8_t& channel) {
     if (!configData.has_value()) {
         return {};
     }
-    auto res = this->i2c_->WriteRead(ADS7828_ADDRESS, 2, configData.value());
+    auto res = this->i2c_->WriteRead(ADS7828_ADDRESS, configData.value(), 2);
     if (!res.has_value()) {
         return {};
     }
