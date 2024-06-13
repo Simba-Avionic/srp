@@ -44,13 +44,13 @@ std::tuple<uint8_t, std::optional<uint8_t>>>{
 // tuple<channel, expected_response>
 INSTANTIATE_TEST_SUITE_P(GetConfigDataTestParams, GetConfigDataTest, ::testing::Values(
     std::make_tuple(0, std::optional<uint8_t>{0x80}),
-    std::make_tuple(1, std::optional<uint8_t>{0x80}),
-    std::make_tuple(2, std::optional<uint8_t>{0xC0}),
-    std::make_tuple(3, std::optional<uint8_t>{0xC0}),
-    std::make_tuple(4, std::optional<uint8_t>{0x80}),
-    std::make_tuple(5, std::optional<uint8_t>{0x80}),
-    std::make_tuple(6, std::optional<uint8_t>{0xC0}),
-    std::make_tuple(7, std::optional<uint8_t>{0xC0}),
+    std::make_tuple(1, std::optional<uint8_t>{0xC0}),
+    std::make_tuple(2, std::optional<uint8_t>{0x90}),
+    std::make_tuple(3, std::optional<uint8_t>{0xD0}),
+    std::make_tuple(4, std::optional<uint8_t>{0xA0}),
+    std::make_tuple(5, std::optional<uint8_t>{0xE0}),
+    std::make_tuple(6, std::optional<uint8_t>{0xB0}),
+    std::make_tuple(7, std::optional<uint8_t>{0xF0}),
     std::make_tuple(8, std::optional<uint8_t>{})
 ));
 
