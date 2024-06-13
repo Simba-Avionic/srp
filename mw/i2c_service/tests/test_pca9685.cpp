@@ -1,5 +1,5 @@
 /**
- * @file test_controller.cpp
+ * @file test_pca9685.cpp
  * @author Mateusz Krajewski (matikrajek42@gmail.com)
  * @brief 
  * @version 0.1

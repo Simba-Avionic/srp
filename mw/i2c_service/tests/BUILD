@@ -12,11 +12,23 @@ cc_test(
 cc_test(
     name = "pca9685_test",
     srcs = [
-        "test_controller.cpp"
+        "test_pca9685.cpp"
         ],
     visibility = ["//visibility:public"],
     deps=[
         "@com_google_googletest//:gtest_main",
         "//mw/i2c_service/controller/pca9685:pca9685_controller"
+    ],
+)
+cc_test(
+    name = "ads7828_test",
+    srcs = [
+        "test_ads7828.cc"
+        ],
+    visibility = ["//visibility:public"],
+    deps=[
+        "@com_google_googletest//:gtest_main",
+        "//mw/i2c_service/controller/ads7828:adc_controller",
+        "//mw/i2c_service/controller/mock:mock_i2c_controller",
     ],
 )
