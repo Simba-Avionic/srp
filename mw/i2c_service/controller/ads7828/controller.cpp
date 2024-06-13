@@ -44,7 +44,7 @@ std::optional<uint8_t> ADS7828::GetConfigData(const uint8_t& channel) {
     }
     const int channelMap[] = {0, 4, 1, 5, 2, 6, 3, 7};
     uint8_t res = 0;  // [0:1] unused
-    res |= (channelMap[channel] << 6);
+    res |= (channelMap[channel] << 4);
     res |= (1 << 7);  // [7] Single-Ennded / Differencial Input
     return res;
 }
