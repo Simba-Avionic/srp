@@ -8,8 +8,6 @@
  * @copyright Copyright (c) 2024
  * 
  */
-#include <sys/stat.h>
-#include <unistd.h>
 #include "mw/i2c_service/controller/i2c_controller.h"
 #include "core/logger/Logger.h"
 
