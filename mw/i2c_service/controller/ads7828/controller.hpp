@@ -25,7 +25,7 @@ namespace i2c {
 
 class ADS7828 {
  private:
-  std::unique_ptr<I2CController> i2c_{};
+  std::unique_ptr<II2CController> i2c_{};
 
  protected:
   /**
@@ -43,7 +43,7 @@ class ADS7828 {
    */
   std::optional<uint16_t> GetAdcRawRead(const uint8_t& channel);
 
-  core::ErrorCode Init(std::unique_ptr<I2CController> i2c_);
+  core::ErrorCode Init(std::unique_ptr<II2CController> i2c_);
 
  public:
   ADS7828();

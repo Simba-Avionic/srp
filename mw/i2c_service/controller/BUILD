@@ -8,7 +8,10 @@ cc_library(
         "//core/logger:Logger",
     ],
     srcs = ["i2c_controller.cpp"],
-    hdrs = ["i2c_controller.h"],
+    hdrs = [
+        "Ii2c_controller.h",
+        "i2c_controller.h",
+        ],
     visibility = [
         "//apps:__subpackages__",
         "//mw/i2c_service/controller:__subpackages__",

@@ -15,6 +15,11 @@
 #include "mw/i2c_service/controller/ads7828/controller.hpp"
 #include "mw/i2c_service/controller/mock/mock_i2ccontroller.h"
 
+namespace {
+    constexpr uint8_t ADS7828_ADDRESS = 0x90;
+    constexpr auto RES_SIZE = 2;
+}
+
 class TestWrapper : public simba::i2c::ADS7828 {
  public:
   simba::core::ErrorCode TestInit(std::unique_ptr<simba::mock::MockI2CController> i2c_) {
@@ -61,7 +66,7 @@ std::tuple<uint8_t, std::optional<std::vector<uint8_t>>, std::optional<uint16_t>
 // tuple<channel, i2cWriteReadMockRes, expected_response>
 INSTANTIATE_TEST_SUITE_P(GetAdcRawReadTestParams, GetAdcRawReadTest, ::testing::Values(
     std::make_tuple(0, std::optional<std::vector<uint8_t>>{}, std::optional<uint16_t>{}),
-    std::make_tuple(1, std::optional<std::vector<uint8_t>>{{0, 1, 2}}, std::optional<uint16_t>{})
+    std::make_tuple(1, std::optional<std::vector<uint8_t>>{{0, 1, 2}}, std::optional<uint16_t>{1})
 ));
 
 TEST_P(GetAdcRawReadTest, AdcRawReadTest) {
@@ -72,7 +77,7 @@ TEST_P(GetAdcRawReadTest, AdcRawReadTest) {
     auto WriteReadRes = std::get<1>(params);
     auto expected = std::get<2>(params);
     if (channel < 7) {
-      EXPECT_CALL(*i2c_, WriteRead(144, 2, ::testing::_))
+      EXPECT_CALL(*i2c_, WriteRead(ADS7828_ADDRESS, ::testing::_, RES_SIZE))
         .WillOnce(::testing::Return(WriteReadRes));
     }
     std::cout << "\n" << wrapper.TestInit(std::move(i2c_)) << "\n";
