@@ -42,12 +42,10 @@ class ADS7828 {
    * @return std::optional<uint16_t> 
    */
   std::optional<uint16_t> GetAdcRawRead(const uint8_t& channel);
-
-  core::ErrorCode Init(std::unique_ptr<II2CController> i2c_);
-
  public:
   ADS7828();
   std::optional<float> GetAdcVoltage(const uint8_t& channel);
+  core::ErrorCode Init(std::unique_ptr<II2CController> i2c_);
 };
 
 }  // namespace i2c
