@@ -1,9 +1,10 @@
 /**
  * @file test_subscribe_msg_factory.cpp
- * @author Maciek Matuszewski (maciej.matuszewsky@gmail.com)
+ * @author Jacek Kukawski (jacekka6@gmail.com)
+ * @author Michał Mańkowski (m.mankowski2004@gmail.com)
  * @brief 
  * @version 0.1
- * @date 2024-03-02
+ * @date 2024-05-27
  * 
  * @copyright Copyright (c) 2024
  * 
@@ -13,14 +14,33 @@
 #include "mw/temp/subscribe_msg/subscribe_header.h"
 #include "mw/temp/subscribe_msg/subscribe_msg_factory.h"
 
-TEST(SUBSCRIBE_MSG_FACTORIES, SUBSCRIBE_MSG_FACTORIES_TEST) {
-    simba::mw::temp::SubMsgFactory factory;
-    std::vector<uint8_t> payload = {0x0, 0x1, 0x2, 0x3, 0x4, 0x5};
-    const uint16_t id = 0x0001;
+
+class SUBSCRIBE_MSG_FACTORIES : public ::testing::TestWithParam<
+                        std::tuple<uint16_t>> {
+ protected:
+  uint16_t id;
+
+  void SetUp() override {
+    auto params = GetParam();
+    id = std::get<0>(params);
+  }
+};
+
+INSTANTIATE_TEST_SUITE_P(SUBSCRIBE_MSG_FACTORIES_TEST,
+                         SUBSCRIBE_MSG_FACTORIES,
+                         ::testing::Values(
+                            std::make_tuple(0x0000),
+                            std::make_tuple(0xAAAA),
+                            std::make_tuple(0x6021),
+                            std::make_tuple(0xFFFF)
+                         )
+);
+
+TEST_P(SUBSCRIBE_MSG_FACTORIES, SUBSCRIBE_MSG_FACTORIES_TEST) {
     simba::mw::temp::SubscribeHeader hdr{id};
-    const std::vector<uint8_t> data = factory.GetBuffer(
-        std::make_shared<simba::mw::temp::SubscribeHeader>(hdr), std::move(payload));
-    const auto hdr2 = factory.GetHeader(data);
-    EXPECT_EQ(hdr2->GetServiceID(), hdr.GetServiceID());
-    EXPECT_EQ(hdr2->GetLength(), hdr.GetLength());
+    const std::vector<uint8_t> data = simba::mw::temp::SubMsgFactory::GetBuffer(
+        std::make_shared<simba::mw::temp::SubscribeHeader>(hdr));
+    const auto hdr2 = simba::mw::temp::SubMsgFactory::GetHeader(data);
+
+    EXPECT_EQ(hdr2->GetServiceID(), id);
 }

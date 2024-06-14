@@ -55,7 +55,7 @@ simba::core::ErrorCode TempController::SetUp(simba::com::soc::RXCallback callbac
 
 simba::core::ErrorCode TempController::Subscribe() {
     SubscribeHeader hdr{this->service_id};
-    std::vector<uint8_t> data = temp_sub_factory::GetBuffer(std::make_shared<SubscribeHeader>(hdr), {});
+    std::vector<uint8_t> data = temp_sub_factory::GetBuffer(std::make_shared<SubscribeHeader>(hdr));
     if (auto res = sub_sock_->Transmit(kTempServiceName, 0, data)) {
         AppLogger::Error("Failed to subscribe to " + std::string(kTempServiceName)+":::"+std::to_string(res));
         return res;
