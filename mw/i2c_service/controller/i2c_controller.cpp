@@ -11,6 +11,8 @@
 #include "mw/i2c_service/controller/i2c_controller.h"
 #include "core/logger/Logger.h"
 
+#include <utility>
+
 namespace simba {
 namespace i2c {
 
