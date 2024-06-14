@@ -40,7 +40,7 @@ struct Servo {
 
 class PCA9685 {
  private:
-  I2CController i2c_;
+  std::unique_ptr<I2CController> i2c_;
   gpio::GPIOController gpio_;
   std::string app_name;
  protected:
@@ -51,7 +51,7 @@ class PCA9685 {
   std::vector<uint8_t> GenerateData(const uint8_t &channel, const uint16_t &pos);
  public:
   PCA9685();
-  void Init(const std::unordered_map<std::string, std::string>& parms);
+  void Init(const std::unordered_map<std::string, std::string>& parms, std::unique_ptr<I2CController> i2c);
   core::ErrorCode AutoSetServoPosition(const uint8_t &actuator_id, const uint8_t &state);
   std::optional<uint8_t> ReadServoPosition(const uint8_t &actuator_id);
 };

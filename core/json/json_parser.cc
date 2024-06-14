@@ -22,10 +22,27 @@ std::optional<JsonParser> JsonParser::Parser(const std::string& path) noexcept {
   }
   return std::optional<JsonParser>{JsonParser{f}};
 }
+std::optional<JsonParser> JsonParser::Parser(nlohmann::json obj) noexcept {
+  return std::optional<JsonParser>{JsonParser{obj}};
+}
 JsonParser::JsonParser(std::ifstream& f) {
-    this->obj = nlohmann::json::parse(f);
+  this->obj = nlohmann::json::parse(f);
+}
+JsonParser::JsonParser(nlohmann::json json) {
+  this->obj = json;
 }
 nlohmann::json JsonParser::GetObject() const { return this->obj; }
+
+std::optional<nlohmann::json> JsonParser::GetArray(const std::string& name) {
+  if (!obj.contains(name)) {
+    return {};
+  }
+  if (!obj.at(name).is_array()) {
+    return {};
+  }
+  return obj.at(name);
+}
+
 std::optional<std::string> JsonParser::GetString(
     const std::string& name) const noexcept {
   try {

@@ -25,14 +25,11 @@ namespace temp {
 class SubscribeHeader : public com::core::network::NetworkDataStructure {
  private:
   com::core::network::uint16_t service_id_;
-  com::core::network::uint8_t length_;
 
  public:
   explicit SubscribeHeader(const uint16_t &service_id);
   SubscribeHeader();
   uint16_t GetServiceID() const;
-  uint8_t GetLength() const;
-  void SetLength(const uint8_t& value);
   void SetData();
 };
 

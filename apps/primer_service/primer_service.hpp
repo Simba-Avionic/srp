@@ -44,7 +44,7 @@ class PrimerService final : public core::ApplicationNoIPC {
 
   gpio::GPIOController gpio_;
   uint8_t primerState;
-  uint8_t primer_pin_;
+  std::vector<uint8_t> primer_pins_;
   std::uint16_t active_time;
 
   std::shared_ptr<simba::com::someip::EventSkeleton> primer_event;

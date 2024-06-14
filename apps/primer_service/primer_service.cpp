@@ -38,14 +38,12 @@ namespace {
 core::ErrorCode PrimerService::ChangePrimerState(uint8_t state) {
   if (this->primerState != state) {
     core::ErrorCode error;
-    uint8_t i = 0;
-    do {
-    error = this->gpio_.SetPinValue(this->primer_pin_, state);
-    i++;
-    } while ( error != core::ErrorCode::kOk && i < 5);
-    if (error != core::ErrorCode::kOk) {
-      this->dtc_31->Failed();
-      return core::ErrorCode::kError;
+    for (const auto primer : primer_pins_) {
+      error = this->gpio_.SetPinValue(primer, state);
+      if (error != core::ErrorCode::kOk) {
+        this->dtc_31->Failed();
+        return core::ErrorCode::kError;
+      }
     }
     this->primerState = state;
     this->primer_event->SetValue({static_cast<uint8_t>(state)});
@@ -90,6 +88,7 @@ core::ErrorCode PrimerService::Run(std::stop_token token) {
             }
             return std::vector<uint8_t>{1};
           });
+          return {};
   });
   com->Add(primerOffMethod);
   com->Add(primerOnMethod);
@@ -106,7 +105,7 @@ core::ErrorCode PrimerService::ReadConfig(const std::unordered_map<std::string, 
   if (!file.is_open()) {
     AppLogger::Warning("cant find config file, use DEFAULT IGNITER ID");
     this->active_time = IGNITER_ACTIVE_TIME;
-    this->primer_pin_ = IGNITER_PIN_ID;
+    this->primer_pins_.push_back(IGNITER_PIN_ID);
     return core::ErrorCode::kInitializeError;
   }
   nlohmann::json data = nlohmann::json::parse(file);
@@ -114,7 +113,7 @@ core::ErrorCode PrimerService::ReadConfig(const std::unordered_map<std::string, 
   if (!data.contains("primer")) {
     AppLogger::Warning("invalid config format, use DEFAULT IGNITER ID");
     this->active_time = IGNITER_ACTIVE_TIME;
-    this->primer_pin_ = IGNITER_PIN_ID;
+    this->primer_pins_.push_back(IGNITER_PIN_ID);
     return core::ErrorCode::kInitializeError;
   }
   if (!data.at("primer").contains("active_time")) {
@@ -123,10 +122,12 @@ core::ErrorCode PrimerService::ReadConfig(const std::unordered_map<std::string, 
   } else {
     this->active_time = static_cast<uint16_t>(data.at("primer").at("active_time"));
   }
-  if (!data.at("primer").contains("id")) {
-    this->primer_pin_ = IGNITER_PIN_ID;
+  if (!data.at("primer").contains("ids")) {
+    this->primer_pins_.push_back(IGNITER_PIN_ID);
   } else {
-    this->primer_pin_ = static_cast<uint8_t>(data.at("primer").at("id"));
+    for (const auto id : data.at("primer").at("ids")) {
+      this->primer_pins_.push_back(static_cast<uint8_t>(id));
+    }
   }
   return core::ErrorCode::kOk;
 }
@@ -142,7 +143,7 @@ core::ErrorCode PrimerService::Initialize(
   this->diag_controller.RegisterDTC(dtc_30);
   this->diag_controller.RegisterDTC(dtc_31);
 
-  this->gpio_ = gpio::GPIOController(std::make_shared<com::soc::StreamIpcSocket>());
+  this->gpio_ = gpio::GPIOController(std::make_unique<com::soc::StreamIpcSocket>());
   ReadConfig(parms);
   this->primerState = 0;
   /**

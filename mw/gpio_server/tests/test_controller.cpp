@@ -36,16 +36,14 @@ INSTANTIATE_TEST_SUITE_P(SetPinTestParameters, SetPinTest,
 
 
 TEST_P(SetPinTest, CONTROLLER_SET_PIN_VALUE_CHECK) {
-  auto sock_ = std::make_shared<MockStreamSocket>();
+  auto sock_ = std::make_unique<MockStreamSocket>();
+  EXPECT_CALL(*sock_, Transmit(::testing::_, ::testing::_, ::testing::_))
+    .WillOnce(::testing::Return(std::vector<uint8_t>{1}))
+    .WillOnce(::testing::Return(std::vector<uint8_t>{0}));
   auto params = GetParam();
   uint16_t actuatorID = std::get<0>(params);
   int8_t value = std::get<1>(params);
-  simba::gpio::GPIOController gpio_(sock_);
-
-  EXPECT_CALL(*sock_, Transmit(::testing::_, ::testing::_, ::testing::_))
-      .WillOnce(::testing::Return(std::vector<uint8_t>{1}))
-      .WillOnce(::testing::Return(std::vector<uint8_t>{0}));
-
+  simba::gpio::GPIOController gpio_(std::move(sock_));
   EXPECT_EQ(gpio_.SetPinValue(actuatorID, value), simba::core::ErrorCode::kOk);
   EXPECT_EQ(gpio_.SetPinValue(actuatorID, value), simba::core::ErrorCode::kError);
 }
@@ -78,10 +76,10 @@ TEST_P(GetPinTest, CONTROLLER_GET_PIN_VALUE_CHECK) {
   auto params = GetParam();
   uint16_t actuatorID = std::get<0>(params);
   int8_t value = std::get<1>(params);
-  auto sock_ = std::make_shared<MockStreamSocket>();
+  auto sock_ = std::make_unique<MockStreamSocket>();
   EXPECT_CALL(*sock_, Transmit(::testing::_, ::testing::_, ::testing::_))
             .WillOnce(::testing::Return(std::vector<uint8_t>{
                         simba::gpio::Header(actuatorID, value, simba::gpio::ACTION::RES).GetBuffor()}));
-  simba::gpio::GPIOController gpio_(sock_);
+  simba::gpio::GPIOController gpio_(std::move(sock_));
   EXPECT_EQ(gpio_.GetPinValue(actuatorID), value);
 }
