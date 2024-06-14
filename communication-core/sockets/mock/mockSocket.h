@@ -17,6 +17,7 @@
 
 #include "communication-core/sockets/socket_config.h"
 #include "communication-core/sockets/Isocket.h"
+#include "communication-core/sockets/Isocket_stream.h"
 
 class MockSocket : public simba::com::soc::ISocket {
  public:

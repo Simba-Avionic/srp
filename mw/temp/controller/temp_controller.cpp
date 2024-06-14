@@ -26,7 +26,8 @@ namespace {
     constexpr auto kSubscriberPrefix = "SIMBA.TEMP.";
 }
 
-simba::core::ErrorCode TempController::Init(uint16_t service_id, std::unique_ptr<com::soc::IpcSocket> sock) {
+ 
+simba::core::ErrorCode TempController::Init(uint16_t service_id, std::unique_ptr<com::soc::ISocket> sock) {
     if (!sock) {
         return core::ErrorCode::kInitializeError;
     }
@@ -73,7 +74,7 @@ void TempController::SetTempRXCallback() {
 }
 
 simba::core::ErrorCode TempController::Initialize(uint16_t service_id,
-                simba::com::soc::RXCallback callback, std::unique_ptr<com::soc::IpcSocket> sock) {
+                simba::com::soc::RXCallback callback, std::unique_ptr<com::soc::ISocket> sock) {
     if (this->Init(service_id, std::move(sock)) != core::ErrorCode::kOk) {
         return core::ErrorCode::kInitializeError;
     }
