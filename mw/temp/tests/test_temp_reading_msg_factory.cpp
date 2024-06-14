@@ -15,7 +15,6 @@
 
 class TEMP_READING_MSG_FACTORY : public ::testing::TestWithParam<::std::vector<simba::mw::temp::TempReading>> {
  protected:
-  simba::mw::temp::TempReadingMsgFactory factory;
 };
 
 INSTANTIATE_TEST_SUITE_P(TEMP_READING_MSG_FACTORY_PARAMS,
@@ -32,7 +31,7 @@ INSTANTIATE_TEST_SUITE_P(TEMP_READING_MSG_FACTORY_PARAMS,
 TEST_P(TEMP_READING_MSG_FACTORY, TEMP_READING_MSG_FACTORY_TEST) {
     std::vector<simba::mw::temp::TempReading> payload = GetParam();
 
-    std::vector<uint8_t> raw_data = factory.GetBuffer(payload);
-    const auto payload2 = factory.GetPayload(raw_data);
+    std::vector<uint8_t> raw_data = simba::mw::temp::TempReadingMsgFactory::GetBuffer(payload);
+    const auto payload2 = simba::mw::temp::TempReadingMsgFactory::GetPayload(raw_data);
     EXPECT_EQ(payload, payload2);
 }

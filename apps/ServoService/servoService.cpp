@@ -38,7 +38,7 @@ core::ErrorCode ServoService::Run(std::stop_token token) {
 core::ErrorCode ServoService::Initialize(
       const std::unordered_map<std::string, std::string>& parms) {
     //  this->servo_controller.Init(parms, std::make_unique<i2c::I2CController>());
-    this->servo_controller.Init(parms);
+    this->servo_controller.Init(parms, std::make_unique<simba::i2c::I2CController>());
     main_servo_status_event =
       std::make_shared<com::someip::EventSkeleton>("ServoApp/servoStatusEvent");
     vent_servo_status_event =

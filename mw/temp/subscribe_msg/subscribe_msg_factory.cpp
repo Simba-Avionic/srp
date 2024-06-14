@@ -9,7 +9,7 @@
  *
  */
 #include "mw/temp/subscribe_msg/subscribe_header.h"
-#include "subscribe_msg_factory.h"
+#include "mw/temp/subscribe_msg/subscribe_msg_factory.h"
 
 
 #include <algorithm>
@@ -21,8 +21,7 @@ namespace {
   constexpr auto HDR_SIZE = 0x02;
 }
 
-std::vector<uint8_t> SubMsgFactory::GetBuffer(
-  std::shared_ptr<simba::mw::temp::SubscribeHeader> header) {
+std::vector<uint8_t> SubMsgFactory::GetBuffer(std::shared_ptr<simba::mw::temp::SubscribeHeader> header) {
   return header->GetBuffor();
 }
 

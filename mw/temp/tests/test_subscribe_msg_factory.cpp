@@ -14,10 +14,10 @@
 #include "mw/temp/subscribe_msg/subscribe_header.h"
 #include "mw/temp/subscribe_msg/subscribe_msg_factory.h"
 
+
 class SUBSCRIBE_MSG_FACTORIES : public ::testing::TestWithParam<
                         std::tuple<uint16_t>> {
  protected:
-  simba::mw::temp::SubMsgFactory factory;
   uint16_t id;
 
   void SetUp() override {
@@ -38,9 +38,9 @@ INSTANTIATE_TEST_SUITE_P(SUBSCRIBE_MSG_FACTORIES_TEST,
 
 TEST_P(SUBSCRIBE_MSG_FACTORIES, SUBSCRIBE_MSG_FACTORIES_TEST) {
     simba::mw::temp::SubscribeHeader hdr{id};
-    const std::vector<uint8_t> data = factory.GetBuffer(
+    const std::vector<uint8_t> data = simba::mw::temp::SubMsgFactory::GetBuffer(
         std::make_shared<simba::mw::temp::SubscribeHeader>(hdr));
-    const auto hdr2 = factory.GetHeader(data);
+    const auto hdr2 = simba::mw::temp::SubMsgFactory::GetHeader(data);
 
     EXPECT_EQ(hdr2->GetServiceID(), id);
 }
