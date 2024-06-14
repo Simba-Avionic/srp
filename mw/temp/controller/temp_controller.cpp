@@ -26,7 +26,6 @@ namespace {
     constexpr auto kSubscriberPrefix = "SIMBA.TEMP.";
 }
 
- 
 simba::core::ErrorCode TempController::Init(uint16_t service_id, std::unique_ptr<com::soc::ISocket> sock) {
     if (!sock) {
         return core::ErrorCode::kInitializeError;
