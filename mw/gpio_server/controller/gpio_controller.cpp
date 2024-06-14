@@ -24,11 +24,8 @@ namespace {
     constexpr auto PATH = "SIMBA.GPIO";
 }
 
-GPIOController::GPIOController(std::shared_ptr<com::soc::ISocketStream> socket)
+GPIOController::GPIOController(std::unique_ptr<com::soc::ISocketStream> socket)
                                                     : sock_(std::move(socket)) {
-}
-GPIOController::GPIOController() {
-    this->sock_ = std::make_shared<com::soc::StreamIpcSocket>();
 }
 
 core::ErrorCode GPIOController::SetPinValue(uint8_t actuatorID, int8_t value) {
@@ -49,12 +46,12 @@ core::ErrorCode GPIOController::SetPinValue(uint8_t actuatorID, int8_t value) {
 
 std::optional<int8_t> GPIOController::GetPinValue(uint8_t actuatorID) {
     if (this->sock_ == nullptr) {
-        return {};
+        return std::nullopt;
     }
     gpio::Header hdr(actuatorID, 0, gpio::ACTION::GET);
     auto res = this->sock_->Transmit(PATH, 0, hdr.GetBuffor());
     if (!res.has_value()) {
-        return {};
+        return std::nullopt;
     }
     gpio::Header resHdr(0, 0, gpio::ACTION::RES);
     resHdr.SetBuffor(res.value());
