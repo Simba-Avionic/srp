@@ -31,7 +31,7 @@ float ADCSensorController::CalculateB(float R, float A, float A_MIN, float RES_M
 
 ADCSensorController::ADCSensorController() {}
 
-void ADCSensorController::Init(const std::unordered_map<std::string, std::string>& parms) {
+void ADCSensorController::Init(const std::unordered_map<std::string, std::string>& parms, std::unique_ptr<IADS7828> adc_) {
   this->app_name = parms.at("app_name");
   std::string file_path = "/opt/"+this->app_name+"/etc/config.json";
   auto obj_r = core::json::JsonParser::Parser(file_path);
@@ -39,6 +39,10 @@ void ADCSensorController::Init(const std::unordered_map<std::string, std::string
     AppLogger::Warning("Cant find file on path "+file_path);
     return;
   }
+  if (!adc_) {
+    AppLogger::Warning("ADS7828 initialize error");
+  }
+  this->adc_ = std::move(adc_);
   this->db_ = this->ReadConfig(obj_r.value().GetObject());
 }
 std::unordered_map<uint8_t, SensorConfig> ADCSensorController::ReadConfig(nlohmann::json data) {

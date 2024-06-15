@@ -19,6 +19,7 @@
 #include <memory>
 
 #include "mw/i2c_service/controller/ads7828/Iads7828.h"
+#include "mw/i2c_service/controller/ads7828/Iads7828.h"
 #include "mw/i2c_service/controller/ads7828/controller.hpp"
 #include "core/json/json_parser.h"
 namespace simba {
@@ -33,7 +34,7 @@ struct SensorConfig {
 
 class ADCSensorController {
  private:
-  std::unique_ptr<IADS7828> adc_;
+  std::unique_ptr<IADS7828> adc_{};
   std::string app_name;
   /**
    * @brief actuator_id, config
@@ -67,7 +68,7 @@ class ADCSensorController {
 
  public:
   ADCSensorController();
-  void Init(const std::unordered_map<std::string, std::string>& parms);
+  void Init(const std::unordered_map<std::string, std::string>& parms, std::unique_ptr<IADS7828> adc_);
   /**
    * @brief Get the res object w jednostce docelowej
    * 

@@ -9,5 +9,6 @@ cc_library(
     hdrs = ["controller.hpp"],
     visibility = [
         "//apps:__subpackages__",
+        "//mw/i2c_service/tests:__subpackages__",
         ],
 )

@@ -7,7 +7,10 @@ cc_library(
         "//core/json:simba_json",
     ],
     srcs = ["controller.cpp"],
-    hdrs = ["controller.hpp"],
+    hdrs = [
+        "controller.hpp",
+        "Iads7828.h",
+        ],
     visibility = [
         "//apps:__subpackages__",
         "//services/ServoService:__subpackages__",
