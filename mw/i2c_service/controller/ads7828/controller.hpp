@@ -18,12 +18,13 @@
 #include <memory>
 #include <utility>
 
+#include "mw/i2c_service/controller/ads7828/Iads7828.h"
 #include "mw/i2c_service/controller/i2c_controller.h"
 #include "core/json/json_parser.h"
 namespace simba {
 namespace i2c {
 
-class ADS7828 {
+class ADS7828 : public IADS7828{
  private:
   std::unique_ptr<II2CController> i2c_{};
 
@@ -34,17 +35,17 @@ class ADS7828 {
    * @param channel from 0-7
    * @return uint8_t 
    */
-  std::optional<uint8_t> GetConfigData(const uint8_t& channel);
+  std::optional<uint8_t> GetConfigData(const uint8_t& channel) override;
   /**
    * @brief Get the Adc Read object
    * 
    * @param channel  (0-7)
    * @return std::optional<uint16_t> 
    */
-  std::optional<uint16_t> GetAdcRawRead(const uint8_t& channel);
+  std::optional<uint16_t> GetAdcRawRead(const uint8_t& channel) override;
  public:
   ADS7828();
-  std::optional<float> GetAdcVoltage(const uint8_t& channel);
+  std::optional<float> GetAdcVoltage(const uint8_t& channel) override;
   core::ErrorCode Init(std::unique_ptr<II2CController> i2c_);
 };
 
