@@ -25,8 +25,8 @@ float ADCSensorController::CalculateA(float R, float RES_MAX, float RES_MIN, flo
     return (RES_MAX - RES_MIN) * 1000.0f / ((A_MAX - A_MIN) * R);
 }
 
-float ADCSensorController::CalculateB(float R, float A, float A_MIN) const {
-    return -((A * A_MIN * R) / 1000.0f);
+float ADCSensorController::CalculateB(float R, float A, float A_MIN, float RES_MIN) const {
+    return RES_MIN - ((A_MIN/1000.0f)*R*A);
 }
 
 ADCSensorController::ADCSensorController() {}
@@ -77,7 +77,7 @@ std::unordered_map<uint8_t, SensorConfig> ADCSensorController::ReadConfig(nlohma
                 continue;
             }
             config.a = CalculateA(r.value(), resMax.value(), resMin.value(), AMax.value(), AMin.value());
-            config.b = CalculateB(r.value(), config.a, AMin.value());
+            config.b = CalculateB(r.value(), config.a, AMin.value(), resMin.value());
             db.insert({actuator_id.value(), config});
         }
     }
@@ -90,7 +90,7 @@ std::optional<float> ADCSensorController::GetValue(const uint8_t sensor_id) {
         AppLogger::Warning("Invalid pressure sensor request");
         return {};
     }
-    auto res = this->adc_.GetAdcVoltage(sensor->second.channel);
+    auto res = this->adc_->GetAdcVoltage(sensor->second.channel);
     if (!res.has_value()) {
         return {};
     }
@@ -99,4 +99,3 @@ std::optional<float> ADCSensorController::GetValue(const uint8_t sensor_id) {
 
 }  // namespace i2c
 }  // namespace simba
-
