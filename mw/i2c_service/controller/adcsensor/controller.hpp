@@ -16,7 +16,9 @@
 #include <string>
 #include <vector>
 #include <future> // NOLINT
+#include <memory>
 
+#include "mw/i2c_service/controller/ads7828/Iads7828.h"
 #include "mw/i2c_service/controller/ads7828/controller.hpp"
 #include "core/json/json_parser.h"
 namespace simba {
@@ -31,22 +33,43 @@ struct SensorConfig {
 
 class ADCSensorController {
  private:
-  ADS7828 adc_;
+  std::unique_ptr<IADS7828> adc_;
   std::string app_name;
   /**
    * @brief actuator_id, config
    * 
    */
   std::unordered_map<uint8_t, SensorConfig> db_;
+
  protected:
   std::unordered_map<uint8_t, SensorConfig> ReadConfig(nlohmann::json data);
-  float CalculateB(float R, float A, float A_MIN) const;
+  /**
+   * @brief Funckja wyliczająca wyraz wolny b dla funkcji liniowej y= a*x + b
+   * 
+   * @param R Rezystancja rezystora pomiarowego
+   * @param A współczynnik a wyliczony funkcją CalculateA
+   * @param A_MIN minimalny prąd czujnika w mA
+   * @param RES_MIN minimalny odczyt czujnika w jednostce docelowej
+   * @return float 
+   */
+  float CalculateB(float R, float A, float A_MIN, float RES_MIN) const;
+  /**
+   * @brief Funckja wyliczająca współczynnik a dla funkcji liniowej y= a*x + b
+   * 
+   * @param R Rezystancja rezystora pomiarowego
+   * @param RES_MAX maksymalny odczyt czujnika w jednostce docelowej
+   * @param RES_MIN minimalny odczyt czujnika w jednostce docelowej
+   * @param A_MAX maksymalny prąd czujnika w mA
+   * @param A_MIN minimalny prąd czujnika w mA
+   * @return float 
+   */
   float CalculateA(float R, float RES_MAX, float RES_MIN, float A_MAX, float A_MIN) const;
+
  public:
   ADCSensorController();
   void Init(const std::unordered_map<std::string, std::string>& parms);
   /**
-   * @brief Get the res object [Bar]
+   * @brief Get the res object w jednostce docelowej
    * 
    * @param sensor_id 
    * @return std::optional<float> 
