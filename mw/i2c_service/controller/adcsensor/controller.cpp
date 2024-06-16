@@ -31,7 +31,7 @@ float ADCSensorController::CalculateB(float R, float A, float A_MIN, float RES_M
 
 ADCSensorController::ADCSensorController() {}
 
-void ADCSensorController::Init(const std::unordered_map<std::string, std::string>& parms, std::unique_ptr<IADS7828> adc_) {
+void ADCSensorController::Init(const std::unordered_map<std::string, std::string>& parms) {
   this->app_name = parms.at("app_name");
   std::string file_path = "/opt/"+this->app_name+"/etc/config.json";
   auto obj_r = core::json::JsonParser::Parser(file_path);
@@ -42,7 +42,6 @@ void ADCSensorController::Init(const std::unordered_map<std::string, std::string
   if (!adc_) {
     AppLogger::Warning("ADS7828 initialize error");
   }
-  this->adc_ = std::move(adc_);
   this->db_ = this->ReadConfig(obj_r.value().GetObject());
 }
 std::unordered_map<uint8_t, SensorConfig> ADCSensorController::ReadConfig(nlohmann::json data) {
@@ -65,9 +64,11 @@ std::unordered_map<uint8_t, SensorConfig> ADCSensorController::ReadConfig(nlohma
         auto a = sensor.GetNumber<float>("a");
         auto b = sensor.GetNumber<float>("b");
         SensorConfig config;
+        config.channel = channel.value();
         if (a.has_value() && b.has_value()) {
             config.a = a.value();
             config.b = b.value();
+            db.insert({actuator_id.value(), config});
         } else {
             auto r = sensor.GetNumber<float>("R");
             auto resMin = sensor.GetNumber<float>("RES_MIN");

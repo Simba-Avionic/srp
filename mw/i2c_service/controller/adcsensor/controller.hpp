@@ -17,8 +17,8 @@
 #include <vector>
 #include <future> // NOLINT
 #include <memory>
+#include <utility>
 
-#include "mw/i2c_service/controller/ads7828/Iads7828.h"
 #include "mw/i2c_service/controller/ads7828/Iads7828.h"
 #include "mw/i2c_service/controller/ads7828/controller.hpp"
 #include "core/json/json_parser.h"
@@ -66,9 +66,13 @@ class ADCSensorController {
    */
   float CalculateA(float R, float RES_MAX, float RES_MIN, float A_MAX, float A_MIN) const;
 
+  void setConfig(std::unordered_map<uint8_t, SensorConfig> db_) {this->db_ = db_;}
+
+  void setPtr(std::unique_ptr<IADS7828> adc_) {this->adc_ = std::move(adc_);}
+
  public:
   ADCSensorController();
-  void Init(const std::unordered_map<std::string, std::string>& parms, std::unique_ptr<IADS7828> adc_);
+  void Init(const std::unordered_map<std::string, std::string>& parms);
   /**
    * @brief Get the res object w jednostce docelowej
    * 
