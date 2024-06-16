@@ -31,18 +31,29 @@ float ADCSensorController::CalculateB(float R, float A, float A_MIN, float RES_M
 
 ADCSensorController::ADCSensorController() {}
 
-void ADCSensorController::Init(const std::unordered_map<std::string, std::string>& parms) {
+core::ErrorCode ADCSensorController::Init(const std::unordered_map<std::string, std::string>& parms,
+    std::unique_ptr<IADS7828> adc_) {
   this->app_name = parms.at("app_name");
   std::string file_path = "/opt/"+this->app_name+"/etc/config.json";
   auto obj_r = core::json::JsonParser::Parser(file_path);
   if (!obj_r.has_value()) {
     AppLogger::Warning("Cant find file on path "+file_path);
-    return;
+    return core::ErrorCode::kInitializeError;
   }
-  if (!adc_) {
+  if (this->setPtr(std::move(adc_)) != core::ErrorCode::kOk) {
     AppLogger::Warning("ADS7828 initialize error");
+    return core::ErrorCode::kInitializeError;
   }
   this->db_ = this->ReadConfig(obj_r.value().GetObject());
+  return core::ErrorCode::kOk;
+}
+
+core::ErrorCode ADCSensorController::setPtr(std::unique_ptr<IADS7828> adc_) {
+  if (!adc_) {
+    return core::ErrorCode::kInitializeError;
+  }
+  this->adc_ = std::move(adc_);
+  return core::ErrorCode::kOk;
 }
 std::unordered_map<uint8_t, SensorConfig> ADCSensorController::ReadConfig(nlohmann::json data) {
     std::unordered_map<uint8_t, SensorConfig> db;

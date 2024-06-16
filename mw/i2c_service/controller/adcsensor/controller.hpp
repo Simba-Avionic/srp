@@ -34,7 +34,7 @@ struct SensorConfig {
 
 class ADCSensorController {
  private:
-  std::unique_ptr<IADS7828> adc_{};
+  std::unique_ptr<IADS7828> adc_;
   std::string app_name;
   /**
    * @brief actuator_id, config
@@ -66,13 +66,13 @@ class ADCSensorController {
    */
   float CalculateA(float R, float RES_MAX, float RES_MIN, float A_MAX, float A_MIN) const;
 
-  void setConfig(std::unordered_map<uint8_t, SensorConfig> db_) {this->db_ = db_;}
+  void setConfig(const std::unordered_map<uint8_t, SensorConfig>& db_) {this->db_ = db_;}
 
-  void setPtr(std::unique_ptr<IADS7828> adc_) {this->adc_ = std::move(adc_);}
+  core::ErrorCode setPtr(std::unique_ptr<IADS7828> adc_);
 
  public:
   ADCSensorController();
-  void Init(const std::unordered_map<std::string, std::string>& parms);
+  core::ErrorCode Init(const std::unordered_map<std::string, std::string>& parms, std::unique_ptr<IADS7828> adc_);
   /**
    * @brief Get the res object w jednostce docelowej
    * 

@@ -24,9 +24,9 @@
 namespace simba {
 namespace i2c {
 
-class ADS7828 : public IADS7828{
+class ADS7828 : public IADS7828 {
  private:
-  std::unique_ptr<II2CController> i2c_{};
+  std::unique_ptr<II2CController> i2c_;
 
  protected:
   /**
