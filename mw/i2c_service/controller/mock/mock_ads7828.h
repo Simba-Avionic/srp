@@ -8,8 +8,8 @@
  * @copyright Copyright (c) 2024
  * 
  */
-#ifndef MW_I2C_SERVICE_CONTROLLER_MOCK_MOCK_ADS7828_H_ 
-#define MW_I2C_SERVICE_CONTROLLER_MOCK_MOCK_ADS7828_H_ 
+#ifndef MW_I2C_SERVICE_CONTROLLER_MOCK_MOCK_ADS7828_H_
+#define MW_I2C_SERVICE_CONTROLLER_MOCK_MOCK_ADS7828_H_
 #include "gmock/gmock.h"
 #include "mw/i2c_service/controller/ads7828/Iads7828.h"
 
@@ -24,4 +24,3 @@ class MockADS7828 : public i2c::IADS7828 {
 }  // namespace mock
 }  // namespace simba
 #endif  // MW_I2C_SERVICE_CONTROLLER_MOCK_MOCK_ADS7828_H_
- 

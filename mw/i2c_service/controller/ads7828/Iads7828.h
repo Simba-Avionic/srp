@@ -22,6 +22,7 @@ class IADS7828 {
   virtual std::optional<uint16_t> GetAdcRawRead(const uint8_t& channel) = 0;
  public:
   virtual std::optional<float> GetAdcVoltage(const uint8_t& channel) = 0;
+  virtual ~IADS7828() = default;
 };
 }  // namespace i2c
 }  // namespace simba
