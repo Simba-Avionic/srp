@@ -13,6 +13,7 @@
 #include <fstream>
 #include <iostream>
 #include <memory>
+#include <utility>
 #include <vector>
 
 #include "boost/algorithm/string.hpp"
@@ -23,6 +24,8 @@
 #include "core/json/json_parser.h"
 #include "core/logger/Logger.h"
 #include "core/logger/logger_factory.h"
+#include "diag/config_controller/config_controller.h"
+#include "diag/config_controller/config_controller_json.h"
 #include "nlohmann/json.hpp"
 namespace simba {
 namespace core {
@@ -161,25 +164,50 @@ ErrorCode ApplicationCommon::SomeIPConfig(
 
 ErrorCode ApplicationCommon::DiagConfig(
     const std::unordered_map<std::string, std::string>& parms) {
-  std::ifstream file{"/opt/" + parms.at("app_name") + "/etc/srp_app.json"};
-  if (!file.is_open()) {
-    std::cerr << "App config file not exist! -> "
-              << "/opt/" + parms.at("app_name") + "/etc/srp_app.json"
-              << std::endl;
-    return ErrorCode::kError;
-  }
-  nlohmann::json data = nlohmann::json::parse(file);
-  if (data.contains("app_id")) {
-    if (data.at("app_id").is_string()) {
-      this->app_id_ = data.at("app_id");
-      diag_controller.Init(app_id_);
-      return ErrorCode::kOk;
+  {
+    std::ifstream file{"/opt/" + parms.at("app_name") + "/etc/srp_app.json"};
+    if (!file.is_open()) {
+      std::cerr << "App config file not exist! -> "
+                << "/opt/" + parms.at("app_name") + "/etc/srp_app.json"
+                << std::endl;
+      AppLogger::Error("Can't open srp_app.json");
     } else {
-      return ErrorCode::kError;
+      nlohmann::json data = nlohmann::json::parse(file);
+      if (data.contains("app_id")) {
+        if (data.at("app_id").is_number()) {
+          AppLogger::Info("DTC controller starting");
+          this->app_id_ = data.at("app_id");
+          diag_controller.Init(app_id_);
+
+        } else {
+          AppLogger::Error("App ID is not string!!");
+        }
+      } else {
+        AppLogger::Error("Can't find App ID!!");
+      }
     }
-  } else {
-    return ErrorCode::kError;
   }
+  {
+    std::ifstream file{"/opt/" + parms.at("app_name") + "/etc/app_diag.json"};
+    if (!file.is_open()) {
+      std::cerr << "App config file not exist! -> "
+                << "/opt/" + parms.at("app_name") + "/etc/app_diag.json"
+                << std::endl;
+      AppLogger::Error("Can't open app_diag.json");
+    } else {
+      auto conf = std::make_shared<diag::config::ConfigController>();
+      nlohmann::json data = nlohmann::json::parse(file);
+      if (diag::config::json::ConfigControllerJson::ParseConfig(data, conf) ==
+          core::ErrorCode::kOk) {
+        diag::config::DiagConfig::SetController(std::move(conf));
+        AppLogger::Info("Reading app_diag.json completed successfully");
+      } else {
+        std::cerr << "Error occurred while reading app_diag.json" << std::endl;
+        AppLogger::Error("Error occurred while reading app_diag.json");
+      }
+    }
+  }
+  return ErrorCode::kOk;
 }
 
 ApplicationCommon::~ApplicationCommon() {}

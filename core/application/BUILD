@@ -18,6 +18,8 @@ cc_library(
         "//core/common:common_types",
         "//core/json:simba_json",
         "//core/logger:Logger",
+        "//diag/config_controller:diag_config_controller",
+        "//diag/config_controller:diag_config_parser",
         "//diag/controller:diag_controller",
         "//diag/exec/controller:diag_exec_controller",
         "@boost//:algorithm",
@@ -42,6 +44,6 @@ cc_library(
     deps = [
         ":application",
         "//communication-core/sockets:socket_ipc",
-        "//diag/base/controller:diag_controller",
+        "//diag/controller:diag_controller",
     ],
 )
