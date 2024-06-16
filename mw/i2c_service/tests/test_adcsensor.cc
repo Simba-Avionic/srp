@@ -112,7 +112,11 @@ class TestGetValue : public ::testing::TestWithParam<std::tuple<std::unordered_m
 // tuple<config, sensor_id, mockAdcVoltage, expectedResult>
 INSTANTIATE_TEST_SUITE_P(TestGetValueParams, TestGetValue, ::testing::Values(
   std::make_tuple(std::unordered_map<uint8_t, simba::i2c::SensorConfig>
-  {{10, {1, 123, -12}}, {11, {1, 100, -20}}}, 11, std::optional<float>{3.2}, std::optional<float>{300})
+  {{10, {1, 123, -12}}, {11, {1, 100, -20}}}, 11, std::optional<float>{3.2}, std::optional<float>{300}),
+  std::make_tuple(std::unordered_map<uint8_t, simba::i2c::SensorConfig>
+  {{10, {1, 123, -12}}, {11, {1, 100, -20}}}, 11, std::optional<float>{1}, std::optional<float>{80}),
+  std::make_tuple(std::unordered_map<uint8_t, simba::i2c::SensorConfig>
+  {{1, {10, 200, -40}}}, 1, std::optional<float>{3.2}, std::optional<float>{600})
 ));
 
 TEST_P(TestGetValue, GetValueCheck) {
