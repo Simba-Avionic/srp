@@ -12,9 +12,11 @@
 #define COMMUNICATION_CORE_SOCKETS_MOCK_MOCK_UDP_MULTICAST_SOCKET_H_
 #include "gmock/gmock.h"
 #include "udp_multicast_socket.h"
+#include <string>
+#include <vector>
 
 
-class MockUDPMulticastSocket : public simba::com::soc::UDPMulticastSocket {
+class MockUDPMulticastSocket : public simba::com::soc::ISocket {
 public:
     MOCK_METHOD(simba::core::ErrorCode, Init, (const Ssimba::com::soc::SocketConfig&), (override));
     MOCK_METHOD(void, SetRXCallback, (simba::com::soc::RXCallback), (override));
