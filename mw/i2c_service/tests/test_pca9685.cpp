@@ -1,6 +1,7 @@
 /**
  * @file test_pca9685.cpp
  * @author Mateusz Krajewski (matikrajek42@gmail.com)
+ * @author Michał Mańkowski (m.mankowski2004@gmail.com)
  * @brief 
  * @version 0.1
  * @date 2024-05-13
@@ -15,8 +16,12 @@
 #include <string>
 
 #include "mw/i2c_service/controller/pca9685/controller.hpp"
+#include "mw/gpio_server/controller/mock/mock_gpio_controller.h"
+#include "mw/i2c_service/controller/mock/mock_i2ccontroller.h"
 
-
+namespace {
+  constexpr uint8_t PCA9685_ADDRESS = 112;
+}
 class TestWrapper : public simba::i2c::PCA9685 {
  public:
   std::vector<uint8_t> GetData(const uint8_t &channel, const uint16_t &pos) {
@@ -48,6 +53,18 @@ class TestWrapper : public simba::i2c::PCA9685 {
   std::optional<uint8_t> read_pos(const uint8_t &actuator_id) {
     return this->ReadServoPosition(actuator_id);
   }
+  simba::core::ErrorCode TestSetGpio(std::unique_ptr<simba::gpio::IGPIOController> gpio) {
+    return this->setGPIO(std::move(gpio));
+  }
+  simba::core::ErrorCode TestSetI2C(std::unique_ptr<simba::i2c::II2CController> i2c) {
+    return this->setI2C(std::move(i2c));
+  }
+  void TestMosfetFunc(const uint8_t &mosfet_id, const uint8_t &mosfet_time) {
+    this->MosfetFunc(mosfet_id, mosfet_time);
+  }
+  simba::core::ErrorCode TestSetServo(uint8_t channel, uint16_t pos) {
+    return this->SetServo(channel, pos);
+  }
 };
 
 TEST(TESTCheckServoPOS, TestPOS) {
@@ -58,14 +75,22 @@ TEST(TESTCheckServoPOS, TestPOS) {
   EXPECT_EQ(wrapper.read_pos(1).value(), 0);
 }
 
-TEST(TestPCAController, DataCreateTest) {
+class DataCreateTest : public ::testing::TestWithParam<std::tuple<uint8_t, uint16_t, std::vector<uint8_t>>>{
+};
+
+// tuple<channel, pos, expected>
+INSTANTIATE_TEST_SUITE_P(DataCreateTestParams, DataCreateTest, ::testing::Values(
+  std::make_tuple(0, 0, std::vector<uint8_t>{0, 1, 0xFE, 121, 0x6, 0, 0x7, 0, 0x8, 0, 0x9, 0}),
+  std::make_tuple(2, 2048, std::vector<uint8_t>{0, 1, 0xFE, 121, 14, 0, 15, 0, 16, 0, 17, 8})
+));
+
+TEST_P(DataCreateTest, GenerateDataTest) {
     TestWrapper wrapper{};
-    auto res = wrapper.GetData(0, 0);
-    auto res2 = wrapper.GetData(2, 2048);
-    std::vector<uint8_t> vec{0, 1, 0xFE, 121, 0x6, 0, 0x7, 0, 0x8, 0, 0x9, 0};
-    std::vector<uint8_t> vec2{0, 1, 0xFE, 121, 14, 0, 15, 0, 16, 0, 17, 8};
-    ASSERT_EQ(vec, res);
-    EXPECT_EQ(vec2, res2);
+    auto params = GetParam();
+    uint8_t channel = std::get<0>(params);
+    uint16_t pos = std::get<1>(params);
+    auto expected = std::get<2>(params);
+    EXPECT_EQ(wrapper.GetData(channel, pos), expected);
 }
 
 class PCA9685ConfigTests : public ::testing::TestWithParam<std::tuple<uint16_t, std::string, uint16_t,
@@ -140,3 +165,53 @@ TEST_P(PCA9685ConfigTests, READ_DATA_TEST) {
   EXPECT_EQ(servo.servo_delay, std::get<11>(GetParam()));
   EXPECT_EQ(servo.mosfet_time, std::get<12>(GetParam()));
 };
+
+TEST(TestPCAController, MosfetFuncTest) {
+    TestWrapper wrapper{};
+    auto mock_gpio = std::make_unique<simba::mock::MOCKGPIOController>();
+    const uint8_t mosfet_id = 1;
+    const uint8_t mosfet_time = 1;
+    EXPECT_CALL(*mock_gpio, SetPinValue(mosfet_id, ::testing::_))
+      .Times(2);
+    wrapper.TestSetGpio(std::move(mock_gpio));
+    wrapper.TestMosfetFunc(mosfet_id, mosfet_time);
+}
+
+TEST(TestPCAController, SetServoTest) {
+    TestWrapper wrapper{};
+    auto mock_i2c = std::make_unique<simba::mock::MockI2CController>();
+    constexpr uint8_t channel = 1;
+    constexpr uint16_t pos = 1;
+    EXPECT_CALL(*mock_i2c, Write(PCA9685_ADDRESS, ::testing::_))
+      .WillOnce(::testing::Return(simba::core::ErrorCode::kOk))
+      .WillOnce(::testing::Return(simba::core::ErrorCode::kConnectionError));
+    wrapper.TestSetI2C(std::move(mock_i2c));
+    EXPECT_EQ(wrapper.TestSetServo(channel, pos), simba::core::ErrorCode::kOk);
+    EXPECT_EQ(wrapper.TestSetServo(channel, pos), simba::core::ErrorCode::kConnectionError);
+}
+
+TEST(TestPCAController, AutoSetServoPosTest) {
+    TestWrapper wrapper{};
+    wrapper.Init();
+    auto mock_gpio = std::make_unique<simba::mock::MOCKGPIOController>();
+    auto mock_i2c = std::make_unique<simba::mock::MockI2CController>();
+    EXPECT_CALL(*mock_gpio, SetPinValue(::testing::_, ::testing::_))
+      .Times(2);
+    EXPECT_CALL(*mock_i2c, Write(PCA9685_ADDRESS, ::testing::_))
+      .Times(2);
+    wrapper.TestSetGpio(std::move(mock_gpio));
+    wrapper.TestSetI2C(std::move(mock_i2c));
+    EXPECT_EQ(wrapper.AutoSetServoPosition(0, 0), simba::core::ErrorCode::kNotDefine);
+    EXPECT_EQ(wrapper.AutoSetServoPosition(1, 0), simba::core::ErrorCode::kError);
+    EXPECT_EQ(wrapper.AutoSetServoPosition(1, 1), simba::core::ErrorCode::kOk);
+}
+
+TEST(TestPCAController, SetPtrsTest) {
+    TestWrapper wrapper{};
+    auto gpio = std::make_unique<simba::gpio::GPIOController>();
+    auto i2c = std::make_unique<simba::i2c::I2CController>();
+    EXPECT_EQ(wrapper.TestSetGpio(nullptr), simba::core::ErrorCode::kInitializeError);
+    EXPECT_EQ(wrapper.TestSetGpio(std::move(gpio)), simba::core::ErrorCode::kOk);
+    EXPECT_EQ(wrapper.TestSetI2C(nullptr), simba::core::ErrorCode::kInitializeError);
+    EXPECT_EQ(wrapper.TestSetI2C(std::move(i2c)), simba::core::ErrorCode::kOk);
+}

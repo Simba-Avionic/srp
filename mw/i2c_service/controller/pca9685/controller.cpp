@@ -39,31 +39,50 @@ namespace {
 
 PCA9685::PCA9685() {
 }
-void PCA9685::Init(const std::unordered_map<std::string, std::string>& parms, std::unique_ptr<I2CController> i2c) {
-  this->i2c_ = std::move(i2c);
+core::ErrorCode PCA9685::Init(const std::unordered_map<std::string, std::string>& parms,
+ std::unique_ptr<II2CController> i2c, std::unique_ptr<gpio::IGPIOController> gpio) {
+  if (this->setI2C(std::move(i2c)) != core::ErrorCode::kOk || this->setGPIO(std::move(gpio)) != core::ErrorCode::kOk) {
+    AppLogger::Warning("Failed pointer assignment");
+    return core::ErrorCode::kInitializeError;
+  }
   this->i2c_->Init(std::make_unique<com::soc::StreamIpcSocket>());
   this->app_name = parms.at("app_name");
   std::string file_path = "/opt/"+this->app_name+"/etc/config.json";
   std::ifstream file(file_path);
   if (!file.is_open()) {
       AppLogger::Warning("Cant find file on path "+file_path);
-      return;
+      return core::ErrorCode::kInitializeError;;
   }
   nlohmann::json data = nlohmann::json::parse(file);
   auto db = this->ReadConfig(data);
   if (!db.has_value()) {
     AppLogger::Error("Servo config does not exist");
-    return;
+    return core::ErrorCode::kInitializeError;;
   }
   this->db_ = db.value();
   for (auto chan : this->db_) {
       this->SetServo(chan.second.channel, chan.second.off_pos);
   }
+  return core::ErrorCode::kOk;
+}
+core::ErrorCode PCA9685::setI2C(std::unique_ptr<II2CController> i2c) {
+  if (!i2c) {
+    return core::ErrorCode::kInitializeError;
+  }
+  this->i2c_ = std::move(i2c);
+  return core::ErrorCode::kOk;
+}
+core::ErrorCode PCA9685::setGPIO(std::unique_ptr<gpio::IGPIOController> gpio) {
+  if (!gpio) {
+    return core::ErrorCode::kInitializeError;
+  }
+  this->gpio_ = std::move(gpio);
+  return core::ErrorCode::kOk;
 }
 void PCA9685::MosfetFunc(const uint8_t &mosfet_id, const uint8_t &mosfet_time) {
-    this->gpio_.SetPinValue(mosfet_id, 1);
+    this->gpio_->SetPinValue(mosfet_id, 1);
     std::this_thread::sleep_for(std::chrono::milliseconds(mosfet_time));
-    this->gpio_.SetPinValue(mosfet_id, 0);
+    this->gpio_->SetPinValue(mosfet_id, 0);
 }
 
 core::ErrorCode PCA9685::AutoSetServoPosition(const uint8_t &actuator_id, const uint8_t &state) {
