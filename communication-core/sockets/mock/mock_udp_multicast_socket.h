@@ -18,7 +18,7 @@
 
 class MockUDPMulticastSocket : public simba::com::soc::ISocket {
 public:
-    MOCK_METHOD(simba::core::ErrorCode, Init, (const Ssimba::com::soc::SocketConfig&), (override));
+    MOCK_METHOD(simba::core::ErrorCode, Init, (const Simba::com::soc::SocketConfig&), (override));
     MOCK_METHOD(void, SetRXCallback, (simba::com::soc::RXCallback), (override));
     MOCK_METHOD(simba::core::ErrorCode, Transmit, (const std::string&, const std::uint16_t,
                                         std::vector<std::uint8_t>), (override));
