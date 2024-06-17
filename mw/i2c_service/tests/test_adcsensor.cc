@@ -29,8 +29,8 @@ class TestWrapper : public simba::i2c::ADCSensorController {
     this->setConfig(db_);
   }
 
-  void TestSetPtr(std::unique_ptr<simba::mock::MockADS7828> adc_) {
-    this->setPtr(std::move(adc_));
+  simba::core::ErrorCode TestSetPtr(std::unique_ptr<simba::i2c::IADS7828> adc_) {
+    return this->setPtr(std::move(adc_));
   }
 };
 
@@ -85,7 +85,86 @@ INSTANTIATE_TEST_SUITE_P(TestReadConfigParams, TestReadConfig, ::testing::Values
             "a": 100,
             "b": -20
         }
-        ]})", std::unordered_map<uint8_t, simba::i2c::SensorConfig>{{10, {0x1, 123, -12}}, {11, {0x2, 100, -20}}})
+        ]})", std::unordered_map<uint8_t, simba::i2c::SensorConfig>{{10, {0x1, 123, -12}}, {11, {0x2, 100, -20}}}),
+    std::make_tuple(R"({  })", std::unordered_map<uint8_t, simba::i2c::SensorConfig>{}),
+    std::make_tuple(R"({
+    "sensors": [
+    ]
+    })", std::unordered_map<uint8_t, simba::i2c::SensorConfig>{}),
+    std::make_tuple(R"({
+    "sensors": [
+        {
+            "actuator_id": 11,
+            "channel": 2,
+            "R": 150,
+            "RES_MIN":0,
+            "RES_MAX":0.3,
+            "A_MIN": 4,
+            "A_MAX": 20
+        }
+        ]})", std::unordered_map<uint8_t, simba::i2c::SensorConfig>{{11, {0x2, 0.125, -0.075}}}),
+    std::make_tuple(R"({
+    "sensors": [
+        {
+            "actuator_id": 11,
+            "channel": 2,
+            "R": 150,
+            "RES_MAX":0.3,
+            "A_MIN": 4,
+            "A_MAX": 20
+        }
+        ]})", std::unordered_map<uint8_t, simba::i2c::SensorConfig>{}),
+    std::make_tuple(R"({
+    "sensors": [
+        {
+            "actuator_id": 11,
+            "channel": 2,
+            "R": 150,
+            "RES_MIN":0,
+            "A_MIN": 4,
+            "A_MAX": 20
+        }
+        ]})", std::unordered_map<uint8_t, simba::i2c::SensorConfig>{}),
+    std::make_tuple(R"({
+    "sensors": [
+        {
+            "actuator_id": 11,
+            "channel": 2,
+            "RES_MIN"0:,
+            "RES_MAX":0.3,
+            "A_MIN": 4,
+            "A_MAX": 20
+        }
+        ]})", std::unordered_map<uint8_t, simba::i2c::SensorConfig>{}),
+    std::make_tuple(R"({
+    "sensors": [
+        {
+            "actuator_id": 11,
+            "channel": 2,
+            "R": 150,
+            "RES_MIN":0,
+            "RES_MAX":0.3,
+            "A_MAX": 20
+        }
+        ]})", std::unordered_map<uint8_t, simba::i2c::SensorConfig>{}),
+    std::make_tuple(R"({
+    "sensors": [
+        {
+            "actuator_id": 11,
+            "channel": 2,
+            "R": 150,
+            "RES_MIN":0,
+            "RES_MAX":0.3,
+            "A_MIN": 4
+        }
+        ]})", std::unordered_map<uint8_t, simba::i2c::SensorConfig>{}),
+    std::make_tuple(R"({
+    "sensors": [
+        {
+            "actuator_id": 11,
+            "channel": 2
+        }
+        ]})", std::unordered_map<uint8_t, simba::i2c::SensorConfig>{})
 ));
 
 TEST_P(TestReadConfig, ReadConfigCheck) {
@@ -112,11 +191,15 @@ class TestGetValue : public ::testing::TestWithParam<std::tuple<std::unordered_m
 // tuple<config, sensor_id, mockAdcVoltage, expectedResult>
 INSTANTIATE_TEST_SUITE_P(TestGetValueParams, TestGetValue, ::testing::Values(
   std::make_tuple(std::unordered_map<uint8_t, simba::i2c::SensorConfig>
-  {{10, {1, 123, -12}}, {11, {1, 100, -20}}}, 11, std::optional<float>{3.2}, std::optional<float>{300}),
+    {{10, {1, 123, -12}}, {11, {1, 100, -20}}}, 11, std::optional<float>{3.2}, std::optional<float>{300}),
   std::make_tuple(std::unordered_map<uint8_t, simba::i2c::SensorConfig>
-  {{10, {1, 123, -12}}, {11, {1, 100, -20}}}, 11, std::optional<float>{1}, std::optional<float>{80}),
+    {{10, {1, 123, -12}}, {11, {1, 100, -20}}}, 11, std::optional<float>{1}, std::optional<float>{80}),
   std::make_tuple(std::unordered_map<uint8_t, simba::i2c::SensorConfig>
-  {{1, {10, 200, -40}}}, 1, std::optional<float>{3.2}, std::optional<float>{600})
+    {{1, {10, 200, -40}}}, 1, std::optional<float>{3.2}, std::optional<float>{600}),
+  std::make_tuple(std::unordered_map<uint8_t, simba::i2c::SensorConfig>{
+    }, 1, std::optional<float>{3.2}, std::optional<float>{}),
+  std::make_tuple(std::unordered_map<uint8_t, simba::i2c::SensorConfig>
+    {{1, {10, 200, -40}}}, 1, std::optional<float>{}, std::optional<float>{})
 ));
 
 TEST_P(TestGetValue, GetValueCheck) {
@@ -134,4 +217,11 @@ TEST_P(TestGetValue, GetValueCheck) {
     wrapper.TestSetConfig(config);
     wrapper.TestSetPtr(std::move(mock_adc_));
     EXPECT_EQ(wrapper.GetValue(sensor_id), expectedResult);
+}
+
+TEST(TestADCSensor, SetPtrTest) {
+    TestWrapper wrapper{};
+    auto adc = std::make_unique<simba::i2c::ADS7828>();
+    EXPECT_EQ(wrapper.TestSetPtr(nullptr), simba::core::ErrorCode::kInitializeError);
+    EXPECT_EQ(wrapper.TestSetPtr(std::move(adc)), simba::core::ErrorCode::kOk);
 }

@@ -12,8 +12,9 @@
 #define MW_I2C_SERVICE_CONTROLLER_II2C_CONTROLLER_H_
 #include <vector>
 #include <optional>
+#include <memory>
 #include "mw/i2c_service/data/header.h"
-
+#include "communication-core/sockets/stream_ipc_socket.h"
 
 namespace simba {
 namespace i2c {
@@ -23,6 +24,7 @@ class II2CController{
                         uint8_t address, const std::vector<uint8_t>& payload) = 0;
 
  public:
+  virtual core::ErrorCode Init(std::unique_ptr<com::soc::StreamIpcSocket> socket) = 0;
   /**
    * @brief 
    * 

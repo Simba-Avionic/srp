@@ -22,19 +22,20 @@
 #include "core/gpio/GPIO_digital_driver.h"
 #include "mw/gpio_server/data/header.hpp"
 #include "core/logger/Logger.h"
+#include "mw/gpio_server/controller/Igpio_controller.h"
 
 namespace simba {
 namespace gpio {
 
 
-class GPIOController {
+class GPIOController : public IGPIOController{
  private:
     std::unique_ptr<com::soc::ISocketStream> sock_;
  public:
     GPIOController() {}
     explicit GPIOController(std::unique_ptr<com::soc::ISocketStream> socket);
-    core::ErrorCode SetPinValue(uint8_t actuatorID, int8_t value);
-    std::optional<int8_t> GetPinValue(uint8_t actuatorID);
+    core::ErrorCode SetPinValue(uint8_t actuatorID, int8_t value) override;
+    std::optional<int8_t> GetPinValue(uint8_t actuatorID) override;
 };
 
 }  // namespace gpio

@@ -31,7 +31,7 @@ class I2CController: public II2CController{
                         uint8_t address, const std::vector<uint8_t>& payload) override;
 
  public:
-  core::ErrorCode Init(std::unique_ptr<com::soc::StreamIpcSocket> socket);
+  core::ErrorCode Init(std::unique_ptr<com::soc::StreamIpcSocket> socket) override;
   /**
    * @brief 
    * 

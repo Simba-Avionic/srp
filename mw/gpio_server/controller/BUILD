@@ -7,7 +7,10 @@ cc_library(
         "//core/logger:Logger",
     ],
     srcs = ["gpio_controller.cpp"],
-    hdrs = ["gpio_controller.hpp"],
+    hdrs = [
+        "gpio_controller.hpp",
+        "Igpio_controller.h",
+        ],
     visibility = [
         "//apps:__subpackages__",
         "//mw:__subpackages__",
