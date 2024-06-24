@@ -27,7 +27,7 @@ class DiagRequest {
   std::vector<uint8_t> GetPayload(const uint8_t& padding) const {
     if ((data_.begin() + padding) < data_.end()) {
       std::vector<uint8_t> res{data_.begin() + padding, data_.end()};
-      return std::move(res);
+      return res;
     }
     return {};
   }
@@ -36,7 +36,7 @@ class DiagRequest {
                                   const uint8_t& stop) const {
     if ((data_.begin() + start) < data_.end()) {
       std::vector<uint8_t> res{data_.begin() + start, data_.begin() + stop};
-      return std::move(res);
+      return res;
     }
     return {};
   }

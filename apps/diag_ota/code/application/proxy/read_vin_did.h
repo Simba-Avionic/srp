@@ -34,4 +34,4 @@ class ReadVinDiD : public diag::DiDJob {
 };
 }  // namespace diag_ota
 }  // namespace simba
-#endif  // APPS_DIAG_OTA_CODE_APPLICATION_PROXY_READ_VIN_DID_H_
+#endif // APPS_DIAG_OTA_CODE_APPLICATION_PROXY_READ_VIN_DID_H_

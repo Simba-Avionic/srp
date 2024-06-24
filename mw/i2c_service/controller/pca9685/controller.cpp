@@ -135,13 +135,13 @@ std::optional<std::unordered_map<uint8_t, Servo>> PCA9685::ReadConfig(std::strin
     if (!arr.has_value()) {
         return std::nullopt;
     }
-    for (auto &servo : arr.value()) {
-        auto parser_opt = core::json::JsonParser::Parser(servo);
-        if (!parser.has_value()) {
-            AppLogger::Warning("invalid data in servos config");
-            continue;
-        }
-        auto parser = parser_opt.value();
+    for (auto &parser : arr.value()) {
+        // auto parser_opt = core::json::JsonParser::Parser(servo);
+        // if (!parser.has_value()) {
+        //     AppLogger::Warning("invalid data in servos config");
+        //     continue;
+        // }
+        // auto parser = parser_opt.value();
         auto actuator_id = parser.GetNumber<uint8_t>("actuator_id");
         auto channel = parser.GetNumber<uint8_t>("channel");
         auto on_poss = parser.GetNumber<uint16_t>("on_pos");

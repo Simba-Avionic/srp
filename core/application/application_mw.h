@@ -28,4 +28,4 @@ class ApplicationMW : public ApplicationCommon {
 };
 }  // namespace core
 }  // namespace simba
-#endif  // CORE_APPLICATION_APPLICATION_MW_H_
+#endif // CORE_APPLICATION_APPLICATION_MW_H_

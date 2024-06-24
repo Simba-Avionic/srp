@@ -78,8 +78,8 @@ core::ErrorCode TimeChanger::ChangeSystemTime(std::string time) {
     return core::ErrorCode::kError;
 }
 core::ErrorCode TimeChanger::ChangeSystemTime(Date_t date) {
-    std::string command = DATE_CMD;
-    command += ConvertVariableToCommand(date);
+    const std::string command = DATE_CMD + ConvertVariableToCommand(date);
+    // command += ConvertVariableToCommand(date);
     int res = system(command.c_str());
     if (res == 0) {
         return core::ErrorCode::kOk;

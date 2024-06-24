@@ -26,4 +26,4 @@ class IValidator {
 }  // namespace diag_ota
 }  // namespace simba
 
-#endif  // APPS_DIAG_OTA_CODE_APPLICATION_SERVICES_I_VALIDATOR_H_
+#endif // APPS_DIAG_OTA_CODE_APPLICATION_SERVICES_I_VALIDATOR_H_

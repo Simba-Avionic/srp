@@ -9,3 +9,9 @@
 [submodule "desktop_gui"]
     path = tools/desktop_gui
 	url = git@github.com:Simba-Avionic/desktop_gui.git
+[submodule "tools/diag_app_frontend"]
+	path = tools/diag_app_frontend
+	url = git@github.com:Simba-Avionic/diag_app_frontend.git
+[submodule "tools/--force"]
+	path = tools/--force
+	url = git@github.com:Simba-Avionic/diag_app_frontend.git

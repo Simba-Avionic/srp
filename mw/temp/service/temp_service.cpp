@@ -107,12 +107,12 @@ simba::core::ErrorCode TempService::LoadConfig(
         AppLogger::Error("Invalid temp_Service config format");
         exit(2);
     }
-    for (const auto &data : temp_opt.value()) {
-        auto parser_opt = core::json::JsonParser::Parser(data);
-        if (!parser_opt.has_value()) {
-            continue;
-        }
-        auto parser = parser_opt.value();
+    for (const auto &parser : temp_opt.value()) {
+        // auto parser_opt = core::json::JsonParser::Parser(data);
+        // if (!parser_opt.has_value()) {
+        //     continue;
+        // }
+        // auto parser = parser_opt.value();
 
         auto sensor_id = parser.GetNumber<uint8_t>("sensor_id");
         auto physical_id = parser.GetString("id");

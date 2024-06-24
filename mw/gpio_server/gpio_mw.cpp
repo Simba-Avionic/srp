@@ -103,12 +103,12 @@ std::optional<std::unordered_map<uint8_t, GpioConf>> GPIOMWService::ReadConfig(
     if (!gpio_opt.has_value()) {
         return std::nullopt;
     }
-    for (const auto & data : gpio_opt.value()) {
-        auto parser_opt = core::json::JsonParser::Parser(data);
-        if (!parser_opt.has_value()) {
-            continue;
-        }
-        auto parser = parser_opt.value();
+    for (const auto & parser : gpio_opt.value()) {
+        // auto parser_opt = core::json::JsonParser::Parser(data);
+        // if (!parser_opt.has_value()) {
+        //     continue;
+        // }
+        // auto parser = parser_opt.value();
 
         auto pin_id_opt = parser.GetNumber<uint8_t>("id");
         auto pin_num_opt = parser.GetNumber<uint16_t>("num");
