@@ -17,6 +17,7 @@
 #include <memory>
 
 #include "mw/temp/controller/temp_controller.h"
+#include "mw/i2c_service/controller/adcsensor/controller.hpp"
 #include "core/application/application_no_ipc.h"
 #include "communication-core/someip-controller/event_skeleton.h"
 #include "diag/dtc/controller/dtc.h"
@@ -28,10 +29,15 @@ class EnvService : public core::ApplicationNoIPC{
  private:
   std::shared_ptr<simba::diag::dtc::DTCObject> dtc_temp_error;
   std::shared_ptr<diag::dtc::DTCObject> dtc_temp_connection_error_0xB0;
+  
   std::unique_ptr<mw::temp::TempController> temp_{};
+  std::unique_ptr<i2c::ADCSensorController> sensor_{};
+
   std::shared_ptr<com::someip::EventSkeleton> temp1_event;
   std::shared_ptr<com::someip::EventSkeleton> temp2_event;
   std::shared_ptr<com::someip::EventSkeleton> temp3_event;
+  std::shared_ptr<com::someip::EventSkeleton> tank_press;
+  std::shared_ptr<com::someip::EventSkeleton> tank_diff_press;
 
  protected:
   /**
@@ -40,7 +46,8 @@ class EnvService : public core::ApplicationNoIPC{
    * @param token stop token
    */
   core::ErrorCode Run(std::stop_token token) final;
-  core::ErrorCode Init(std::unique_ptr<mw::temp::TempController> temp);
+  core::ErrorCode Init(std::unique_ptr<mw::temp::TempController> temp,
+                                std::unique_ptr<i2c::ADCSensorController> sensors);
   /**
    * @brief This function is called to initialiaze the application
    *

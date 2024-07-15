@@ -16,6 +16,12 @@
 namespace simba {
 namespace envService {
 
+std::vector<uint8_t> floatToBytes(float f) {
+    std::vector<uint8_t> bytes(sizeof(float));
+    std::memcpy(bytes.data(), &f, sizeof(float));
+    std::reverse(bytes.begin(), bytes.end());
+    return bytes;
+}
 
 std::vector<uint8_t> convertPayload(const double &value) {
     std::vector<uint8_t> bytes;
@@ -26,33 +32,53 @@ std::vector<uint8_t> convertPayload(const double &value) {
 }
 
 core::ErrorCode EnvService::Run(std::stop_token token) {
-    this->SleepMainThread();
+    while (true) {
+        auto pressure_opt = this->sensor_->GetValue(10);
+        if (pressure_opt.has_value()) {
+            this->tank_press->SetValue(floatToBytes(pressure_opt.value()));
+        }
+        auto diff_pressure_opt = this->sensor_->GetValue(12);
+        if (diff_pressure_opt.has_value()) {
+            this->tank_diff_press->SetValue(floatToBytes(diff_pressure_opt.value()));
+        }
+        std::this_thread::sleep_for(std::chrono::milliseconds(900));
+    }
     return core::ErrorCode::kOk;
 }
 
-core::ErrorCode EnvService::Init(std::unique_ptr<mw::temp::TempController> temp) {
-    if (this->temp_ || !temp) {
+core::ErrorCode EnvService::Init(std::unique_ptr<mw::temp::TempController> temp,
+                                std::unique_ptr<i2c::ADCSensorController> sensors) {
+    if (this->temp_ || !temp || sensors || this->sensor_) {
       return core::ErrorCode::kInitializeError;
     }
     this->temp_ = std::move(temp);
+    this->sensor_ = std::move(sensors);
     return core::ErrorCode::kOk;
 }
 
 core::ErrorCode EnvService::Initialize(
       const std::unordered_map<std::string, std::string>& parms) {
-    this->Init(std::make_unique<mw::temp::TempController>());
+    this->Init(std::make_unique<mw::temp::TempController>(),
+                std::make_unique<i2c::ADCSensorController>());
+
     core::ErrorCode res;
     this->temp1_event = std::make_shared<com::someip::EventSkeleton>("EnvApp/newTempEvent_1");
     this->temp2_event = std::make_shared<com::someip::EventSkeleton>("EnvApp/newTempEvent_2");
     this->temp3_event = std::make_shared<com::someip::EventSkeleton>("EnvApp/newTempEvent_3");
+    this->tank_press = std::make_shared<com::someip::EventSkeleton>("EnvApp/newPressEvent");
+    this->tank_diff_press = std::make_shared<com::someip::EventSkeleton>("EnvApp/newDPressEvent");
     com->Add(temp1_event);
     com->Add(temp2_event);
     com->Add(temp3_event);
+    com->Add(tank_press);
+    com->Add(tank_diff_press);
     this->dtc_temp_error = std::make_shared<diag::dtc::DTCObject>(0x20);
     this->dtc_temp_connection_error_0xB0 = std::make_shared<diag::dtc::DTCObject>(0xB0);
     diag_controller.RegisterDTC(dtc_temp_connection_error_0xB0);
     diag_controller.RegisterDTC(dtc_temp_error);
     uint8_t i = 0;
+    this->sensor_->Init(parms, std::make_unique<i2c::ADS7828>(std::make_unique<i2c::I2CController>
+                                                    (std::make_unique<com::soc::StreamIpcSocket>())));
     do {
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
         res = this->temp_->Initialize(514, std::bind(&EnvService::TempRxCallback,

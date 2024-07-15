@@ -14,6 +14,7 @@ cc_binary(
         "//core/application:simba_application",
         "//mw/temp/controller:temp_controller_mw",
         "//diag/dtc/controller:diag_dtc_",
+        "//mw/i2c_service/controller/adcsensor:adc_sensor_controller",
         "@untar",
     ],
 )
