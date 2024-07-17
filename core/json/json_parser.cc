@@ -20,13 +20,20 @@ std::optional<JsonParser> JsonParser::Parser(const std::string& path) noexcept {
   if (!f.is_open()) {
     return {};
   }
-  return std::optional<JsonParser>{JsonParser{f}};
+  std::stringstream buf;
+  buf << f.rdbuf();
+  f.close();
+  std::string content = buf.str();
+  if (!nlohmann::json::accept(content)) {
+    return {};
+  }
+  return std::optional<JsonParser>{JsonParser{content}};
 }
 std::optional<JsonParser> JsonParser::Parser(nlohmann::json obj) noexcept {
   return std::optional<JsonParser>{JsonParser{obj}};
 }
-JsonParser::JsonParser(std::ifstream& f) {
-  this->obj = nlohmann::json::parse(f);
+JsonParser::JsonParser(std::string data) {
+  this->obj = nlohmann::json::parse(data);
 }
 JsonParser::JsonParser(nlohmann::json json) {
   this->obj = json;

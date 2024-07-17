@@ -72,21 +72,6 @@ core::ErrorCode GPIOMWService::Run(std::stop_token token) {
     this->SleepMainThread();
     return core::ErrorCode::kOk;
 }
-std::optional<nlohmann::json> GPIOMWService::ReadJsonFromFile(std::string file_path) {
-    std::ifstream file(file_path);
-    if (!file.is_open()) {
-    AppLogger::Warning("Cant find file on path /opt/gpio/etc/config.json");
-    return {};
-    }
-    std::stringstream buffer;
-    buffer << file.rdbuf();
-    std::string str = buffer.str();
-    if (!json::accept(str)) {
-        AppLogger::Warning(" Invalid JSON format");
-        return {};
-    }
-    return json::parse(str);
-}
 
 core::ErrorCode GPIOMWService::Initialize(
       const std::unordered_map<std::string, std::string>& parms) {
@@ -94,47 +79,45 @@ core::ErrorCode GPIOMWService::Initialize(
     this->sock_->Init({SOCKET_PATH, 0, 0});
     this->sock_->SetRXCallback(std::bind(&GPIOMWService::RxCallback, this, std::placeholders::_1,
             std::placeholders::_2, std::placeholders::_3));
-
-    auto json = ReadJsonFromFile("/opt/" + parms.at("app_name") + "/etc/config.json");
-    if (!json.has_value()) {
+    auto config_opt = ReadConfig(parms);
+    if (!config_opt.has_value()) {
+        AppLogger::Error("fail to read config");
+        exit(1);
         return core::ErrorCode::kError;
     }
-    auto res = this->ReadConfig(json.value());
-    if (!res.has_value()) {
-        AppLogger::Warning("Cant read Config");
-        return core::ErrorCode::kInitializeError;
-    }
-    this->config = res.value();
-
+    config = config_opt.value();
     this->InitPins();
     this->sock_->StartRXThread();
     return core::ErrorCode::kOk;
 }
-std::optional<std::unordered_map<uint8_t, GpioConf>> GPIOMWService::ReadConfig(nlohmann::json data) {
+std::optional<std::unordered_map<uint8_t, GpioConf>> GPIOMWService::ReadConfig(
+      const std::unordered_map<std::string, std::string>& parms) {
+    auto parser_opt = core::json::JsonParser::Parser("/opt/" + parms.at("app_name") + "/etc/config.json");
+    if (!parser_opt.has_value()) {
+        return std::nullopt;
+    }
     std::unordered_map<uint8_t, GpioConf> db;
-    auto parser = core::json::JsonParser::Parser(data);
-    if (!parser.has_value()) {
-        return {};
+    auto parser = parser_opt.value();
+    auto gpio_opt = parser.GetArray("gpio");
+    if (!gpio_opt.has_value()) {
+        return std::nullopt;
     }
-    auto par_val = parser.value();
-    auto gpios = par_val.GetArray("gpio");
-    if (!gpios.has_value()) {
-        return {};
-    }
-    for (const auto& gpio : gpios.value()) {
-        auto p = core::json::JsonParser::Parser(gpio);
-        if (!p.has_value()) {
-            AppLogger::Warning("skip invalid entity in config");
+    for (const auto & data : gpio_opt.value()) {
+        auto parser_opt = core::json::JsonParser::Parser(data);
+        if (!parser_opt.has_value()) {
             continue;
         }
-        auto pin_id = p.value().GetNumber<uint8_t>("id");
-        auto pin_num = p.value().GetNumber<uint16_t>("num");
-        auto str_direction = p.value().GetString("direction");
-        if (!pin_id.has_value() || !pin_num.has_value() || !str_direction.has_value()) {
+        auto parser = parser_opt.value();
+
+        auto pin_id_opt = parser.GetNumber<uint8_t>("id");
+        auto pin_num_opt = parser.GetNumber<uint16_t>("num");
+        auto str_direction_opt = parser.GetString("direction");
+        if (!pin_id_opt.has_value() || !pin_num_opt.has_value() || !str_direction_opt.has_value()) {
             continue;
         }
-        auto direction = str_direction.value() == "out" ? core::gpio::direction_t::OUT : core::gpio::direction_t::IN;
-        db.insert({pin_id.value(), {pin_num.value(), direction}});
+        auto direction = str_direction_opt.value() == "out" ?
+                                    core::gpio::direction_t::OUT : core::gpio::direction_t::IN;
+        db.insert({pin_id_opt.value(), {pin_num_opt.value(), direction}});
     }
     return db;
 }
