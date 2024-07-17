@@ -35,5 +35,5 @@ cc_test(
         "//core/gpio/mock:mock_gpio",
         "//communication-core/sockets/mock:mock_socket",
         "//mw/gpio_server/data:gpio_hdr",
-    ]
+    ],
 )

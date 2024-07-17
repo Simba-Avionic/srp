@@ -13,6 +13,8 @@
 #include <chrono>  // NOLINT
 #include <utility>  // NOLINT
 
+#include "core/json/json_parser.h"
+
 namespace simba {
 namespace mw {
 namespace temp {
@@ -94,18 +96,29 @@ void TempService::SubCallback(const std::string& ip, const std::uint16_t& port,
 simba::core::ErrorCode TempService::LoadConfig(
     const std::unordered_map<std::string, std::string>& parms, std::unique_ptr<com::soc::IpcSocket> sock) {
     this->sub_sock_ = std::move(sock);
-    std::ifstream file{"/opt/" + parms.at("app_name") + "/etc/config.json"};
-    if (!file) {
-        AppLogger::Error("Couldn't load temperature sensors config!");
-        return simba::core::ErrorCode::kError;
+    auto parser_opt = core::json::JsonParser::Parser("/opt/" + parms.at("app_name") + "/etc/config.json");
+    if (!parser_opt.has_value()) {
+        AppLogger::Error("Failed to open temp_Service config file");
+        exit(1);
     }
+    auto temp_opt = parser_opt.value().GetArray("sensors-temp");
+    if (!temp_opt.has_value()) {
+        AppLogger::Error("Invalid temp_Service config format");
+        exit(2);
+    }
+    for (const auto &data : temp_opt.value()) {
+        auto parser_opt = core::json::JsonParser::Parser(data);
+        if (!parser_opt.has_value()) {
+            continue;
+        }
+        auto parser = parser_opt.value();
 
-    json jsonData;
-    file >> jsonData;
-    file.close();
-
-    for (auto sensor : jsonData["sensors-temp"].items()) {
-        sensorPathsToIds[sensor_path+sensor.key()] = sensor.value();
+        auto sensor_id = parser.GetNumber<uint8_t>("sensor_id");
+        auto physical_id = parser.GetString("id");
+        if (!sensor_id.has_value() || !physical_id.has_value()) {
+            continue;
+        }
+        sensorPathsToIds[sensor_path+physical_id.value()] = sensor_id.value();
     }
     return simba::core::ErrorCode::kOk;
 }

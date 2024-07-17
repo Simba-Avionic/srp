@@ -43,7 +43,7 @@ class ADCSensorController {
   std::unordered_map<uint8_t, SensorConfig> db_;
 
  protected:
-  std::unordered_map<uint8_t, SensorConfig> ReadConfig(nlohmann::json data);
+  std::unordered_map<uint8_t, SensorConfig> ReadConfig(core::json::JsonParser parser);
   /**
    * @brief Funckja wyliczająca wyraz wolny b dla funkcji liniowej y= a*x + b
    * 
