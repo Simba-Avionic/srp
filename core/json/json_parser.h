@@ -27,7 +27,7 @@ class JsonParser {
 
  public:
   static std::optional<JsonParser> Parser(const std::string& path) noexcept;
-  explicit JsonParser(std::ifstream& f);
+  explicit JsonParser(std::string data);
   explicit JsonParser(nlohmann::json json);
   static std::optional<JsonParser> Parser(nlohmann::json obj) noexcept;
   nlohmann::json GetObject() const;
