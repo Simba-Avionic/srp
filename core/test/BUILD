@@ -5,6 +5,7 @@ cc_test(
         "common.cc",
         "logger.cc",
         "time.cc",
+        "json.cc"
     ],
     visibility = ["//visibility:public"],
     deps = [

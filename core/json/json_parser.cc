@@ -40,6 +40,16 @@ JsonParser::JsonParser(nlohmann::json json) {
 }
 nlohmann::json JsonParser::GetObject() const { return this->obj; }
 
+std::optional<JsonParser> JsonParser::GetObject(const std::string &name) const {
+  if (!obj.contains(name)) {
+    return {};
+  }
+  if (!obj.at(name).is_object()) {
+    return {};
+  }
+  return JsonParser::Parser(obj.at(name));
+}
+
 std::optional<nlohmann::json> JsonParser::GetArray(const std::string& name) {
   if (!obj.contains(name)) {
     return {};

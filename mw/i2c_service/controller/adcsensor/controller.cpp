@@ -44,7 +44,7 @@ core::ErrorCode ADCSensorController::Init(const std::unordered_map<std::string, 
     AppLogger::Warning("ADS7828 initialize error");
     return core::ErrorCode::kInitializeError;
   }
-  this->db_ = this->ReadConfig(obj_r.value().GetObject());
+  this->db_ = this->ReadConfig(obj_r.value());
   return core::ErrorCode::kOk;
 }
 
@@ -55,25 +55,27 @@ core::ErrorCode ADCSensorController::setPtr(std::unique_ptr<IADS7828> adc_) {
   this->adc_ = std::move(adc_);
   return core::ErrorCode::kOk;
 }
-std::unordered_map<uint8_t, SensorConfig> ADCSensorController::ReadConfig(nlohmann::json data) {
+std::unordered_map<uint8_t, SensorConfig> ADCSensorController::ReadConfig(core::json::JsonParser parser) {
     std::unordered_map<uint8_t, SensorConfig> db;
-    if (!data.contains("sensors")) {
-        return {};
+    auto sensors_opt = parser.GetArray("sensors");
+    if (!sensors_opt.has_value()) {
+        AppLogger::Error("Invalid config in adcSensor");
+        exit(1);
     }
-    for (const auto &sensor__ : data["sensors"]) {
-        auto parser = core::json::JsonParser::Parser(sensor__);
-        if (!parser.has_value()) {
+    for (const auto &sensor__ : sensors_opt.value()) {
+        auto parser_opt = core::json::JsonParser::Parser(sensor__);
+        if (!parser_opt.has_value()) {
             continue;
         }
-        auto sensor = parser.value();
-        auto actuator_id = sensor.GetNumber<uint8_t>("actuator_id");
-        auto channel = sensor.GetNumber<uint8_t>("channel");
+        auto parser = parser_opt.value();
+        auto actuator_id = parser.GetNumber<uint8_t>("actuator_id");
+        auto channel = parser.GetNumber<uint8_t>("channel");
         if (!(actuator_id.has_value() && channel.has_value())) {
             AppLogger::Warning("Missing actuator_id or channel");
             continue;
         }
-        auto a = sensor.GetNumber<float>("a");
-        auto b = sensor.GetNumber<float>("b");
+        auto a = parser.GetNumber<float>("a");
+        auto b = parser.GetNumber<float>("b");
         SensorConfig config;
         config.channel = channel.value();
         if (a.has_value() && b.has_value()) {
@@ -81,11 +83,11 @@ std::unordered_map<uint8_t, SensorConfig> ADCSensorController::ReadConfig(nlohma
             config.b = b.value();
             db.insert({actuator_id.value(), config});
         } else {
-            auto r = sensor.GetNumber<float>("R");
-            auto resMin = sensor.GetNumber<float>("RES_MIN");
-            auto resMax = sensor.GetNumber<float>("RES_MAX");
-            auto AMin = sensor.GetNumber<float>("A_MIN");
-            auto AMax = sensor.GetNumber<float>("A_MAX");
+            auto r = parser.GetNumber<float>("R");
+            auto resMin = parser.GetNumber<float>("RES_MIN");
+            auto resMax = parser.GetNumber<float>("RES_MAX");
+            auto AMin = parser.GetNumber<float>("A_MIN");
+            auto AMax = parser.GetNumber<float>("A_MAX");
             if (!r.has_value() || !resMin.has_value() || !resMax.has_value()
             || !AMax.has_value() || !AMin.has_value()) {
                 AppLogger::Warning("Invalid config for actuatorID:"

@@ -101,33 +101,23 @@ core::ErrorCode PrimerService::Run(std::stop_token token) {
 }
 
 core::ErrorCode PrimerService::ReadConfig(const std::unordered_map<std::string, std::string>& parms) {
-  std::ifstream file{"/opt/" + parms.at("app_name") + "/etc/config.json"};
-  if (!file.is_open()) {
-    AppLogger::Warning("cant find config file, use DEFAULT IGNITER ID");
-    this->active_time = IGNITER_ACTIVE_TIME;
+  auto parser_opt = core::json::JsonParser::Parser("/opt/" + parms.at("app_name") + "/etc/config.json");
+  this->active_time = IGNITER_ACTIVE_TIME;
+
+  if (!parser_opt.has_value()) {
+    AppLogger::Warning("cant find config file, use DEFAULT IGNITER_ID and ACTIVE_TIME");
     this->primer_pins_.push_back(IGNITER_PIN_ID);
     return core::ErrorCode::kInitializeError;
   }
-  nlohmann::json data = nlohmann::json::parse(file);
-  file.close();
-  if (!data.contains("primer")) {
-    AppLogger::Warning("invalid config format, use DEFAULT IGNITER ID");
-    this->active_time = IGNITER_ACTIVE_TIME;
-    this->primer_pins_.push_back(IGNITER_PIN_ID);
-    return core::ErrorCode::kInitializeError;
-  }
-  if (!data.at("primer").contains("active_time")) {
-    AppLogger::Warning("Cant find active_time in config, use default value");
-    this->active_time = IGNITER_ACTIVE_TIME;
+  auto pin_ids_opt = parser_opt.value().GetArray<uint8_t>("primer_ids");
+  if (!pin_ids_opt.has_value()) {
+    AppLogger::Warning("config dont contains primer field");
   } else {
-    this->active_time = static_cast<uint16_t>(data.at("primer").at("active_time"));
+  this->primer_pins_ = pin_ids_opt.value();
   }
-  if (!data.at("primer").contains("ids")) {
-    this->primer_pins_.push_back(IGNITER_PIN_ID);
-  } else {
-    for (const auto id : data.at("primer").at("ids")) {
-      this->primer_pins_.push_back(static_cast<uint8_t>(id));
-    }
+  auto active_time_opt = parser_opt.value().GetNumber<uint16_t>("primer_active_time");
+  if (active_time_opt.has_value()) {
+    this->active_time = active_time_opt.value();
   }
   return core::ErrorCode::kOk;
 }

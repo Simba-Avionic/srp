@@ -15,6 +15,7 @@
 #include <fstream>
 #include <string>
 #include <optional>
+#include <vector>
 
 #include "nlohmann/json.hpp"
 
@@ -30,9 +31,24 @@ class JsonParser {
   explicit JsonParser(std::string data);
   explicit JsonParser(nlohmann::json json);
   static std::optional<JsonParser> Parser(nlohmann::json obj) noexcept;
+  std::optional<JsonParser> GetObject(const std::string &name) const;
   nlohmann::json GetObject() const;
   std::optional<std::string> GetString(const std::string& name) const noexcept;
   std::optional<nlohmann::json> GetArray(const std::string& name);
+  template <typename T>
+  std::optional<std::vector<T>> GetArray(const std::string& name) {
+    if (!obj.contains(name)) {
+      return {};
+    }
+    if (!obj.at(name).is_array()) {
+    return {};
+    }
+    std::vector<T> res;
+    for (const T &value : obj.at(name)) {
+      res.push_back(value);
+    }
+    return res;
+  }
   template <typename T>
   std::optional<T> GetNumber(const std::string& name) const noexcept {
     try {

@@ -44,7 +44,7 @@ Date_t TimeChanger::ParseDate(const std::string& dateStr) {
     int day, hour, minute, second, year;
 
     // Użycie sscanf do wyciągnięcia odpowiednich wartości
-    uint8_t parsed = sscanf(dateStr.c_str(), "%*s %3s %d %d:%d:%d %*s %d",
+    sscanf(dateStr.c_str(), "%*s %3s %d %d:%d:%d %*s %d",
            monthStr, &day, &hour, &minute, &second, &year);
 
     const std::string months = "JanFebMarAprMayJunJulAugSepOctNovDec";
