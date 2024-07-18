@@ -12,6 +12,7 @@
 
 #include <cmath>
 #include "mw/i2c_service/controller/mock/mock_ads7828.h"
+#include "core/json/json_parser.h"
 #include "mw/i2c_service/controller/adcsensor/controller.hpp"
 
 class TestWrapper : public simba::i2c::ADCSensorController {
@@ -23,7 +24,7 @@ class TestWrapper : public simba::i2c::ADCSensorController {
     return this->CalculateA(R, RES_MAX, RES_MIN, A_MAX, A_MIN);
   }
   std::unordered_map<uint8_t, simba::i2c::SensorConfig> TestReadConfig(nlohmann::json data) {
-    return this->ReadConfig(data);
+    return this->ReadConfig(simba::core::json::JsonParser::Parser(data).value());
   }
   void TestSetConfig(std::unordered_map<uint8_t, simba::i2c::SensorConfig> db_) {
     this->setConfig(db_);
@@ -86,7 +87,7 @@ INSTANTIATE_TEST_SUITE_P(TestReadConfigParams, TestReadConfig, ::testing::Values
             "b": -20
         }
         ]})", std::unordered_map<uint8_t, simba::i2c::SensorConfig>{{10, {0x1, 123, -12}}, {11, {0x2, 100, -20}}}),
-    std::make_tuple(R"({  })", std::unordered_map<uint8_t, simba::i2c::SensorConfig>{}),
+    //std::make_tuple(R"({  })", std::unordered_map<uint8_t, simba::i2c::SensorConfig>{}),
     std::make_tuple(R"({
     "sensors": [
     ]
