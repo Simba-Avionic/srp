@@ -63,7 +63,7 @@
 //         ]})", std::optional<std::unordered_map<uint8_t, simba::mw::GpioConf>>{std::in_place}),
 //     std::make_tuple(R"({
 //     "gpio":[
-//         {   
+//         {
 //             "id": 1,
 //             "direction":"out",
 //             "desc":"L0"
@@ -71,7 +71,7 @@
 //         ]})", std::optional<std::unordered_map<uint8_t, simba::mw::GpioConf>>{std::in_place}),
 //     std::make_tuple(R"({
 //     "gpio":[
-//         {   
+//         {
 //             "id": 1,
 //             "num": 21,
 //             "desc":"L0"
@@ -79,7 +79,7 @@
 //         ]})", std::optional<std::unordered_map<uint8_t, simba::mw::GpioConf>>{std::in_place}),
 //     std::make_tuple(R"({
 //     "gpio":[
-//         {   
+//         {
 //             "id": 1,
 //             "num": 21,
 //             "direction":"out"
@@ -173,7 +173,8 @@
 //     auto data = hdr.GetBuffor();
 
 //     if (config.find(actuatorID) != config.end()) {
-//       if (action == simba::gpio::ACTION::SET && config[actuatorID].direction == simba::core::gpio::direction_t::OUT) {
+//       if (action == simba::gpio::ACTION::SET &&
+//              config[actuatorID].direction == simba::core::gpio::direction_t::OUT) {
 //         EXPECT_CALL(*mock_gpio_driver, setValue(::testing::_, ::testing::_))
 //           .WillOnce(::testing::Return(simba::core::ErrorCode::kOk))
 //           .WillOnce(::testing::Return(simba::core::ErrorCode::kError));

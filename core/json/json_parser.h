@@ -55,14 +55,14 @@ class JsonParser {
       if (obj.contains(name)) {
         if (obj.at(name).is_number()) {
           const T res{static_cast<T>(obj.at(name))};
-          return std::optional{res};
+          return res;
         }
-        return {};
+        return std::nullopt;
       } else {
-        return {};
+        return std::nullopt;
       }
     } catch (std::exception&) {
-      return {};
+      return std::nullopt;
     }
   }
   ~JsonParser();
