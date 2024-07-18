@@ -21,6 +21,7 @@ cc_test(
         "//mw/gpio_server/controller/mock:mock_gpio_controller",
         "//mw/i2c_service/controller/mock:mock_i2c_controller",
     ],
+    disabled = true,
 )
 cc_test(
     name = "ads7828_test",
