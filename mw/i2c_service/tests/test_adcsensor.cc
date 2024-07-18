@@ -87,7 +87,7 @@ INSTANTIATE_TEST_SUITE_P(TestReadConfigParams, TestReadConfig, ::testing::Values
             "b": -20
         }
         ]})", std::unordered_map<uint8_t, simba::i2c::SensorConfig>{{10, {0x1, 123, -12}}, {11, {0x2, 100, -20}}}),
-    //std::make_tuple(R"({  })", std::unordered_map<uint8_t, simba::i2c::SensorConfig>{}),
+    // std::make_tuple(R"({  })", std::unordered_map<uint8_t, simba::i2c::SensorConfig>{}),
     std::make_tuple(R"({
     "sensors": [
     ]
