@@ -48,18 +48,12 @@ core::ErrorCode PCA9685::Init(const std::unordered_map<std::string, std::string>
   this->i2c_->Init(std::make_unique<com::soc::StreamIpcSocket>());
   this->app_name = parms.at("app_name");
   std::string file_path = "/opt/"+this->app_name+"/etc/config.json";
-  std::ifstream file(file_path);
-  if (!file.is_open()) {
-      AppLogger::Warning("Cant find file on path "+file_path);
-      return core::ErrorCode::kInitializeError;;
+  auto db_opt = ReadConfig(file_path);
+  if (!db_opt.has_value()) {
+    AppLogger::Error("cant find config in path:"+file_path);
+    exit(1);
   }
-  nlohmann::json data = nlohmann::json::parse(file);
-  auto db = this->ReadConfig(data);
-  if (!db.has_value()) {
-    AppLogger::Error("Servo config does not exist");
-    return core::ErrorCode::kInitializeError;;
-  }
-  this->db_ = db.value();
+  this->db_ = db_opt.value();
   for (auto chan : this->db_) {
       this->SetServo(chan.second.channel, chan.second.off_pos);
   }
@@ -109,7 +103,7 @@ core::ErrorCode PCA9685::AutoSetServoPosition(const uint8_t &actuator_id, const 
     return core::ErrorCode::kError;
 }
 
-std::vector<uint8_t> PCA9685::GenerateData(const uint8_t &channel, const uint16_t &pos) {
+std::vector<uint8_t> PCA9685::GenerateData(const uint8_t &channel, const uint16_t &pos) const {
     return {
     MODE1_REG, 0x01,  // setup reset mode
     PRESCALE_REG, 121,  // przeskalowanie dla 50 Hz
@@ -131,46 +125,60 @@ std::optional<uint8_t> PCA9685::ReadServoPosition(const uint8_t &actuator_id) {
     return {};
 }
 
-std::optional<std::unordered_map<uint8_t, Servo>> PCA9685::ReadConfig(nlohmann::json data) {
+std::optional<std::unordered_map<uint8_t, Servo>> PCA9685::ReadConfig(std::string file_path) {
     std::unordered_map<uint8_t, Servo> db;
-    if (!data.contains("servos")) {
-        return {};
+    auto parser = core::json::JsonParser::Parser(file_path);
+    if (!parser.has_value()) {
+        return std::nullopt;
     }
-    for (const auto& servo : data["servos"]) {
-        if (!servo.contains("actuator_id") || !servo.contains("channel")
-        || !servo.contains("on_pos") || !servo.contains("off_pos")) {
-            AppLogger::Warning("Invalid servo config");
+    auto arr = parser.value().GetArray("servos");
+    if (!arr.has_value()) {
+        return std::nullopt;
+    }
+    for (auto &servo : arr.value()) {
+        auto parser_opt = core::json::JsonParser::Parser(servo);
+        if (!parser.has_value()) {
+            AppLogger::Warning("invalid data in servos config");
+            continue;
+        }
+        auto parser = parser_opt.value();
+        auto actuator_id = parser.GetNumber<uint8_t>("actuator_id");
+        auto channel = parser.GetNumber<uint8_t>("channel");
+        auto on_poss = parser.GetNumber<uint16_t>("on_pos");
+        auto off_poss = parser.GetNumber<uint16_t>("off_pos");
+        if (!(actuator_id.has_value() && channel.has_value() &&
+                                on_poss.has_value() && off_poss.has_value())) {
+            AppLogger::Warning("invalid config for servo");
             continue;
         }
         Servo ser;
-        uint8_t actuator_id = static_cast<uint8_t>(servo["actuator_id"]);
-        ser.channel = static_cast<uint8_t>(servo["channel"]);
-        ser.on_pos = static_cast<uint16_t>(servo["on_pos"]);
-        ser.off_pos = static_cast<uint16_t>(servo["off_pos"]);
-
-        if (servo.contains("mosfet_id")) {
+        ser.channel = channel.value();
+        ser.on_pos = on_poss.value();
+        ser.off_pos = off_poss.value();
+        auto mosfet_id = parser.GetNumber<uint8_t>("mosfet_id");
+        if (mosfet_id.has_value()) {
             ser.need_mosfet = true;
-            ser.mosfet_id = static_cast<uint8_t>(servo["mosfet_id"]);
-        }
-        if (servo.contains("on_losening_pos") && servo.contains("off_losening_pos")) {
-            ser.need_loosening = true;
-            ser.on_loosening = static_cast<uint16_t>(servo["on_losening_pos"]);
-            ser.off_loosening = static_cast<uint16_t>(servo["off_losening_pos"]);
-        }
-        if (servo.contains("servo_delay")) {
-            ser.servo_delay = static_cast<uint8_t>(servo["servo_delay"]);
-        } else if (ser.need_mosfet) {
+            ser.mosfet_id = mosfet_id.value();
             ser.servo_delay = SERVO_DELAY_DEFAULT_TIME;
-        } else {
-            ser.servo_delay = 0;
-        }
-        if (servo.contains("mosfet_delay")) {
-            ser.mosfet_time = static_cast<uint8_t>(servo["mosfet_delay"]);
-        } else if (ser.need_mosfet) {
             ser.mosfet_time = MOSFET_DEFAULT_ON_TIME;
         }
-        db.insert({actuator_id, ser});
-        AppLogger::Info("Register servo id:"+std::to_string(static_cast<int>(actuator_id)));
+        auto on_losening_pos = parser.GetNumber<uint16_t>("on_losening_pos");
+        auto off_losening_pos = parser.GetNumber<uint16_t>("off_losening_pos");
+        if (on_losening_pos.has_value() && off_losening_pos.has_value()) {
+            ser.need_loosening = true;
+            ser.on_loosening = on_losening_pos.value();
+            ser.off_loosening = off_losening_pos.value();
+        }
+        auto servo_delay = parser.GetNumber<uint16_t>("servo_delay");
+        if (servo_delay.has_value()) {
+            ser.servo_delay = servo_delay.value();
+        }
+        auto mosfet_delay = parser.GetNumber<uint16_t>("mosfet_delay");
+        if (mosfet_delay.has_value()) {
+            ser.mosfet_time = mosfet_delay.value();
+        }
+        db.insert({actuator_id.value(), ser});
+         AppLogger::Info("Register servo id:"+std::to_string(static_cast<int>(actuator_id.value())));
     }
     return db;
 }
