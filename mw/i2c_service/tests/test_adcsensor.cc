@@ -15,6 +15,10 @@
 #include "core/json/json_parser.h"
 #include "mw/i2c_service/controller/adcsensor/controller.hpp"
 
+namespace {
+  static const std::string FILE_PREFIX = "mw/i2c_service/tests/test_adcsensor/";
+}
+
 class TestWrapper : public simba::i2c::ADCSensorController {
  public:
   float TestCalculateB(float R, float A, float A_MIN, float RES_MIN) {
@@ -23,8 +27,8 @@ class TestWrapper : public simba::i2c::ADCSensorController {
   float TestCalculateA(float R, float RES_MAX, float RES_MIN, float A_MAX, float A_MIN) {
     return this->CalculateA(R, RES_MAX, RES_MIN, A_MAX, A_MIN);
   }
-  std::unordered_map<uint8_t, simba::i2c::SensorConfig> TestReadConfig(nlohmann::json data) {
-    return this->ReadConfig(simba::core::json::JsonParser::Parser(data).value());
+  std::unordered_map<uint8_t, simba::i2c::SensorConfig> TestReadConfig(std::string path) {
+    return this->ReadConfig(simba::core::json::JsonParser::Parser(path).value());
   }
   void TestSetConfig(std::unordered_map<uint8_t, simba::i2c::SensorConfig> db_) {
     this->setConfig(db_);
@@ -55,133 +59,34 @@ class TestReadConfig : public ::testing::TestWithParam<std::tuple<std::string,
 
 // tuple<Json, expectedConfig>
 INSTANTIATE_TEST_SUITE_P(TestReadConfigParams, TestReadConfig, ::testing::Values(
-  std::make_tuple(R"({
-    "sensors": [
-        {
-            "actuator_id": 10,
-            "channel":1,
-            "a": 123,
-            "b": -12
-        }
-        ]})", std::unordered_map<uint8_t, simba::i2c::SensorConfig>{{10, {0x1, 123, -12}}}),
-        std::make_tuple(R"({
-    "sensors": [
-        {
-            "channel":1,
-            "a": 123,
-            "b": -12
-        }
-        ]})", std::unordered_map<uint8_t, simba::i2c::SensorConfig>{}),
-    std::make_tuple(R"({
-    "sensors": [
-        {
-            "actuator_id": 10,
-            "channel":1,
-            "a": 123,
-            "b": -12
-        },
-        {
-            "actuator_id": 11,
-            "channel":2,
-            "a": 100,
-            "b": -20
-        }
-        ]})", std::unordered_map<uint8_t, simba::i2c::SensorConfig>{{10, {0x1, 123, -12}}, {11, {0x2, 100, -20}}}),
-    // std::make_tuple(R"({  })", std::unordered_map<uint8_t, simba::i2c::SensorConfig>{}),
-    std::make_tuple(R"({
-    "sensors": [
-    ]
-    })", std::unordered_map<uint8_t, simba::i2c::SensorConfig>{}),
-    std::make_tuple(R"({
-    "sensors": [
-        {
-            "actuator_id": 11,
-            "channel": 2,
-            "R": 150,
-            "RES_MIN":0,
-            "RES_MAX":0.3,
-            "A_MIN": 4,
-            "A_MAX": 20
-        }
-        ]})", std::unordered_map<uint8_t, simba::i2c::SensorConfig>{{11, {0x2, 0.125, -0.075}}}),
-    std::make_tuple(R"({
-    "sensors": [
-        {
-            "actuator_id": 11,
-            "channel": 2,
-            "R": 150,
-            "RES_MAX":0.3,
-            "A_MIN": 4,
-            "A_MAX": 20
-        }
-        ]})", std::unordered_map<uint8_t, simba::i2c::SensorConfig>{}),
-    std::make_tuple(R"({
-    "sensors": [
-        {
-            "actuator_id": 11,
-            "channel": 2,
-            "R": 150,
-            "RES_MIN":0,
-            "A_MIN": 4,
-            "A_MAX": 20
-        }
-        ]})", std::unordered_map<uint8_t, simba::i2c::SensorConfig>{}),
-    std::make_tuple(R"({
-    "sensors": [
-        {
-            "actuator_id": 11,
-            "channel": 2,
-            "RES_MIN"0:,
-            "RES_MAX":0.3,
-            "A_MIN": 4,
-            "A_MAX": 20
-        }
-        ]})", std::unordered_map<uint8_t, simba::i2c::SensorConfig>{}),
-    std::make_tuple(R"({
-    "sensors": [
-        {
-            "actuator_id": 11,
-            "channel": 2,
-            "R": 150,
-            "RES_MIN":0,
-            "RES_MAX":0.3,
-            "A_MAX": 20
-        }
-        ]})", std::unordered_map<uint8_t, simba::i2c::SensorConfig>{}),
-    std::make_tuple(R"({
-    "sensors": [
-        {
-            "actuator_id": 11,
-            "channel": 2,
-            "R": 150,
-            "RES_MIN":0,
-            "RES_MAX":0.3,
-            "A_MIN": 4
-        }
-        ]})", std::unordered_map<uint8_t, simba::i2c::SensorConfig>{}),
-    std::make_tuple(R"({
-    "sensors": [
-        {
-            "actuator_id": 11,
-            "channel": 2
-        }
-        ]})", std::unordered_map<uint8_t, simba::i2c::SensorConfig>{})
+  std::make_tuple("t_1.json", std::unordered_map<uint8_t, simba::i2c::SensorConfig>{{10, {0x1, 123, -12}}}),
+        std::make_tuple("t_2.json", std::unordered_map<uint8_t, simba::i2c::SensorConfig>{}),
+    std::make_tuple("t_3.json", std::unordered_map<uint8_t,
+                                   simba::i2c::SensorConfig>{{10, {0x1, 123, -12}}, {11, {0x2, 100, -20}}}),
+    std::make_tuple("t_12.json", std::unordered_map<uint8_t, simba::i2c::SensorConfig>{}),
+    std::make_tuple("t_4.json", std::unordered_map<uint8_t, simba::i2c::SensorConfig>{}),
+    std::make_tuple("t_5.json", std::unordered_map<uint8_t, simba::i2c::SensorConfig>{{11, {0x2, 0.125, -0.075}}}),
+    std::make_tuple("t_6.json", std::unordered_map<uint8_t, simba::i2c::SensorConfig>{}),
+    std::make_tuple("t_7.json", std::unordered_map<uint8_t, simba::i2c::SensorConfig>{}),
+    std::make_tuple("t_8.json", std::unordered_map<uint8_t, simba::i2c::SensorConfig>{}),
+    std::make_tuple("t_9.json", std::unordered_map<uint8_t, simba::i2c::SensorConfig>{}),
+    std::make_tuple("t_10.json", std::unordered_map<uint8_t, simba::i2c::SensorConfig>{}),
+    std::make_tuple("t_11.json", std::unordered_map<uint8_t, simba::i2c::SensorConfig>{})
 ));
 
 TEST_P(TestReadConfig, ReadConfigCheck) {
     TestWrapper wrapper{};
-    auto params = GetParam();
-    std::string json = std::get<0>(params);
-    auto expectedConfig = std::get<1>(params);
-    if (nlohmann::json::accept(json)) {
-      auto readConfig = wrapper.TestReadConfig(nlohmann::json::parse(json));
+    std::string path = FILE_PREFIX+ std::get<0>(GetParam());
+    auto expectedConfig = std::get<1>(GetParam());
+    auto readConfig = wrapper.TestReadConfig(path);
+    if (expectedConfig.size() > 0) {
       for (const auto& inst : readConfig) {
         EXPECT_EQ(expectedConfig[inst.first].channel, inst.second.channel);
         EXPECT_EQ(expectedConfig[inst.first].a, inst.second.a);
         EXPECT_EQ(expectedConfig[inst.first].b, inst.second.b);
       }
     } else {
-      EXPECT_EQ(expectedConfig.empty(), 1);
+      EXPECT_EQ(readConfig.size(), 0);
     }
 }
 

@@ -1,0 +1,12 @@
+{
+    "sensors": [
+        {
+            "actuator_id": 11,
+            "channel": 2,
+            "R": 150,
+            "RES_MIN":0,
+            "RES_MAX":0.3,
+            "A_MIN": 4
+        }
+    ]
+}

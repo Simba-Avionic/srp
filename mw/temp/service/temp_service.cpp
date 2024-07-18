@@ -96,7 +96,8 @@ void TempService::SubCallback(const std::string& ip, const std::uint16_t& port,
 simba::core::ErrorCode TempService::LoadConfig(
     const std::unordered_map<std::string, std::string>& parms, std::unique_ptr<com::soc::IpcSocket> sock) {
     this->sub_sock_ = std::move(sock);
-    auto parser_opt = core::json::JsonParser::Parser("/opt/" + parms.at("app_name") + "/etc/config.json");
+    const std::string path = "/opt/" + parms.at("app_name") + "/etc/config.json";
+    auto parser_opt = core::json::JsonParser::Parser(path);
     if (!parser_opt.has_value()) {
         AppLogger::Error("Failed to open temp_Service config file");
         exit(1);
