@@ -18,14 +18,14 @@ namespace json {
 std::optional<JsonParser> JsonParser::Parser(const std::string& path) noexcept {
   std::ifstream f(path);
   if (!f.is_open()) {
-    return {};
+    return std::nullopt;
   }
   std::stringstream buf;
   buf << f.rdbuf();
   f.close();
   std::string content = buf.str();
-  if (!nlohmann::json::accept(content)) {
-    return {};
+  if (!nlohmann::json::accept(content, true)) {
+    return std::nullopt;
   }
   return std::optional<JsonParser>{JsonParser{content}};
 }

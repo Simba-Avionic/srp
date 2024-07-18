@@ -5,7 +5,7 @@ cc_test(
         "common.cc",
         "logger.cc",
         "time.cc",
-        "json.cc"
+        "json.cc",
     ],
     visibility = ["//visibility:public"],
     deps = [
@@ -15,6 +15,7 @@ cc_test(
         "//core/logger:console_logger",
         "@com_google_googletest//:gtest_main",
         "//core/time:sys_time_change_lib",
+        "//core/json:simba_json",
     ],
 )
 
