@@ -47,10 +47,10 @@ class PCA9685 {
   std::string app_name;
  protected:
   std::unordered_map<uint8_t, Servo> db_;
-  std::optional<std::unordered_map<uint8_t, Servo>> ReadConfig(nlohmann::json data);
+  std::optional<std::unordered_map<uint8_t, Servo>> ReadConfig(std::string file_path);
   core::ErrorCode SetServo(uint8_t channel, uint16_t pos);
   void MosfetFunc(const uint8_t &mosfet_id, const uint8_t &mosfet_time);
-  std::vector<uint8_t> GenerateData(const uint8_t &channel, const uint16_t &pos);
+  std::vector<uint8_t> GenerateData(const uint8_t &channel, const uint16_t &pos) const;
   core::ErrorCode setI2C(std::unique_ptr<II2CController> adc_);
   core::ErrorCode setGPIO(std::unique_ptr<gpio::IGPIOController> gpio);
  public:
