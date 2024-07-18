@@ -14,41 +14,28 @@
 #include <fstream>
 #include <sstream>
 #include <string>
+#include <iostream>
 
 #include "mw/i2c_service/controller/pca9685/controller.hpp"
 #include "mw/gpio_server/controller/mock/mock_gpio_controller.h"
 #include "mw/i2c_service/controller/mock/mock_i2ccontroller.h"
+#include "tools/cpp/runfiles/runfiles.h"
+using bazel::tools::cpp::runfiles::Runfiles;
 
 namespace {
-  constexpr uint8_t PCA9685_ADDRESS = 112;
+  constexpr uint8_t PCA9685_ADDRESS = 0x70;
+  static const std::string FILE_PREFIX = "mw/i2c_service/tests/pca_files/";
 }
 class TestWrapper : public simba::i2c::PCA9685 {
  public:
   std::vector<uint8_t> GetData(const uint8_t &channel, const uint16_t &pos) {
     return this->GenerateData(channel, pos);
   }
-  std::optional<std::unordered_map<uint8_t, simba::i2c::Servo>> read_config(nlohmann::json data) {
-    return this->ReadConfig(data);
+  std::optional<std::unordered_map<uint8_t, simba::i2c::Servo>> read_config(std::string file_path) {
+    return this->ReadConfig(file_path);
   }
-  void Init() {
-    nlohmann::json data = nlohmann::json::parse(R"({
-    "servos": [
-        {
-            "actuator_id": 1,
-            "channel": 0,
-            "on_pos": 1000,
-            "off_pos": 2000,
-            "mosfet_id": 1,
-            "on_losening_pos": 1500,
-            "off_losening_pos": 2500,
-            "servo_delay": 10,
-            "mosfet_delay": 20
-        }]})");
-    std::optional<std::unordered_map<uint8_t, simba::i2c::Servo>> result = this->read_config(data);
-    if (!result.has_value()) {
-      return;
-    }
-    this->db_.insert(result.value().begin(), result.value().end());
+  void SetDB(std::unordered_map<uint8_t, simba::i2c::Servo> db) {
+    this->db_ = db;
   }
   std::optional<uint8_t> read_pos(const uint8_t &actuator_id) {
     return this->ReadServoPosition(actuator_id);
@@ -67,9 +54,16 @@ class TestWrapper : public simba::i2c::PCA9685 {
   }
 };
 
+
+TEST(xhyb1f, aihdb) {
+  TestWrapper wrapper;
+  EXPECT_TRUE(wrapper.read_config(FILE_PREFIX+"basic.json").has_value());
+}
+
 TEST(TESTCheckServoPOS, TestPOS) {
   TestWrapper wrapper{};
-  wrapper.Init();
+  auto db_ = wrapper.read_config(FILE_PREFIX+"basic.json");
+  wrapper.SetDB(db_.value());
   EXPECT_FALSE(wrapper.read_pos(0).has_value());
   EXPECT_TRUE(wrapper.read_pos(1).has_value());
   EXPECT_EQ(wrapper.read_pos(1).value(), 0);
@@ -101,53 +95,17 @@ INSTANTIATE_TEST_CASE_P(
   PCA9685Test123,
   PCA9685ConfigTests,
   ::testing::Values(
-    std::make_tuple(1, R"({
-    "servos": [
-        {
-            "actuator_id": 1,
-            "channel": 0,
-            "on_pos": 1000,
-            "off_pos": 2000,
-            "mosfet_id": 1,
-            "on_losening_pos": 1500,
-            "off_losening_pos": 2500,
-            "servo_delay": 10,
-            "mosfet_delay": 20
-        }]})", 1000, 2000, 0, 0, true, 1, true, 1500, 2500, 10, 20),
-    std::make_tuple(2, R"({
-    "servos": [
-        {
-            "actuator_id": 2,
-            "channel": 1,
-            "on_pos": 1500,
-            "off_pos": 2000
-        }]})", 1500, 2000, 1, 0, false, 0, false, 0, 0, 0, 0),
-    std::make_tuple(3, R"({
-    "servos": [
-        {
-            "actuator_id": 3,
-            "channel": 3,
-            "on_pos": 1500,
-            "off_pos": 2000,
-            "mosfet_id":2
-        }]})", 1500, 2000, 3, 0, true, 2, false, 0, 0, 50, 250),
-    std::make_tuple(4, R"({
-    "servos": [
-        {
-            "actuator_id": 4,
-            "channel": 1,
-            "on_pos": 1500,
-            "off_pos": 2000,
-            "on_losening_pos":1000,
-            "off_losening_pos":2500
-        }]})", 1500, 2000, 1, 0, false, 0, true, 1000, 2500, 0, 0)
+    std::make_tuple(1, "c_t_1.json", 1000, 2000, 0, 0, true, 1, true, 1500, 2500, 10, 20),
+    std::make_tuple(2, "c_t_2.json", 1500, 2000, 1, 0, false, 0, false, 0, 0, 0, 0),
+    std::make_tuple(3, "c_t_3.json", 1500, 2000, 3, 0, true, 2, false, 0, 0, 50, 250),
+    std::make_tuple(4, "c_t_4.json", 1500, 2000, 1, 0, false, 0, true, 1000, 2500, 0, 0)
 
 ));
 
 TEST_P(PCA9685ConfigTests, READ_DATA_TEST) {
   TestWrapper pca9685_;
-  nlohmann::json data = nlohmann::json::parse(std::get<1>(GetParam()));
-  std::optional<std::unordered_map<uint8_t, simba::i2c::Servo>> result = pca9685_.read_config(data);
+  std::string path = std::get<1>(GetParam());
+  std::optional<std::unordered_map<uint8_t, simba::i2c::Servo>> result = pca9685_.read_config(FILE_PREFIX + path);
   EXPECT_TRUE(result.has_value());
   EXPECT_EQ(result.value().size(), 1);
   auto servo_map = result.value();
@@ -192,7 +150,8 @@ TEST(TestPCAController, SetServoTest) {
 
 TEST(TestPCAController, AutoSetServoPosTest) {
     TestWrapper wrapper{};
-    wrapper.Init();
+    auto data = wrapper.read_config(FILE_PREFIX+"basic.json");
+    wrapper.SetDB(data.value());
     auto mock_gpio = std::make_unique<simba::mock::MOCKGPIOController>();
     auto mock_i2c = std::make_unique<simba::mock::MockI2CController>();
     EXPECT_CALL(*mock_gpio, SetPinValue(::testing::_, ::testing::_))

@@ -1,0 +1,11 @@
+{
+    "servos": [
+        {
+            "actuator_id": 3,
+            "channel": 3,
+            "on_pos": 1500,
+            "off_pos": 2000,
+            "mosfet_id":2
+        }
+    ]
+}

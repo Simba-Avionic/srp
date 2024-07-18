@@ -1,0 +1,10 @@
+{
+    "sensors": [
+        {
+            "actuator_id": 10,
+            "channel":1,
+            "a": 123,
+            "b": -12
+        }
+    ]
+}

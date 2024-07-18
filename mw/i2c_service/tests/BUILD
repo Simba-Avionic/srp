@@ -9,6 +9,8 @@ cc_test(
         "//mw/i2c_service/data:i2c_factory"
     ],
 )
+
+
 cc_test(
     name = "pca9685_test",
     srcs = [
@@ -20,8 +22,12 @@ cc_test(
         "//mw/i2c_service/controller/pca9685:pca9685_controller",
         "//mw/gpio_server/controller/mock:mock_gpio_controller",
         "//mw/i2c_service/controller/mock:mock_i2c_controller",
+        "@bazel_tools//tools/cpp/runfiles",
     ],
-    disabled = True,
+    data = [
+        "//mw/i2c_service/tests/pca_files:pca9685_test_data"
+    ],
+
 )
 cc_test(
     name = "ads7828_test",
@@ -45,5 +51,8 @@ cc_test(
         "@com_google_googletest//:gtest_main",
         "//mw/i2c_service/controller/adcsensor:adc_sensor_controller",
         "//mw/i2c_service/controller/mock:mock_ads7828",
+    ],
+    data = [
+        "//mw/i2c_service/tests/test_adcsensor:adc_test_data",
     ],
 )

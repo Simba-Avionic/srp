@@ -1,0 +1,12 @@
+{
+    "servos": [
+        {
+            "actuator_id": 4,
+            "channel": 1,
+            "on_pos": 1500,
+            "off_pos": 2000,
+            "on_losening_pos":1000,
+            "off_losening_pos":2500
+        }
+    ]
+}
