@@ -53,7 +53,7 @@ class ADCSensorController {
    * @param RES_MIN minimalny odczyt czujnika w jednostce docelowej
    * @return float 
    */
-  float CalculateB(float R, float A, float A_MIN, float RES_MIN) const;
+  float CalculateB(const float& R, const float& A, const float& A_MIN, const float& RES_MIN) const;
   /**
    * @brief Funckja wyliczająca współczynnik a dla funkcji liniowej y= a*x + b
    * 
@@ -64,7 +64,8 @@ class ADCSensorController {
    * @param A_MIN minimalny prąd czujnika w mA
    * @return float 
    */
-  float CalculateA(float R, float RES_MAX, float RES_MIN, float A_MAX, float A_MIN) const;
+  float CalculateA(const float& R, const float& RES_MAX, const float& RES_MIN,
+                                                    const float& A_MAX, const float& A_MIN) const;
 
   void setConfig(const std::unordered_map<uint8_t, SensorConfig>& db_);
   core::ErrorCode setPtr(std::unique_ptr<IADS7828> adc_);

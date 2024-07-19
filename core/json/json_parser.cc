@@ -32,7 +32,7 @@ std::optional<JsonParser> JsonParser::Parser(const std::string& path) noexcept {
 std::optional<JsonParser> JsonParser::Parser(nlohmann::json obj) noexcept {
   return std::optional<JsonParser>{JsonParser{obj}};
 }
-JsonParser::JsonParser(std::string data) {
+JsonParser::JsonParser(const std::string& data) {
   this->obj = nlohmann::json::parse(data);
 }
 JsonParser::JsonParser(nlohmann::json json) {

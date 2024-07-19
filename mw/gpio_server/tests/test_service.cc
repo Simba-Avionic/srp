@@ -72,13 +72,13 @@ TEST_P(ReadConfigTest, TEST_READ_CONFIG) {
 
 INSTANTIATE_TEST_SUITE_P(ReadConfigTestParameters, ReadConfigTest,
   ::testing::Values(
-    std::make_tuple("t1.json", std::optional<std::unordered_map<uint8_t, simba::mw::GpioConf>>
+    std::make_tuple("t1.json", std::unordered_map<uint8_t, simba::mw::GpioConf>
         {{{1, {21, simba::core::gpio::direction_t::OUT}}}}),
     std::make_tuple("t2.json", std::nullopt),
     std::make_tuple("t3.json", std::optional<std::unordered_map<uint8_t, simba::mw::GpioConf>>{std::in_place}),
     std::make_tuple("t4.json", std::optional<std::unordered_map<uint8_t, simba::mw::GpioConf>>{std::in_place}),
     std::make_tuple("t5.json", std::optional<std::unordered_map<uint8_t, simba::mw::GpioConf>>{std::in_place}),
-    std::make_tuple("t6.json", std::optional<std::unordered_map<uint8_t, simba::mw::GpioConf>>
+    std::make_tuple("t6.json", std::unordered_map<uint8_t, simba::mw::GpioConf>
                                                         {{{1, {21, simba::core::gpio::direction_t::OUT}}}})));
 
 

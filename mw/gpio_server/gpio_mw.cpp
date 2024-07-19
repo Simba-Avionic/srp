@@ -79,7 +79,7 @@ core::ErrorCode GPIOMWService::Initialize(
     this->sock_->Init({SOCKET_PATH, 0, 0});
     this->sock_->SetRXCallback(std::bind(&GPIOMWService::RxCallback, this, std::placeholders::_1,
             std::placeholders::_2, std::placeholders::_3));
-    std::string path = "/opt/" + parms.at("app_name") + "/etc/config.json";
+    const std::string path = "/opt/" + parms.at("app_name") + "/etc/config.json";
     auto config_opt = ReadConfig(path);
     if (!config_opt.has_value()) {
         AppLogger::Error("fail to read config");
