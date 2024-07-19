@@ -14,6 +14,7 @@
 #include <fstream>
 #include <sstream>
 #include <string>
+#include <unordered_map>
 #include <iostream>
 
 #include "mw/i2c_service/controller/pca9685/controller.hpp"
@@ -55,9 +56,23 @@ class TestWrapper : public simba::i2c::PCA9685 {
 };
 
 
-TEST(xhyb1f, aihdb) {
+TEST(TestBasicRead, TestRead) {
   TestWrapper wrapper;
   EXPECT_TRUE(wrapper.read_config(FILE_PREFIX+"basic.json").has_value());
+}
+TEST(TestBasicRead, NoFile) {
+  TestWrapper wrapper;
+  EXPECT_FALSE(wrapper.read_config(FILE_PREFIX+"asdadsbasic.json").has_value());
+}
+TEST(TestBasicRead, NoDataInFile) {
+  TestWrapper wrapper;
+  EXPECT_FALSE(wrapper.read_config(FILE_PREFIX+"empty.json").has_value());
+}
+TEST(TestBasicRead, MissingField) {
+  TestWrapper wrapper;
+  auto conf = wrapper.read_config(FILE_PREFIX+"invalid_conf.json");
+  ASSERT_TRUE(conf.has_value());
+  EXPECT_EQ(conf.value().size(), 0);
 }
 
 TEST(TESTCheckServoPOS, TestPOS) {

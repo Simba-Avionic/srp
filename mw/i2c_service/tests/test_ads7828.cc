@@ -40,6 +40,11 @@ class GetConfigDataTest : public ::testing::TestWithParam<
 std::tuple<uint8_t, std::optional<uint8_t>>>{
 };
 
+TEST(ADC7828INIT, DoubleInit) {
+  TestWrapper wrapper{};
+  EXPECT_EQ(wrapper.TestInit(nullptr), simba::core::ErrorCode::kInitializeError);
+}
+
 
 // tuple<channel, expected_response>
 INSTANTIATE_TEST_SUITE_P(GetConfigDataTestParams, GetConfigDataTest, ::testing::Values(
