@@ -79,7 +79,8 @@ core::ErrorCode GPIOMWService::Initialize(
     this->sock_->Init({SOCKET_PATH, 0, 0});
     this->sock_->SetRXCallback(std::bind(&GPIOMWService::RxCallback, this, std::placeholders::_1,
             std::placeholders::_2, std::placeholders::_3));
-    auto config_opt = ReadConfig(parms);
+    std::string path = "/opt/" + parms.at("app_name") + "/etc/config.json";
+    auto config_opt = ReadConfig(path);
     if (!config_opt.has_value()) {
         AppLogger::Error("fail to read config");
         exit(1);
@@ -91,8 +92,8 @@ core::ErrorCode GPIOMWService::Initialize(
     return core::ErrorCode::kOk;
 }
 std::optional<std::unordered_map<uint8_t, GpioConf>> GPIOMWService::ReadConfig(
-      const std::unordered_map<std::string, std::string>& parms) const {
-    auto parser_opt = core::json::JsonParser::Parser("/opt/" + parms.at("app_name") + "/etc/config.json");
+      std::string path) const {
+    auto parser_opt = core::json::JsonParser::Parser(path);
     if (!parser_opt.has_value()) {
         return std::nullopt;
     }
@@ -112,7 +113,7 @@ std::optional<std::unordered_map<uint8_t, GpioConf>> GPIOMWService::ReadConfig(
         auto pin_id_opt = parser.GetNumber<uint8_t>("id");
         auto pin_num_opt = parser.GetNumber<uint16_t>("num");
         auto str_direction_opt = parser.GetString("direction");
-        if (!pin_id_opt.has_value() || !pin_num_opt.has_value() || !str_direction_opt.has_value()) {
+        if (!(pin_id_opt.has_value() && pin_num_opt.has_value() && str_direction_opt.has_value())) {
             continue;
         }
         auto direction = str_direction_opt.value() == "out" ?
