@@ -38,7 +38,7 @@ class GPIOMWService : public simba::core::ApplicationMW {
     std::vector<uint8_t> RxCallback(const std::string& ip, const std::uint16_t& port,
           const std::vector<std::uint8_t> data);
     std::optional<std::unordered_map<uint8_t, GpioConf>> ReadConfig(
-                              const std::unordered_map<std::string, std::string>& parms);
+                              const std::unordered_map<std::string, std::string>& parms) const;
     core::ErrorCode InitPins();
     core::ErrorCode Init(std::unique_ptr<com::soc::ISocketStream> socket,
                               std::unique_ptr<core::gpio::IgpioDigitalDriver> gpio);

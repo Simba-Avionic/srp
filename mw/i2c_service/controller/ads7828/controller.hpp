@@ -35,17 +35,17 @@ class ADS7828 : public IADS7828 {
    * @param channel from 0-7
    * @return uint8_t 
    */
-  std::optional<uint8_t> GetConfigData(const uint8_t& channel) override;
+  std::optional<uint8_t> GetConfigData(const uint8_t& channel) const override;
   /**
    * @brief Get the Adc Read object
    * 
    * @param channel  (0-7)
    * @return std::optional<uint16_t> 
    */
-  std::optional<uint16_t> GetAdcRawRead(const uint8_t& channel) override;
+  std::optional<uint16_t> GetAdcRawRead(const uint8_t& channel) const override;
  public:
   ADS7828();
-  std::optional<float> GetAdcVoltage(const uint8_t& channel) override;
+  std::optional<float> GetAdcVoltage(const uint8_t& channel) const override;
   core::ErrorCode Init(std::unique_ptr<II2CController> i2c_);
 };
 

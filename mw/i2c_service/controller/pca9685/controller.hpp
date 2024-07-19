@@ -47,7 +47,7 @@ class PCA9685 {
   std::string app_name;
  protected:
   std::unordered_map<uint8_t, Servo> db_;
-  std::optional<std::unordered_map<uint8_t, Servo>> ReadConfig(std::string file_path);
+  std::optional<std::unordered_map<uint8_t, Servo>> ReadConfig(std::string file_path) const;
   core::ErrorCode SetServo(uint8_t channel, uint16_t pos);
   void MosfetFunc(const uint8_t &mosfet_id, const uint8_t &mosfet_time);
   std::vector<uint8_t> GenerateData(const uint8_t &channel, const uint16_t &pos) const;
@@ -58,7 +58,7 @@ class PCA9685 {
   core::ErrorCode Init(const std::unordered_map<std::string, std::string>& parms, std::unique_ptr<II2CController> i2c,
     std::unique_ptr<gpio::IGPIOController> gpio);
   core::ErrorCode AutoSetServoPosition(const uint8_t &actuator_id, const uint8_t &state);
-  std::optional<uint8_t> ReadServoPosition(const uint8_t &actuator_id);
+  std::optional<uint8_t> ReadServoPosition(const uint8_t &actuator_id) const;
 };
 
 }  // namespace i2c

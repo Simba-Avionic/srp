@@ -38,7 +38,7 @@ core::ErrorCode ADS7828::Init(std::unique_ptr<II2CController> i2c_) {
     return core::ErrorCode::kOk;
 }
 
-std::optional<uint8_t> ADS7828::GetConfigData(const uint8_t& channel) {
+std::optional<uint8_t> ADS7828::GetConfigData(const uint8_t& channel) const {
     if (channel > 7) {
         return {};
     }
@@ -48,7 +48,7 @@ std::optional<uint8_t> ADS7828::GetConfigData(const uint8_t& channel) {
     res |= (1 << 7);  // [7] Single-Ennded / Differencial Input
     return res;
 }
-std::optional<uint16_t> ADS7828::GetAdcRawRead(const uint8_t& channel) {
+std::optional<uint16_t> ADS7828::GetAdcRawRead(const uint8_t& channel) const {
     auto configData = GetConfigData(channel);
     if (!configData.has_value()) {
         return {};
@@ -61,7 +61,7 @@ std::optional<uint16_t> ADS7828::GetAdcRawRead(const uint8_t& channel) {
     data |= res.value()[1];
     return data;
 }
-std::optional<float> ADS7828::GetAdcVoltage(const uint8_t& channel) {
+std::optional<float> ADS7828::GetAdcVoltage(const uint8_t& channel) const {
     auto res = this->GetAdcRawRead(channel);
     if (!res.has_value()) {
         return {};
