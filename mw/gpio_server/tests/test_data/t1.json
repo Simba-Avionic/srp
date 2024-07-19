@@ -1,0 +1,10 @@
+{
+    "gpio":[
+        {
+            "id":1,
+            "num":21,
+            "direction":"out",
+            "desc":"L0"
+        }
+    ]
+}
