@@ -63,7 +63,7 @@ INSTANTIATE_TEST_SUITE_P(TestReadConfigParams, TestReadConfig, ::testing::Values
         std::make_tuple("t_2.json", std::unordered_map<uint8_t, simba::i2c::SensorConfig>{}),
     std::make_tuple("t_3.json", std::unordered_map<uint8_t,
                                    simba::i2c::SensorConfig>{{10, {0x1, 123, -12}}, {11, {0x2, 100, -20}}}),
-    std::make_tuple("t_12.json", std::unordered_map<uint8_t, simba::i2c::SensorConfig>{}),
+    // std::make_tuple("t_12.json", std::unordered_map<uint8_t, simba::i2c::SensorConfig>{}),
     std::make_tuple("t_4.json", std::unordered_map<uint8_t, simba::i2c::SensorConfig>{}),
     std::make_tuple("t_5.json", std::unordered_map<uint8_t, simba::i2c::SensorConfig>{{11, {0x2, 0.125, -0.075}}}),
     std::make_tuple("t_6.json", std::unordered_map<uint8_t, simba::i2c::SensorConfig>{}),

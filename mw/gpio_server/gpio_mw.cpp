@@ -91,7 +91,7 @@ core::ErrorCode GPIOMWService::Initialize(
     return core::ErrorCode::kOk;
 }
 std::optional<std::unordered_map<uint8_t, GpioConf>> GPIOMWService::ReadConfig(
-      const std::unordered_map<std::string, std::string>& parms) {
+      const std::unordered_map<std::string, std::string>& parms) const {
     auto parser_opt = core::json::JsonParser::Parser("/opt/" + parms.at("app_name") + "/etc/config.json");
     if (!parser_opt.has_value()) {
         return std::nullopt;

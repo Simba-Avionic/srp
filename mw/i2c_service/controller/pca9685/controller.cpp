@@ -117,7 +117,7 @@ core::ErrorCode PCA9685::SetServo(uint8_t channel, uint16_t pos) {
   return this->i2c_->Write(PCA9685_ADDRESS, GenerateData(channel, pos));
 }
 
-std::optional<uint8_t> PCA9685::ReadServoPosition(const uint8_t &actuator_id) {
+std::optional<uint8_t> PCA9685::ReadServoPosition(const uint8_t &actuator_id) const {
     auto servo = this->db_.find(actuator_id);
     if (servo != this->db_.end()) {
         return servo->second.position;
@@ -125,7 +125,7 @@ std::optional<uint8_t> PCA9685::ReadServoPosition(const uint8_t &actuator_id) {
     return {};
 }
 
-std::optional<std::unordered_map<uint8_t, Servo>> PCA9685::ReadConfig(std::string file_path) {
+std::optional<std::unordered_map<uint8_t, Servo>> PCA9685::ReadConfig(std::string file_path) const {
     std::unordered_map<uint8_t, Servo> db;
     auto parser = core::json::JsonParser::Parser(file_path);
     if (!parser.has_value()) {

@@ -101,7 +101,8 @@ core::ErrorCode PrimerService::Run(std::stop_token token) {
 }
 
 core::ErrorCode PrimerService::ReadConfig(const std::unordered_map<std::string, std::string>& parms) {
-  auto parser_opt = core::json::JsonParser::Parser("/opt/" + parms.at("app_name") + "/etc/config.json");
+  std::string path =  "/opt/" + parms.at("app_name") + "/etc/config.json";
+  auto parser_opt = core::json::JsonParser::Parser(path);
   this->active_time = IGNITER_ACTIVE_TIME;
 
   if (!parser_opt.has_value()) {

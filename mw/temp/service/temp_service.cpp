@@ -57,7 +57,7 @@ simba::core::ErrorCode TempService::Initialize(
     return simba::core::ErrorCode::kOk;
 }
 
-simba::core::ErrorCode TempService::ConfigSensors() {
+simba::core::ErrorCode TempService::ConfigSensors() const {
     for (auto sensor : this->sensorPathsToIds) {
         std::fstream file(sensor.first + "/resolution");
         if (!file) {
@@ -81,7 +81,7 @@ void TempService::StartTempThread() {
 }
 
 void TempService::SubCallback(const std::string& ip, const std::uint16_t& port,
-    const std::vector<std::uint8_t> data) {
+    const std::vector<std::uint8_t>& data) {
     auto hdr = temp_sub_factory::GetHeader(data);
 
     std::uint16_t service_id = hdr->GetServiceID();
@@ -124,7 +124,7 @@ simba::core::ErrorCode TempService::LoadConfig(
     return simba::core::ErrorCode::kOk;
 }
 
-std::vector<TempReading> TempService::RetrieveTempReadings() {
+std::vector<TempReading> TempService::RetrieveTempReadings() const {
     std::vector<TempReading> readings;
     for (const auto& path : sensorPathsToIds) {
         std::ifstream file(path.first + "/temperature");
@@ -148,7 +148,7 @@ std::vector<TempReading> TempService::RetrieveTempReadings() {
 }
 
 void TempService::SendTempReadings(
-    const std::vector<TempReading>& readings) {
+    const std::vector<TempReading>& readings) const {
     for (const auto& client_id : this->subscribers) {
         std::string ip = kSubscriberPrefix + std::to_string(client_id);
 

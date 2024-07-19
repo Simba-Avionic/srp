@@ -55,7 +55,12 @@ core::ErrorCode ADCSensorController::setPtr(std::unique_ptr<IADS7828> adc_) {
   this->adc_ = std::move(adc_);
   return core::ErrorCode::kOk;
 }
-std::unordered_map<uint8_t, SensorConfig> ADCSensorController::ReadConfig(core::json::JsonParser parser) {
+
+void ADCSensorController::setConfig(const std::unordered_map<uint8_t, SensorConfig>& db_) {
+    this->db_ = db_;
+}
+
+std::unordered_map<uint8_t, SensorConfig> ADCSensorController::ReadConfig(core::json::JsonParser parser) const {
     std::unordered_map<uint8_t, SensorConfig> db;
     auto sensors_opt = parser.GetArray("sensors");
     if (!sensors_opt.has_value()) {
@@ -102,7 +107,7 @@ std::unordered_map<uint8_t, SensorConfig> ADCSensorController::ReadConfig(core::
     return db;
 }
 
-std::optional<float> ADCSensorController::GetValue(const uint8_t sensor_id) {
+std::optional<float> ADCSensorController::GetValue(const uint8_t sensor_id) const {
     auto sensor = this->db_.find(sensor_id);
     if (sensor == db_.end()) {
         AppLogger::Warning("Invalid pressure sensor request");

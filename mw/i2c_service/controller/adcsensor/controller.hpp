@@ -43,7 +43,7 @@ class ADCSensorController {
   std::unordered_map<uint8_t, SensorConfig> db_;
 
  protected:
-  std::unordered_map<uint8_t, SensorConfig> ReadConfig(core::json::JsonParser parser);
+  std::unordered_map<uint8_t, SensorConfig> ReadConfig(core::json::JsonParser parser) const;
   /**
    * @brief Funckja wyliczająca wyraz wolny b dla funkcji liniowej y= a*x + b
    * 
@@ -66,8 +66,7 @@ class ADCSensorController {
    */
   float CalculateA(float R, float RES_MAX, float RES_MIN, float A_MAX, float A_MIN) const;
 
-  void setConfig(const std::unordered_map<uint8_t, SensorConfig>& db_) {this->db_ = db_;}
-
+  void setConfig(const std::unordered_map<uint8_t, SensorConfig>& db_);
   core::ErrorCode setPtr(std::unique_ptr<IADS7828> adc_);
 
  public:
@@ -79,7 +78,7 @@ class ADCSensorController {
    * @param sensor_id 
    * @return std::optional<float> 
    */
-  std::optional<float> GetValue(const uint8_t sensor_id);
+  std::optional<float> GetValue(const uint8_t sensor_id) const;
 };
 
 }  // namespace i2c

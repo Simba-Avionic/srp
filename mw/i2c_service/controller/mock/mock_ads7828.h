@@ -17,9 +17,9 @@ namespace simba {
 namespace mock {
 class MockADS7828 : public i2c::IADS7828 {
  public:
-  MOCK_METHOD(std::optional<uint8_t>, GetConfigData, (const uint8_t& channel));
-  MOCK_METHOD(std::optional<uint16_t>, GetAdcRawRead, (const uint8_t& channel));
-  MOCK_METHOD(std::optional<float>, GetAdcVoltage, (const uint8_t& channel));
+  MOCK_METHOD(std::optional<uint8_t>, GetConfigData, (const uint8_t& channel), (const, override));
+  MOCK_METHOD(std::optional<uint16_t>, GetAdcRawRead, (const uint8_t& channel), (const, override));
+  MOCK_METHOD(std::optional<float>, GetAdcVoltage, (const uint8_t& channel), (const, override));
 };
 }  // namespace mock
 }  // namespace simba
