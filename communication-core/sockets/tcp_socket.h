@@ -34,7 +34,7 @@ class StreamTCPSocket : public ISocketStream {
 
  public:
   StreamTCPSocket() = default;
-  
+
   simba::core::ErrorCode Init(const SocketConfig& config) override;
   std::optional<std::vector<uint8_t>> Transmit(const std::string& ip,
                                     const std::uint16_t port,
