@@ -68,3 +68,21 @@ cc_library(
         "//core/common:common_types",
     ],
 )
+
+cc_library(
+    name = "socket_tcp",
+    srcs = [
+        "tcp_socket.cc",
+    ],
+    hdrs = [
+        "tcp_socket.h",
+    ],
+    visibility = [
+        "//mw:__subpackages__",
+        "//apps:__subpackages__",
+    ],
+    deps = [
+        ":socket_interface",
+        "//core/common:common_types",
+    ],
+)
