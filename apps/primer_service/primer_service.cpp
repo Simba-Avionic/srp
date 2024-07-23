@@ -58,7 +58,7 @@ core::ErrorCode PrimerService::Run(std::stop_token token) {
       "PrimerApp/onPrime",
       [this](const std::vector<uint8_t> payload)
           -> std::optional<std::vector<uint8_t>> {
-            AppLogger::Debug("Receive onPrime method");
+            AppLogger::Info("Receive onPrime method");
             if (this->ChangePrimerState(ON_INGITER) == core::ErrorCode::kOk) {
               return std::vector<uint8_t>{1};
             }
@@ -68,7 +68,7 @@ core::ErrorCode PrimerService::Run(std::stop_token token) {
       "PrimerApp/offPrime",
       [this](const std::vector<uint8_t> payload)
           -> std::optional<std::vector<uint8_t>> {
-            AppLogger::Debug("Receive offPrime method");
+            AppLogger::Info("Receive offPrime method");
             if (this->ChangePrimerState(OFF_INGITER) == core::ErrorCode::kOk) {
               return std::vector<uint8_t>{1};
             }
@@ -78,6 +78,7 @@ core::ErrorCode PrimerService::Run(std::stop_token token) {
       "PrimerApp/startPrime",
       [this](const std::vector<uint8_t> payload)
           -> std::optional<std::vector<uint8_t>> {
+            AppLogger::Info("Receive StartPrime method");
             auto future = std::async(std::launch::async, [this](){
             if (this->ChangePrimerState(ON_INGITER) != core::ErrorCode::kOk) {
               return std::vector<uint8_t>{0};

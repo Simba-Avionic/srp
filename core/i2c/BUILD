@@ -2,7 +2,7 @@ cc_library(
     name = "i2cdriver",
     srcs =  select({
         "//:sim":[
-            #TODO add simulation requirements
+            "sim_i2cdriver.cpp",
         ],
         "//conditions:default": [
             "i2cdriver.cpp",
@@ -17,7 +17,7 @@ cc_library(
         "//core/logger:Logger",
     ] + select({
         "//:sim":[
-            #TODO add simulation requirements
+            "//communication-core/sockets:socket_tcp",
         ],
         "//conditions:default": [
         ],

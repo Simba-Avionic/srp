@@ -9,7 +9,7 @@ cc_library(
     name = "gpio_drivers",
     srcs = select({
         "//:sim":[
-            #TODO add simulation files
+            "SIM_GPIO_digital_driver.cpp"
         ],
         "//conditions:default": [
             "GPIO_digital_driver.cpp",
@@ -26,7 +26,9 @@ cc_library(
         "//core/logger:Logger"
     ] + select({
         "//:sim":[
-            #TODO add simulation requirements
+            "//communication-core/sockets:socket_tcp",
+            "//core/json:simba_json",
+            
         ],
         "//conditions:default": [
         ],

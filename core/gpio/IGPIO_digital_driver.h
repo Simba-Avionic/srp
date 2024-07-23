@@ -13,6 +13,7 @@
 #define CORE_GPIO_IGPIO_DIGITAL_DRIVER_H_
 
 #include <stdint.h>
+#include <string>
 
 #include "core/common/error_code.h"
 
@@ -21,7 +22,7 @@ namespace simba {
 namespace core {
 namespace gpio {
 
-enum direction_t{
+enum direction_t: uint8_t{
     IN,
     OUT,
     ERROR,
@@ -69,5 +70,18 @@ class IgpioDigitalDriver{
 }  // namespace gpio
 }  // namespace core
 }  // namespace simba
+
+namespace std {
+namespace __cxx11 {
+
+inline string to_string(simba::core::gpio::direction_t dir) {
+    switch (dir) {
+        case simba::core::gpio::direction_t::IN: return "IN";
+        case simba::core::gpio::direction_t::OUT: return "OUT";
+        case simba::core::gpio::direction_t::ERROR: return "ERROR";
+    }
+}
+}  // namespace __cxx11
+}  // namespace std
 
 #endif  // CORE_GPIO_IGPIO_DIGITAL_DRIVER_H_
