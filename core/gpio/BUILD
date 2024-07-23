@@ -4,9 +4,17 @@ cc_library(
     visibility = ["//core:__subpackages__"],
 )
 
+
 cc_library(
     name = "gpio_drivers",
-    srcs = ["GPIO_digital_driver.cpp"],
+    srcs = select({
+        "//:sim":[
+            "SIM_GPIO_digital_driver.cpp"
+        ],
+        "//conditions:default": [
+            "GPIO_digital_driver.cpp",
+        ],
+    }),
     hdrs = ["GPIO_digital_driver.h"],
     visibility = [
         "//core:__subpackages__",
@@ -16,5 +24,11 @@ cc_library(
         ":gpio_interface",
         "//core/common:common_types",
         "//core/logger:Logger"
-    ],
+    ] + select({
+        "//:sim":[
+            #TODO add simulation requirements
+        ],
+        "//conditions:default": [
+        ],
+    }),
 )
