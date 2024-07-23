@@ -16,14 +16,14 @@ jobs:
         uses: actions/checkout@v4
       - name: Check C++ Syntax
         run: |
-          cpp_files=$(find . -name "*.cc" -o -name "*.cpp" -o -name "*.h" -o -name "*.hpp")
+          cpp_files=$(find . -path "*libdoip/*" -prune -o -name "*.cc" -o -name "*.cpp" -o -name "*.h" -o -name "*.hpp" | grep -vE "^\.\/libdoip\/")
           total_errors=0
           for file in $cpp_files; do
             errors=$(cpplint --filter=-build/include_subdir --extensions=cc,cpp,h,hpp --linelength=120 --recursive --repository=. --root=src $file | wc -l)
-            total_errors=$((total_errors + errors -  1))
+            total_errors=$((total_errors + errors - 1))
           done
           
-          if [[ $total_errors -gt 0 ]]; then
+          if [ $total_errors -gt 0 ]; then
             echo "Too many errors ($total_errors), failing the build."
             exit 1
           else

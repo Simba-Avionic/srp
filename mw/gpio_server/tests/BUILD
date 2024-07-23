@@ -22,3 +22,21 @@ cc_test(
         "//communication-core/sockets/mock:mock_socket",
     ]
 )
+
+cc_test(
+    name = "gpio_service",
+    srcs = [
+        "test_service.cc",
+        ],
+    visibility = ["//visibility:public"],
+    deps=[
+        "@com_google_googletest//:gtest_main",
+        "//mw/gpio_server:gpio_service_lib",
+        "//core/gpio/mock:mock_gpio",
+        "//communication-core/sockets/mock:mock_socket",
+        "//mw/gpio_server/data:gpio_hdr",
+    ],
+    data = [
+        "//mw/gpio_server/tests/test_data:gpio_test_data",
+        ],
+)

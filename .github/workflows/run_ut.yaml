@@ -15,7 +15,7 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
       - name: Cache Bazel data
-        uses: actions/cache@v2
+        uses: actions/cache@v4.0.2
         with:
           path: ~/.cache/bazel
           key: bazel-cache-ut-${{ runner.os }}-${{ hashFiles('**/BUILD.bazel') }}

@@ -40,20 +40,18 @@ namespace temp {
 
 class TempService final : public simba::core::ApplicationMW {
  protected:
-  com::soc::IpcSocket sub_sock_{};
-  const std::chrono::milliseconds temp_timeout{500};
+  std::unique_ptr<com::soc::IpcSocket> sub_sock_{};
 
  private:
   std::unique_ptr<std::jthread> temp_thread;
   std::set<std::uint16_t> subscribers{};
   std::unordered_map<std::string, std::uint8_t> sensorPathsToIds{};
-  simba::mw::temp::SubMsgFactory factory;
 
   void StartTempThread();
 
   simba::core::ErrorCode LoadConfig(
-    const std::unordered_map<std::string, std::string>& parms);
-  simba::core::ErrorCode ConfigSensors();
+    const std::unordered_map<std::string, std::string>& parms, std::unique_ptr<com::soc::IpcSocket> sock);
+  simba::core::ErrorCode ConfigSensors() const;
 
   /**
    * @brief This function is called to launch the application
@@ -69,15 +67,15 @@ class TempService final : public simba::core::ApplicationMW {
   simba::core::ErrorCode Initialize(
       const std::unordered_map<std::string, std::string>& parms) final;
 
-  std::vector<TempReading> RetrieveTempReadings();
+  std::vector<TempReading> RetrieveTempReadings() const;
 
-  void SendTempReadings(const std::vector<TempReading>& readings);
+  void SendTempReadings(const std::vector<TempReading>& readings) const;
 
  public:
   simba::core::ErrorCode Loop(std::stop_token stoken);
 
   void SubCallback(const std::string& ip, const std::uint16_t& port,
-    const std::vector<std::uint8_t> data);
+    const std::vector<std::uint8_t>& data);
 };
 
 }  // namespace temp

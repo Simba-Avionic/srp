@@ -1,0 +1,8 @@
+{
+    "sensors": [
+        {
+            "actuator_id": 11,
+            "channel": 2
+        }
+    ]
+}

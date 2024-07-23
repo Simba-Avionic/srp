@@ -25,7 +25,7 @@ namespace primer {
 
 class PrimerService final : public core::ApplicationNoIPC {
  private:
-  core::ErrorCode ChangePrimerState(gpio::Value state);
+  core::ErrorCode ChangePrimerState(uint8_t state);
   core::ErrorCode ReadConfig(const std::unordered_map<std::string, std::string>& parms);
 
   /**
@@ -43,8 +43,8 @@ class PrimerService final : public core::ApplicationNoIPC {
       const std::unordered_map<std::string, std::string>& parms) final;
 
   gpio::GPIOController gpio_;
-  gpio::Value primerState {gpio::Value::LOW};
-  uint8_t primer_pin_;
+  uint8_t primerState;
+  std::vector<uint8_t> primer_pins_;
   std::uint16_t active_time;
 
   std::shared_ptr<simba::com::someip::EventSkeleton> primer_event;

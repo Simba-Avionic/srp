@@ -10,20 +10,21 @@
  */
 #include "apps/example/router.h"
 
+#include <fcntl.h>
+#include <sys/ioctl.h>
+#include <linux/i2c-dev.h>
+#include <unistd.h>
+
 #include <memory>
 #include <vector>
-
 #include "communication-core/someip-controller/event_proxy.h"
 #include "communication-core/someip-controller/method_proxy.h"
 #include "communication-core/someip-controller/method_skeleton.h"
 #include "core/logger/Logger.h"
 #include "diag/dtc/controller/dtc.h"
+#include "mw/i2c_service/data/i2c_factory.h"
 namespace simba {
 namespace router {
-
-#define EEPROM_DEVICE "/dev/i2c-2"  // Ścieżka do urządzenia I2C
-#define EEPROM_ADDRESS 0x50         // Adres EEPROM
-#define DATA_SIZE 128
 
 core::ErrorCode Router::Run(std::stop_token token) {
   uint8_t servo_pos;
@@ -65,8 +66,6 @@ core::ErrorCode Router::Run(std::stop_token token) {
 
 core::ErrorCode Router::Initialize(
     const std::unordered_map<std::string, std::string>& parms) {
-  this->gpio_ = gpio::GPIOController(new com::soc::IpcSocket());
-  this->gpio_.Init(12);
   return core::ErrorCode::kOk;
 }
 }  // namespace router

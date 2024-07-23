@@ -19,7 +19,7 @@ cc_binary(
         "//mw/temp/subscribe_msg:subscribe_header",
         "//mw/temp/subscribe_msg:subscribe_msg_factory",
         "//mw/temp/temp_reading_msg:temp_reading_msg_factory",
-        "@com_json//:json"
+        "//core/json:simba_json",
 
     ],
 )

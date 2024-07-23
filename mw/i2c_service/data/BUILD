@@ -9,6 +9,7 @@ cc_library(
     deps = [
         "//communication-core/network-data:network_data_structure",
         "//communication-core/network-data:network_data_type",
+        "//core/logger:Logger",
     ],
     visibility = ["//visibility:public"],
 )

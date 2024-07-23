@@ -26,11 +26,11 @@ namespace simba {
 namespace core {
 class ApplicationCommon : public IApplication {
  protected:
-  diag::CommonDiagController diag_controller{};
   uint16_t app_id_;
   std::stop_source source;
   diag::exec::ExecController exec_;
   std::unique_ptr<com::someip::Controller> com;
+  diag::CommonDiagController diag_controller{};
   /**
    * @brief This is pre-run function only for creting new application
    * interfacess

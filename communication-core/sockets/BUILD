@@ -2,6 +2,7 @@ cc_library(
     name = "socket_interface",
     hdrs = [
         "Isocket.h",
+        "Isocket_stream.h",
         "socket_config.h",
     ],
     visibility = [
@@ -16,9 +17,11 @@ cc_library(
     name = "socket_ipc",
     srcs = [
         "ipc_socket.cc",
+        "stream_ipc_socket.cc",
     ],
     hdrs = [
         "ipc_socket.h",
+        "stream_ipc_socket.h"
     ],
     visibility = [
         "//apps:__subpackages__",

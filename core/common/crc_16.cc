@@ -81,16 +81,16 @@ const std::uint16_t CRC16::calculate(const uint64_t& data) {
        static_cast<uint8_t>(data >> 8), static_cast<uint8_t>(data)});
 }
 
-const std::uint16_t calculate(const int8_t& data) {
+const std::uint16_t CRC16::calculate(const int8_t& data) {
   return CRC16::calculate(static_cast<uint8_t>(data));
 }
-const std::uint16_t calculate(const int16_t& data) {
+const std::uint16_t CRC16::calculate(const int16_t& data) {
   return CRC16::calculate(static_cast<uint16_t>(data));
 }
-const std::uint16_t calculate(const int32_t& data) {
+const std::uint16_t CRC16::calculate(const int32_t& data) {
   return CRC16::calculate(static_cast<uint32_t>(data));
 }
-const std::uint16_t calculate(const int64_t& data) {
+const std::uint16_t CRC16::calculate(const int64_t& data) {
   return CRC16::calculate(static_cast<uint64_t>(data));
 }
 

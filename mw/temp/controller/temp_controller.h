@@ -20,7 +20,7 @@
 #include <vector>
 #include <unordered_map>
 
-#include "communication-core/sockets/ipc_socket.h"
+#include "communication-core/sockets/Isocket.h"
 #include "communication-core/sockets/socket_config.h"
 #include "core/logger/Logger.h"
 
@@ -36,17 +36,19 @@ namespace mw {
 namespace temp {
 
 class TempController {
- protected:
+ private:
   uint16_t service_id;
-  com::soc::IpcSocket sub_sock_{};
-  static simba::mw::temp::TempReadingMsgFactory factory;
+  std::unique_ptr<com::soc::ISocket> sub_sock_{};
   simba::com::soc::RXCallback callback_;
 
- private:
-  virtual void SetTempRXCallback();
-  virtual simba::core::ErrorCode Subscribe();
+ protected:
+  void SetTempRXCallback();
+  simba::core::ErrorCode Subscribe();
+  simba::core::ErrorCode Init(uint16_t service_id, std::unique_ptr<com::soc::ISocket> sock);
+  simba::core::ErrorCode SetUp(simba::com::soc::RXCallback callback);
  public:
-  virtual simba::core::ErrorCode Init(uint16_t service_id, simba::com::soc::RXCallback callback);
+  simba::core::ErrorCode Initialize(uint16_t service_id,
+                simba::com::soc::RXCallback callback, std::unique_ptr<com::soc::ISocket> sock);
 };
 
 }  // namespace temp

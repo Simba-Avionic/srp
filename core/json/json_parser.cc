@@ -18,14 +18,48 @@ namespace json {
 std::optional<JsonParser> JsonParser::Parser(const std::string& path) noexcept {
   std::ifstream f(path);
   if (!f.is_open()) {
-    return {};
+    return std::nullopt;
   }
-  return std::optional<JsonParser>{JsonParser{f}};
+  std::stringstream buf;
+  buf << f.rdbuf();
+  f.close();
+  std::string content = buf.str();
+  if (!nlohmann::json::accept(content, true)) {
+    return std::nullopt;
+  }
+  return std::optional<JsonParser>{JsonParser{content}};
 }
-JsonParser::JsonParser(std::ifstream& f) {
-    this->obj = nlohmann::json::parse(f);
+std::optional<JsonParser> JsonParser::Parser(nlohmann::json obj) noexcept {
+  return std::optional<JsonParser>{JsonParser{obj}};
+}
+JsonParser::JsonParser(const std::string& data) {
+  this->obj = nlohmann::json::parse(data);
+}
+JsonParser::JsonParser(nlohmann::json json) {
+  this->obj = json;
 }
 nlohmann::json JsonParser::GetObject() const { return this->obj; }
+
+std::optional<JsonParser> JsonParser::GetObject(const std::string &name) const {
+  if (!obj.contains(name)) {
+    return {};
+  }
+  if (!obj.at(name).is_object()) {
+    return {};
+  }
+  return JsonParser::Parser(obj.at(name));
+}
+
+std::optional<nlohmann::json> JsonParser::GetArray(const std::string& name) {
+  if (!obj.contains(name)) {
+    return {};
+  }
+  if (!obj.at(name).is_array()) {
+    return {};
+  }
+  return obj.at(name);
+}
+
 std::optional<std::string> JsonParser::GetString(
     const std::string& name) const noexcept {
   try {

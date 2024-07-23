@@ -15,9 +15,10 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
+#include <memory>
 
 #include "core/gpio/GPIO_digital_driver.h"
-#include "communication-core/sockets/ipc_socket.h"
+#include "communication-core/sockets/stream_ipc_socket.h"
 #include "core/application/application_mw.h"
 #include "nlohmann/json.hpp"
 
@@ -30,13 +31,17 @@ struct GpioConf{
 };
 
 class GPIOMWService : public simba::core::ApplicationMW {
- private:
-    com::soc::IpcSocket sock_;
-    core::gpio::GpioDigitalDriver gpio_driver_;
-    std::unordered_map<uint16_t, GpioConf> config;
-    void RxCallback(const std::string& ip, const std::uint16_t& port,
+ protected:
+    std::unique_ptr<com::soc::ISocketStream> sock_;
+    std::unique_ptr<core::gpio::IgpioDigitalDriver> gpio_driver_;
+    std::unordered_map<uint8_t, GpioConf> config;
+    std::vector<uint8_t> RxCallback(const std::string& ip, const std::uint16_t& port,
           const std::vector<std::uint8_t> data);
-    void InitializePins();
+    std::optional<std::unordered_map<uint8_t, GpioConf>> ReadConfig(
+                              std::string path) const;
+    core::ErrorCode InitPins();
+    core::ErrorCode Init(std::unique_ptr<com::soc::ISocketStream> socket,
+                              std::unique_ptr<core::gpio::IgpioDigitalDriver> gpio);
  public:
   core::ErrorCode Run(std::stop_token token) final;
 

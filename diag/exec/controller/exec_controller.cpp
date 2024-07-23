@@ -8,6 +8,7 @@
  * @copyright Copyright (c) 2024
  * 
  */
+#include <mutex>  // NOLINT
 #include "exec_controller.hpp"
 #include "core/logger/Logger.h"
 #include "communication-core/sockets/ipc_socket.h"
@@ -23,22 +24,22 @@ void ExecController::Init(uint16_t service_id) {
     auto sock_ = com::soc::IpcSocket();
     auto hdr = ExecHeader(service_id, 1, (this->flags_.to_ulong() << 3) | this->status_);
     while (!stop_token.stop_requested()) {
-        this->mtx_status_.lock();
-        hdr.SetFlags((this->flags_.to_ulong() << 3) | this->status_);
+        {
+            std::unique_lock<std::mutex> lock(this->mtx_status_);
+            hdr.SetFlags((this->flags_.to_ulong() << 3) | this->status_);
+        }
         sock_.Transmit("SIMBA.EXE", 0, hdr.GetBuffor());
         AppLogger::Debug("id: "+ std::to_string(hdr.GetServiceID())
                     +" timestamp:"+std::to_string(hdr.GetTimestamp()));
         hdr.IncrementTimeStamp();
-        this->mtx_status_.unlock();
         std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     }
     });
 }
 
 void ExecController::SetStatus(Status status) {
-    this->mtx_status_.lock();
+    std::unique_lock<std::mutex> lock(this->mtx_status_);
     this->status_ = status;
-    this->mtx_status_.unlock();
 }
 
 ExecController::ExecController() {}

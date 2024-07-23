@@ -24,7 +24,7 @@ jobs:
           submodules: 'true'
           ssh-key: ${{ secrets.PRIVATE_KEY_FOR_DEPLOY_KEY_IN_SUBMODULE }}
       - name: Cache Bazel data
-        uses: actions/cache@v2
+        uses: actions/cache@v4.0.2
         with:
           path: ~/.cache/bazel
           key: bazel-cache-cpu-${{ runner.os }}-${{ hashFiles('**/BUILD.bazel') }}
@@ -38,7 +38,7 @@ jobs:
       - name: Run build engine computer
         if: contains(steps.pr-labels.outputs.labels, 'check-bbb')
         run: |
-            bazel build --platforms=//bazel/platforms:bbb //deployment/cpu/ec:pkg
+            bazel build --config=bbb-platform //deployment/cpu/ec:pkg
       - name: Add msg
         if: contains(steps.pr-labels.outputs.labels, 'check')
         uses: thollander/actions-comment-pull-request@v2
@@ -48,7 +48,7 @@ jobs:
       - name: Run build flight computer
         if: contains(steps.pr-labels.outputs.labels, 'check-bbb')
         run: |
-            bazel build --platforms=//bazel/platforms:bbb //deployment/cpu/fc:pkg
+            bazel build --config=bbb-platform //deployment/cpu/fc:pkg
       - name: Add msg_2
         if: contains(steps.pr-labels.outputs.labels, 'check')
         uses: thollander/actions-comment-pull-request@v2

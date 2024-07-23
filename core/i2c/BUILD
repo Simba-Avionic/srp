@@ -10,9 +10,11 @@ cc_library(
     }),
     hdrs = [
         "i2cdriver.hpp",
+        "Ii2cdriver.hpp",
         ],
     deps = [
         "//core/common:common_types",
+        "//core/logger:Logger",
     ] + select({
         "//:sim":[
             #TODO add simulation requirements
