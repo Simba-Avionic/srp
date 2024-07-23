@@ -9,7 +9,7 @@ cc_library(
     name = "gpio_drivers",
     srcs = select({
         "//:sim":[
-            "SIM_GPIO_digital_driver.cpp"
+            #TODO add simulation files
         ],
         "//conditions:default": [
             "GPIO_digital_driver.cpp",
