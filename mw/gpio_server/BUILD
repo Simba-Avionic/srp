@@ -7,7 +7,7 @@ cc_library(
         "gpio_mw.hpp"
     ],
     deps = [
-        "//core/gpio:sim_gpio_drivers",
+        "//core/gpio:gpio_drivers",
         "//mw/gpio_server/data:gpio_hdr",
         "//core/application:simba_application",
         "//core/json:simba_json",
