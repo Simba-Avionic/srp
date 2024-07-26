@@ -80,6 +80,7 @@ cc_library(
     visibility = [
         "//mw:__subpackages__",
         "//apps:__subpackages__",
+        "//core:__subpackages__",
     ],
     deps = [
         ":socket_interface",
