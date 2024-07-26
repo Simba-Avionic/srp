@@ -8,9 +8,9 @@
  * @copyright Copyright (c) 2024
  * 
  */
+#include <cstdint>
 
 #include "core/i2c/i2cdriver.hpp"
-#include <cstdint>
 #include "core/logger/Logger.h"
 
 namespace simba {
