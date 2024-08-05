@@ -11,5 +11,6 @@ cc_binary(
         "//communication-core/someip-controller:proxy",
         "//communication-core/someip-controller:skeleton",
         "//diag/dtc/controller:diag_dtc_",
+        "//apps/logger_service/csvdriver:csvdriver",
     ],
 )

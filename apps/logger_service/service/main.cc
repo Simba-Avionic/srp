@@ -8,7 +8,7 @@
  * @copyright Copyright (c) 2024
  * 
  */
-#include "apps/logger_service/logger_service.hpp"
+#include "apps/logger_service/service/logger_service.hpp"
 #include "core/application/application_factory.h"
 
 int main(int argc, char const *argv[]) {

@@ -8,8 +8,8 @@
  * @copyright Copyright (c) 2024
  * 
  */
-#ifndef APPS_LOGGER_SERVICE_LOGGER_SERVICE_HPP_
-#define APPS_LOGGER_SERVICE_LOGGER_SERVICE_HPP_
+#ifndef APPS_LOGGER_SERVICE_SERVICE_LOGGER_SERVICE_HPP_
+#define APPS_LOGGER_SERVICE_SERVICE_LOGGER_SERVICE_HPP_
 
 #include <string>
 #include <vector>
@@ -20,46 +20,18 @@
 
 
 #include "core/application/application_no_ipc.h"
-#include "communication-core/someip-controller/event_proxy.h"
 #include "communication-core/someip-controller/method_skeleton.h"
 #include "diag/dtc/controller/dtc.h"
+#include "communication-core/someip-controller/event_proxy.h"
+#include "core/common/wait_queue.h"
+#include "apps/logger_service/csvdriver/csvdriver.h"
 namespace simba {
 namespace logger {
-
-enum MSG_TYPE {
-  MAIN_VALVE,
-  VENT_VALVE,
-  PRIMER,
-  TANK_PRESS,
-  NOZLE_PRESS,
-  TANK_D_PRESS,
-  TANK_TEMP1,
-  TANK_TEMP2,
-  TANK_TEMP3
-};
-
-class ActuatorData {
- public:
-  uint8_t primer;
-  uint8_t main_valve;
-  uint8_t vent_valve;
-};
-
-class SensorData {
- public:
-  float temp_1;
-  float temp_2;
-  float temp_3;
-  float d_press;
-  float tank_press;
-  float nozle_press;
-};
 
 class LoggerService final : public core::ApplicationNoIPC {
  protected:
   void SaveFunc(std::stop_token stopToken);
   core::ErrorCode StopThread();
-  com::someip::EventCallback CallbackGenerator(MSG_TYPE type);
   /**
    * @brief This function is called to launch the application
    *
@@ -95,8 +67,18 @@ class LoggerService final : public core::ApplicationNoIPC {
   std::shared_ptr<simba::com::someip::MethodSkeleton> stop_method;
 
   std::unique_ptr<std::jthread> save_thread_;
+
+  bool gotPrimer = false;
+  bool gotMainValve = false;
+  bool gotVentValve = false;
+  bool gotTemp1 = false;
+  bool gotTemp2 = false;
+  bool gotTemp3 = false;
+  bool gotDPress = false;
+  bool gotTankPress = false;
+  bool gotNozlePress = false;
 };
 
 }  // namespace logger
 }  // namespace simba
-#endif  // APPS_LOGGER_SERVICE_LOGGER_SERVICE_HPP_
+#endif  // APPS_LOGGER_SERVICE_SERVICE_LOGGER_SERVICE_HPP_

@@ -1,6 +1,7 @@
 /**
  * @file logger_service.cpp
  * @author Mateusz Krajewski (matikrajek42@gmail.com)
+ * @author Michał Mańkowski (m.mankowski2004@gmail.com)
  * @brief 
  * @version 0.1
  * @date 2024-06-05
@@ -8,8 +9,7 @@
  * @copyright Copyright (c) 2024
  * 
  */
-#include "apps/logger_service/logger_service.hpp"
-#include "communication-core/someip-controller/event_proxy.h"
+#include "apps/logger_service/service/logger_service.hpp"
 
 namespace simba {
 namespace logger {
@@ -36,15 +36,36 @@ float convertTemp(const std::vector<uint8_t> &bytes) {
 }
 
 core::ErrorCode LoggerService::Run(std::stop_token token) {
-  while (true) {
-    this->SleepMainThread();
-  }
+  this->SleepMainThread();
   return core::ErrorCode::kOk;
 }
 
 void LoggerService::SaveFunc(std::stop_token stopToken) {
+  const float T = 1.1;
+  auto lastActuatorSentTime = std::chrono::high_resolution_clock::now();
+  auto lastSensorSentTime = std::chrono::high_resolution_clock::now();
+  CSVDriver csv_act("/log/actuators");
+  csv_act.Init("TIMESTAMP;MAIN_VALVE;VENT_VALVE;PRIMER");
+  CSVDriver csv_sens("/log/sensors");
+  csv_sens.Init("TIMESTAMP;NOZLE_PRESS;TANK_PRESS;TANK_TEMP_1;TANK_TEMP_2;TANK_TEMP_3;TANK_D_PRESS");
   while (!stopToken.stop_requested()) {
-    // TODO saving process   // NOLINT
+    bool actuatorConditionsMet = this->gotPrimer && this->gotMainValve && this->gotVentValve;
+    bool sensorConditionsMet = this->gotTemp1 && this->gotTemp2 && this->gotTemp3 &&
+     this->gotDPress && this->gotTankPress && this->gotNozlePress;
+    auto currentTime = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> elapsedActuator = currentTime - lastActuatorSentTime;
+    std::chrono::duration<double> elapsedSensor = currentTime - lastSensorSentTime;
+    if (actuatorConditionsMet || elapsedActuator.count() >= T) {
+      csv_act.WriteLine(data_actuator_, 1);
+      lastActuatorSentTime = std::chrono::high_resolution_clock::now();
+      this->gotPrimer = false, this->gotMainValve = false, this->gotVentValve = false;
+    }
+    if (sensorConditionsMet || elapsedSensor.count() >= T) {
+      csv_sens.WriteLine(data_, 1);
+      lastSensorSentTime = std::chrono::high_resolution_clock::now();
+      this->gotTemp1 = false, this->gotTemp2 = false, this->gotTemp3 = false, this->gotDPress = false,
+       this->gotTankPress = false, this->gotNozlePress = false;
+    }
   }
 }
 core::ErrorCode LoggerService::StopThread() {
@@ -57,132 +78,102 @@ core::ErrorCode LoggerService::StopThread() {
   return core::ErrorCode::kError;
 }
 
-
-com::someip::EventCallback LoggerService::CallbackGenerator(MSG_TYPE type) {
-  switch (type) {
-  case TANK_PRESS:
-    return [this](const std::vector<uint8_t> payload) {
-      if (payload.size() != 2) {
+core::ErrorCode LoggerService::Initialize(
+    const std::unordered_map<std::string, std::string>& parms) {
+  this->primer_event =
+      std::make_shared<com::someip::EventProxyBase>(PRIM_EVENT,
+                                            [this](const std::vector<uint8_t> payload) {
+      if (payload.size() != 1) {
         return;
       }
-      std::lock_guard<std::mutex> lock(data_mtx);
-      this->data_.tank_press = convertTemp(payload);
-      return;
-    };
-    break;
-    case NOZLE_PRESS:
-    return [this](const std::vector<uint8_t> payload) {
-      if (payload.size() != 2) {
-        return;
-      }
-      std::lock_guard<std::mutex> lock(data_mtx);
-      this->data_.nozle_press = convertTemp(payload);
-    };
-    break;
-    case TANK_D_PRESS:
-    return [this](const std::vector<uint8_t> payload) {
+      std::lock_guard<std::mutex> lock(actuator_data_mtx);
+      this->data_actuator_.primer = payload[0];
+      this->gotPrimer = true;
+    });
+  this->d_press_event =
+      std::make_shared<com::someip::EventProxyBase>(D_PRESS_EVENT,
+                                            [this](const std::vector<uint8_t> payload) {
       if (payload.size() != 2) {
         return;
       }
       std::lock_guard<std::mutex> lock(data_mtx);
       this->data_.d_press = convertTemp(payload);
-    };
-    break;
-    case TANK_TEMP1:
-    return [this](const std::vector<uint8_t> payload) {
+      this->gotDPress = true;
+    });
+  this->tank_press_event =
+      std::make_shared<com::someip::EventProxyBase>(TANK_PRESS_EVENT,
+                                            [this](const std::vector<uint8_t> payload) {
+      if (payload.size() != 2) {
+        return;
+      }
+      std::lock_guard<std::mutex> lock(data_mtx);
+      this->data_.tank_press = convertTemp(payload);
+      this->gotTankPress = true;
+      return;
+    });
+  this->nozle_press_event =
+      std::make_shared<com::someip::EventProxyBase>(NOZLE_PRESS_EVENT,
+                                            [this](const std::vector<uint8_t> payload) {
+      if (payload.size() != 2) {
+        return;
+      }
+      std::lock_guard<std::mutex> lock(data_mtx);
+      this->data_.nozle_press = convertTemp(payload);
+      this->gotNozlePress = true;
+    });
+  this->temp_1_event =
+      std::make_shared<com::someip::EventProxyBase>(TANK_TEMP1_EVENT,
+                                            [this](const std::vector<uint8_t> payload) {
       if (payload.size() != 2) {
         return;
       }
       AppLogger::Info("Receive " + std::to_string(convertTemp(payload)));
       std::lock_guard<std::mutex> lock(data_mtx);
       this->data_.temp_1 = convertTemp(payload);
-    };
-    break;
-    case TANK_TEMP2:
-    return [this](const std::vector<uint8_t> payload) {
+      this->gotTemp1 = true;
+    });
+  this->temp_2_event =
+      std::make_shared<com::someip::EventProxyBase>(TANK_TEMP2_EVENT,
+                                            [this](const std::vector<uint8_t> payload) {
       if (payload.size() != 2) {
         return;
       }
       AppLogger::Info("Receive " + std::to_string(convertTemp(payload)));
       std::lock_guard<std::mutex> lock(data_mtx);
       this->data_.temp_2 = convertTemp(payload);
-    };
-    break;
-    case TANK_TEMP3:
-    return [this](const std::vector<uint8_t> payload) {
+      this->gotTemp2 = true;
+    });
+  this->temp_3_event =
+      std::make_shared<com::someip::EventProxyBase>(TANK_TEMP3_EVENT,
+                                            [this](const std::vector<uint8_t> payload) {
       if (payload.size() != 2) {
         return;
       }
       AppLogger::Info("Receive " + std::to_string(convertTemp(payload)));
       std::lock_guard<std::mutex> lock(data_mtx);
       this->data_.temp_3 = convertTemp(payload);
-    };
-    break;
-    case MAIN_VALVE:
-    return [this](const std::vector<uint8_t> payload) {
+      this->gotTemp3 = true;
+    });
+  this->main_valve_event =
+      std::make_shared<com::someip::EventProxyBase>(MAIN_VALVE_EVENT,
+                                            [this](const std::vector<uint8_t> payload) {
       if (payload.size() != 1) {
         return;
       }
       std::lock_guard<std::mutex> lock(actuator_data_mtx);
       this->data_actuator_.main_valve = payload[0];
-    };
-    break;
-    case VENT_VALVE:
-    return [this](const std::vector<uint8_t> payload) {
+      this->gotMainValve = true;
+    });
+  this->vent_valve_event =
+      std::make_shared<com::someip::EventProxyBase>(VENT_VALVE_EVENT,
+                                            [this](const std::vector<uint8_t> payload) {
       if (payload.size() != 1) {
         return;
       }
       std::lock_guard<std::mutex> lock(actuator_data_mtx);
       this->data_actuator_.vent_valve = payload[0];
-    };
-    break;
-    case PRIMER:
-    return [this](const std::vector<uint8_t> payload) {
-      if (payload.size() != 1) {
-        return;
-      }
-      std::lock_guard<std::mutex> lock(actuator_data_mtx);
-      this->data_actuator_.primer = payload[0];
-    };
-    break;
-  default:
-    return [](const std::vector<uint8_t> payload) {
-      AppLogger::Warning("Invalid data type");
-      return;
-    };
-    break;
-  }
-}
-
-core::ErrorCode LoggerService::Initialize(
-    const std::unordered_map<std::string, std::string>& parms) {
-  this->primer_event =
-      std::make_shared<com::someip::EventProxyBase>(PRIM_EVENT,
-                                            CallbackGenerator(MSG_TYPE::PRIMER));
-  this->d_press_event =
-      std::make_shared<com::someip::EventProxyBase>(D_PRESS_EVENT,
-                                            CallbackGenerator(MSG_TYPE::TANK_D_PRESS));
-  this->tank_press_event =
-      std::make_shared<com::someip::EventProxyBase>(TANK_PRESS_EVENT,
-                                            CallbackGenerator(MSG_TYPE::TANK_PRESS));
-  this->nozle_press_event =
-      std::make_shared<com::someip::EventProxyBase>(NOZLE_PRESS_EVENT,
-                                            CallbackGenerator(MSG_TYPE::NOZLE_PRESS));
-  this->temp_1_event =
-      std::make_shared<com::someip::EventProxyBase>(TANK_TEMP1_EVENT,
-                                            CallbackGenerator(MSG_TYPE::TANK_TEMP1));
-  this->temp_2_event =
-      std::make_shared<com::someip::EventProxyBase>(TANK_TEMP2_EVENT,
-                                            CallbackGenerator(MSG_TYPE::TANK_TEMP2));
-  this->temp_3_event =
-      std::make_shared<com::someip::EventProxyBase>(TANK_TEMP3_EVENT,
-                                            CallbackGenerator(MSG_TYPE::TANK_TEMP3));
-  this->main_valve_event =
-      std::make_shared<com::someip::EventProxyBase>(MAIN_VALVE_EVENT,
-                                            CallbackGenerator(MSG_TYPE::MAIN_VALVE));
-  this->vent_valve_event =
-      std::make_shared<com::someip::EventProxyBase>(VENT_VALVE_EVENT,
-                                            CallbackGenerator(MSG_TYPE::VENT_VALVE));
+      this->gotVentValve = true;
+    });
 
   this->start_method = std::make_shared<com::someip::MethodSkeleton>(
     "LoggerApp/start",
