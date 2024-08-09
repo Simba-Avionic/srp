@@ -11,7 +11,7 @@ py_binary(
     name = "main",
     srcs = ["main.py"],
     args = ["//tools/diag_app/src:config"],
-    data = ["//tools/diag_app/src:config"],
+    data = ["//tools/diag_app/src:config","//tools/diag_app/front"],
     deps = [
         "//tools/diag_app/src/lib:web_lib",
         "@doipclient",

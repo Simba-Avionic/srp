@@ -53,6 +53,7 @@ class Dtc:
         self.id = id
         self.desc = desc
         self.snapshot = snapshot
+        self.status = 0
        
 class ECU:
  def __init__(self,ip,name,diag_id) -> None:
@@ -86,4 +87,17 @@ class DB(metaclass=SingletonMeta):
             for obj in obj_list:
                 ecu = DB.ExtractEcu(obj["platform"])
                 DB.ExtractJobList(obj["jobs"],ecu)
+                DB.ExtractDtcList(obj["dtc"],ecu)
                 self.ecu_list.append(ecu)
+    def UpdateDtcStatus(self, ecu_id: str, dtc_id: int, status: int):
+        for ecu in self.ecu_list:
+            if(ecu.diag_id == int(ecu_id)):
+                for dtc in ecu.dtc:
+                    if dtc.id == dtc_id:
+                        print("dtc updated")
+                        dtc.status = status
+                        return
+                print("New DTC added")
+                new_dtc = Dtc("Unknown",dtc_id,"Unknown",[])
+                new_dtc.status = status
+                ecu.dtc.append(new_dtc)

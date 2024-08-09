@@ -1,9 +1,9 @@
 from doipclient import DoIPClient
-import binascii
 from tools.diag_app.src.lib.db import DB, ECU, ECUStatus,SingletonMeta
 import threading
 import time
 import queue
+from ctypes import sizeof, c_uint16, c_uint8, c_uint32, c_uint64
 
 
 
@@ -15,12 +15,14 @@ class UdsClient:
         res = bytearray(client.receive_diagnostic())
         if(res[0] == 0x7f and res[2] == 0x78):
             # print("    "+binascii.hexlify(res).decode("utf-8")+" -> Response pending ")
-            temp["req"] = ""+binascii.hexlify(res).decode("utf-8")+" -> Response pending "
+            # temp["req"] = ""+binascii.hexlify(res).decode("utf-8")+" -> Response pending "
+            temp["res"] = res
             callback(temp)
             self.receive_loop(client,callback)
         else:
             # print("    "+binascii.hexlify(res).decode("utf-8"))
-            temp["req"] = ""+binascii.hexlify(res).decode("utf-8")
+            # temp["req"] = ""+binascii.hexlify(res).decode("utf-8")
+            temp["res"] = res
             callback(temp)
         
     def send(self,client,data,callback):
@@ -81,3 +83,15 @@ class UdsMenager(metaclass=SingletonMeta):
         if ecu_id in self.client_list:
             self.client_list[str(ecu_id)].SendRequest(req,callback)
         
+class UdsDecoder:
+    def DecodeDtcList(data):
+        res = []
+        print("1")
+        for index in range(3,len(data),4):
+            dtc_id = int.from_bytes(data[index:index+3], byteorder="big", signed=False)
+            dtc_status = int(data[index+3])
+            dtc = {}
+            dtc["id"] = dtc_id
+            dtc["status"] = dtc_status
+            res.append(dtc)
+        return res
