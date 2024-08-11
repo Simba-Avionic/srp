@@ -30,6 +30,8 @@ core::ErrorCode DtcService::Initialize(
       std::make_unique<DtcByMaskJob>("DtcService/DtcByMask", db_);
   dtc_snapshot_job_ =
       std::make_unique<DtcSnapshotJob>("DtcService/dtc_snapshot");
+  clear_dtc_job_ =
+      std::make_unique<ClearDtcJob>("DtcService/clear_memory", db_);
   this->LoadConfig("/opt/" + parms.at("app_name") +
                    "/etc/dtc_support_list.json");
   return core::ErrorCode::kOk;
@@ -39,6 +41,7 @@ core::ErrorCode DtcService::Run(std::stop_token token) {
   dtc_list_->StartService();
   dtc_by_mask_job_->StartService();
   dtc_snapshot_job_->StartService();
+  clear_dtc_job_->StartService();
   AppLogger::Info("App started");
   this->SleepMainThread();
   return core::ErrorCode::kOk;

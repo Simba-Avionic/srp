@@ -20,7 +20,7 @@
 #include "core/json/json_parser.h"
 #include "core/logger/Logger.h"
 #include "apps/diag_ota/code/application/proxy/read_vin_did.h"
-
+#include "apps/diag_ota/code/application/proxy/uptime_did.h"
 namespace simba {
 namespace diag_ota {
 
@@ -45,6 +45,7 @@ core::ErrorCode DiagOta::Run(std::stop_token token) {
     uds_server->Start();
   }
   read_vin_->StartService();
+  uptime_->StartService();
   // diag_controller.Read(1000, 10);
   this->SleepMainThread();
 }
@@ -127,6 +128,7 @@ core::ErrorCode DiagOta::Initialize(
     this->com->Add(mode_event);
   }
   this->read_vin_ = std::make_unique<ReadVinDiD>("EC_DiagOtaApp/vin");
+  this->uptime_ = std::make_unique<UptimeDiD>("EC_DiagOtaApp/uptime_did");
 }
 
 }  // namespace diag_ota

@@ -28,7 +28,7 @@
 #include "mw/diag/dtc/service/diag/dtc_by_mask_job.h"
 #include "mw/diag/dtc/service/diag/dtc_list_job.h"
 #include "mw/diag/dtc/service/diag/dtc_snapshot_job.h"
-
+#include "mw/diag/dtc/service/diag/clear_dtc_job.h"
 namespace simba {
 namespace mw {
 namespace dtc {
@@ -38,6 +38,7 @@ class DtcService : public core::ApplicationMW {
   std::unique_ptr<DtcListJob> dtc_list_;
   std::unique_ptr<DtcByMaskJob> dtc_by_mask_job_;
   std::unique_ptr<DtcSnapshotJob> dtc_snapshot_job_;
+  std::unique_ptr<ClearDtcJob> clear_dtc_job_;
   std::shared_ptr<DataBase> db_;
 
   void LoadConfig(const std::string& path);

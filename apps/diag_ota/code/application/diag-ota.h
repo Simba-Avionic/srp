@@ -35,6 +35,7 @@ class DiagOta : public core::ApplicationNoIPC {
   std::shared_ptr<com::someip::EventSkeleton> mode_event;
   std::unique_ptr<uds::UdsServer> uds_server;
   std::unique_ptr<diag::DiDJob> read_vin_;
+  std::unique_ptr<diag::DiDJob> uptime_;
   /**
    * @brief This function is called to launch the application
    *
