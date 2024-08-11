@@ -19,7 +19,7 @@
 namespace simba {
 namespace service {
 
-core::ErrorCode ServoService::Run(std::stop_token token) {
+core::ErrorCode ServoService::Run(const std::stop_token& token) {
   while (true) {
     // update servo positions;
     auto val = this->servo_controller.ReadServoPosition(60);

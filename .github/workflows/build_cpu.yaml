@@ -23,38 +23,38 @@ jobs:
         with:
           submodules: 'true'
           ssh-key: ${{ secrets.PRIVATE_KEY_FOR_DEPLOY_KEY_IN_SUBMODULE }}
-      - name: Cache Bazel data
-        uses: actions/cache@v4.0.2
-        with:
-          path: ~/.cache/bazel
-          key: bazel-cache-cpu-${{ runner.os }}-${{ hashFiles('**/BUILD.bazel') }}
-      - name: RM 1
-        if: contains(steps.pr-labels.outputs.labels, 'check-bbb')
-        uses: thollander/actions-comment-pull-request@v2
-        with:
-          message: |
-            Starting built software for BeagleBone (EC)
-          comment_tag: to_delete
-      - name: Run build engine computer
-        if: contains(steps.pr-labels.outputs.labels, 'check-bbb')
-        run: |
-            bazel build --config=bbb-platform //deployment/cpu/ec:pkg
-      - name: Add msg
-        if: contains(steps.pr-labels.outputs.labels, 'check')
-        uses: thollander/actions-comment-pull-request@v2
-        with:
-          message: |
-               Successfully built software for BeagleBone (EC)
-      - name: Run build flight computer
-        if: contains(steps.pr-labels.outputs.labels, 'check-bbb')
-        run: |
-            bazel build --config=bbb-platform //deployment/cpu/fc:pkg
-      - name: Add msg_2
-        if: contains(steps.pr-labels.outputs.labels, 'check')
-        uses: thollander/actions-comment-pull-request@v2
-        with:
-          message: |
-               Successfully built software for BeagleBone (FC)
+      # - name: Cache Bazel data
+      #   uses: actions/cache@v4.0.2
+      #   with:
+      #     path: ~/.cache/bazel
+      #     key: bazel-cache-cpu-${{ runner.os }}-${{ hashFiles('**/BUILD.bazel') }}
+      # - name: RM 1
+      #   if: contains(steps.pr-labels.outputs.labels, 'check-bbb')
+      #   uses: thollander/actions-comment-pull-request@v2
+      #   with:
+      #     message: |
+      #       Starting built software for BeagleBone (EC)
+      #     comment_tag: to_delete
+      # - name: Run build engine computer
+      #   if: contains(steps.pr-labels.outputs.labels, 'check-bbb')
+      #   run: |
+      #       bazel build --config=bbb-platform //deployment/cpu/ec:pkg
+      # - name: Add msg
+      #   if: contains(steps.pr-labels.outputs.labels, 'check')
+      #   uses: thollander/actions-comment-pull-request@v2
+      #   with:
+      #     message: |
+      #          Successfully built software for BeagleBone (EC)
+      # - name: Run build flight computer
+      #   if: contains(steps.pr-labels.outputs.labels, 'check-bbb')
+      #   run: |
+      #       bazel build --config=bbb-platform //deployment/cpu/fc:pkg
+      # - name: Add msg_2
+      #   if: contains(steps.pr-labels.outputs.labels, 'check')
+      #   uses: thollander/actions-comment-pull-request@v2
+      #   with:
+      #     message: |
+      #          Successfully built software for BeagleBone (FC)
           
   
   

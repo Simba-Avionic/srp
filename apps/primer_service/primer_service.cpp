@@ -53,7 +53,7 @@ core::ErrorCode PrimerService::ChangePrimerState(uint8_t state) {
 }
 
 
-core::ErrorCode PrimerService::Run(std::stop_token token) {
+core::ErrorCode PrimerService::Run(const std::stop_token& token) {
   auto primerOnMethod = std::make_shared<com::someip::MethodSkeleton>(
       "PrimerApp/onPrime",
       [this](const std::vector<uint8_t> payload)

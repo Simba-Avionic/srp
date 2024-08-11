@@ -68,7 +68,9 @@ class IpcSocket : public ISocket {
    * @brief This function start RX thread
    *
    */
+  ~IpcSocket();
   void StartRXThread() override;
+  void StopRXThread() override;
 };
 }  // namespace soc
 }  // namespace com

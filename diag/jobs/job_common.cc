@@ -12,8 +12,10 @@
 
 #include <utility>
 
+#include "ara/core/model/diag_model_item.h"
+#include "ara/core/model_db.h"
+#include "ara/log/logging_menager.h"
 #include "communication-core/sockets/stream_ipc_socket.h"
-#include "core/logger/Logger.h"
 #include "diag/config_controller/config_controller.h"
 namespace simba {
 namespace diag {
@@ -28,7 +30,17 @@ std::vector<uint8_t> JobCommon::rx_callback(const std::string&,
   return res.ParseToVector();
 }
 
-void JobCommon::StartService() {
+void JobCommon::StopOffer() {
+  if (this->job_id_.size() == 0) {
+    return;
+  }
+  this->soc_->StopRXThread();
+}
+
+void JobCommon::StartOffer() {
+  if (this->job_id_.size() == 0) {
+    return;
+  }
   this->soc_ = std::make_unique<com::soc::StreamIpcSocket>();
   this->soc_->SetRXCallback(
       std::bind(&JobCommon::rx_callback, this, std::placeholders::_1,
@@ -36,19 +48,26 @@ void JobCommon::StartService() {
   if (this->soc_->Init(com::soc::SocketConfig{"SIMBA.DIAG." + this->job_id_, 0,
                                               0}) == core::ErrorCode::kOk) {
     this->soc_->StartRXThread();
-    AppLogger::Info("[" + instance_ + "]: Socket started");
+    diag_logger.LogInfo() << "[" << instance_ << "]: Socket started";
   } else {
-    AppLogger::Error("[" + instance_ +
-                     "]: An error occurred while booting the socket");
+    diag_logger.LogError() << "[" << instance_
+                           << "]: An error occurred while booting the socket";
   }
 }
-JobCommon::JobCommon(const std::string& instance) : instance_{instance} {
-  const auto res = diag::config::DiagConfig::FindProvideObject(instance);
-  if (res.has_value()) {
-    this->job_id_ = res.value();
-    AppLogger::Info("Mapping: " + instance + " to id: " + this->job_id_);
+JobCommon::JobCommon(const ara::core::InstanceSpecifier& instance)
+    : instance_{instance},
+      diag_logger{
+          ara::log::LoggingMenager::GetInstance()->CreateLogger("diag")} {
+  const auto res =
+      ara::core::ModelDataBase::GetInstance()
+          .ResolveInstanceSpecifier<ara::core::model::ModelUds>(instance);
+  if (res.HasValue()) {
+    const auto val = res.Value();
+    this->job_id_ = val.com_id_;
+    diag_logger.LogInfo() << "Mapping: " << instance
+                          << " to id: " << this->job_id_;
   } else {
-    AppLogger::Error("Can't map: " + instance);
+    diag_logger.LogError() << "Can't map: " << instance;
   }
 }
 }  // namespace diag

@@ -27,7 +27,7 @@ class Router : public core::ApplicationNoIPC{
    *
    * @param token stop token
    */
-  core::ErrorCode Run(std::stop_token token) final;
+  core::ErrorCode Run(const std::stop_token& token) final;
   /**
    * @brief This function is called to initialiaze the application
    *

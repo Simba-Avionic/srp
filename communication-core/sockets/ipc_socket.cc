@@ -10,6 +10,7 @@
  */
 #include "communication-core/sockets/ipc_socket.h"
 
+#include <pthread.h>
 #include <sys/stat.h>
 #include <unistd.h>
 
@@ -17,7 +18,9 @@
 #include <array>
 #include <cstdio>
 #include <fstream>
+#include <iostream>
 #include <vector>
+
 namespace simba {
 namespace com {
 namespace soc {
@@ -82,22 +85,19 @@ void IpcSocket::StartRXThread() {
   }
   this->rx_thred = std::make_unique<std::jthread>(
       [&](std::stop_token stoken) { this->Loop(stoken); });
+  pthread_setname_np(this->rx_thred->native_handle(), "IpcSocket_RX_Thread");
 }
 
 void IpcSocket::Loop(std::stop_token stoken) {
-  struct timeval tv;
-  tv.tv_sec = 2;
-  tv.tv_usec = 0;
-  setsockopt(server_sock, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
   rc = bind(server_sock, (struct sockaddr*)&server_sockaddr, len);
   if (rc == -1) {
     return;
   }
+  std::stop_callback stop_wait{stoken, [this]() { close(this->server_sock); }};
   while (true) {
     std::array<char, 256 * 2> buffor;
     bytes_rec =
-        recvfrom(server_sock, reinterpret_cast<char*>(&buffor), 256 * 2, 0,
-                 (struct sockaddr*)&peer_sock, (socklen_t*)&len);  // NOLINT
+        read(server_sock, reinterpret_cast<char*>(&buffor), 256 * 2);  // NOLINT
     if (bytes_rec >= 0) {
       if (this->callback_) {
         if (buffor.size() > 0) {
@@ -112,6 +112,15 @@ void IpcSocket::Loop(std::stop_token stoken) {
     }
   }
   // close(server_sock);
+}
+
+void IpcSocket::StopRXThread() {
+  this->rx_thred->request_stop();
+  this->rx_thred->join();
+}
+IpcSocket::~IpcSocket() {
+  this->rx_thred->request_stop();
+  this->rx_thred->join();
 }
 }  // namespace soc
 }  // namespace com

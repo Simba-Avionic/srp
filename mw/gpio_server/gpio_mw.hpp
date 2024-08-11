@@ -43,7 +43,7 @@ class GPIOMWService : public simba::core::ApplicationMW {
     core::ErrorCode Init(std::unique_ptr<com::soc::ISocketStream> socket,
                               std::unique_ptr<core::gpio::IgpioDigitalDriver> gpio);
  public:
-  core::ErrorCode Run(std::stop_token token) final;
+  core::ErrorCode Run(const std::stop_token& token) final;
 
   core::ErrorCode Initialize(
       const std::unordered_map<std::string, std::string>& parms) final;

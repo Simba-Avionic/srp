@@ -24,7 +24,7 @@ class IApplication {
    *
    * @param token stop token
    */
-  virtual ErrorCode Run(std::stop_token token) = 0;
+  virtual ErrorCode Run(const std::stop_token& token) = 0;
   /**
    * @brief This function is called to initialiaze the application
    *

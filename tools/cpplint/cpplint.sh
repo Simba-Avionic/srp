@@ -1,4 +1,4 @@
-cpp_files=$(find . -path "*libdoip/*" -prune -o -name "*.cc" -o -name "*.cpp" -o -name "*.h" -o -name "*.hpp" | grep -vE "^\.\/libdoip\/")
+cpp_files=$(find . -path "*libdoip/*" -prune -o -name "*.cc" -o -name "*.cpp" -o -name "*.h" -o -name "*.hpp" | grep -vE "^\.\/libdoip\/" | grep -vE "^\.\/tools\/diag_app_frontend\/")
 total_errors=0
 for file in $cpp_files; do
     errors=$(cpplint --filter=-build/include_subdir --extensions=cc,cpp,h,hpp --linelength=120 --recursive --exclude=*/libdoip/* --repository=. --root=src $file | wc -l)

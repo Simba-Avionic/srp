@@ -43,6 +43,6 @@ DiagResponse DiDJob::Read() {
 DiagResponse DiDJob::Write(const std::vector<uint8_t>& payload) {
   return DiagResponse{DiagResponseCodes::kRequestOutOfRange};
 }
-DiDJob::DiDJob(const std::string instance) : JobCommon(instance) {}
+DiDJob::DiDJob(const ara::core::InstanceSpecifier& instance) : JobCommon(instance) {}
 }  // namespace diag
 }  // namespace simba

@@ -68,7 +68,7 @@ std::vector<uint8_t> GPIOMWService::RxCallback(const std::string& ip, const std:
     }
 }
 
-core::ErrorCode GPIOMWService::Run(std::stop_token token) {
+core::ErrorCode GPIOMWService::Run(const std::stop_token& token) {
     this->SleepMainThread();
     return core::ErrorCode::kOk;
 }

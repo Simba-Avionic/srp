@@ -26,7 +26,7 @@
 namespace simba {
 namespace router {
 
-core::ErrorCode Router::Run(std::stop_token token) {
+core::ErrorCode Router::Run(const std::stop_token& token) {
   uint8_t servo_pos;
   auto proxy_event = std::make_shared<com::someip::EventProxyBase>(
       "ExampleApp/someevent",

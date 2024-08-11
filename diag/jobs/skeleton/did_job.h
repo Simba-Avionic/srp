@@ -37,7 +37,7 @@ class DiDJob : public JobCommon {
   virtual DiagResponse Write(const std::vector<uint8_t>& payload);
 
  public:
-  explicit DiDJob(const std::string instance);
+  explicit DiDJob(const ara::core::InstanceSpecifier& instance);
   virtual ~DiDJob() = default;
 };
 }  // namespace diag

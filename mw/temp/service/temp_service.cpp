@@ -32,7 +32,7 @@ namespace {
 using temp_sub_factory = simba::mw::temp::SubMsgFactory;
 using temp_read_factory = simba::mw::temp::TempReadingMsgFactory;
 
-simba::core::ErrorCode TempService::Run(std::stop_token token) {
+simba::core::ErrorCode TempService::Run(const std::stop_token& token) {
     ConfigSensors();
     this->StartTempThread();
     AppLogger::Info("Temp Service started!");

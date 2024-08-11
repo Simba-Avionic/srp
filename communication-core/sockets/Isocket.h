@@ -55,6 +55,7 @@ class ISocket {
    */
   virtual void StartRXThread() = 0;
   virtual ~ISocket() {}
+  virtual void StopRXThread() {}
 };
 
 }  // namespace soc

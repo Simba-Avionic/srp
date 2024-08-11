@@ -1,30 +1,30 @@
 /**
  * @file Isocket_stream.h
  * @author Bartosz Snieg (snieg45@gmail.com)
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2024-05-08
- * 
+ *
  * @copyright Copyright (c) 2024
- * 
+ *
  */
 #ifndef COMMUNICATION_CORE_SOCKETS_ISOCKET_STREAM_H_
 #define COMMUNICATION_CORE_SOCKETS_ISOCKET_STREAM_H_
 
 #include <cstdint>
 #include <functional>
+#include <optional>
 #include <string>
 #include <vector>
-#include <optional>
 
 #include "communication-core/sockets/socket_config.h"
 #include "core/common/error_code.h"
 namespace simba {
 namespace com {
 namespace soc {
-using RXCallbackStream =
-    std::function<std::vector<uint8_t>(const std::string& ip, const std::uint16_t& port,
-                       std::vector<std::uint8_t>)>;
+using RXCallbackStream = std::function<std::vector<uint8_t>(
+    const std::string& ip, const std::uint16_t& port,
+    std::vector<std::uint8_t>)>;
 class ISocketStream {
  public:
   /**
@@ -48,20 +48,20 @@ class ISocketStream {
    * @param payload payload to send
    * @return core::ErrorCode status
    */
-  virtual std::optional<std::vector<uint8_t>> Transmit(const std::string& ip,
-                                   const std::uint16_t port,
-                                   std::vector<std::uint8_t> payload) = 0;
+  virtual std::optional<std::vector<uint8_t>> Transmit(
+      const std::string& ip, const std::uint16_t port,
+      std::vector<std::uint8_t> payload) = 0;
   /**
    * @brief This function start RX thread
    *
    */
   virtual void StartRXThread() = 0;
+  virtual void StopRXThread() {}
   virtual ~ISocketStream() {}
 };
 
 }  // namespace soc
 }  // namespace com
 }  // namespace simba
-
 
 #endif  // COMMUNICATION_CORE_SOCKETS_ISOCKET_STREAM_H_

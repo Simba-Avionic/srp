@@ -70,6 +70,7 @@ class StreamIpcSocket : public ISocketStream {
    *
    */
   void StartRXThread() override;
+  void StopRXThread() override;
 };
 }  // namespace soc
 }  // namespace com

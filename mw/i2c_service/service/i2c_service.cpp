@@ -112,7 +112,7 @@ std::vector<uint8_t> I2CService::RxCallback(const std::string& ip, const std::ui
     return ActionLogic(headerPtr, payload);
 }
 
-core::ErrorCode I2CService::Run(std::stop_token token) {
+core::ErrorCode I2CService::Run(const std::stop_token& token) {
     this->SleepMainThread();
     return core::ErrorCode::kOk;
 }

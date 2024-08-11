@@ -5,7 +5,11 @@ cc_library(
         "//visibility:public",
     ],
 )
-
+cc_library(
+    name = "condition_lib",
+    hdrs = ["condition.h"],
+    visibility = ["//visibility:public"],
+)
 cc_library(
     name = "common_converter",
     hdrs = ["endianess_converter.h"],
