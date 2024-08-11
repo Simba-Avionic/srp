@@ -25,7 +25,7 @@ std::vector<uint8_t> convertPayload(const double &value) {
     return bytes;
 }
 
-core::ErrorCode EnvService::Run(std::stop_token token) {
+core::ErrorCode EnvService::Run(const std::stop_token& token) {
     this->SleepMainThread();
     return core::ErrorCode::kOk;
 }

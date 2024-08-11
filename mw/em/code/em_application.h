@@ -29,7 +29,7 @@ class EmApplication final : public core::ApplicationMW {
    *
    * @param token stop token
    */
-  core::ErrorCode Run(std::stop_token token) final;
+  core::ErrorCode Run(const std::stop_token& token) final;
   /**
    * @brief This function is called to initialize the application
    *

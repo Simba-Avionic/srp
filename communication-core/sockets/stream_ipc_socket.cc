@@ -84,12 +84,14 @@ void StreamIpcSocket::StartRXThread() {
   }
   this->rx_thred = std::make_unique<std::jthread>(
       [&](std::stop_token stoken) { this->Loop(stoken); });
+  pthread_setname_np(rx_thred->native_handle(), "StreamIpcSocket RX Thread");
 }
 
 void StreamIpcSocket::Loop(std::stop_token stoken) {
   sockaddr_un client_addr;
   int client_socket;
   rc = bind(server_sock, (struct sockaddr*)&server_sockaddr, len);
+  std::stop_callback stopcall{stoken, [this]() { close(this->server_sock); }};
   if (rc == -1) {
     return;
   }
@@ -97,8 +99,11 @@ void StreamIpcSocket::Loop(std::stop_token stoken) {
   while (true) {
     std::array<char, 256 * 2> buffer;
     int clen = sizeof(client_addr);
-    client_socket =
-        accept(server_sock, (sockaddr*)&client_addr, (socklen_t*)&clen);  // NOLINT
+    client_socket = accept(server_sock, (sockaddr*)&client_addr,  // NOLINT
+                           (socklen_t*)&clen);                    // NOLINT
+    if (client_socket < 0) {
+      break;
+    }
     bytes_rec = read(client_socket, reinterpret_cast<char*>(&buffer), 256 * 2);
 
     if (bytes_rec >= 0) {
@@ -117,6 +122,10 @@ void StreamIpcSocket::Loop(std::stop_token stoken) {
     }
   }
   // close(server_sock);
+}
+void StreamIpcSocket::StopRXThread() {
+  this->rx_thred->request_stop();
+  this->rx_thred->join();
 }
 }  // namespace soc
 }  // namespace com

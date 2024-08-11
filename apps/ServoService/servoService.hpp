@@ -30,7 +30,7 @@ class ServoService : public core::ApplicationNoIPC{
   std::shared_ptr<simba::com::someip::MethodSkeleton> set_vent_val;
   i2c::PCA9685 servo_controller;
  protected:
-  core::ErrorCode Run(std::stop_token token) final;
+  core::ErrorCode Run(const std::stop_token& token) final;
 
   core::ErrorCode Initialize(
       const std::unordered_map<std::string, std::string>& parms) final;

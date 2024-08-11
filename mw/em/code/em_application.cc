@@ -18,7 +18,7 @@ EmApplication::EmApplication(/* args */) {}
 
 EmApplication::~EmApplication() {}
 
-core::ErrorCode EmApplication::Run(std::stop_token token) {
+core::ErrorCode EmApplication::Run(const std::stop_token& token) {
   this->em_service.StartApps();
   std::this_thread::sleep_for(std::chrono::seconds(2));
   this->exec_service.Init();

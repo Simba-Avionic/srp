@@ -17,7 +17,7 @@
 namespace simba {
 namespace router {
 
-core::ErrorCode Router::Run(std::stop_token token) {
+core::ErrorCode Router::Run(const std::stop_token& token) {
   auto example =
       std::make_shared<com::someip::MethodProxyBase>("ExampleApp2/someproxy");
   auto example2 =

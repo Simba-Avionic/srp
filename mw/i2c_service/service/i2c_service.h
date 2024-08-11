@@ -38,7 +38,7 @@ class I2CService : public core::ApplicationMW {
                                                    std::optional<std::vector<uint8_t>> payload);
 
  public:
-  core::ErrorCode Run(std::stop_token token) final;
+  core::ErrorCode Run(const std::stop_token& token) final;
   core::ErrorCode Initialize(
       const std::unordered_map<std::string, std::string>& parms) final;
 };

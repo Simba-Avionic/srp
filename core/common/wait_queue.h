@@ -12,7 +12,9 @@
 #define CORE_COMMON_WAIT_QUEUE_H_
 #include <condition_variable>  // NOLINT
 #include <mutex>               // NOLINT
+#include <optional>
 #include <queue>
+#include <stop_token>  // NOLINT
 #include <utility>
 namespace simba {
 namespace core {
@@ -40,6 +42,37 @@ class WaitQueue final {
     cv.notify_one();
     return flag;
   }
+  std::optional<T> Get(const std::stop_token& stoken) noexcept {
+    if (q.empty()) {
+      std::stop_callback stop_wait{stoken, [this]() { this->cv.notify_one(); }};
+      std::unique_lock lk(m);
+      cv.wait(lk, [this, &stoken] {
+        return !q.empty() || stoken.stop_requested();
+      });
+      if (stoken.stop_requested()) {
+        return std::nullopt;
+      }
+    }
+    std::lock_guard<std::mutex> guard(add_mutex);
+    auto o = q.front();
+    q.pop();
+    return o;
+  }
+  std::optional<T> GetWithoutRemove(const std::stop_token& stoken) noexcept {
+    if (q.empty()) {
+      std::stop_callback stop_wait{stoken, [this]() { this->cv.notify_one(); }};
+      std::unique_lock lk(m);
+      cv.wait(lk, [this, &stoken] {
+        return !q.empty() || stoken.stop_requested();
+      });
+      if (stoken.stop_requested()) {
+        return std::nullopt;
+      }
+    }
+    std::lock_guard<std::mutex> guard(add_mutex);
+    return q.front();
+  }
+
   T Get() noexcept {
     if (q.empty()) {
       std::unique_lock lk(m);
@@ -58,6 +91,7 @@ class WaitQueue final {
     std::lock_guard<std::mutex> guard(add_mutex);
     return q.front();
   }
+
   void Remove() {
     std::lock_guard<std::mutex> guard(add_mutex);
     q.pop();

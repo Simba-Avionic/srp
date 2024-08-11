@@ -16,10 +16,11 @@
 #include <thread>  // NOLINT
 #include <vector>
 
+#include "ara/core/instance_specifier.h"
+#include "ara/log/logger.h"
 #include "communication-core/sockets/Isocket_stream.h"
 #include "diag/jobs/diag_request.h"
 #include "diag/jobs/diag_response.h"
-
 namespace simba {
 namespace diag {
 class JobCommon {
@@ -30,12 +31,14 @@ class JobCommon {
   std::string job_id_{""};
 
  protected:
-  const std::string instance_;
+  const ara::core::InstanceSpecifier instance_;
   virtual DiagResponse Method(const DiagRequest request) = 0;
+  const ara::log::Logger& diag_logger;
 
  public:
-  void StartService();
-  explicit JobCommon(const std::string& instance);
+  void StartOffer();
+  void StopOffer();
+  explicit JobCommon(const ara::core::InstanceSpecifier& instance);
   virtual ~JobCommon() = default;
 };
 }  // namespace diag
