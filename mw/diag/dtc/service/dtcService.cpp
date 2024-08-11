@@ -18,8 +18,25 @@ namespace simba {
 namespace mw {
 namespace dtc {
 
+<<<<<<< HEAD
 namespace {
 static constexpr uint16_t dtc_id = 0x101;
+=======
+DtcService::DtcService() {}
+core::ErrorCode DtcService::Initialize(
+    const std::unordered_map<std::string, std::string>& parms) {
+  db_ = std::make_shared<DataBase>();
+  dtc_list_ = std::make_unique<DtcListJob>("DtcService/DtcList", db_);
+  dtc_by_mask_job_ =
+      std::make_unique<DtcByMaskJob>("DtcService/DtcByMask", db_);
+  dtc_snapshot_job_ =
+      std::make_unique<DtcSnapshotJob>("DtcService/dtc_snapshot");
+  clear_dtc_job_ =
+      std::make_unique<ClearDtcJob>("DtcService/clear_memory", db_);
+  this->LoadConfig("/opt/" + parms.at("app_name") +
+                   "/etc/dtc_support_list.json");
+  return core::ErrorCode::kOk;
+>>>>>>> 66b75b3 (Ara: Adding support for ARA)
 }
 
 DtcService::DtcService() {}
@@ -48,12 +65,20 @@ core::ErrorCode DtcService::Initialize(
   return core::ErrorCode::kOk;
 }
 core::ErrorCode DtcService::Run(std::stop_token token) {
+<<<<<<< HEAD
   this->dtc_sock_.Init(com::soc::SocketConfig(
       "SIMBA.DIAG.DTC", 0, 0));
   this->dtc_sock_.SetRXCallback(
       std::bind(&DtcService::DtcRxCallback, this, std::placeholders::_1,
                 std::placeholders::_2, std::placeholders::_3));
   this->dtc_sock_.StartRXThread();
+=======
+  dtc_list_->StartService();
+  dtc_by_mask_job_->StartService();
+  dtc_snapshot_job_->StartService();
+  clear_dtc_job_->StartService();
+  AppLogger::Info("App started");
+>>>>>>> 66b75b3 (Ara: Adding support for ARA)
   this->SleepMainThread();
   return core::ErrorCode::kOk;
 }

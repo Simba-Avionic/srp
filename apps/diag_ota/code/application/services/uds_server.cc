@@ -46,6 +46,12 @@ const std::map<std::uint8_t, std::function<std::string(const UdsRequest&)>>
         {0x2E, [](const UdsRequest& req) {
            return ParseToServiceAdress(0x22, req.GetPayload()[0],
                                        req.GetPayload()[1]);
+         }},
+         {0x19, [](const UdsRequest& req) {
+           return ParseToServiceAdress(0x19,0x00, req.GetPayload()[0]);
+         }},
+         {0x14, [](const UdsRequest& req) {
+           return ParseToServiceAdress(0x14,0x00, 0x00);
          }}};
 }  // namespace
 
