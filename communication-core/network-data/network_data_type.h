@@ -53,6 +53,12 @@ class NetworkDataType : public interface::IFrame {
     std::vector<std::uint8_t> buffor{help_buf.begin(), help_buf.end()};
     return buffor;
   }
+  __attribute_noinline__ std::vector<std::uint8_t> GetBufforWithoutConvert() const {;
+    std::array<uint8_t, size> help_buf;
+    std::memcpy(&help_buf, &this->value_, size);
+    std::vector<std::uint8_t> buffor{help_buf.begin(), help_buf.end()};
+    return buffor;
+  }
   simba::core::ErrorCode SetBuffor(std::vector<std::uint8_t> data) override {
     std::array<uint8_t, size> help_array;
     if (data.size() != size) {

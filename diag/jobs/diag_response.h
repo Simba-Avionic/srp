@@ -49,6 +49,8 @@ class DiagResponse {
                const std::vector<uint8_t>& payload)
       : code_{code}, payload_{payload} {}
   explicit DiagResponse(const DiagResponseCodes code) : code_{code}, payload_{} {}
+    DiagResponse(const std::vector<uint8_t>& payload)
+      : code_{DiagResponseCodes::kOk}, payload_{payload} {}
   void AddSubFunction(const std::vector<uint8_t>& sub_id) {
     std::vector<uint8_t> temp{sub_id};
     std::copy(payload_.cbegin(), payload_.cend(), std::back_inserter(temp));
@@ -58,9 +60,9 @@ class DiagResponse {
   void SetServiceId(const uint8_t s_id) { s_id_ = s_id; }
   std::vector<uint8_t> ParseToVector() const {
     if (code_ == DiagResponseCodes::kOk) {
-      std::vector<uint8_t> res{s_id_ + 0x40};
+      std::vector<uint8_t> res{static_cast<uint8_t>(s_id_ + 0x40)};
       std::copy(payload_.begin(), payload_.end(), std::back_inserter(res));
-      return std::move(res);
+      return res;
     } else {
       return {0x7f, s_id_, code_};
     }

@@ -42,5 +42,14 @@ def include_spdlog():
         urls = ["https://github.com/jacobschaer/python-doipclient/archive/refs/tags/v1.1.1.zip"],
         type = "zip",
     )
+    http_archive(
+        name = "flask_socketio",
+        strip_prefix = "Flask-SocketIO-5.3.6",
+        build_file = "//bazel/libs:flask-socketio.BUILD",
+        urls = ["https://github.com/miguelgrinberg/Flask-SocketIO/archive/refs/tags/v5.3.6.zip"],
+        type = "zip",
+        integrity = "sha256-uGmt19Drym0jt6fsM5KTGBhpJNiHVniywGmJFaLNaGw=",
+    )
+
 
     

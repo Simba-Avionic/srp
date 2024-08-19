@@ -10,8 +10,7 @@ cc_library(
     name = "common_converter",
     hdrs = ["endianess_converter.h"],
     visibility = [
-        "//core:__subpackages__",
-        "//communication-core:__subpackages__",
+        "//visibility:public",
     ],
 )
 
@@ -21,7 +20,7 @@ cc_library(
     hdrs = ["crc_16.h"],
     visibility = [
         "//core/common/test:__subpackages__",
-        ],
+    ],
 )
 
 cc_library(

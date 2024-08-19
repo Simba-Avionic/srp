@@ -23,7 +23,7 @@ std::vector<uint8_t> JobCommon::rx_callback(const std::string&,
   if (payload.size() < 2) {
     return {0x7f, payload[0], 0x10};
   }
-  const auto s_id = payload[0];
+  // const auto s_id = payload[0];
   const auto res = this->Method(DiagRequest(std::move(payload)));
   return res.ParseToVector();
 }

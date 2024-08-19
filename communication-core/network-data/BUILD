@@ -9,13 +9,9 @@ cc_library(
     name = "network_data_structure",
     srcs = ["network_data_structure.cc"],
     hdrs = ["network_data_structure.h"],
-     visibility = [
-        "//communication-core:__subpackages__",
-        "//diag/dtc/data:__subpackages__",
-        "//mw/diag/dtc:__subpackages__",
-        "//diag/exec/data:__subpackages__",
-        "//mw:__subpackages__",
-        ],
+    visibility = [
+        "//visibility:public",
+    ],
     deps = [":interfaces"],
 )
 
@@ -23,12 +19,10 @@ cc_library(
     name = "network_data_type",
     hdrs = ["network_data_type.h"],
     visibility = [
-        "//communication-core:__subpackages__",
-        "//diag:__subpackages__",
-        "//mw:__subpackages__",
-        ],
+        "//visibility:public",
+    ],
     deps = [
         ":interfaces",
         "//core/common:common_converter",
-        ],
+    ],
 )

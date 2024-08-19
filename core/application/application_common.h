@@ -56,4 +56,4 @@ class ApplicationCommon : public IApplication {
 
 }  // namespace core
 }  // namespace simba
-#endif  // CORE_APPLICATION_APPLICATION_COMMON_H_
+#endif // CORE_APPLICATION_APPLICATION_COMMON_H_
