@@ -1,12 +1,12 @@
 /**
  * @file logging_menager.cpp
  * @author Bartosz Snieg (snieg45@gmail.com)
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2024-09-01
- * 
+ *
  * @copyright Copyright (c) 2024
- * 
+ *
  */
 #include "ara/log/logging_menager.h"
 
@@ -63,7 +63,11 @@ void LoggingMenager::Log(const Logger &logger, LogLevel logLevel,
     }
   }
 }
-
+void LoggingMenager::Clear() {
+  if (loger_f_ != nullptr) {
+    loger_f_->sink_list_.clear();
+  }
+}
 void LoggingMenager::Create(std::string appId, LogMode logMode,
                             LogLevel logLevel, std::string appDescription) {
   if (loger_f_ != nullptr) {
@@ -105,6 +109,10 @@ void LoggingMenager::AddSink(std::unique_ptr<sink::LogSink> sink_) {
 
 LoggingMenager *LoggingMenager::GetInstance() { return loger_f_.get(); }
 
-LoggingMenager::~LoggingMenager() noexcept {}
+LoggingMenager::~LoggingMenager() noexcept {
+  for (auto &sin : this->sink_list_) {
+    sin.release();
+  }
+}
 }  // namespace log
 }  // namespace ara

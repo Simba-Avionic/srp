@@ -20,7 +20,11 @@ cc_library(
         "//core/common:common_converter",
     ],
 )
-
+alias(
+    name = "bench",
+    actual = "//communication-core/someip:someip_header",
+    visibility = ["//visibility:public"],
+)
 cc_library(
     name = "someip_objects",
     visibility = ["//visibility:public"],

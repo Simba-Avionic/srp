@@ -10,7 +10,11 @@ cc_library(
         "//communication-core/someip:someip_types",
     ],
 )
-
+alias(
+    name = "bench1",
+    actual = "//communication-core/someip/factory:someip_message_factory",
+    visibility = ["//visibility:public"],
+)
 cc_library(
     name = "someip_message_factory",
     srcs = ["someip_message_factory.cc"],
@@ -24,7 +28,11 @@ cc_library(
         "//communication-core/someip:someip_types",
     ],
 )
-
+alias(
+    name = "bench2",
+    actual = "//communication-core/someip/factory:someip_header_factory",
+    visibility = ["//visibility:public"],
+)
 cc_library(
     name = "someip_header_factory",
     srcs = ["someip_header_factory.cc"],

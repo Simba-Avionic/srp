@@ -13,8 +13,10 @@ cc_library(
 
 cc_library(
     name = "Result",
-    hdrs = ["result.h"],
-    visibility = ["//ara:__subpackages__"],
+    hdrs = [
+        "result.h"
+    ],
+    visibility = ["//visibility:public"],
     deps = ["//ara/core:error_lib"],
 )
 
@@ -82,7 +84,10 @@ cc_library(
         "model_db.h",
         "model_item.h",
     ],
-    visibility = ["//ara:__subpackages__","//diag/jobs:__subpackages__"],
+    visibility = [
+        "//ara:__subpackages__",
+        "//diag/jobs:__subpackages__",
+    ],
     deps = [
         "//ara/core:core_error_lib",
         "//ara/core:instance_specifier",

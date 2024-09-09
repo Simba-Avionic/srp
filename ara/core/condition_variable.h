@@ -35,6 +35,7 @@ class ConditionVariableProxy final {
   struct shm_object_t {
     pthread_cond_t cv_;
     pthread_mutex_t mutex_;
+    uint8_t status_;
   };
   const InstanceSpecifier instance_;
   ConditionVariableProxy::shm_object_t* shm_object_;
@@ -75,6 +76,7 @@ class ConditionVariableSkeleton final {
   struct shm_object_t {
     pthread_cond_t cv_;
     pthread_mutex_t mutex_;
+    uint8_t status_;
   };
   const InstanceSpecifier instance_;
 

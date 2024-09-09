@@ -8,6 +8,7 @@ cc_library(
 cc_library(
     name = "condition_lib",
     hdrs = ["condition.h"],
+    srcs = ["condition.cc"],
     visibility = ["//visibility:public"],
 )
 cc_library(

@@ -1,12 +1,12 @@
 /**
  * @file shm_skeleton.h
  * @author Bartosz Snieg (snieg45@gmail.com)
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2024-09-01
- * 
+ *
  * @copyright Copyright (c) 2024
- * 
+ *
  */
 #ifndef ARA_COM_SHM_SHM_SKELETON_H_
 #define ARA_COM_SHM_SHM_SKELETON_H_
@@ -20,6 +20,8 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
+
+#include <bit>
 
 #include "ara/com/com_error_domain.h"
 #include "ara/core/instance_specifier.h"
@@ -38,7 +40,6 @@ class ShmSkeleton final {
     pthread_mutex_t mutex_;
     shm_type_t data;
   };
-
   shm_handler_t* handler = nullptr;
   pthread_mutexattr_t attrmutex;
 

@@ -49,6 +49,7 @@ class LoggingMenager {
                      LogLevel logLevel = LogLevel::kWarn,
                      std::string appDescription = "");
   static void AddSink(std::unique_ptr<sink::LogSink> sink_);
+  static void Clear();
   static LoggingMenager *GetInstance();
 };
 }  // namespace log

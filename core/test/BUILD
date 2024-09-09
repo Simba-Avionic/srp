@@ -17,12 +17,11 @@
 #     ],
 # )
 
-cc_binary(
-    name = "core_benchmarks",
-    srcs = ["benchmark/sample_benchmark.cc"],
-    visibility = ["//visibility:public"],
-    deps = [
-        "//core/application:simba_application",
-        "@com_google_benchmark//:benchmark_main",
-    ],
-)
+# cc_test(
+#     name = "core_benchmarks",
+#     srcs = ["benchmark/sample_benchmark.cc"],
+#     visibility = ["//visibility:public"],
+#     deps = [
+#         "@com_google_benchmark//:benchmark_main",
+#     ],
+# )
