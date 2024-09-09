@@ -71,8 +71,11 @@ class LogStream final {
   /// @brief Unsigned integer insertion operator
   /// @param value An unsigned integer value
   /// @returns Reference to the current log stream
+  LogStream &operator<<(uint16_t value);
+  /// @brief Unsigned integer insertion operator
+  /// @param value An unsigned integer value
+  /// @returns Reference to the current log stream
   LogStream &operator<<(uint32_t value);
-
   /// @brief Float insertion operator
   /// @param value A float value
   /// @returns Reference to the current log stream

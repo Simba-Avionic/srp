@@ -93,12 +93,13 @@ void IpcSocket::Loop(std::stop_token stoken) {
   if (rc == -1) {
     return;
   }
-  std::stop_callback stop_wait{stoken, [this]() { close(this->server_sock); }};
+  std::stop_callback stop_wait{
+      stoken, [this]() { shutdown(this->server_sock, SHUT_RD); }};
   while (true) {
     std::array<char, 256 * 2> buffor;
     bytes_rec =
         read(server_sock, reinterpret_cast<char*>(&buffor), 256 * 2);  // NOLINT
-    if (bytes_rec >= 0) {
+    if (bytes_rec > 0) {
       if (this->callback_) {
         if (buffor.size() > 0) {
           this->callback_(

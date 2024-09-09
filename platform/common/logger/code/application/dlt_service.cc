@@ -96,42 +96,44 @@ void DltService::InitIPC() noexcept {
     ipc_soc.SetRXCallback([this](const std::string& ip,
                                  const std::uint16_t& port,
                                  std::vector<std::uint8_t> payload) {
-      const uint8_t mode = payload.at(0);
-      simba::dlt::data::DLTLogType types =
-          simba::dlt::data::DLTLogType::kDLTDebug;
-      switch (mode) {
-        case 0:
-          types = simba::dlt::data::DLTLogType::kDLTVerbose;
-          break;
-        case 1:
-          types = simba::dlt::data::DLTLogType::kDLTDebug;
-          break;
-        case 2:
-          types = simba::dlt::data::DLTLogType::kDLTInfo;
-          break;
-        case 3:
-          types = simba::dlt::data::DLTLogType::kDLTWarning;
-          break;
-        case 4:
-          types = simba::dlt::data::DLTLogType::kDLTError;
-          break;
-        case 5:
-          types = simba::dlt::data::DLTLogType::kDLTFatal;
-          break;
-        default:
-          break;
-      }
-      uint32_t timestamp{0};
-      std::memcpy(&timestamp, (payload.data() + 1), sizeof(uint32_t));
-      const std::string app_id{payload.begin() + 5, payload.begin() + 9};
-      const std::string ctx_id{payload.begin() + 9, payload.begin() + 13};
-      const std::string log_content{payload.begin() + 13, payload.end()};
-      auto r = std::make_shared<
-          simba::dlt::data::DltFrame<simba::dlt::data::DltString>>(
-          timestamp, this->ec_name, app_id, ctx_id, types,
-          simba::dlt::data::DltString{log_content});
-      if (!this->logs.push(std::move(r))) {
-        ara::log::LogError() << "DLT msg dropped in TX queue!!";
+      if (payload.size() > 13) {
+        const uint8_t mode = payload.at(0);
+        simba::dlt::data::DLTLogType types =
+            simba::dlt::data::DLTLogType::kDLTDebug;
+        switch (mode) {
+          case 0:
+            types = simba::dlt::data::DLTLogType::kDLTVerbose;
+            break;
+          case 1:
+            types = simba::dlt::data::DLTLogType::kDLTDebug;
+            break;
+          case 2:
+            types = simba::dlt::data::DLTLogType::kDLTInfo;
+            break;
+          case 3:
+            types = simba::dlt::data::DLTLogType::kDLTWarning;
+            break;
+          case 4:
+            types = simba::dlt::data::DLTLogType::kDLTError;
+            break;
+          case 5:
+            types = simba::dlt::data::DLTLogType::kDLTFatal;
+            break;
+          default:
+            break;
+        }
+        uint32_t timestamp{0};
+        std::memcpy(&timestamp, (payload.data() + 1), sizeof(uint32_t));
+        const std::string app_id{payload.begin() + 5, payload.begin() + 9};
+        const std::string ctx_id{payload.begin() + 9, payload.begin() + 13};
+        const std::string log_content{payload.begin() + 13, payload.end()};
+        auto r = std::make_shared<
+            simba::dlt::data::DltFrame<simba::dlt::data::DltString>>(
+            timestamp, this->ec_name, app_id, ctx_id, types,
+            simba::dlt::data::DltString{log_content});
+        if (!this->logs.push(std::move(r))) {
+          ara::log::LogError() << "DLT msg dropped in TX queue!!";
+        }
       }
     });
     ipc_soc.StartRXThread();

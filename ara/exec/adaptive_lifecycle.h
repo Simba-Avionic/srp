@@ -28,7 +28,6 @@
 namespace ara {
 namespace exec {
 void signal_callback_handler(int signum) {
-  std::cout << "Signal RX: " << signum << std::endl;
   AdaptiveLifecycleMenager::StopAdaptiveLifecycleMenager(signum);
 }
 void reap_child(int sig) {
@@ -51,7 +50,8 @@ static int RunAdaptiveLifecycle(int argc, char const *argv[],
   const auto res = AdaptiveLifecycleMenager::StartAdaptiveLifecycleMenager();
 
   ara::core::Deinitialize();
-  std::terminate();
+  // log::LoggingMenager::Clear();
+  // std::terminate();
   return res;
 }
 template <typename APPTYPE, typename... Params>
@@ -70,7 +70,8 @@ static int RunAdaptiveLifecycleWithoutControll(int argc, char const *argv[],
   const auto res = AdaptiveLifecycleMenager::StartAdaptiveLifecycleMenager();
 
   ara::core::Deinitialize();
-  std::terminate();
+  // log::LoggingMenager::Clear();
+  // std::terminate();
   return res;
 }
 }  // namespace exec

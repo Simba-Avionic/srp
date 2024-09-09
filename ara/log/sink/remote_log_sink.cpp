@@ -84,8 +84,9 @@ void RemoteLogSink::Loop(std::stop_token token) {
   }
 }
 RemoteLogSink::~RemoteLogSink() {
-  this->thread->request_stop();
-  this->thread->join();
+  if (this->thread->get_stop_source().stop_possible())
+    this->thread->request_stop();
+  if (this->thread->joinable()) this->thread->join();
 }
 }  // namespace sink
 }  // namespace log

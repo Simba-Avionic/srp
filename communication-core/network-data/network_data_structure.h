@@ -30,11 +30,11 @@ class NetworkDataStructure : public interface::IFrame {
   // NetworkDataStructure(const NetworkDataStructure&) = delete;
   virtual ~NetworkDataStructure() = default;
 
-/**
- * @brief Return Structure as uint8 vector
- * 
- * @return std::vector<std::uint8_t> 
- */
+  /**
+   * @brief Return Structure as uint8 vector
+   *
+   * @return std::vector<std::uint8_t>
+   */
   std::vector<std::uint8_t> GetBuffor() const override;
 
   simba::core::ErrorCode SetBuffor(std::vector<std::uint8_t> data) override;

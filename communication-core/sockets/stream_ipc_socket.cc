@@ -91,7 +91,8 @@ void StreamIpcSocket::Loop(std::stop_token stoken) {
   sockaddr_un client_addr;
   int client_socket;
   rc = bind(server_sock, (struct sockaddr*)&server_sockaddr, len);
-  std::stop_callback stopcall{stoken, [this]() { close(this->server_sock); }};
+  std::stop_callback stop_wait{
+      stoken, [this]() { shutdown(this->server_sock, SHUT_RDWR); }};
   if (rc == -1) {
     return;
   }
@@ -106,7 +107,7 @@ void StreamIpcSocket::Loop(std::stop_token stoken) {
     }
     bytes_rec = read(client_socket, reinterpret_cast<char*>(&buffer), 256 * 2);
 
-    if (bytes_rec >= 0) {
+    if (bytes_rec > 0) {
       if (this->callback_) {
         if (buffer.size() > 0) {
           auto res = this->callback_(

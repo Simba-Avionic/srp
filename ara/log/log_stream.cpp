@@ -45,7 +45,12 @@ LogStream &LogStream::operator<<(uint8_t value) {
 
   return *this;
 }
+LogStream &LogStream::operator<<(uint16_t value) {
+  std::string _valueString = std::to_string(value);
+  concat(std::move(_valueString));
 
+  return *this;
+}
 LogStream &LogStream::operator<<(uint32_t value) {
   std::string _valueString = std::to_string(value);
   concat(std::move(_valueString));
@@ -103,6 +108,7 @@ LogStream &LogStream::operator<<(LogLevel value) {
 
 LogStream &LogStream::operator<<(const ara::core::ErrorCode &value) {
   std::string _valueString = value.Message();
+  _valueString+=": "+value.SupportData();
   concat(std::move(_valueString));
 
   return *this;

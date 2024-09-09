@@ -94,4 +94,3 @@ class ShmProxy final {
 }  // namespace com
 }  // namespace ara
 #endif  // ARA_COM_SHM_SHM_PROXY_H_
-

@@ -10,10 +10,11 @@
  */
 #ifndef COMMUNICATION_CORE_SOMEIP_MESSAGE_TYPE_H_
 #define COMMUNICATION_CORE_SOMEIP_MESSAGE_TYPE_H_
+#include <cstdint>
 namespace simba {
 namespace com {
 namespace data {
-enum MessageType: uint8_t {
+enum MessageType : uint8_t {
   kRequest = 0x00,
   kRequestNoReturn = 0x01,
   kNotification = 0x02,

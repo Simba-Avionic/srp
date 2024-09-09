@@ -11,6 +11,8 @@
 #include "ara/core/condition_variable.h"
 
 #include "ara/core/core_error_domain.h"
+#include <thread>  // NOLINT
+
 namespace ara {
 namespace core {
 
@@ -60,7 +62,10 @@ bool ConditionVariableProxy::Wait() {
   pthread_mutex_lock(&shm_object_->mutex_);
   pthread_cond_wait(&shm_object_->cv_, &shm_object_->mutex_);
   pthread_mutex_unlock(&shm_object_->mutex_);
-  return true;
+  if (shm_object_->status_ == 0) {
+    return true;
+  }
+  return false;
 }
 bool ConditionVariableProxy::Wait(CheckCallback callback) {
   if (shm_object_ == nullptr) {
@@ -150,6 +155,9 @@ ConditionVariableSkeleton::~ConditionVariableSkeleton() {
   if (shm_object_ == nullptr) {
     return;
   }
+  shm_object_->status_ = 255;
+  this->NotifyAll();
+  std::this_thread::sleep_for(std::chrono::milliseconds{100});
   pthread_mutex_destroy(&shm_object_->mutex_);
   pthread_mutexattr_destroy(&attrmutex);
   pthread_cond_destroy(&shm_object_->cv_);

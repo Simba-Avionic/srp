@@ -11,8 +11,7 @@
 
 #ifndef PLATFORM_COMMON_EM_CODE_EM_APPLICATION_H_
 #define PLATFORM_COMMON_EM_CODE_EM_APPLICATION_H_
-#ifndef MW_EM_CODE_EM_APPLICATION_H_
-#define MW_EM_CODE_EM_APPLICATION_H_
+
 
 #include <condition_variable>  // NOLINT
 #include <map>
@@ -49,6 +48,5 @@ class EmApplication final : public ara::exec::AdaptiveApplication {
 
 }  // namespace em
 }  // namespace simba
-#endif  // MW_EM_CODE_EM_APPLICATION_H_
 
 #endif  // PLATFORM_COMMON_EM_CODE_EM_APPLICATION_H_

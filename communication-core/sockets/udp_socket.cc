@@ -73,7 +73,8 @@ void UdpSocket::StartRXThread() {
   if (rx_thread != nullptr) {
     return;
   }
-  this->rx_thread = std::make_unique<std::jthread>([&](std::stop_token stoken) { this->Loop(stoken); });
+  this->rx_thread = std::make_unique<std::jthread>(
+      [&](std::stop_token stoken) { this->Loop(stoken); });
 }
 
 void UdpSocket::Loop(std::stop_token stoken) {
@@ -81,6 +82,8 @@ void UdpSocket::Loop(std::stop_token stoken) {
   tv.tv_sec = 2;
   tv.tv_usec = 0;
   setsockopt(server_sock, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
+  std::stop_callback stop_wait{
+      stoken, [this]() { shutdown(this->server_sock, SHUT_RDWR); }};
   while (true) {
     std::array<char, 256 * 2> buffor;
     bytes_rec =
