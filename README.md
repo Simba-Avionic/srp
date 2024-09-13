@@ -5,7 +5,4 @@ Konfigi do budowania:
     ```
     --config=bbb-platform
     ```
-teste
-fsdfsdf
-erwrwe
 dfsdfsdfsdf
