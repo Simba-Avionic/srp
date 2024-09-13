@@ -5,6 +5,4 @@ Konfigi do budowania:
     ```
     --config=bbb-platform
     ```
-dfsdfsdfsdf
-sdfsfsdf
 dgdfgdfg
