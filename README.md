@@ -7,3 +7,4 @@ Konfigi do budowania:
     ```
 teste
 fsdfsdf
+erwrwe
