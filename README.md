@@ -5,4 +5,4 @@ Konfigi do budowania:
     ```
     --config=bbb-platform
     ```
-
+teste
