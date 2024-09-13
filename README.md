@@ -6,4 +6,4 @@ Konfigi do budowania:
     --config=bbb-platformwe132123
     ```
 dgdfgdfg
-vxcvxcvxc
+vxcvxcasdasvxc
