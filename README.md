@@ -6,3 +6,4 @@ Konfigi do budowania:
     --config=bbb-platform
     ```
 dfsdfsdfsdf
+rerre
