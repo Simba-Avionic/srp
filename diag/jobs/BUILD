@@ -9,7 +9,6 @@ cc_library(
     visibility = ["//diag/jobs:__subpackages__"],
     deps = [
         "//communication-core/sockets:socket_ipc",
-        "//diag/config_controller:diag_config_controller",
         "//ara/core:model_db_lib",
         "//ara/log",
     ],

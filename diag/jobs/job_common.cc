@@ -16,7 +16,6 @@
 #include "ara/core/model_db.h"
 #include "ara/log/logging_menager.h"
 #include "communication-core/sockets/stream_ipc_socket.h"
-#include "diag/config_controller/config_controller.h"
 namespace simba {
 namespace diag {
 std::vector<uint8_t> JobCommon::rx_callback(const std::string&,
