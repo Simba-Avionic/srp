@@ -3,7 +3,7 @@
 Konfigi do budowania:
 - BBB
     ```
-    --config=bbb-platform
+    --config=bbb-platformwe
     ```
 dgdfgdfg
 vxcvxcvxc
