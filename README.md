@@ -8,3 +8,4 @@ Konfigi do budowania:
 dfsdfsdfsdf
 rerre
 sdfsfsdf
+dgdfgdfg
