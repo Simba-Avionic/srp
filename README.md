@@ -6,5 +6,5 @@ Konfigi do budowania:
     --config=bbb-platformwe132123
     ```
 dgdfgdfg
-vxcvxcasdasvxc
+vxcvxcas
 qwe
