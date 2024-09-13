@@ -7,3 +7,4 @@ Konfigi do budowania:
     ```
 dfsdfsdfsdf
 rerre
+sdfsfsdf
