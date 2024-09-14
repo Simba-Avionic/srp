@@ -18,7 +18,6 @@
 #include "mw/i2c_service/controller/pca9685/controller.hpp"
 #include "core/json/json_parser.h"
 #include "core/common/error_code.h"
-#include "core/logger/Logger.h"
 namespace simba {
 namespace i2c {
 
@@ -37,20 +36,20 @@ namespace {
     constexpr uint8_t LOSENING_DEFAULT_DELAY = 50;
 }
 
-PCA9685::PCA9685() {
+PCA9685::PCA9685(): pac_logger_{ara::log::LoggingMenager::GetInstance()->CreateLogger("pca9","",ara::log::LogLevel::kDebug)} {
 }
-core::ErrorCode PCA9685::Init(const std::unordered_map<std::string, std::string>& parms,
+core::ErrorCode PCA9685::Init(const std::string& parms,
  std::unique_ptr<II2CController> i2c, std::unique_ptr<gpio::IGPIOController> gpio) {
   if (this->setI2C(std::move(i2c)) != core::ErrorCode::kOk || this->setGPIO(std::move(gpio)) != core::ErrorCode::kOk) {
-    AppLogger::Warning("Failed pointer assignment");
+    
+    pac_logger_.LogWarn() << ("Failed pointer assignment");
     return core::ErrorCode::kInitializeError;
   }
   this->i2c_->Init(std::make_unique<com::soc::StreamIpcSocket>());
-  this->app_name = parms.at("app_name");
-  std::string file_path = "/opt/"+this->app_name+"/etc/config.json";
+  std::string file_path = parms+"etc/config.json";
   auto db_opt = ReadConfig(file_path);
   if (!db_opt.has_value()) {
-    AppLogger::Error("cant find config in path:"+file_path);
+     pac_logger_.LogError() << ("cant find config in path:"+file_path);
     exit(1);
   }
   this->db_ = db_opt.value();
@@ -82,7 +81,7 @@ void PCA9685::MosfetFunc(const uint8_t &mosfet_id, const uint8_t &mosfet_time) {
 core::ErrorCode PCA9685::AutoSetServoPosition(const uint8_t &actuator_id, const uint8_t &state) {
       auto it = this->db_.find(actuator_id);
     if (it == this->db_.end()) {
-        AppLogger::Warning("Not find service");
+        pac_logger_.LogWarn() << ("Not find service");
         return core::ErrorCode::kNotDefine;
     }
     if (it->second.position != state) {
@@ -138,7 +137,7 @@ std::optional<std::unordered_map<uint8_t, Servo>> PCA9685::ReadConfig(std::strin
     for (auto &servo : arr.value()) {
         auto parser_opt = core::json::JsonParser::Parser(servo);
         if (!parser.has_value()) {
-            AppLogger::Warning("invalid data in servos config");
+            pac_logger_.LogWarn() << ("invalid data in servos config");
             continue;
         }
         auto parser = parser_opt.value();
@@ -148,7 +147,7 @@ std::optional<std::unordered_map<uint8_t, Servo>> PCA9685::ReadConfig(std::strin
         auto off_poss = parser.GetNumber<uint16_t>("off_pos");
         if (!(actuator_id.has_value() && channel.has_value() &&
                                 on_poss.has_value() && off_poss.has_value())) {
-            AppLogger::Warning("invalid config for servo");
+            pac_logger_.LogWarn() << ("invalid config for servo");
             continue;
         }
         Servo ser;
@@ -178,7 +177,7 @@ std::optional<std::unordered_map<uint8_t, Servo>> PCA9685::ReadConfig(std::strin
             ser.mosfet_time = mosfet_delay.value();
         }
         db.insert({actuator_id.value(), ser});
-         AppLogger::Info("Register servo id:"+std::to_string(static_cast<int>(actuator_id.value())));
+        pac_logger_.LogInfo() << "Register servo id:" << actuator_id.value();
     }
     return db;
 }

@@ -21,7 +21,6 @@
 #include "communication-core/sockets/stream_ipc_socket.h"
 #include "core/gpio/GPIO_digital_driver.h"
 #include "mw/gpio_server/data/header.hpp"
-#include "core/logger/Logger.h"
 #include "mw/gpio_server/controller/Igpio_controller.h"
 
 namespace simba {
