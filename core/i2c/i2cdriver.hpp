@@ -27,7 +27,7 @@
 
 #include "core/common/error_code.h"
 #include "core/i2c/Ii2cdriver.hpp"
-
+#include "ara/log/logging_menager.h"
 namespace simba {
 namespace core {
 namespace i2c {
@@ -35,8 +35,9 @@ namespace i2c {
 class I2CDriver : public II2CDriver {
  private:
   int i2cFile;
-
+  const ara::log::Logger& i2c_logger_;
  public:
+  I2CDriver();
   core::ErrorCode Init() override;
   core::ErrorCode Ioctl(const uint8_t address, const uint16_t type = I2C_SLAVE) override;
   /**

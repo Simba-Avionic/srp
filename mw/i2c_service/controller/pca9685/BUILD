@@ -4,7 +4,7 @@ cc_library(
         "//communication-core/sockets:socket_ipc",
         "//mw/i2c_service/data:i2c_hdr",
         "//mw/i2c_service/data:i2c_factory",
-        "//core/logger:Logger",
+        "//ara/log",
         "//mw/i2c_service/controller:i2c_controller",
         "//mw/gpio_server/controller:gpio_controller",
         "//core/json:simba_json",

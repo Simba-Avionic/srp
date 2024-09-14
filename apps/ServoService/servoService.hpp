@@ -13,27 +13,32 @@
 #include <string>
 #include <unordered_map>
 #include <memory>
+#include <map>
 
-#include "communication-core/someip-controller/event_proxy.h"
-#include "communication-core/someip-controller/method_skeleton.h"
-#include "communication-core/someip-controller/event_skeleton.h"
-#include "communication-core/someip-controller/method_proxy.h"
+#include "ara/exec/adaptive_application.h"
+
 #include "mw/i2c_service/controller/pca9685/controller.hpp"
-#include "core/application/application_no_ipc.h"
+#include "apps/ServoService/servo_service_did.h"
 namespace simba {
 namespace service {
-class ServoService : public core::ApplicationNoIPC{
+class ServoService final : public ara::exec::AdaptiveApplication {
  private:
-  std::shared_ptr<simba::com::someip::EventSkeleton> main_servo_status_event;
-  std::shared_ptr<simba::com::someip::EventSkeleton> vent_servo_status_event;
-  std::shared_ptr<simba::com::someip::MethodSkeleton> set_servo_val;
-  std::shared_ptr<simba::com::someip::MethodSkeleton> set_vent_val;
   i2c::PCA9685 servo_controller;
+  std::unique_ptr<diag::JobCommon> servo_service_did_;
  protected:
-  core::ErrorCode Run(const std::stop_token& token) final;
-
-  core::ErrorCode Initialize(
-      const std::unordered_map<std::string, std::string>& parms) final;
+  /**
+   * @brief This function is called to initialiaze the application
+   *
+   * @param parms map with parms
+   */
+  int Initialize(const std::map<ara::core::StringView, ara::core::StringView>
+                      parms) override;
+  /**
+   * @brief This function is called to launch the application
+   *
+   * @param token stop token
+   */
+  int Run(const std::stop_token& token) override;
 
  public:
   ~ServoService() = default;
