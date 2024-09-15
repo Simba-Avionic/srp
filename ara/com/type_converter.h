@@ -25,7 +25,10 @@ namespace com {
 template <typename T_OUT>
 struct Convert {
   static std::optional<T_OUT> Conv(const std::vector<std::uint8_t>& in) {
-    return std::nullopt;
+    if (in.size() < sizeof(uint8_t)) {
+      return std::nullopt;
+    }
+    return in.at(0);
   }
 };
 
@@ -44,7 +47,7 @@ struct Convert<int8_t> {
     if (in.size() != sizeof(int8_t)) {
       return std::nullopt;
     }
-    return static_cast<uint8_t>(in.at(0));
+    return static_cast<int8_t>(in.at(0));
   }
 };
 
@@ -135,7 +138,7 @@ struct Convert<double> {
 template <typename T_IN>
 struct Convert2Vector {
   static std::vector<uint8_t> Conv(const T_IN& in) {
-    return std::vector<uint8_t>{};
+    return std::vector<uint8_t>{in};
   }
 };
 
