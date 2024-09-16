@@ -1,12 +1,12 @@
 /**
  * @file service_skeleton.cc
  * @author Bartosz Snieg (snieg45@gmail.com)
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2024-09-15
- * 
+ *
  * @copyright Copyright (c) 2024
- * 
+ *
  */
 #include "ara/com/someip/service_skeleton.h"
 
@@ -56,6 +56,9 @@ ara::core::Result<void> ServiceSkeleton::StartOffer() {
   this->bindings_ =
       ara::com::someip::bindings::BindingsFactory::GetBingings(conf_model_v);
   this->bindings_->SetServiceData(this->service_id_, conf_model_v);
+  this->bindings_->SetSkeletonCallback(std::bind(&ServiceSkeleton::HandleMethod,
+                                                 this, std::placeholders::_1,
+                                                 std::placeholders::_2));
   this->BinderReady();
 
   ara::com::LogInfo() << "Mapping: [" << instance_

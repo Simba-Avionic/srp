@@ -24,14 +24,14 @@ ara::core::Result<SomeipFrame> SomeipFrame::MakeFrame(
       header.Value(),
       std::vector<uint8_t>{raw_frame.begin() + 0x10, raw_frame.end()});
 }
-template <>
-SomeipFrame SomeipFrame::MakeFrame<std::vector<uint8_t>>(
+SomeipFrame SomeipFrame::MakeFrame(
     HeaderStructure& header, const std::vector<uint8_t>& payload) {  // NOLINT
   header.length = 0x08 + payload.size();
   return SomeipFrame(header, payload);
 }
 
-SomeipFrame SomeipFrame::MakeFrame(const HeaderStructure& header) {
+SomeipFrame SomeipFrame::MakeFrame(HeaderStructure& header) {
+  header.length = 0x08;
   return SomeipFrame(header);
 }
 

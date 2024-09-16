@@ -34,10 +34,10 @@ static void NewSomeIpHeaderBenchmark(benchmark::State& state) {  // NOLINT
   for (auto _ : state) {
     ara::com::someip::HeaderStructure header{};
     const auto sut =
-        ara::com::someip::SomeipFrame::MakeFrame(std::move(header));
+        ara::com::someip::SomeipFrame::MakeFrame(header);
     const auto vec_r = sut.GetRaw();
     const auto sut2 =
-        ara::com::someip::SomeipFrame::MakeFrame(std::move(vec_r));
+        ara::com::someip::SomeipFrame::MakeFrame(vec_r);
   }
 }
 static void SomeIpHeaderBenchmark(benchmark::State& state) {  // NOLINT

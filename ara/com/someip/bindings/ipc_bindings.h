@@ -13,7 +13,8 @@
 #include <cstdint>
 #include <functional>
 #include <memory>
-#include <stop_token> // NOLINT
+#include <stop_token>  // NOLINT
+#include <string>
 #include <thread>  // NOLINT
 #include <vector>
 
@@ -26,6 +27,7 @@
 #include "ara/core/result.h"
 #include "communication-core/sockets/stream_ipc_socket.h"
 #include "core/common/condition.h"
+
 namespace ara {
 namespace com {
 namespace someip {
@@ -36,6 +38,11 @@ class IPCSkeletonBindings : public CommonBindings {
   const ara::core::StringView main_path_;
   ara::com::shm::ShmBufforSkeleton<1024> buffor_;
   ara::core::ConditionVariableSkeleton cv_;
+  std::unique_ptr<simba::com::soc::StreamIpcSocket> stream_sock_;
+
+  std::vector<uint8_t> RXCallback(const std::string& ip,
+                                  const std::uint16_t& port,
+                                  std::vector<std::uint8_t>);
 
  public:
   explicit IPCSkeletonBindings(const ara::core::StringView path);
@@ -50,11 +57,14 @@ class IPCSkeletonBindings : public CommonBindings {
 
 class IPCProxyBindings : public CommonBindings {
  protected:
-  const uint8_t last_msg_id{0U};
+  uint8_t last_msg_id{0U};
+  uint16_t msg_id{0U};
+  const ara::core::StringView main_path_;
   void ShmLoop(std::stop_token token);
   ara::com::shm::ShmBufforProxy<1024> buffor_;
   ara::core::ConditionVariableProxy cv_;
   std::unique_ptr<std::jthread> shm_loop_thread_;
+  std::unique_ptr<simba::com::soc::StreamIpcSocket> stream_sock_;
 
  public:
   explicit IPCProxyBindings(const ara::core::StringView path);

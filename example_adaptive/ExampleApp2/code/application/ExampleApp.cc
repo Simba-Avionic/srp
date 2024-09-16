@@ -11,6 +11,7 @@
 #include "example_adaptive/ExampleApp2/code/application/ExampleApp.h"
 
 #include <iostream>
+#include <memory>
 
 #include "ara/log/log.h"
 #include "core/common/condition.h"
@@ -32,9 +33,11 @@ int ExampleApp::Initialize(
 
 int ExampleApp::Run(const std::stop_token& token) {
   ara::log::LogInfo() << "App start";
+  std::shared_ptr<simba::example::ExampleServiceHandler> handler_{nullptr};
   simba::example::ExampleServiceProxy proxy{
       ara::core::InstanceSpecifier{"simba/example/ExampleApp2/service2"}};
-  proxy.StartFindService([](auto handler) {
+  proxy.StartFindService([&handler_](auto handler) {
+    handler_ = handler;
     ara::log::LogInfo() << "Try Subscribe to service";
     handler->Status.Subscribe(0, [&handler](const uint8_t& status) {
       ara::log::LogInfo() << "New status for my event !!! (" << status << ")";
@@ -50,7 +53,18 @@ int ExampleApp::Run(const std::stop_token& token) {
       });
     });
   });
-  core::condition::wait(token);
+  while (!token.stop_requested()) {
+    if (handler_ != nullptr) {
+      const auto& res = handler_->SetStatus3();
+      if (!res.HasValue()) {
+        ara::log::LogError() << "Callmethod Error! :" << res.Error();
+      } else {
+        ara::log::LogInfo() << "Call method Pass";
+      }
+    }
+    core::condition::wait_for(std::chrono::seconds{5}, token);
+  }
+
   ara::log::LogInfo() << "App Stop";
   return 0;
 }
