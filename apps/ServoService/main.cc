@@ -8,11 +8,11 @@
  * @copyright Copyright (c) 2024
  * 
  */
-#include "servoService.hpp"
-#include "core/application/application_factory.h"
-#include "untar/untar.h"
+#include "ara/exec/adaptive_lifecycle.h"
+#include "apps/ServoService/servoService.hpp"
 
 int main(int argc, char const *argv[]) {
-  simba::core::ApplicationFactory<simba::service::ServoService>::Start(argc, argv);
-  return 0;
+  // setsid();
+  return ara::exec::RunAdaptiveLifecycle<simba::service::ServoService>(argc,
+                                                                     argv);
 }

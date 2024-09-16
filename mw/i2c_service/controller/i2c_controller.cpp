@@ -12,7 +12,6 @@
 
 #include <utility>
 
-#include "core/logger/Logger.h"
 
 namespace simba {
 namespace i2c {

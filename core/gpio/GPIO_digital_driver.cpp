@@ -12,13 +12,12 @@
 #include <fstream>
 
 #include "GPIO_digital_driver.h"
-#include "core/logger/Logger.h"
 
 namespace simba {
 namespace core {
 namespace gpio {
 
-GpioDigitalDriver::GpioDigitalDriver() {}
+GpioDigitalDriver::GpioDigitalDriver(): gpio_logger_{ara::log::LoggingMenager::GetInstance()->CreateLogger("gpio","",ara::log::LogLevel::kError)} {}
 
 GpioDigitalDriver::~GpioDigitalDriver() {}
 
@@ -37,13 +36,14 @@ core::ErrorCode GpioDigitalDriver::initializePin(uint8_t pinNumber, direction_t 
     std::ofstream file;
     file.open(this->path+"/export");
     if (!file.is_open()) {
-        AppLogger::Error("Cant export pin");
+        gpio_logger_.LogError() <<
+        gpio_logger_.LogError() <<("Cant export pin");
         return core::ErrorCode::kError;
     }
     file << std::to_string(pinNumber);
     file.close();
     if (this->setDirection(pinNumber, direction) != core::ErrorCode::kOk) {
-        AppLogger::Error("cant set direction");
+        gpio_logger_.LogError() <<("cant set direction");
         return core::ErrorCode::kError;
     }
     return core::ErrorCode::kOk;
@@ -58,7 +58,7 @@ core::ErrorCode GpioDigitalDriver::setValue(uint8_t pinNumber , uint8_t value) {
     std::ofstream file;
     file.open(this->getEndpointPath(pinNumber, "value"));
     if (!file.is_open()) {
-        AppLogger::Error("error");
+        gpio_logger_.LogError() <<("error");
         return core::ErrorCode::kError;
     }
     file << std::to_string(value);
@@ -89,7 +89,7 @@ uint8_t GpioDigitalDriver::getValue(uint8_t pinNumber) {
     std::string value;
     file >> value;
     file.close();
-    AppLogger::Debug("Value is:" + value);
+    gpio_logger_.LogDebug() << ("Value is:" + value);
     return atoi(value.c_str());
 }
 

@@ -10,7 +10,6 @@
  */
 
 #include "mw/i2c_service/data/i2c_factory.h"
-#include "core/logger/Logger.h"
 
 namespace simba {
 namespace i2c {

@@ -23,6 +23,8 @@
 #include "mw/gpio_server/controller/gpio_controller.hpp"
 #include "mw/gpio_server/controller/Igpio_controller.h"
 #include "core/json/json_parser.h"
+#include "ara/log/logging_menager.h"
+
 namespace simba {
 namespace i2c {
 
@@ -45,6 +47,7 @@ class PCA9685 {
   std::unique_ptr<II2CController> i2c_;
   std::unique_ptr<gpio::IGPIOController> gpio_;
   std::string app_name;
+  const ara::log::Logger& pac_logger_;
  protected:
   std::unordered_map<uint8_t, Servo> db_;
   std::optional<std::unordered_map<uint8_t, Servo>> ReadConfig(std::string file_path) const;
@@ -55,7 +58,7 @@ class PCA9685 {
   core::ErrorCode setGPIO(std::unique_ptr<gpio::IGPIOController> gpio);
  public:
   PCA9685();
-  core::ErrorCode Init(const std::unordered_map<std::string, std::string>& parms, std::unique_ptr<II2CController> i2c,
+  core::ErrorCode Init(const std::string& parms, std::unique_ptr<II2CController> i2c,
     std::unique_ptr<gpio::IGPIOController> gpio);
   core::ErrorCode AutoSetServoPosition(const uint8_t &actuator_id, const uint8_t &state);
   std::optional<uint8_t> ReadServoPosition(const uint8_t &actuator_id) const;

@@ -19,7 +19,7 @@
 
 #include "core/gpio/GPIO_digital_driver.h"
 #include "communication-core/sockets/stream_ipc_socket.h"
-#include "core/application/application_mw.h"
+#include "ara/exec/adaptive_application.h"
 #include "nlohmann/json.hpp"
 
 namespace simba {
@@ -30,7 +30,7 @@ struct GpioConf{
   core::gpio::direction_t direction;
 };
 
-class GPIOMWService : public simba::core::ApplicationMW {
+class GPIOMWService final : public ara::exec::AdaptiveApplication {
  protected:
     std::unique_ptr<com::soc::ISocketStream> sock_;
     std::unique_ptr<core::gpio::IgpioDigitalDriver> gpio_driver_;
@@ -43,10 +43,11 @@ class GPIOMWService : public simba::core::ApplicationMW {
     core::ErrorCode Init(std::unique_ptr<com::soc::ISocketStream> socket,
                               std::unique_ptr<core::gpio::IgpioDigitalDriver> gpio);
  public:
-  core::ErrorCode Run(const std::stop_token& token) final;
+  ~GPIOMWService();
+  int Run(const std::stop_token& token) override;
 
-  core::ErrorCode Initialize(
-      const std::unordered_map<std::string, std::string>& parms) final;
+  int Initialize(const std::map<ara::core::StringView, ara::core::StringView>
+                      parms) override;
 };
 
 }  // namespace mw

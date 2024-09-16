@@ -15,6 +15,6 @@ cc_library(
     deps = [
         ":gpio_interface",
         "//core/common:common_types",
-        "//core/logger:Logger"
+        "//ara/log",
     ],
 )

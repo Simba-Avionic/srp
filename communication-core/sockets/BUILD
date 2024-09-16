@@ -29,7 +29,7 @@ cc_library(
         "//communication-core:__subpackages__",
         "//core:__subpackages__",
         "//diag:__subpackages__",
-
+        "//mw:__subpackages__",
         "//platform:__subpackages__",
     ],
     deps = [":socket_interface"],

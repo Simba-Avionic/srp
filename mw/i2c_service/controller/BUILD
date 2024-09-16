@@ -5,7 +5,6 @@ cc_library(
         "//communication-core/sockets:socket_ipc",
         "//mw/i2c_service/data:i2c_hdr",
         "//mw/i2c_service/data:i2c_factory",
-        "//core/logger:Logger",
     ],
     srcs = ["i2c_controller.cpp"],
     hdrs = [

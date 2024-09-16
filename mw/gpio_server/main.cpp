@@ -9,9 +9,9 @@
  * 
  */
 #include "mw/gpio_server/gpio_mw.hpp"
-#include "core/application/application_factory.h"
-
+#include "ara/exec/adaptive_lifecycle.h"
 int main(int argc, char const *argv[]) {
-  simba::core::ApplicationFactory<simba::mw::GPIOMWService>::Start(argc, argv);
-  return 0;
+  // setsid();
+  return ara::exec::RunAdaptiveLifecycle<simba::mw::GPIOMWService>(argc,
+                                                                     argv);
 }

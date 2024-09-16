@@ -5,8 +5,9 @@ cc_library(
     visibility = ["//mw/i2c_service:__subpackages__"],
     deps = [
         "//communication-core/sockets:socket_ipc",
-        "//core/application:simba_application",
         "//core/i2c:i2cdriver",
         "//mw/i2c_service/data:i2c_factory",
+        "//ara/exec:adaptive_application_lib",
+        "//core/common:condition_lib",
     ],
 )
