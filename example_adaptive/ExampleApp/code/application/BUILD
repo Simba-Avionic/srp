@@ -4,6 +4,7 @@ cc_binary(
         "ExampleApp.cc",
         "ExampleApp.h",
         "main.cc",
+        "example_service.h",
     ],
     deps = [
         "//ara/exec:adaptive_application_lib",

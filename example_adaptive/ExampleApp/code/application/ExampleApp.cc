@@ -16,6 +16,7 @@
 #include "core/common/condition.h"
 #include "simba/example/ExampleDataStructure.h"
 #include "simba/example/ExampleServiceSkeleton.h"
+#include "example_adaptive/ExampleApp/code/application/example_service.h"
 namespace simba {
 namespace example {
 ExampleApp::ExampleApp() {}
@@ -33,7 +34,7 @@ int ExampleApp::Initialize(
 
 int ExampleApp::Run(const std::stop_token& token) {
   ara::log::LogInfo() << "App start";
-  simba::example::ExampleServiceSkeleton skeleton2{
+  MyExampleService skeleton2{
       ara::core::InstanceSpecifier{"simba/example/ExampleApp/service2"}};
   skeleton2.StartOffer();
   uint8_t c = 0;

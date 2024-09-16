@@ -1,12 +1,12 @@
 /**
  * @file HeaderStructure.h
  * @author Bartosz Snieg (snieg45@gmail.com)
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2024-09-15
- * 
+ *
  * @copyright Copyright (c) 2024
- * 
+ *
  */
 #ifndef ARA_COM_SOMEIP_HEADERSTRUCTURE_H_
 #define ARA_COM_SOMEIP_HEADERSTRUCTURE_H_

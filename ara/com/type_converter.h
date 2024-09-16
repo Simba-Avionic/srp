@@ -138,7 +138,7 @@ struct Convert<double> {
 template <typename T_IN>
 struct Convert2Vector {
   static std::vector<uint8_t> Conv(const T_IN& in) {
-    return std::vector<uint8_t>{in};
+    return std::vector<uint8_t>{static_cast<uint8_t>(in)};
   }
 };
 

@@ -1,17 +1,19 @@
 /**
  * @file ipc_bindings.cc
  * @author Bartosz Snieg (snieg45@gmail.com)
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2024-09-15
- * 
+ *
  * @copyright Copyright (c) 2024
- * 
+ *
  */
 #include "ara/com/someip/bindings/ipc_bindings.h"
 
 #include <algorithm>
 #include <array>
+#include <future>  // NOLINT
+#include <string>
 
 #include "ara/com/log.h"
 #include "ara/com/someip/message_code.h"
@@ -29,7 +31,77 @@ void IPCSkeletonBindings::Start(std::stop_token token) {
   ara::com::LogInfo() << "IPCSkeletonBindings: " << "Started";
   buffor_.OfferService();
   cv_.Offer();
+  stream_sock_ = std::make_unique<simba::com::soc::StreamIpcSocket>();
+  stream_sock_->Init(simba::com::soc::SocketConfig{main_path_, 0, 0});
+  stream_sock_->SetRXCallback(
+      std::bind(&IPCSkeletonBindings::RXCallback, this, std::placeholders::_1,
+                std::placeholders::_2, std::placeholders::_3));
+  stream_sock_->StartRXThread();
 }
+
+std::vector<uint8_t> IPCSkeletonBindings::RXCallback(
+    const std::string& ip, const std::uint16_t& port,
+    std::vector<std::uint8_t> data) {
+  ara::com::LogDebug() << "RX new frame size: "
+                       << static_cast<uint8_t>(data.size());
+  const auto& frame_r = ara::com::someip::SomeipFrame::MakeFrame(data);
+  if (!frame_r.HasValue()) {
+    ara::com::LogError() << "Parsing Error: " << frame_r.Error();
+    ara::com::someip::HeaderStructure res{this->service_id_,
+                                          0U,
+                                          0U,
+                                          0U,
+                                          0U,
+                                          1U,
+                                          this->major_version_,
+                                          MessageType::kError,
+                                          MessageCode::kEMalformedMessage};
+    return ara::com::someip::SomeipFrame::MakeFrame(res).GetRaw();
+  }
+
+  const auto& frame = frame_r.Value();
+  if ((frame.header_.method_id & 0x8000) != 0) {
+    ara::com::someip::HeaderStructure res{this->service_id_,
+                                          frame.header_.method_id,
+                                          0U,
+                                          frame.header_.request_id,
+                                          0U,
+                                          1U,
+                                          this->major_version_,
+                                          MessageType::kError,
+                                          MessageCode::kEUnknownMethod};
+    return ara::com::someip::SomeipFrame::MakeFrame(res).GetRaw();
+  }
+  if (frame.header_.message_type == MessageType::kRequest &&
+      method_req_with_response_) {
+    const auto res_p = this->method_req_with_response_(frame.header_.method_id,
+                                                       frame.payload_);
+    if (res_p.HasValue()) {
+      ara::com::someip::HeaderStructure res{this->service_id_,
+                                            frame.header_.method_id,
+                                            0U,
+                                            frame.header_.request_id,
+                                            0U,
+                                            1U,
+                                            this->major_version_,
+                                            MessageType::kResponse,
+                                            MessageCode::kEOk};
+      return ara::com::someip::SomeipFrame::MakeFrame(res, res_p.Value())
+          .GetRaw();
+    }
+  }
+  ara::com::someip::HeaderStructure res{this->service_id_,
+                                        frame.header_.method_id,
+                                        0U,
+                                        frame.header_.request_id,
+                                        0U,
+                                        1U,
+                                        this->major_version_,
+                                        MessageType::kError,
+                                        MessageCode::kEUnknownMethod};
+  return ara::com::someip::SomeipFrame::MakeFrame(res).GetRaw();
+}
+
 void IPCSkeletonBindings::Stop() {}
 
 ara::core::Result<std::vector<uint8_t>> IPCSkeletonBindings::HandleMethod(
@@ -65,6 +137,7 @@ void IPCSkeletonBindings::SubscribeToEvent(const uint16_t& event_id) {}
 
 void IPCProxyBindings::ShmLoop(std::stop_token token) {
   std::stop_callback callback{token, [this]() { this->cv_.NotifyAll(); }};
+  ara::com::LogDebug() << "[IPCProxyBindings]: SHM loop Start";
   while (!token.stop_requested()) {
     cv_.Wait();
     if (token.stop_requested()) {
@@ -77,6 +150,7 @@ void IPCProxyBindings::ShmLoop(std::stop_token token) {
       std::vector<uint8_t> msg_v{buff + 2, buff + 2 + p_size};
       //   // delete[] buff;
       const auto& frame_r = ara::com::someip::SomeipFrame::MakeFrame(msg_v);
+      last_msg_id = *buffor_.GetNewSamplesPointer();
       if (frame_r.HasValue()) {
         const auto& frame = frame_r.Value();
         ara::com::LogDebug() << "[IPCProxyBindings]: New Event Value";
@@ -84,8 +158,11 @@ void IPCProxyBindings::ShmLoop(std::stop_token token) {
             << "[IPCProxyBindings]: Service_id: " << frame.header_.service_id;
         ara::com::LogDebug()
             << "[IPCProxyBindings]: Method_id: " << frame.header_.method_id;
-        this->event_notification_callback_(frame.header_.method_id,
-                                           frame.payload_);
+        std::async(std::launch::async, [this, &frame]() {
+          this->event_notification_callback_(frame.header_.method_id,
+                                             frame.payload_);
+        });
+
       } else {
         ara::com::LogError() << "[IPCProxyBindings]: " << frame_r.Error();
         ara::com::LogError()
@@ -98,8 +175,10 @@ void IPCProxyBindings::ShmLoop(std::stop_token token) {
 }
 
 IPCProxyBindings::IPCProxyBindings(const ara::core::StringView path)
-    : buffor_{ara::core::InstanceSpecifier{"/" + path + "-buffor"}},
+    : main_path_{path},
+      buffor_{ara::core::InstanceSpecifier{"/" + path + "-buffor"}},
       cv_{ara::core::InstanceSpecifier{"/" + path + "-cv"}} {}
+
 void IPCProxyBindings::Start(std::stop_token token) {
   ara::com::LogInfo() << "IPCProxyBindings: " << "Started";
 
@@ -120,6 +199,7 @@ void IPCProxyBindings::Start(std::stop_token token) {
   if (!token.stop_requested()) {
     shm_loop_thread_ = std::make_unique<std::jthread>(
         [this](std::stop_token token) { this->ShmLoop(token); });
+    stream_sock_ = std::make_unique<simba::com::soc::StreamIpcSocket>();
   }
 }
 void IPCProxyBindings::Stop() {
@@ -133,17 +213,37 @@ ara::core::Result<std::vector<uint8_t>> IPCProxyBindings::HandleMethod(
   HeaderStructure header_{this->service_id_,
                           method_id,
                           0U,
-                          0U,
+                          msg_id++,
                           0U,
                           1U,
                           this->major_version_,
                           MessageType::kRequest,
                           MessageCode::kEOk};
-  const auto frame = ara::com::someip::SomeipFrame::MakeFrame(header_, payload);
-  const auto vec = frame.GetRaw();
+  const auto& frame =
+      ara::com::someip::SomeipFrame::MakeFrame(header_, payload);
+  const auto& vec = frame.GetRaw();
   // TODO(Bartosz Snieg): Send and Recive
+  const auto& resp_o = stream_sock_->Transmit(main_path_, 0, vec);
+  {
+    if (!resp_o.has_value()) {
+      return ara::com::MakeErrorCode(ara::com::ComErrc::kCommunicationLinkError,
+                                     "");
+    }
+    const auto& resp_frame_r =
+        ara::com::someip::SomeipFrame::MakeFrame(resp_o.value());
+    if (!resp_frame_r.HasValue()) {
+      return ara::com::MakeErrorCode(ara::com::ComErrc::kFieldValueIsNotValid,
+                                     "");
+    }
+    const auto& resp_frame = resp_frame_r.Value();
 
-  return std::vector<uint8_t>{};
+    if (resp_frame.header_.return_code == MessageCode::kEOk) {
+      return resp_frame.payload_;
+    }
+    return ara::com::MakeErrorCode(
+        ara::com::ComErrc::kCommunicationStackError,
+        "Response Status: " + std::to_string(resp_frame.header_.return_code));
+  }
 }
 
 void IPCProxyBindings::HandleEvent(const uint16_t& method_id,

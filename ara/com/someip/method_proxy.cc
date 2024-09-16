@@ -18,7 +18,7 @@ MethodProxy::MethodProxy(uint16_t method_id) : method_id_{method_id} {}
 
 ara::core::Result<std::vector<uint8_t>> MethodProxy::HandleMethod(
     std::vector<uint8_t> payload) {
-  return std::vector<uint8_t>{};
+  return call_callback_(method_id_, payload);
 }
 void MethodProxy::HandleMethodAsync(std::vector<uint8_t> payload,
                                     const MethodCallback& callback_) {
