@@ -1,12 +1,12 @@
 /**
  * @file someip_handler.h
  * @author Bartosz Snieg (snieg45@gmail.com)
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2024-09-15
- * 
+ *
  * @copyright Copyright (c) 2024
- * 
+ *
  */
 #ifndef ARA_COM_SOMEIP_SOMEIP_HANDLER_H_
 #define ARA_COM_SOMEIP_SOMEIP_HANDLER_H_
@@ -38,6 +38,10 @@ class ServiceHandler {
                            const std::vector<uint8_t>& data) = 0;
   virtual void SubscribeNewStatus(const uint16_t event_id_,
                                   const uint8_t new_status) = 0;
+  ara::core::Result<std::vector<uint8_t>> HandleMethod(
+      const uint16_t& method_id, const std::vector<uint8_t>& data) {
+    return this->bindings_->HandleMethod(method_id, data);
+  }
 
  public:
   void SubscribeEvent(const uint16_t& event_id_);

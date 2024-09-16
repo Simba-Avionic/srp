@@ -13,12 +13,12 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         "//ara/com:com_log",
+        "//ara/com/shm:shm_buffor_lib",
         "//ara/com/someip:someip_data",
+        "//ara/core:condition_variable",
         "//ara/core:string_view",
         "//ara/core/model:Model_lib",
         "//communication-core/sockets:socket_ipc",
-        "//ara/com/shm:shm_buffor_lib",
-        "//ara/core:condition_variable",
         "//core/common:condition_lib",
     ],
 )

@@ -36,10 +36,8 @@ class CommonBindings : public IBindings {
 
  public:
   void SetSkeletonCallback(
-      MethodReqWithResponse method_req_with_response,
-      MethodReqWithoutResponse method_req_without_response) final {
+      MethodReqWithResponse method_req_with_response) final {
     method_req_with_response_ = method_req_with_response;
-    method_req_without_response_ = method_req_without_response;
   }
   void SetServiceData(const uint16_t& service_id,
                       const ara::core::model::ModelSomeIp& model) final {

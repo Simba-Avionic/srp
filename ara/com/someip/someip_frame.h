@@ -36,14 +36,9 @@ class SomeipFrame {
   std::vector<uint8_t> GetRaw() const;
   static ara::core::Result<SomeipFrame> MakeFrame(
       const std::vector<uint8_t>& raw_frame);
-  template <typename T>
   static SomeipFrame MakeFrame(HeaderStructure& header,  // NOLINT
-                               const T& payload) {
-    const auto& vec = ara::com::Convert2Vector<T>::Conv(payload);
-    header.length = 0x08 + vec.size();
-    return SomeipFrame(header, vec);
-  }
-  static SomeipFrame MakeFrame(const HeaderStructure& header);
+                               const std::vector<uint8_t>& payload);
+  static SomeipFrame MakeFrame(HeaderStructure& header);  // NOLINT
 
   static SomeipFrame MakeResponseFrame(const SomeipFrame& header,
                                        const std::vector<uint8_t>& payload);

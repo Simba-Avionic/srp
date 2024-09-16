@@ -65,8 +65,7 @@ class IBindings {
   /// @param method_req_with_response
   /// @param method_req_without_response
   virtual void SetSkeletonCallback(
-      MethodReqWithResponse method_req_with_response,
-      MethodReqWithoutResponse method_req_without_response) = 0;
+      MethodReqWithResponse method_req_with_response) = 0;
   virtual void SetProxyCallback(EventNotification event_notification_callback,
                                 SubscribeNewStatus subscribe_new_status) = 0;
   virtual void SetServiceData(const uint16_t& service_id,
