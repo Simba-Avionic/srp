@@ -11,6 +11,7 @@
 #ifndef PLATFORM_COMMON_DIAG_DEMON_CODE_SERVICES_EXAMPLE_DID_H_
 #define PLATFORM_COMMON_DIAG_DEMON_CODE_SERVICES_EXAMPLE_DID_H_
 #include <string>
+ #include <vector>
 #include <strstream>
 #include "ara/log/log.h"
 #include "diag/jobs/skeleton/did_job.h"
@@ -19,28 +20,34 @@ namespace service {
 
 class ServoServiceDiD : public diag::DiDJob {
  private:
+  const uint8_t actuator_id;
+  std::shared_ptr<i2c::PCA9685>  servoController;
   /**
    * @brief Callback for 0x22 UDS job (Read data by id) *optional
    *
    * @return DiagResponse
    */
   diag::DiagResponse Read() {
-    ara::log::LogInfo() << "Działa";
+    auto res = this->servoController->ReadServoPosition(actuator_id);
+    if (!res.has_value()) {
+      return diag::DiagResponse(diag::DiagResponseCodes::kConditionsNotCorrect);
+    }
+    ara::log::LogInfo() << "ServoServiceDID.READ" << instance_.ToString() << "::" << res.value();
     return diag::DiagResponse(diag::DiagResponseCodes::kOk,
-                              {0x10, 0x11, 0x22, 0x33});
+                              {res.value()});
   }
 diag::DiagResponse Write(const std::vector<uint8_t>& payload) {
-  
-  std::strstream buff{} ;
-  for(const auto& v : payload){
-    buff << static_cast<int>(v) <<",";
+  if (payload.size() != 1) {
+    return diag::DiagResponse{diag::DiagResponseCodes::kInvalidMessageLengthFormat};
   }
- ara::log::LogInfo() << "("<<static_cast<uint8_t>(payload.size())<<") New status RX: " << buff.str();
+  ara::log::LogInfo() <<  "Set position:" << payload[0] << ", to actuator ID:" <<this->actuator_id;
+  this->servoController->AutoSetServoPosition(this->actuator_id, payload[0]);
   return diag::DiagResponse{diag::DiagResponseCodes::kOk};
 }
  public:
-  explicit ServoServiceDiD(const ara::core::InstanceSpecifier& instance)
-      : diag::DiDJob(instance) {}
+  ServoServiceDiD(const ara::core::InstanceSpecifier& instance, std::shared_ptr<i2c::PCA9685> servo_controller, uint8_t actuator_id)
+      : diag::DiDJob(instance),servoController(servo_controller), actuator_id(actuator_id) {
+      }
 };
 
 }  // namespace platform

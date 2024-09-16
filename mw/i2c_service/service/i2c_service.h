@@ -13,14 +13,15 @@
 #include <vector>
 #include <string>
 #include <unordered_map>
+#include <map>
 #include <memory>
-#include "core/application/application_mw.h"
+#include "ara/exec/adaptive_application.h"
 #include "communication-core/sockets/stream_ipc_socket.h"
 #include "core/i2c/i2cdriver.hpp"
 #include "mw/i2c_service/data/header.h"
 namespace simba {
 namespace mw {
-class I2CService : public core::ApplicationMW {
+class I2CService final : public ara::exec::AdaptiveApplication {
  private:
     std::mutex i2c_mtx;
     std::unique_ptr<core::i2c::II2CDriver> i2c_;
@@ -38,9 +39,9 @@ class I2CService : public core::ApplicationMW {
                                                    std::optional<std::vector<uint8_t>> payload);
 
  public:
-  core::ErrorCode Run(const std::stop_token& token) final;
-  core::ErrorCode Initialize(
-      const std::unordered_map<std::string, std::string>& parms) final;
+  int Run(const std::stop_token& token) override;
+  int Initialize(const std::map<ara::core::StringView, ara::core::StringView>
+                      parms) override;
 };
 }  // namespace mw
 }  // namespace simba

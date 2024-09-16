@@ -41,7 +41,6 @@ PCA9685::PCA9685(): pac_logger_{ara::log::LoggingMenager::GetInstance()->CreateL
 core::ErrorCode PCA9685::Init(const std::string& parms,
  std::unique_ptr<II2CController> i2c, std::unique_ptr<gpio::IGPIOController> gpio) {
   if (this->setI2C(std::move(i2c)) != core::ErrorCode::kOk || this->setGPIO(std::move(gpio)) != core::ErrorCode::kOk) {
-    
     pac_logger_.LogWarn() << ("Failed pointer assignment");
     return core::ErrorCode::kInitializeError;
   }
@@ -87,6 +86,7 @@ core::ErrorCode PCA9685::AutoSetServoPosition(const uint8_t &actuator_id, const 
     if (it->second.position != state) {
         it->second.position = state;
         if (it->second.need_mosfet) {
+            pac_logger_.LogError() << "turn on servo xD";
             std::ignore = std::async(std::launch::async, &PCA9685::MosfetFunc,
                                                         this, it->second.mosfet_id, it->second.mosfet_time);
         }

@@ -10,9 +10,11 @@
  */
 #include <utility>
 #include <algorithm>
+#include <map>
 #include "mw/i2c_service/service/i2c_service.h"
 #include "mw/i2c_service/data/i2c_factory.h"
-#include "core/logger/Logger.h"
+#include "ara/log/log.h"
+#include "core/common/condition.h"
 namespace simba {
 namespace mw {
 
@@ -32,9 +34,9 @@ core::ErrorCode I2CService::Init(std::unique_ptr<core::i2c::II2CDriver> i2c,
 
 std::optional<std::vector<uint8_t>> I2CService::ReadWrite(
                   const std::vector<uint8_t> &payload, std::shared_ptr<i2c::Header> headerPtr) {
-  AppLogger::Debug("Receive READ request");
+  ara::log::LogDebug() << ("Receive READ request");
       if (payload.size()%2 != 0) {
-        AppLogger::Warning("Invalid payload size");
+        ara::log::LogWarn() << ("Invalid payload size");
         return {};
       }
       return i2c_->ReadWrite(payload[0], payload[1]);
@@ -45,7 +47,7 @@ std::optional<std::vector<uint8_t>> I2CService::WriteRead(const std::vector<uint
    *  size data to read (uint8_t)
    *  data to write (0-255B)
    */
-  AppLogger::Debug("Receive Write Read request");
+  ara::log::LogDebug() << ("Receive Write Read request");
   if (payload.size() != 2) {
     return {};
   }
@@ -112,20 +114,21 @@ std::vector<uint8_t> I2CService::RxCallback(const std::string& ip, const std::ui
     return ActionLogic(headerPtr, payload);
 }
 
-core::ErrorCode I2CService::Run(const std::stop_token& token) {
-    this->SleepMainThread();
+int I2CService::Run(const std::stop_token& token) {
+    core::condition::wait_for(std::chrono::hours::max(), token);
+    this->sock_->StopRXThread();
     return core::ErrorCode::kOk;
 }
-core::ErrorCode I2CService::Initialize(
-      const std::unordered_map<std::string, std::string>& parms) {
+int I2CService::Initialize(
+    const std::map<ara::core::StringView, ara::core::StringView> parms) {
     this->Init(std::make_unique<core::i2c::I2CDriver>(), std::make_unique<com::soc::StreamIpcSocket>());
     if (this->i2c_->Init() != core::ErrorCode::kOk) {
-      AppLogger::Warning("Cant init i2c");
+      ara::log::LogWarn() << ("Cant init i2c");
       return core::ErrorCode::kInitializeError;
     }
 
     if (this->sock_->Init(com::soc::SocketConfig(I2C_IPC_ADDR, 0, 0)) != core::ErrorCode::kOk) {
-      AppLogger::Warning("Cant init sock");
+      ara::log::LogWarn() << ("Cant init sock");
       return core::ErrorCode::kInitializeError;
     }
     this->sock_->SetRXCallback(std::bind(&I2CService::RxCallback, this, std::placeholders::_1,

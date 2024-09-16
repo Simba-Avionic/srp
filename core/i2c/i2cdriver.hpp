@@ -38,6 +38,7 @@ class I2CDriver : public II2CDriver {
   const ara::log::Logger& i2c_logger_;
  public:
   I2CDriver();
+  ~I2CDriver();
   core::ErrorCode Init() override;
   core::ErrorCode Ioctl(const uint8_t address, const uint16_t type = I2C_SLAVE) override;
   /**

@@ -23,8 +23,9 @@ namespace simba {
 namespace service {
 class ServoService final : public ara::exec::AdaptiveApplication {
  private:
-  i2c::PCA9685 servo_controller;
-  std::unique_ptr<diag::JobCommon> servo_service_did_;
+  std::shared_ptr<i2c::PCA9685> servo_controller;
+  std::unique_ptr<ServoServiceDiD> main_servo_service_did_;
+  std::unique_ptr<ServoServiceDiD> vent_servo_service_did_;
  protected:
   /**
    * @brief This function is called to initialiaze the application

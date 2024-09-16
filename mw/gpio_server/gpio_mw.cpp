@@ -10,6 +10,7 @@
  */
 #include <string>
 #include <vector>
+#include <map>
 #include <unordered_map>
 #include <iostream>
 #include <utility>
@@ -17,9 +18,9 @@
 #include "gpio_mw.hpp"
 #include "mw/gpio_server/data/header.hpp"
 #include "core/json/json_parser.h"
+#include "core/common/condition.h"
 #include "core/gpio/IGPIO_digital_driver.h"
-#include "core/logger/Logger.h"
-
+#include "ara/log/log.h"
 using json = nlohmann::json;
 
 namespace simba {
@@ -45,16 +46,16 @@ std::vector<uint8_t> GPIOMWService::RxCallback(const std::string& ip, const std:
     hdr.SetBuffor(data);
     auto it = this->config.find(hdr.GetActuatorID());
     if (it == this->config.end()) {
-        AppLogger::Warning("Unknown pin with ID: "+std::to_string(hdr.GetActuatorID()));
+        ara::log::LogWarn() << "Unknown pin with ID: " << std::to_string(hdr.GetActuatorID());
         return {0};
     }
     if (hdr.GetAction() == gpio::ACTION::SET) {
         if (it->second.direction != core::gpio::direction_t::OUT) {
-            AppLogger::Warning("Try to set IN pin value, ID: "+std::to_string(hdr.GetActuatorID()));
+            ara::log::LogWarn() <<("Try to set IN pin value, ID: "+std::to_string(hdr.GetActuatorID()));
             return {0};
         }
         if (this->gpio_driver_->setValue(it->second.pinNum, hdr.GetValue()) == core::ErrorCode::kOk) {
-            AppLogger::Debug("Change pin with ID:" + std::to_string(it->first)
+            ara::log::LogDebug() <<("Change pin with ID:" + std::to_string(it->first)
                                                     + ", to value:" + std::to_string(hdr.GetValue()));
             return {1};
         }
@@ -67,29 +68,34 @@ std::vector<uint8_t> GPIOMWService::RxCallback(const std::string& ip, const std:
         return {};
     }
 }
+GPIOMWService::~GPIOMWService() {
+    this->sock_->~ISocketStream();
+}
 
-core::ErrorCode GPIOMWService::Run(const std::stop_token& token) {
-    this->SleepMainThread();
+
+int GPIOMWService::Run(const std::stop_token& token) {
+    core::condition::wait(token);
+    this->sock_->StopRXThread();
     return core::ErrorCode::kOk;
 }
 
-core::ErrorCode GPIOMWService::Initialize(
-      const std::unordered_map<std::string, std::string>& parms) {
+int GPIOMWService::Initialize(const std::map<ara::core::StringView,
+    ara::core::StringView> parms) {
     this->Init(std::make_unique<com::soc::StreamIpcSocket>(), std::make_unique<core::gpio::GpioDigitalDriver>());
     this->sock_->Init({SOCKET_PATH, 0, 0});
     this->sock_->SetRXCallback(std::bind(&GPIOMWService::RxCallback, this, std::placeholders::_1,
             std::placeholders::_2, std::placeholders::_3));
-    const std::string path = "/opt/" + parms.at("app_name") + "/etc/config.json";
+    const std::string path = parms.at("app_path") + "etc/config.json";
     auto config_opt = ReadConfig(path);
     if (!config_opt.has_value()) {
-        AppLogger::Error("fail to read config");
+        ara::log::LogError() << "fail to read config";
         exit(1);
         return core::ErrorCode::kError;
     }
     config = config_opt.value();
     this->InitPins();
     this->sock_->StartRXThread();
-    return core::ErrorCode::kOk;
+    return 0;
 }
 std::optional<std::unordered_map<uint8_t, GpioConf>> GPIOMWService::ReadConfig(
       std::string path) const {
@@ -128,7 +134,7 @@ core::ErrorCode GPIOMWService::InitPins() {
     for (auto pin : this->config) {
         auto r = this->gpio_driver_->initializePin(pin.second.pinNum, pin.second.direction);
         if (r != core::ErrorCode::kOk) {
-            AppLogger::Warning("Cant Initialize pin with actuator_ID" + std::to_string(pin.first));
+            ara::log::LogWarn() << "Cant Initialize pin with actuator_ID" << pin.first;
             res = r;
         }
     }

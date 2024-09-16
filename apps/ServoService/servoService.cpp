@@ -20,21 +20,23 @@ namespace simba {
 namespace service {
 
 int ServoService::Run(const std::stop_token& token) {
-  servo_service_did_->StartOffer();
+  main_servo_service_did_->StartOffer();
+  vent_servo_service_did_->StartOffer();
   while (!token.stop_requested()) {
     // update servo positions;
-    auto val = this->servo_controller.ReadServoPosition(60);
+    auto val = this->servo_controller->ReadServoPosition(60);
     if (val.has_value()) {
       // main_servo_status_event->SetValue({val.value()});
     }
-    auto val2 = this->servo_controller.ReadServoPosition(61);
+    auto val2 = this->servo_controller->ReadServoPosition(61);
     if (val2.has_value()) {
       // vent_servo_status_event->SetValue({val2.value()});
     }
     ara::log::LogInfo() << ("Send servo status event");
-    core::condition::wait_for(std::chrono::milliseconds(975),token);
+    core::condition::wait_for(std::chrono::milliseconds(500), token);
   }
-  servo_service_did_->StopOffer();
+  main_servo_service_did_->StopOffer();
+  vent_servo_service_did_->StopOffer();
   return 0;
 }
 
@@ -42,10 +44,12 @@ int ServoService::Initialize(
     const std::map<ara::core::StringView, ara::core::StringView> parms) {
   //  this->servo_controller.Init(parms,
   //  std::make_unique<i2c::I2CController>());
-  this->servo_controller.Init(parms.at("app_path"),
+  this->servo_controller = std::make_shared<i2c::PCA9685>();
+  this->servo_controller->Init(parms.at("app_path"),
                               std::make_unique<simba::i2c::I2CController>(),
                               std::make_unique<gpio::GPIOController>());
-  servo_service_did_ = std::make_unique<ServoServiceDiD>(ara::core::InstanceSpecifier("/simba/apps/servoService/ServoStatus"));
+  main_servo_service_did_ = std::make_unique<ServoServiceDiD>(ara::core::InstanceSpecifier("/simba/apps/servoService/MainServoStatus"), servo_controller, 60);
+  vent_servo_service_did_ = std::make_unique<ServoServiceDiD>(ara::core::InstanceSpecifier("/simba/apps/servoService/VentServoStatus"), servo_controller, 61);
   // main_servo_status_event =
   //     std::make_shared<com::someip::EventSkeleton>("ServoApp/servoStatusEvent");
   // vent_servo_status_event = std::make_shared<com::someip::EventSkeleton>(

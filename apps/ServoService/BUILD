@@ -21,7 +21,6 @@ cc_binary(
         "//core/common:condition_lib",
         "//apps/ServoService:ara",
         "//mw/i2c_service/controller/pca9685:pca9685_controller",
-        "@untar",
         "//diag/jobs/skeleton:did_job_lib",
     ],
 )
