@@ -109,7 +109,7 @@ std::optional<std::unordered_map<uint8_t, GpioConf>> GPIOMWService::ReadConfig(
     }
     std::unordered_map<uint8_t, GpioConf> db;
     auto parser = parser_opt.value();
-    auto gpio_opt = parser.GetArray("gpio");
+    auto gpio_opt = parser.GetArray<nlohmann::json>("gpio");
     if (!gpio_opt.has_value()) {
         return std::nullopt;
     }

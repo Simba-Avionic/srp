@@ -97,9 +97,13 @@ ara::core::ErrorCode MakeErrorCode(
       static_cast<ara::core::ErrorDomain::CodeType>(code), GetComDomain(),
       data};
 }
-
-const ara::core::ErrorDomain& GetComDomain() noexcept {
-  return domain_;
+ara::core::ErrorCode MakeErrorCode(
+    ara::com::someip::MessageCode code,
+    ara::core::ErrorDomain::SupportDataType data) noexcept {
+  return ara::core::ErrorCode{
+      static_cast<ara::core::ErrorDomain::CodeType>(code), GetComDomain(),
+      data};
 }
+const ara::core::ErrorDomain& GetComDomain() noexcept { return domain_; }
 }  // namespace com
 }  // namespace ara

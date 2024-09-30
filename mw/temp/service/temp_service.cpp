@@ -125,7 +125,7 @@ int TempService::LoadConfig(
         ara::log::LogError() <<("Failed to open temp_Service config file");
         exit(1);
     }
-    auto temp_opt = parser_opt.value().GetArray("sensors-temp");
+    auto temp_opt = parser_opt.value().GetArray<nlohmann::json>("sensors-temp");
     if (!temp_opt.has_value()) {
         ara::log::LogError() <<("Invalid temp_Service config format");
         exit(2);

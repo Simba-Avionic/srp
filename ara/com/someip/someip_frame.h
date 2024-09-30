@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "ara/com/someip/HeaderStructure.h"
+#include "ara/com/someip/message_code.h"
 #include "ara/com/type_converter.h"
 #include "ara/core/result.h"
 namespace ara {
@@ -23,16 +24,16 @@ class SomeipFrame {
   HeaderStructure header_;
   const std::vector<uint8_t> payload_;
 
- private:
+ public:
   SomeipFrame(const HeaderStructure& header,
               const std::vector<uint8_t>& payload);
   explicit SomeipFrame(const HeaderStructure& header);
 
- public:
   template <typename T>
   ara::core::Result<T> GetPayload() const {
     return ara::com::Convert<T>::Conv(payload_);
   }
+  const std::vector<uint8_t>& Payload() const { return payload_; }
   std::vector<uint8_t> GetRaw() const;
   static ara::core::Result<SomeipFrame> MakeFrame(
       const std::vector<uint8_t>& raw_frame);
@@ -42,6 +43,9 @@ class SomeipFrame {
 
   static SomeipFrame MakeResponseFrame(const SomeipFrame& header,
                                        const std::vector<uint8_t>& payload);
+  static SomeipFrame MakeResponseFrameWithError(
+      const SomeipFrame& header,
+      const ara::com::someip::MessageCode& error_code);
   ~SomeipFrame() = default;
 };
 }  // namespace someip

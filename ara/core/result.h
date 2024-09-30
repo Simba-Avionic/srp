@@ -11,6 +11,7 @@
 #ifndef ARA_CORE_RESULT_H_
 #define ARA_CORE_RESULT_H_
 
+#include <optional>
 #include <variant>
 
 #include "ara/core/error_code.h"
@@ -20,7 +21,8 @@ namespace core {
 template <typename T, typename E = ErrorCode>
 class Result final {
  private:
-  const std::variant<T, E> value_{};
+  const std::optional<T> value_{};
+  const std::optional<E> error_{};
 
  public:
   using value_type = T;
@@ -28,9 +30,10 @@ class Result final {
 
   Result(const T &t) : value_{t} {}
   Result(T &&t) : value_{t} {}
-  Result(const E &e) : value_{e} {}
-  Result(E &&e) : value_{e} {}
-  Result(const Result<T, E> &other) : value_{other.value_} {}
+  Result(const E &e) : error_{e} {}
+  Result(E &&e) : error_{e} {}
+  Result(const Result<T, E> &other)
+      : value_{other.value_}, error_(other.error_) {}
 
   ~Result() noexcept = default;
 
@@ -38,18 +41,18 @@ class Result final {
   static Result FromValue(T &&t) { return Result{t}; }
   static Result FromError(const E &e) { return Result{e}; }
   static Result FromError(const E &&e) { return Result{e}; }
-  bool HasValue() const noexcept { return (value_.index() == 0); }
-  explicit operator bool() const noexcept { return (value_.index() == 0); }
-  const T &operator*() const { return std::get<T>(value_); }
-  T &&operator*() { return std::get<T>(value_); }
-  const T *operator->() const { return &std::get<T>(value_); }
-  const T &Value() const { return std::get<T>(value_); }
-  //  T &&Value() { return std::get<T>(value_); }
-  const E &Error() const { return std::get<E>(value_); }
+  bool HasValue() const noexcept { return value_.has_value(); }
+  explicit operator bool() const noexcept { return value_.has_value(); }
+  const T &operator*() const { return value_.value(); }
+  T &&operator*() { return value_.value(); }
+  const T *operator->() const { return &value_.value(); }
+  const T &Value() const { return value_.value(); }
+  // T &&Value() { return value_.value(); }
+  const E &Error() const { return error_.value(); }
   template <typename U>
   T ValueOr(U &&defaultValue) const {
     if (HasValue()) {
-      return std::get<T>(value_);
+      return value_.value();
     } else {
       return defaultValue;
     }
@@ -57,7 +60,7 @@ class Result final {
   template <typename G>
   E ErrorOr(G &&defaultError) const {
     if (!HasValue()) {
-      return std::get<E>(value_);
+      return error_.value();
     } else {
       return defaultError;
     }
@@ -66,7 +69,7 @@ class Result final {
   template <typename G>
   bool CheckError(G &&error) const {
     if (!HasValue()) {
-      return std::get<E>(value_) == error;
+      return error_.value() == error;
     } else {
       return false;
     }
@@ -76,33 +79,33 @@ class Result final {
 template <>
 class Result<void, ErrorCode> {
  private:
-  const std::variant<std::monostate, ErrorCode> value_{};
+  const std::optional<ErrorCode> error_{};
 
  public:
   using error_type = ErrorCode;
 
-  Result() : value_{} {}
-  Result(const ErrorCode &e) : value_{e} {}  // NOLINT
-  Result(ErrorCode &&e) : value_{e} {}       // NOLINT
-  Result(const Result<void, ErrorCode> &other) : value_{other.value_} {}
+  Result() : error_{std::nullopt} {}
+  Result(const ErrorCode &e) : error_{e} {}  // NOLINT
+  Result(ErrorCode &&e) : error_{e} {}       // NOLINT
+  Result(const Result<void, ErrorCode> &other) : error_{other.error_} {}
 
   ~Result() noexcept = default;
 
   static Result FromValue() { return Result{}; }
   static Result FromError(const ErrorCode &e) { return Result{e}; }
   static Result FromError(const ErrorCode &&e) { return Result{e}; }
-  bool HasValue() const noexcept { return (value_.index() == 0); }
-  explicit operator bool() const noexcept { return (value_.index() == 0); }
+  bool HasValue() const noexcept { return !error_.has_value(); }
+  explicit operator bool() const noexcept { return !error_.has_value(); }
   const void operator*() const {}
   const void operator->() const {}
   void Value() const {}
 
-  const ErrorCode &Error() const { return std::get<ErrorCode>(value_); }
+  const ErrorCode &Error() const { return error_.value(); }
 
   template <typename G>
   ErrorCode ErrorOr(G &&defaultError) const {
     if (!HasValue()) {
-      return std::get<ErrorCode>(value_);
+      return error_.value();
     } else {
       return defaultError;
     }
@@ -111,7 +114,7 @@ class Result<void, ErrorCode> {
   template <typename G>
   bool CheckError(G &&error) const {
     if (!HasValue()) {
-      return std::get<ErrorCode>(value_) == error;
+      return error_.value() == error;
     } else {
       return false;
     }

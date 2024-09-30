@@ -24,7 +24,7 @@ namespace someip {
 namespace bindings {
 class BindingsFactory {
  public:
-  static std::shared_ptr<ara::com::someip::bindings::IBindings> GetBingings(const ara::core::model::ModelSomeIp& model);
+  static std::shared_ptr<ara::com::someip::bindings::IBindings> GetBindings(const ara::core::model::ModelSomeIp& model);
 };
 }  // namespace bindings
 }  // namespace someip

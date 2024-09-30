@@ -31,6 +31,9 @@ class WaitQueue final {
   WaitQueue(const WaitQueue&) = delete;
   WaitQueue(const WaitQueue&&) = delete;
   ~WaitQueue() = default;
+  bool IsEmpty() const {
+    return q.empty();
+  }
   bool push(T obj) {
     bool flag = true;
     std::lock_guard<std::mutex> guard(add_mutex);

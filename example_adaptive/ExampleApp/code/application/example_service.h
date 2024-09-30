@@ -12,6 +12,7 @@
 #define EXAMPLE_ADAPTIVE_EXAMPLEAPP_CODE_APPLICATION_EXAMPLE_SERVICE_H_
 #include <map>
 
+#include "ara/log/log.h"
 #include "simba/example/ExampleServiceSkeleton.h"
 
 namespace simba {
@@ -26,8 +27,9 @@ class MyExampleService : public simba::example::ExampleServiceSkeleton {
   ara::core::Result<bool> SetStatus3() override { return true; }
   ara::core::Result<simba::example::ExampleDataStructure> SetStatus4()
       override {
-    return ara::com::MakeErrorCode(ara::com::ComErrc::kSetHandlerNotSet,
-                                   "Method handler is not set");
+    ara::log::LogInfo() << "Działa !!";
+    simba::example::ExampleDataStructure res{1, 1};
+    return res;
   }
   ara::core::Result<void> SetStatus5() override { return {}; }
 };

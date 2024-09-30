@@ -45,7 +45,7 @@ class DiagErrorDomain final : public ara::core::ErrorDomain {
  public:
   using Errc = DiagErrc;
 
-  constexpr DiagErrorDomain() noexcept;
+  DiagErrorDomain() noexcept;
   const char* Name() const noexcept override;
   const char* Message(
       ara::core::ErrorDomain::CodeType errorCode) const noexcept override;

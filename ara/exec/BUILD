@@ -13,5 +13,6 @@ cc_library(
         "//ara/core:ara_initialization_lib",
         "//ara/core:instance_specifier",
         "//ara/log",
+        "//ara/com",
     ],
 )

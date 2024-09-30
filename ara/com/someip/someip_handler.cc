@@ -34,7 +34,7 @@ ara::core::Result<void> ServiceHandler::StartFind(std::stop_token token) {
   }
   const auto& conf_model_v = conf_model.Value();
   this->bindings_ =
-      ara::com::someip::bindings::BindingsFactory::GetBingings(conf_model_v);
+      ara::com::someip::bindings::BindingsFactory::GetBindings(conf_model_v);
   this->bindings_->SetServiceData(this->service_id_, conf_model_v);
 
   ara::com::LogInfo() << "Mapping: [" << instance_
@@ -46,6 +46,7 @@ ara::core::Result<void> ServiceHandler::StartFind(std::stop_token token) {
       std::bind(&ServiceHandler::SubscribeNewStatus, this,
                 std::placeholders::_1, std::placeholders::_2));
   this->bindings_->Start(token);
+  this->founded_ = !token.stop_requested();
   return {};
 }
 void ServiceHandler::SubscribeEvent(const uint16_t& event_id_) {

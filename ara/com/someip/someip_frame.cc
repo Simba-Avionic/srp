@@ -10,6 +10,8 @@
  */
 #include "ara/com/someip/someip_frame.h"
 
+#include "ara/com/someip/message_type.h"
+
 namespace ara {
 namespace com {
 namespace someip {
@@ -38,10 +40,19 @@ SomeipFrame SomeipFrame::MakeFrame(HeaderStructure& header) {
 SomeipFrame SomeipFrame::MakeResponseFrame(
     const SomeipFrame& header, const std::vector<uint8_t>& payload) {
   someip::HeaderStructure new_header = header.header_;
+  new_header.message_type = static_cast<uint8_t>(MessageType::kResponse);
   new_header.length = 0x08 + payload.size();
   return SomeipFrame(new_header, payload);
 }
-
+SomeipFrame SomeipFrame::MakeResponseFrameWithError(
+    const SomeipFrame& header,
+    const ara::com::someip::MessageCode& error_code) {
+  someip::HeaderStructure new_header = header.header_;
+  new_header.message_type = static_cast<uint8_t>(MessageType::kError);
+  new_header.return_code = static_cast<uint8_t>(error_code);
+  new_header.length = 0x08;
+  return SomeipFrame(new_header);
+}
 SomeipFrame::SomeipFrame(const HeaderStructure& header,
                          const std::vector<uint8_t>& payload)
     : header_{header}, payload_{payload} {}
