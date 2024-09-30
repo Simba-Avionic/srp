@@ -27,6 +27,11 @@ py_library(
         requirement("ply"),
     ],
 )
+py_library(
+    name = "someip_lib",
+    deps = [requirement("someipy")],
+    visibility = ["//visibility:public"],
+)
 
 # py_library(
 #     name = "pytest",

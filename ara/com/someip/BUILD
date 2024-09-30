@@ -38,6 +38,7 @@ cc_library(
         "message_type.h",
         "network_endpoint.h",
         "someip_frame.h",
+        "EndpointOption.h",
     ],
     visibility = ["//visibility:public"],
     deps = [

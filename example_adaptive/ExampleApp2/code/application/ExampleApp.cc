@@ -39,7 +39,7 @@ int ExampleApp::Run(const std::stop_token& token) {
   proxy.StartFindService([&handler_](auto handler) {
     handler_ = handler;
     ara::log::LogInfo() << "Try Subscribe to service";
-    handler->Status.Subscribe(0, [&handler](const uint8_t& status) {
+    handler->Status.Subscribe(1, [&handler](const uint8_t& status) {
       ara::log::LogInfo() << "New status for my event !!! (" << status << ")";
       handler->Status.SetReceiveHandler([&handler]() {
         const auto val = handler->Status.GetNewSamples();

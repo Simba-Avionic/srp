@@ -33,6 +33,9 @@ class SomeipFrame {
   ara::core::Result<T> GetPayload() const {
     return ara::com::Convert<T>::Conv(payload_);
   }
+  const std::vector<uint8_t>& Payload() const {
+    return payload_;
+  }
   std::vector<uint8_t> GetRaw() const;
   static ara::core::Result<SomeipFrame> MakeFrame(
       const std::vector<uint8_t>& raw_frame);

@@ -44,7 +44,7 @@ struct Convert<uint8_t> {
 template <>
 struct Convert<int8_t> {
   static std::optional<int8_t> Conv(const std::vector<std::uint8_t>& in) {
-    if (in.size() != sizeof(int8_t)) {
+    if (in.size() < sizeof(int8_t)) {
       return std::nullopt;
     }
     return static_cast<int8_t>(in.at(0));
@@ -61,7 +61,7 @@ T_OUT ConverVector2Number(const std::vector<uint8_t>& in) {
 template <>
 struct Convert<uint16_t> {
   static std::optional<uint16_t> Conv(const std::vector<std::uint8_t>& in) {
-    if (in.size() != sizeof(uint16_t)) {
+    if (in.size() < sizeof(uint16_t)) {
       return std::nullopt;
     }
     return ConverVector2Number<sizeof(uint16_t), uint16_t>(in);
@@ -70,7 +70,7 @@ struct Convert<uint16_t> {
 template <>
 struct Convert<uint32_t> {
   static std::optional<uint32_t> Conv(const std::vector<std::uint8_t>& in) {
-    if (in.size() != sizeof(uint32_t)) {
+    if (in.size() < sizeof(uint32_t)) {
       return std::nullopt;
     }
     return ConverVector2Number<sizeof(uint32_t), uint32_t>(in);
@@ -79,7 +79,7 @@ struct Convert<uint32_t> {
 template <>
 struct Convert<uint64_t> {
   static std::optional<uint64_t> Conv(const std::vector<std::uint8_t>& in) {
-    if (in.size() != sizeof(uint64_t)) {
+    if (in.size() < sizeof(uint64_t)) {
       return std::nullopt;
     }
     return ConverVector2Number<sizeof(uint64_t), uint64_t>(in);
@@ -89,7 +89,7 @@ struct Convert<uint64_t> {
 template <>
 struct Convert<int16_t> {
   static std::optional<int16_t> Conv(const std::vector<std::uint8_t>& in) {
-    if (in.size() != sizeof(int16_t)) {
+    if (in.size() < sizeof(int16_t)) {
       return std::nullopt;
     }
     return ConverVector2Number<sizeof(int16_t), int16_t>(in);
@@ -98,7 +98,7 @@ struct Convert<int16_t> {
 template <>
 struct Convert<int32_t> {
   static std::optional<int32_t> Conv(const std::vector<std::uint8_t>& in) {
-    if (in.size() != sizeof(int32_t)) {
+    if (in.size() < sizeof(int32_t)) {
       return std::nullopt;
     }
     return ConverVector2Number<sizeof(int32_t), int32_t>(in);
@@ -107,7 +107,7 @@ struct Convert<int32_t> {
 template <>
 struct Convert<int64_t> {
   static std::optional<int64_t> Conv(const std::vector<std::uint8_t>& in) {
-    if (in.size() != sizeof(int64_t)) {
+    if (in.size() < sizeof(int64_t)) {
       return std::nullopt;
     }
     return ConverVector2Number<sizeof(int64_t), int64_t>(in);
@@ -117,7 +117,7 @@ struct Convert<int64_t> {
 template <>
 struct Convert<float> {
   static std::optional<float> Conv(const std::vector<std::uint8_t>& in) {
-    if (in.size() != sizeof(float)) {
+    if (in.size() < sizeof(float)) {
       return std::nullopt;
     }
     return ConverVector2Number<sizeof(float), float>(in);
@@ -126,7 +126,7 @@ struct Convert<float> {
 template <>
 struct Convert<double> {
   static std::optional<double> Conv(const std::vector<std::uint8_t>& in) {
-    if (in.size() != sizeof(double)) {
+    if (in.size() < sizeof(double)) {
       return std::nullopt;
     }
     return ConverVector2Number<sizeof(double), double>(in);
