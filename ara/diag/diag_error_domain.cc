@@ -63,7 +63,7 @@ std::unordered_map<ara::core::ErrorDomain::CodeType, ara::core::StringView>
 const DiagErrorDomain domain_;
 }  // namespace
 
-constexpr DiagErrorDomain::DiagErrorDomain() noexcept
+DiagErrorDomain::DiagErrorDomain() noexcept
     : ara::core::ErrorDomain{0x8000000000000403} {}
 const char* DiagErrorDomain::Name() const noexcept {
   return ara::core::StringView{"CoreErrorDomain"}.c_str();

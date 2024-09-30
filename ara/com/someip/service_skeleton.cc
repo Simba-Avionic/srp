@@ -54,7 +54,7 @@ ara::core::Result<void> ServiceSkeleton::StartOffer() {
   }
   const auto& conf_model_v = conf_model.Value();
   this->bindings_ =
-      ara::com::someip::bindings::BindingsFactory::GetBingings(conf_model_v);
+      ara::com::someip::bindings::BindingsFactory::GetBindings(conf_model_v);
   this->bindings_->SetServiceData(this->service_id_, conf_model_v);
   this->bindings_->SetSkeletonCallback(std::bind(&ServiceSkeleton::HandleMethod,
                                                  this, std::placeholders::_1,

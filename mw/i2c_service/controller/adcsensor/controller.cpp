@@ -58,9 +58,9 @@ void ADCSensorController::setConfig(const std::unordered_map<uint8_t, SensorConf
     this->db_ = db_;
 }
 
-std::unordered_map<uint8_t, SensorConfig> ADCSensorController::ReadConfig(core::json::JsonParser parser) const {
+std::unordered_map<uint8_t, SensorConfig> ADCSensorController::ReadConfig(core::json::JsonParser parser_) const {
     std::unordered_map<uint8_t, SensorConfig> db;
-    auto sensors_opt = parser.GetArray("sensors");
+    auto sensors_opt = parser_.GetArray<nlohmann::json>("sensors");
     if (!sensors_opt.has_value()) {
         exit(1);
     }

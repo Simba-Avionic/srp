@@ -131,7 +131,7 @@ std::optional<std::unordered_map<uint8_t, Servo>> PCA9685::ReadConfig(std::strin
     if (!parser.has_value()) {
         return std::nullopt;
     }
-    auto arr = parser.value().GetArray("servos");
+    auto arr = parser.value().GetArray<nlohmann::json>("servos");
     if (!arr.has_value()) {
         return std::nullopt;
     }

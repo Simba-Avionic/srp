@@ -26,7 +26,7 @@ class ServiceHandler {
  protected:
   const ara::core::InstanceSpecifier instance_;
   const std::uint16_t service_id_;
-  bool offered_{false};
+  bool founded_{false};
 
   std::uint16_t instance_id_{0U};
   std::uint8_t major_version_{0U};

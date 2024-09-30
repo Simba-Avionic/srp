@@ -34,9 +34,9 @@ class JsonParser {
   std::optional<JsonParser> GetObject(const std::string &name) const;
   nlohmann::json GetObject() const;
   std::optional<std::string> GetString(const std::string& name) const noexcept;
-  std::optional<nlohmann::json> GetArray(const std::string& name);
+  // std::optional<nlohmann::json> GetArray(const std::string& name);
   template <typename T>
-  std::optional<std::vector<T>> GetArray(const std::string& name) {
+  std::optional<std::vector<T>> GetArray(const std::string& name) const {
     if (!obj.contains(name)) {
       return std::nullopt;
     }

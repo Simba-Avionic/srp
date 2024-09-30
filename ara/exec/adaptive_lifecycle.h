@@ -39,7 +39,6 @@ static int RunAdaptiveLifecycle(int argc, char const *argv[],
                                 Params &&...args) {
   setsid();
   ara::core::Initialize();
-
   AdaptiveLifecycleMenager::CreateAdaptiveLifecycleMenager<APPTYPE>(
       argc, argv, true, std::forward<Params>(args)...);
 
@@ -55,7 +54,7 @@ static int RunAdaptiveLifecycle(int argc, char const *argv[],
   return res;
 }
 template <typename APPTYPE, typename... Params>
-static int RunAdaptiveLifecycleWithoutControll(int argc, char const *argv[],
+static int RunAdaptiveLifecycleWithoutControl(int argc, char const *argv[],
                                                Params &&...args) {
   setsid();
   ara::core::Initialize();

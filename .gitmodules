@@ -9,3 +9,6 @@
 [submodule "desktop_gui"]
     path = tools/desktop_gui
 	url = git@github.com:Simba-Avionic/desktop_gui.git
+[submodule "third_party/python/someipy"]
+	path = third_party/python/someipy
+	url = git@github.com:Simba-Avionic/someipy.git
