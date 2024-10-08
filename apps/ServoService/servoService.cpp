@@ -32,7 +32,7 @@ int ServoService::Run(const std::stop_token& token) {
     if (val2.has_value()) {
       // vent_servo_status_event->SetValue({val2.value()});
     }
-    ara::log::LogInfo() << ("Send servo status event");
+    ara::log::LogDebug() << ("Send servo status event");
     core::condition::wait_for(std::chrono::milliseconds(500), token);
   }
   main_servo_service_did_->StopOffer();

@@ -2,24 +2,36 @@ cc_binary(
     name = "temp_service_mw",
     srcs = [
         "main.cc",
-        "temp_service.h",
-        "temp_service.cpp",
     ],
     visibility = [
         "//deployment:__subpackages__",
         "//mw/temp:__subpackages__"
     ],
-    
     deps = [
-        "//core/application:simba_application",
+        "//mw/temp/service:temp_service_lib",
+    ],
+)
+
+cc_library(
+    name = "temp_service_lib",
+    deps = [
         "//communication-core/network-data:network_data_structure",
         "//communication-core/network-data:network_data_type",
         "//communication-core/sockets:socket_interface",
         "//communication-core/sockets:socket_ipc",
-        "//mw/temp/subscribe_msg:subscribe_header",
-        "//mw/temp/subscribe_msg:subscribe_msg_factory",
+        "//mw/temp/subscribe_msg",
         "//mw/temp/temp_reading_msg:temp_reading_msg_factory",
         "//core/json:simba_json",
-
+        "//core/common:condition_lib",
+        "//diag/jobs/skeleton:did_job_lib",
+        "//ara/exec:adaptive_application_lib",
+        "//deployment/mw/temp:ara",
+    ],
+    srcs = [
+        "temp_service.cpp",
+        ],
+    hdrs = [
+        "temp_service.h",
+        "temp_mw_did.h",
     ],
 )

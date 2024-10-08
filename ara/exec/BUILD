@@ -10,6 +10,7 @@ cc_library(
     ],
     visibility = ["//visibility:public"],
     deps = [
+        "//ara/core:ara_initialization_lib",
         "//ara/core:instance_specifier",
         "//ara/log",
     ],

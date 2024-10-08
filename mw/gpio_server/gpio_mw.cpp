@@ -30,14 +30,14 @@ namespace {
     constexpr auto SOCKET_PATH = "SIMBA.GPIO";
 }
 
-core::ErrorCode GPIOMWService::Init(std::unique_ptr<com::soc::ISocketStream> socket,
-                              std::unique_ptr<core::gpio::IgpioDigitalDriver> gpio) {
+int GPIOMWService::Init(std::unique_ptr<com::soc::ISocketStream> socket,
+                              std::shared_ptr<core::gpio::IgpioDigitalDriver> gpio) {
   if (!socket || !gpio) {
-    return core::ErrorCode::kInitializeError;
+    return 1;
   }
   this->sock_ = std::move(socket);
   this->gpio_driver_ = std::move(gpio);
-  return core::ErrorCode::kOk;
+  return 0;
 }
 
 std::vector<uint8_t> GPIOMWService::RxCallback(const std::string& ip, const std::uint16_t& port,
@@ -76,12 +76,13 @@ GPIOMWService::~GPIOMWService() {
 int GPIOMWService::Run(const std::stop_token& token) {
     core::condition::wait(token);
     this->sock_->StopRXThread();
+    this->pin_did_->StopOffer();
     return core::ErrorCode::kOk;
 }
 
 int GPIOMWService::Initialize(const std::map<ara::core::StringView,
     ara::core::StringView> parms) {
-    this->Init(std::make_unique<com::soc::StreamIpcSocket>(), std::make_unique<core::gpio::GpioDigitalDriver>());
+    this->Init(std::make_unique<com::soc::StreamIpcSocket>(), std::make_shared<core::gpio::GpioDigitalDriver>());
     this->sock_->Init({SOCKET_PATH, 0, 0});
     this->sock_->SetRXCallback(std::bind(&GPIOMWService::RxCallback, this, std::placeholders::_1,
             std::placeholders::_2, std::placeholders::_3));
@@ -94,6 +95,9 @@ int GPIOMWService::Initialize(const std::map<ara::core::StringView,
     }
     config = config_opt.value();
     this->InitPins();
+    pin_did_ = std::make_unique<GpioMWDID>(
+                    ara::core::InstanceSpecifier("/simba/mw/gpio_service/gpio_pin_did"), this->gpio_driver_, config);
+    pin_did_->StartOffer();
     this->sock_->StartRXThread();
     return 0;
 }
@@ -129,11 +133,11 @@ std::optional<std::unordered_map<uint8_t, GpioConf>> GPIOMWService::ReadConfig(
     return db;
 }
 
-core::ErrorCode GPIOMWService::InitPins() {
-    auto res = core::ErrorCode::kOk;
+int GPIOMWService::InitPins() {
+    auto res = 0;
     for (auto pin : this->config) {
         auto r = this->gpio_driver_->initializePin(pin.second.pinNum, pin.second.direction);
-        if (r != core::ErrorCode::kOk) {
+        if (r != 0) {
             ara::log::LogWarn() << "Cant Initialize pin with actuator_ID" << pin.first;
             res = r;
         }
