@@ -11,7 +11,7 @@
 #ifndef PLATFORM_COMMON_DIAG_DEMON_CODE_SERVICES_EXAMPLE_DID_H_
 #define PLATFORM_COMMON_DIAG_DEMON_CODE_SERVICES_EXAMPLE_DID_H_
 #include <string>
- #include <vector>
+#include <vector>
 #include <strstream>
 #include "ara/log/log.h"
 #include "diag/jobs/skeleton/did_job.h"
