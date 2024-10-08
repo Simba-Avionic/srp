@@ -12,7 +12,9 @@
 #include <iostream>
 #include <chrono>  // NOLINT
 #include <utility>  // NOLINT
+#include <map>
 
+#include "core/common/condition.h"
 #include "core/json/json_parser.h"
 
 namespace simba {
@@ -32,20 +34,22 @@ namespace {
 using temp_sub_factory = simba::mw::temp::SubMsgFactory;
 using temp_read_factory = simba::mw::temp::TempReadingMsgFactory;
 
-simba::core::ErrorCode TempService::Run(const std::stop_token& token) {
+int TempService::Run(const std::stop_token& token) {
     ConfigSensors();
     this->StartTempThread();
-    AppLogger::Info("Temp Service started!");
-    this->SleepMainThread();
-    return core::ErrorCode::kError;
+    ara::log::LogInfo() <<("Temp Service started!");
+    core::condition::wait(token);
+    this->sub_sock_->StopRXThread();
+    this->temp_did_->StopOffer();
+    return 0;
 }
 
-simba::core::ErrorCode TempService::Initialize(
-    const std::unordered_map<std::string, std::string>& parms) {
+int TempService::Initialize(const std::map<ara::core::StringView, ara::core::StringView>
+                      parms) {
     LoadConfig(parms, std::make_unique<com::soc::IpcSocket>());
     if (auto ret = this->sub_sock_->Init(
         com::soc::SocketConfig(kTempServiceName, 0, 0))) {
-        AppLogger::Error("Couldn't initialize " +
+        ara::log::LogError() <<("Couldn't initialize " +
             std::string(kTempServiceName) + "socket!");
         return ret;
     }
@@ -54,17 +58,23 @@ simba::core::ErrorCode TempService::Initialize(
         std::bind(&simba::mw::temp::TempService::SubCallback, this,
             std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
     this->sub_sock_->StartRXThread();
+    std::vector<uint8_t> sensors_id;
+    for (const auto& id : sensorPathsToIds) {
+        sensors_id.push_back(id.second);
+    }
+    this->temp_did_ = std::make_unique<TempMWDID>(ara::core::InstanceSpecifier("/simba/mw/temp_service/temp_status_did"),sensors_id);
+    this->temp_did_->StartOffer();
     return simba::core::ErrorCode::kOk;
 }
 
-simba::core::ErrorCode TempService::ConfigSensors() const {
+int TempService::ConfigSensors() const {
     for (auto sensor : this->sensorPathsToIds) {
         std::fstream file(sensor.first + "/resolution");
         if (!file) {
-            AppLogger::Warning("Sensor " + sensor.first + " not available!");
+            ara::log::LogWarn() <<("Sensor " + sensor.first + " not available!");
             break;
         }
-        AppLogger::Debug("set resolution for sensor"+sensor.first);
+        ara::log::LogDebug() <<("set resolution for sensor"+sensor.first);
         file << static_cast<int>(sensor_resolution);
         file.close();
     }
@@ -73,7 +83,7 @@ simba::core::ErrorCode TempService::ConfigSensors() const {
 
 void TempService::StartTempThread() {
     if (temp_thread != nullptr) {
-        AppLogger::Error("Error starting temperature thread!");
+        ara::log::LogError() <<("Error starting temperature thread!");
         return;
     }
     this->temp_thread = std::make_unique<std::jthread>(
@@ -88,23 +98,23 @@ void TempService::SubCallback(const std::string& ip, const std::uint16_t& port,
 
     if (!this->subscribers.contains(service_id)) {
         this->subscribers.insert(service_id);
-        AppLogger::Info("Registered new client with id: "
+        ara::log::LogInfo() <<("Registered new client with id: "
             + std::to_string(service_id));
     }
 }
 
-simba::core::ErrorCode TempService::LoadConfig(
-    const std::unordered_map<std::string, std::string>& parms, std::unique_ptr<com::soc::IpcSocket> sock) {
+int TempService::LoadConfig(
+    const std::map<ara::core::StringView, ara::core::StringView>& parms, std::unique_ptr<com::soc::IpcSocket> sock) {
     this->sub_sock_ = std::move(sock);
-    const std::string path = "/opt/" + parms.at("app_name") + "/etc/config.json";
+    const std::string path = parms.at("app_name") + "etc/config.json";
     auto parser_opt = core::json::JsonParser::Parser(path);
     if (!parser_opt.has_value()) {
-        AppLogger::Error("Failed to open temp_Service config file");
+        ara::log::LogError() <<("Failed to open temp_Service config file");
         exit(1);
     }
     auto temp_opt = parser_opt.value().GetArray("sensors-temp");
     if (!temp_opt.has_value()) {
-        AppLogger::Error("Invalid temp_Service config format");
+        ara::log::LogError() <<("Invalid temp_Service config format");
         exit(2);
     }
     for (const auto &data : temp_opt.value()) {
@@ -130,7 +140,7 @@ std::vector<TempReading> TempService::RetrieveTempReadings() const {
         std::ifstream file(path.first + "/temperature");
 
         if (!file) {
-            AppLogger::Warning("Sensor " + path.first + " not available!");
+            ara::log::LogWarn() <<("Sensor " + path.first + " not available!");
             break;
         }
 
@@ -139,7 +149,7 @@ std::vector<TempReading> TempService::RetrieveTempReadings() const {
         const double sensorValueRaw = std::stoi(line)/ 1000.0;
         file.close();
 
-        AppLogger::Debug("Sensor " + path.first +
+        ara::log::LogDebug() <<("Sensor " + path.first +
             ": " + std::to_string(sensorValueRaw));
 
         readings.push_back(TempReading{path.second, sensorValueRaw});
@@ -155,16 +165,19 @@ void TempService::SendTempReadings(
         std::vector<uint8_t> data = temp_read_factory::GetBuffer(readings);
 
         if (this->sub_sock_->Transmit(ip, 0, data)) {
-            AppLogger::Error("Can't send message to: " + ip);
+            ara::log::LogError() <<("Can't send message to: " + ip);
             break;
         }
     }
 }
 
-simba::core::ErrorCode TempService::Loop(std::stop_token stoken) {
+int TempService::Loop(std::stop_token stoken) {
     std::vector<TempReading> readings;
-    while (true) {
+    while (!stoken.stop_requested()) {
         readings = RetrieveTempReadings();
+        for (const auto& read : readings) {
+            this->temp_did_->UpdateTemp(read.first, read.second);
+        }
         SendTempReadings(readings);
         readings.clear();
         std::this_thread::sleep_for(std::chrono::milliseconds(SENSOR_TIMEOUT));

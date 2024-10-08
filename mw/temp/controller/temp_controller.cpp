@@ -40,7 +40,7 @@ simba::core::ErrorCode TempController::SetUp(simba::com::soc::RXCallback callbac
     if ((res = this->sub_sock_->Init(
         com::soc::SocketConfig(
             kSubscriberPrefix + std::to_string(this->service_id), 0, 0)))) {
-        AppLogger::Error("Couldn't initialize socket!");
+        ara::log::LogError() <<("Couldn't initialize socket!");
         return res;
     }
     this->callback_ = callback;
@@ -57,7 +57,7 @@ simba::core::ErrorCode TempController::Subscribe() {
     SubscribeHeader hdr{this->service_id};
     std::vector<uint8_t> data = temp_sub_factory::GetBuffer(std::make_shared<SubscribeHeader>(hdr));
     if (auto res = sub_sock_->Transmit(kTempServiceName, 0, data)) {
-        AppLogger::Error("Failed to subscribe to " + std::string(kTempServiceName)+":::"+std::to_string(res));
+        ara::log::LogError() <<("Failed to subscribe to " + std::string(kTempServiceName)+":::"+std::to_string(res));
         return res;
     }
     return simba::core::ErrorCode::kOk;

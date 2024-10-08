@@ -1,3 +1,15 @@
+
+cc_library(
+    name = "subscribe_msg",
+    deps = [
+        "//mw/temp/subscribe_msg:subscribe_header",
+        "//mw/temp/subscribe_msg:subscribe_msg_factory",
+    ],
+    visibility = [
+        "//mw/temp:__subpackages__",
+    ],
+)
+
 cc_library(
     name = "subscribe_header",
     srcs = ["subscribe_header.cpp"],

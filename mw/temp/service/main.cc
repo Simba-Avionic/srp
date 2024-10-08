@@ -9,10 +9,10 @@
  * 
  */
 
-#include "temp_service.h"
-#include "core/application/application_factory.h"
+#include "mw/temp/service/temp_service.h"
+#include "ara/exec/adaptive_lifecycle.h"
 
 int main(int argc, char const *argv[]) {
-  simba::core::ApplicationFactory<simba::mw::temp::TempService>::Start(argc, argv);
-  return 0;
+  return ara::exec::RunAdaptiveLifecycle<simba::mw::temp::TempService>(argc,
+                                                                     argv);
 }
