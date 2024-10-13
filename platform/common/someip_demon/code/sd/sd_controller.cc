@@ -19,10 +19,9 @@ std::vector<ara::com::someip::ServiceEntry> SdController::ParseServiceList(
   if constexpr (std::endian::native != std::endian::big) {
     count = ara::com::EndianConvert<std::uint32_t>::Conv(count) / 16;
   }
-  logger_.LogInfo() << "Service List count: " << count;
+
   for (auto i = 0; i < count; i++) {
-    if (*(raw.begin() + 4 + (16 * i)) == 0x01 ||
-        *(raw.begin() + 4 + (16 * i)) == 0x00) {
+    if (*(raw.begin() + 4 + (16 * i)) == 0x01) {
       const auto t = ara::com::Convert<ara::com::someip::ServiceEntry>::Conv(
           std::vector<uint8_t>{raw.begin() + 4 + (16 * i), raw.end()});
       if (t.HasValue()) {
@@ -42,6 +41,8 @@ void SdController::ProcessFrame(
     const ara::com::someip::SomeipFrame& frame) noexcept {
   const auto list = ParseServiceList(
       std::vector<uint8_t>{frame.Payload().begin() + 4, frame.Payload().end()});
+  logger_.LogInfo() << "Service List count: "
+                    << static_cast<uint16_t>(list.size());
 }
 
 ara::core::Result<void> SdController::Start() noexcept {
@@ -64,8 +65,6 @@ SdController::SdController(
     std::shared_ptr<common::com::IMulticastController> multicast_controller)
     : multicast_controller_{multicast_controller},
       logger_{ara::log::LoggingMenager::GetInstance()->CreateLogger("sd  ")} {
-  sd_db_.AddNewProvideService(
-      db::ServiceItem{0x1234, 0x5678, 0x01, 0x01, 0xC0A80A65, 0x1111});
 }
 
 SdController::~SdController() {}
@@ -75,6 +74,8 @@ void SdController::SdLoop(std::stop_token token) {
   while (!token.stop_requested()) {
     core::condition::wait_for(std::chrono::seconds{1}, token);
     if (multicast_controller_ != nullptr) {
+      this->FindService();
+
       for (const auto& item : sd_db_.GetProvideList()) {
         logger_.LogInfo() << "Offer";
         this->OfferService(item.second);
@@ -142,6 +143,69 @@ void SdController::OfferService(const db::ServiceItem& item) noexcept {
   logger_.LogInfo() << "Sendding offer";
   multicast_controller_->SendFrame(frame.GetRaw(), "", 0);
 }
+
+void SdController::FindService() noexcept {
+  std::vector<uint8_t> raw{};
+  for(const auto& i: sd_db_.GetConsumeList()){
+    const auto k = this->CreatFindServiceListItem(i.second);
+    raw.insert(raw.end(),k.begin(),k.end());
+    if(raw.size()/0x10 > 10) {
+      SendFindMsg(raw);
+      raw.clear();
+    }
+  }
+      if(raw.size() != 0) {
+      SendFindMsg(raw);
+    }
+}
+
+void SdController::SendFindMsg(const std::vector<uint8_t> raw) noexcept {
+  ara::com::someip::HeaderStructure header{0xFFFF, 0x8100, 0x00, 0x00, 0x01,
+                                           0x01,   0x01,   0x02, 0x00};
+  const uint8_t flag{0xc0};
+  const uint8_t res1{0x00};
+  const uint8_t res2{0x00};
+  const uint8_t res3{0x00};
+  std::vector<uint8_t> payload{flag,res1,res2,res3};
+  const uint32_t entry_length{raw.size()};
+    if constexpr (std::endian::native == std::endian::big) {
+    const auto res = ara::com::Convert2Vector<uint32_t>::Conv(entry_length);
+    payload.insert(payload.end(), res.begin(), res.end());
+  } else {
+    const auto temp_v =
+        ara::com::EndianConvert<std::uint32_t>::Conv(entry_length);
+    const auto res = ara::com::Convert2Vector<uint32_t>::Conv(temp_v);
+    payload.insert(payload.end(), res.begin(), res.end());
+  }
+  payload.insert(payload.end(),raw.begin(),raw.end());
+  const auto frame = ara::com::someip::SomeipFrame::MakeFrame(header, payload);
+  logger_.LogInfo() << "Sendding Find";
+  multicast_controller_->SendFrame(frame.GetRaw(), "", 0);
+}
+
+std::vector<uint8_t> SdController::CreatFindServiceListItem(const db::FindServiceItem& item) noexcept {
+
+
+  std::vector<uint8_t> payload{};
+
+  const ara::com::someip::ServiceEntry service{0x00,  // TYPE
+                                               0x00,  // Index
+                                               0x00,  // Index
+                                               0x00,  // Opt
+                                               item.service_id_,
+                                               item.instance_id_,
+                                               item.major_version_,
+                                               0x05,
+                                               item.minor_version_};
+
+  {
+    const auto t =
+        ara::com::Convert2Vector<ara::com::someip::ServiceEntry>::Conv(service);
+    payload.insert(payload.end(), t.begin(), t.end());
+  }
+  return payload;
+}
+
 }  // namespace sd
 }  // namespace someip
 }  // namespace someip_demon

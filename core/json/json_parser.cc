@@ -50,15 +50,15 @@ std::optional<JsonParser> JsonParser::GetObject(const std::string &name) const {
   return JsonParser::Parser(obj.at(name));
 }
 
-std::optional<nlohmann::json> JsonParser::GetArray(const std::string& name) {
-  if (!obj.contains(name)) {
-    return {};
-  }
-  if (!obj.at(name).is_array()) {
-    return {};
-  }
-  return obj.at(name);
-}
+// std::optional<nlohmann::json> JsonParser::GetArray(const std::string& name) {
+//   if (!obj.contains(name)) {
+//     return {};
+//   }
+//   if (!obj.at(name).is_array()) {
+//     return {};
+//   }
+//   return obj.at(name);
+// }
 
 std::optional<std::string> JsonParser::GetString(
     const std::string& name) const noexcept {

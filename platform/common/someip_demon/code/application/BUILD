@@ -22,5 +22,6 @@ cc_binary(
         "//platform/common/someip_demon/code/common/com/impl:multicast_controller",
         "//platform/common/someip_demon/code/sd:sd_controller",
         "//platform/common/someip_demon/code/common:controller",
+        "//platform/common/someip_demon/code/connector",
     ],
 )

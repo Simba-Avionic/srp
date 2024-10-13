@@ -1,10 +1,10 @@
 cc_library(
     name = "udp_lib",
-    srcs = ["udp_multicast_socket.cc"],
-    hdrs = ["udp_multicast_socket.h"],
+    srcs = ["udp_multicast_socket.cc","udp_socket.cc"],
+    hdrs = ["udp_multicast_socket.h","udp_socket.h"],
     data = [],
     visibility = ["//platform/common/someip_demon/code:__subpackages__"],
-    deps = ["//core/common:common_types"],
+    deps = ["//core/common:common_types","//ara/log"],
 )
 
 cc_library(

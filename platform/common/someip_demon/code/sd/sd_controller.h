@@ -28,6 +28,10 @@ class SdController : public common::IController {
   void OfferService(const db::ServiceItem& item) noexcept;
   std::vector<ara::com::someip::ServiceEntry> ParseServiceList(
       const std::vector<uint8_t>& raw);
+  
+  std::vector<uint8_t> CreatFindServiceListItem(const db::FindServiceItem& item) noexcept;
+  void FindService() noexcept;
+  void SendFindMsg(const std::vector<uint8_t> raw) noexcept;
 
  public:
   void SetTransmitCallback(

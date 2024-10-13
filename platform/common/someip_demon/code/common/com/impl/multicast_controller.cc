@@ -1,6 +1,8 @@
 #include "platform/common/someip_demon/code/common/com/impl/multicast_controller.h"
 
 #include "ara/log/logging_menager.h"
+#include <future>
+
 namespace simba {
 namespace someip_demon {
 namespace common {
@@ -21,7 +23,7 @@ void MulticastController::RxCallback(const std::string& ip,
     return;
   }
   if (controller_ != nullptr) {
-    controller_->ProcessRawFrame(ip, port, data);
+    std::async(std::launch::async,[this,&ip,&port,&data](){controller_->ProcessRawFrame(ip, port, data);});
   }
 }
 

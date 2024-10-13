@@ -17,14 +17,18 @@
 #include <memory>
 #include <queue>
 #include <string>
+#include <unordered_map>
 
 #include "ara/exec/adaptive_application.h"
 #include "platform/common/someip_demon/code/common/com/impl/multicast_controller.h"
+#include "platform/common/someip_demon/code/connector/service_connector.h"
+
 namespace simba {
 namespace someip_demon {
 class SomeIpApplication final : public ara::exec::AdaptiveApplication {
  private:
   std::shared_ptr<common::com::IMulticastController> multicast_controller_;
+  std::unordered_map<uint16_t,std::shared_ptr<ServiceConnector>> connector_list_;
   /**
    * @brief This function is called to initialiaze the application
    *

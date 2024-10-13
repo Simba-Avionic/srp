@@ -1,15 +1,6 @@
-/**
- * @file udp_multicast_socket.h
- * @author Mateusz Krajewski (matikrajek42@gmail.com)
- * @brief
- * @version 0.1
- * @date 2023-11-17
- *
- * @copyright Copyright (c) 2023
- *
- */
 
-#include "platform/common/someip_demon/code/common/udp_multicast_socket.h"
+
+#include "platform/common/someip_demon/code/common/udp_socket.h"
 
 #include <arpa/inet.h>
 
@@ -18,6 +9,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include "ara/log/log.h"
 
 #include "unistd.h"
 namespace simba {
@@ -28,32 +20,15 @@ namespace {
 constexpr uint32_t kBufforSize{255 * 2};
 }  // namespace
 
-simba::core::ErrorCode UdpMulticastSocket::Init(const std::string &local_ip,
-                                                const std::string &multicast_ip,
-                                                const std::uint16_t port_id) {
+simba::core::ErrorCode UdpSocket::Init(const std::string &local_ip,
+                                       const std::uint16_t port_id) {
   local_ip_ = local_ip;
-  multicast_ip_ = multicast_ip;
   port_id_ = port_id;
 
   sd = socket(AF_INET, SOCK_DGRAM, 0);
   if (sd < 0) {
     return simba::core::ErrorCode::kError;
   }
-
-  memset((char *)&groupSock, 0, sizeof(groupSock));  // NOLINT
-  groupSock.sin_family = AF_INET;
-  groupSock.sin_addr.s_addr = inet_addr(multicast_ip.c_str());
-  groupSock.sin_port = htons(port_id);
-  // {
-  //   char loopch = 0;
-
-  //   if (setsockopt(sd, IPPROTO_IP, IP_MULTICAST_LOOP,
-  //                  (char *)&loopch,  // NOLINT
-  //                  sizeof(loopch)) < 0) {
-  //     close(sd);
-  //     return simba::core::ErrorCode::kError;
-  //   }
-  // }
 
   srcaddr.sin_family = AF_INET;
   srcaddr.sin_addr.s_addr = inet_addr(local_ip.c_str());
@@ -92,25 +67,26 @@ simba::core::ErrorCode UdpMulticastSocket::Init(const std::string &local_ip,
     return simba::core::ErrorCode::kError;
   }
 
-  group.imr_multiaddr.s_addr = inet_addr(multicast_ip_.c_str());
-  group.imr_interface.s_addr = inet_addr(local_ip_.c_str());
-  if (setsockopt(sd, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char *)&group,
-                 sizeof(group)) < 0) {
-    close(sd);
-    return simba::core::ErrorCode::kError;
-  }
   return simba::core::ErrorCode::kOk;
 }
 
-void UdpMulticastSocket::SetRXCallback(RXCallback callback) {
+void UdpSocket::SetRXCallback(RXCallback callback) {
   this->callback_ = callback;
 }
 
-void UdpMulticastSocket::Transmit(const std::vector<std::uint8_t> &payload) {
+void UdpSocket::Transmit(const std::string &ip, const uint16_t port,
+                         const std::vector<std::uint8_t> &payload) {
+  struct sockaddr_in remote;
+  memset(&remote, 0, sizeof(struct sockaddr_in));
+  remote.sin_family = AF_INET;
+  remote.sin_addr.s_addr = inet_addr(ip.c_str());
+  remote.sin_port = htons(port);
+
   std::uint8_t *buffor = new std::uint8_t[payload.size()];
   std::copy(payload.begin(), payload.end(), buffor);
-  if (sendto(sd, buffor, payload.size(), 0, (struct sockaddr *)&groupSock,
-             sizeof(groupSock)) < 0) {
+
+  if (sendto(sd, buffor, payload.size(), 0, (struct sockaddr *)&remote,
+             sizeof(remote)) < 0) {
     delete[] buffor;
     // return simba::core::ErrorCode::kError;
   }
@@ -118,17 +94,16 @@ void UdpMulticastSocket::Transmit(const std::vector<std::uint8_t> &payload) {
   // return simba::core::ErrorCode::kOk;
 }
 
-void UdpMulticastSocket::StartRXThread() {
+void UdpSocket::StartRXThread() {
   if (rx_thread != nullptr) {
     return;
   }
   this->rx_thread = std::make_unique<std::jthread>(
       [&](std::stop_token stoken) { this->Loop(stoken); });
-  pthread_setname_np(this->rx_thread->native_handle(),
-                     "UdpMulticastSocket_RX_Thread");
+  pthread_setname_np(this->rx_thread->native_handle(), "UdpSocket_RX_Thread");
 }
 
-void UdpMulticastSocket::Loop(std::stop_token stoken) {
+void UdpSocket::Loop(std::stop_token stoken) {
   std::stop_callback stop_wait{stoken,
                                [this]() { shutdown(this->sd, SHUT_RD); }};
   while (!stoken.stop_requested()) {
@@ -140,7 +115,7 @@ void UdpMulticastSocket::Loop(std::stop_token stoken) {
                  (struct sockaddr *)&si_other, (socklen_t *)&slen);
     if (bytes_rec > 0) {
       if (this->callback_) {
-      std::ignore = std::async(
+        std::async(
             std::launch::async, [this, &si_other, &bytes_rec, &buffor]() {
               this->callback_(std::string(inet_ntoa(si_other.sin_addr)),
                               htons(si_other.sin_port),
@@ -149,7 +124,7 @@ void UdpMulticastSocket::Loop(std::stop_token stoken) {
             });
       }
     } else {
-      std::cout << "Run empty"<<std::endl;
+      std::cout << "Run empty" << std::endl;
     }
   }
 }

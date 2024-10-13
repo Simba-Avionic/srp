@@ -19,6 +19,7 @@
 #include "core/json/json_parser.h"
 #include "platform/common/someip_demon/code/common/network_controller.h"
 #include "platform/common/someip_demon/code/sd/sd_controller.h"
+#include <memory_resource>
 // #include "ara/com/someip/HeaderStructure.h"
 // #include "ara/com/someip/ServiceEntry.h"
 // #include "ara/com/someip/someip_frame.h"
@@ -27,19 +28,28 @@
 namespace simba {
 namespace someip_demon {
 
-SomeIpApplication::SomeIpApplication(/* args */) {}
+SomeIpApplication::SomeIpApplication(/* args */): connector_list_{} {}
 
 SomeIpApplication::~SomeIpApplication() {}
 
 int SomeIpApplication::Run(const std::stop_token& token) {
   std::shared_ptr<someip::sd::SdController> sd_controller =
       std::make_shared<someip::sd::SdController>(multicast_controller_);
-  std::shared_ptr<common::NetworkController> net_controller = std::make_shared<common::NetworkController>();
-  net_controller->SetController(sd_controller,common::INetworkController::ControllerType::kSomeipSd);
+  std::shared_ptr<common::NetworkController> net_controller =
+      std::make_shared<common::NetworkController>();
+  net_controller->SetController(
+      sd_controller, common::INetworkController::ControllerType::kSomeipSd);
   multicast_controller_->SetController(net_controller);
   multicast_controller_->Start();
   sd_controller->Start();
+  for(auto& service: connector_list_){
+    service.second->Init();
+  }
   core::condition::wait(token);
+    for(auto& service: connector_list_){
+    service.second->DeInit();
+  }
+  sd_controller->Stop();
   multicast_controller_->Stop();
   return EXIT_SUCCESS;
 }
@@ -84,6 +94,26 @@ int SomeIpApplication::Initialize(
   const auto someip_multicast_ip_ = someip_multicast_ip.value();
   multicast_controller_ = std::make_unique<common::com::MulticastController>(
       ip_, someip_multicast_ip_, someip_multicast_port.value());
+
+  const auto& endpoint_json = core::json::JsonParser::Parser(
+      parms.at("app_path") + "endpoint_config.json");
+  if (!endpoint_json.has_value()) {
+    ara::log::LogError() << "endpoint_config.json not exist";
+    return EXIT_FAILURE;
+  }
+  const auto& port_list_opt = endpoint_json.value().GetArray<std::uint16_t>("udp");
+  if (!port_list_opt.has_value()) {
+    ara::log::LogError() << "UDP endpoint not exist";
+    return EXIT_FAILURE;
+  }
+  const auto& udp_port_list_ = port_list_opt.value();
+  
+  for(const auto& port: udp_port_list_) {
+    ara::log::LogInfo() << "New udp endpoint starting: "<< port;
+    if(!connector_list_.insert({port,std::make_shared<ServiceConnector>(ip.value(),port)}).second){
+      ara::log::LogError() << "Port already used";
+    }
+  }
   return EXIT_SUCCESS;
 }
 
