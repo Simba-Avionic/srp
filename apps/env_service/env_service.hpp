@@ -14,6 +14,7 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+#include <map>
 #include <memory>
 
 #include "mw/temp/controller/temp_controller.h"
@@ -28,9 +29,6 @@ class EnvService final : public ara::exec::AdaptiveApplication {
   env::EnvServiceSkeleton service_ipc;
   env::EnvServiceSkeleton service_udp;
   std::unique_ptr<mw::temp::TempController> temp_{};
-  // std::shared_ptr<com::someip::EventSkeleton> temp1_event;
-  // std::shared_ptr<com::someip::EventSkeleton> temp2_event;
-  // std::shared_ptr<com::someip::EventSkeleton> temp3_event;
 
  protected:
   /**
@@ -45,7 +43,7 @@ class EnvService final : public ara::exec::AdaptiveApplication {
    *
    * @param parms map with parms
    */
-   int Initialize(const std::map<ara::core::StringView, ara::core::StringView>
+  int Initialize(const std::map<ara::core::StringView, ara::core::StringView>
                       parms) override;
   void TempRxCallback(const std::string& ip, const std::uint16_t& port,
                                 const std::vector<std::uint8_t> data);

@@ -51,82 +51,18 @@ int ServoService::Run(const std::stop_token& token) {
 
 int ServoService::Initialize(
     const std::map<ara::core::StringView, ara::core::StringView> parms) {
-  //  this->servo_controller.Init(parms,
-  //  std::make_unique<i2c::I2CController>());
   this->servo_controller = std::make_shared<i2c::PCA9685>();
   this->servo_controller->Init(parms.at("app_path"),
                               std::make_unique<simba::i2c::I2CController>(),
                               std::make_unique<gpio::GPIOController>());
-  main_servo_service_did_ = std::make_unique<ServoServiceDiD>(ara::core::InstanceSpecifier("/simba/apps/servoService/MainServoStatus"), servo_controller, 60);
-  vent_servo_service_did_ = std::make_unique<ServoServiceDiD>(ara::core::InstanceSpecifier("/simba/apps/servoService/VentServoStatus"), servo_controller, 61);
-  service_ipc = std::make_unique<apps::MyServoService>(ara::core::InstanceSpecifier("/simba/apps/servoService/ServoService_ipc"),this->servo_controller);
-  service_udp = std::make_unique<apps::MyServoService>(ara::core::InstanceSpecifier("/simba/apps/servoService/ServoService_udp"),this->servo_controller);
-  // main_servo_status_event =
-  //     std::make_shared<com::someip::EventSkeleton>("ServoApp/servoStatusEvent");
-  // vent_servo_status_event = std::make_shared<com::someip::EventSkeleton>(
-  //     "ServoApp/servoVentStatusEvent");
-  // this->set_servo_val = std::make_shared<com::someip::MethodSkeleton>(
-  //     "ServoApp/setServoValue",
-  //     [this](const std::vector<uint8_t> payload)
-  //         -> std::optional<std::vector<uint8_t>> {
-  //       if (payload.size() == 1) {
-  //         AppLogger::Debug("move servo id: 60 to pos" +
-  //                          std::to_string(static_cast<int>(payload[0])));
-  //         auto res =
-  //             this->servo_controller.AutoSetServoPosition(60, payload[0]);
-  //         if (res != core::ErrorCode::kOk) {
-  //           return std::vector<uint8_t>{0};
-  //         }
-  //         return std::vector<uint8_t>{1};
-  //       }
-  //       return {};
-  //     });
-  // this->set_vent_val = std::make_shared<com::someip::MethodSkeleton>(
-  //     "ServoApp/setServoVentValue",
-  //     [this](const std::vector<uint8_t> payload)
-  //         -> std::optional<std::vector<uint8_t>> {
-  //       if (payload.size() == 1) {
-  //         AppLogger::Debug("move servo id: 61 to pos" +
-  //                          std::to_string(static_cast<int>(payload[0])));
-  //         auto res =
-  //             this->servo_controller.AutoSetServoPosition(61, payload[0]);
-  //         if (res != core::ErrorCode::kOk) {
-  //           return std::vector<uint8_t>{0};
-  //         }
-  //         return std::vector<uint8_t>{1};
-  //       }
-  //       return {};
-  //     });
-
-  // auto read_servo_val = std::make_shared<com::someip::MethodSkeleton>(
-  //     "ServoApp/readServoValue",
-  //     [this](const std::vector<uint8_t> payload)
-  //         -> std::optional<std::vector<uint8_t>> {
-  //       auto val = this->servo_controller.ReadServoPosition(60);
-  //       if (!val.has_value()) {
-  //         return {};
-  //       }
-  //       return std::vector<uint8_t>{val.value()};
-  //     });
-  // auto read_vent_val = std::make_shared<com::someip::MethodSkeleton>(
-  //     "ServoApp/readServoVentValue",
-  //     [this](const std::vector<uint8_t> payload)
-  //         -> std::optional<std::vector<uint8_t>> {
-  //       auto val = this->servo_controller.ReadServoPosition(61);
-  //       if (!val.has_value()) {
-  //         return {};
-  //       }
-  //       return std::vector<uint8_t>{val.value()};
-  //     });
-
-  // // Rejestracja Metod i eventow
-  // com->Add(main_servo_status_event);
-  // com->Add(vent_servo_status_event);
-  // com->Add(set_servo_val);
-  // com->Add(set_vent_val);
-  // com->Add(read_servo_val);
-  // com->Add(read_vent_val);
-
+  main_servo_service_did_ = std::make_unique<ServoServiceDiD>(
+                ara::core::InstanceSpecifier("/simba/apps/servoService/MainServoStatus"), servo_controller, 60);
+  vent_servo_service_did_ = std::make_unique<ServoServiceDiD>(
+                ara::core::InstanceSpecifier("/simba/apps/servoService/VentServoStatus"), servo_controller, 61);
+  service_ipc = std::make_unique<apps::MyServoService>(
+                ara::core::InstanceSpecifier("/simba/apps/servoService/ServoService_ipc"), this->servo_controller);
+  service_udp = std::make_unique<apps::MyServoService>(
+                ara::core::InstanceSpecifier("/simba/apps/servoService/ServoService_udp"), this->servo_controller);
   return 0;
 }
 
