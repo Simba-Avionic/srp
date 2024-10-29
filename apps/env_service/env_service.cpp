@@ -16,17 +16,10 @@
 #include "ara/log/log.h"
 #include "mw/temp/temp_reading_msg/temp_reading_msg_factory.h"
 #include "simba/env/EnvServiceSkeleton.h"
-#include "simba/env/EnvService/newTempEvent_1EventSkeleton.h"
 
 namespace simba {
 namespace envService {
 
-int EnvService::Run(const std::stop_token& token) {
-    core::condition::wait(token);
-    service_ipc.StopOffer();
-    service_udp.StopOffer();
-    return core::ErrorCode::kOk;
-}
 
 core::ErrorCode EnvService::Init(std::unique_ptr<mw::temp::TempController> temp) {
     if (this->temp_ || !temp) {
@@ -54,6 +47,21 @@ int EnvService::Initialize(const std::map<ara::core::StringView, ara::core::Stri
     } while (res != core::ErrorCode::kOk && i < 6);
     service_ipc.StartOffer();
     service_udp.StartOffer();
+    return core::ErrorCode::kOk;
+}
+
+int EnvService::Run(const std::stop_token& token) {
+    int i = 1;
+    while (!token.stop_requested()) {
+        core::condition::wait_for(std::chrono::milliseconds(1000), token);
+        this->service_ipc.newPressEvent.Update(i);
+        this->service_udp.newPressEvent.Update(i);
+        this->service_ipc.newDPressEvent.Update(i);
+        this->service_udp.newDPressEvent.Update(i);
+        i += 1;
+    }
+    service_ipc.StopOffer();
+    service_udp.StopOffer();
     return core::ErrorCode::kOk;
 }
 
