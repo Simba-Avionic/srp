@@ -4,6 +4,8 @@ cc_binary(
         "primer_service.cpp",
         "primer_service.hpp",
         "main.cc",
+        "service.hpp",
+        "primer_controller.hpp",
     ],
     visibility = ["//deployment:__subpackages__"],
     deps = [
