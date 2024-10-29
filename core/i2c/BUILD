@@ -7,7 +7,7 @@ cc_library(
         ],
     deps = [
         "//core/common:common_types",
-        "//core/logger:Logger",
+        "//ara/log",
     ],
     visibility = ["//core:__subpackages__",
     "//mw:__subpackages__",

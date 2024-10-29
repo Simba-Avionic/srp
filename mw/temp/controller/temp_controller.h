@@ -22,7 +22,7 @@
 
 #include "communication-core/sockets/Isocket.h"
 #include "communication-core/sockets/socket_config.h"
-#include "core/logger/Logger.h"
+#include "ara/log/log.h"
 
 #include "mw/temp/subscribe_msg/subscribe_header.h"
 #include "mw/temp/subscribe_msg/subscribe_msg_factory.h"

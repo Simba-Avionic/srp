@@ -38,10 +38,10 @@ class JsonParser {
   template <typename T>
   std::optional<std::vector<T>> GetArray(const std::string& name) {
     if (!obj.contains(name)) {
-      return {};
+      return std::nullopt;
     }
     if (!obj.at(name).is_array()) {
-    return {};
+    return std::nullopt;
     }
     std::vector<T> res;
     for (const T &value : obj.at(name)) {

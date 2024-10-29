@@ -17,12 +17,15 @@
 #include <unordered_map>
 #include <string>
 #include <vector>
+#include "ara/log/logging_menager.h"
 
 namespace simba {
 namespace core {
 namespace gpio {
 
 class GpioDigitalDriver: public IgpioDigitalDriver{
+  protected:
+  const ara::log::Logger& gpio_logger_;
  public:
   GpioDigitalDriver();
   ~GpioDigitalDriver();

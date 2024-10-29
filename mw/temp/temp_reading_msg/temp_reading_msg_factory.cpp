@@ -21,7 +21,7 @@ namespace temp {
 
 std::vector<uint8_t> TempReadingMsgFactory::GetBuffer(
   std::vector<std::pair<uint8_t, double>> payload) {
-  std::vector<std::uint8_t> res;
+  std::vector<uint8_t> res;
 
   for (const auto& pair : payload) {
       uint8_t first = pair.first;
