@@ -9,24 +9,22 @@
  * 
  */
 #include <memory>
+#include <map>
 #include <utility>
 #include "apps/env_service/env_service.hpp"
+#include "core/common/condition.h"
+#include "ara/log/log.h"
 #include "mw/temp/temp_reading_msg/temp_reading_msg_factory.h"
+#include "simba/env/EnvServiceSkeleton.h"
+#include "simba/env/EnvService/newTempEvent_1EventSkeleton.h"
 
 namespace simba {
 namespace envService {
 
-
-std::vector<uint8_t> convertPayload(const double &value) {
-    std::vector<uint8_t> bytes;
-    bytes.resize(sizeof(int16_t));
-    const int16_t floatValue = static_cast<int16_t>(value * 10);
-    std::memcpy(bytes.data(), &floatValue, sizeof(int16_t));
-    return bytes;
-}
-
-core::ErrorCode EnvService::Run(const std::stop_token& token) {
-    this->SleepMainThread();
+int EnvService::Run(const std::stop_token& token) {
+    core::condition::wait(token);
+    service_ipc.StopOffer();
+    service_udp.StopOffer();
     return core::ErrorCode::kOk;
 }
 
@@ -38,20 +36,15 @@ core::ErrorCode EnvService::Init(std::unique_ptr<mw::temp::TempController> temp)
     return core::ErrorCode::kOk;
 }
 
-core::ErrorCode EnvService::Initialize(
-      const std::unordered_map<std::string, std::string>& parms) {
+EnvService::EnvService(): service_ipc{ara::core::InstanceSpecifier{"simba/env/EnvApp/envService_ipc"}},
+                        service_udp{ara::core::InstanceSpecifier{"simba/env/EnvApp/envService_udp"}} {
+}
+
+
+int EnvService::Initialize(const std::map<ara::core::StringView, ara::core::StringView>
+                      parms) {
     this->Init(std::make_unique<mw::temp::TempController>());
     core::ErrorCode res;
-    this->temp1_event = std::make_shared<com::someip::EventSkeleton>("EnvApp/newTempEvent_1");
-    this->temp2_event = std::make_shared<com::someip::EventSkeleton>("EnvApp/newTempEvent_2");
-    this->temp3_event = std::make_shared<com::someip::EventSkeleton>("EnvApp/newTempEvent_3");
-    com->Add(temp1_event);
-    com->Add(temp2_event);
-    com->Add(temp3_event);
-    this->dtc_temp_error = std::make_shared<diag::dtc::DTCObject>(0x20);
-    this->dtc_temp_connection_error_0xB0 = std::make_shared<diag::dtc::DTCObject>(0xB0);
-    diag_controller.RegisterDTC(dtc_temp_connection_error_0xB0);
-    diag_controller.RegisterDTC(dtc_temp_error);
     uint8_t i = 0;
     do {
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -59,20 +52,9 @@ core::ErrorCode EnvService::Initialize(
             this, std::placeholders::_1, std::placeholders::_2,
                                         std::placeholders::_3), std::make_unique<com::soc::IpcSocket>());
     } while (res != core::ErrorCode::kOk && i < 6);
-    if (res != core::ErrorCode::kOk) {
-        this->dtc_temp_connection_error_0xB0->Failed();
-        return res;
-    }
+    service_ipc.StartOffer();
+    service_udp.StartOffer();
     return core::ErrorCode::kOk;
-}
-bool EnvService::CheckTempError(const double &value) {
-    if (value > 120 || value <-30) {
-        dtc_temp_error->Failed();
-        return false;
-    } else {
-        dtc_temp_error->Pass();
-        return true;
-    }
 }
 
 void EnvService::TempRxCallback(const std::string& ip, const std::uint16_t& port,
@@ -80,20 +62,22 @@ void EnvService::TempRxCallback(const std::string& ip, const std::uint16_t& port
     mw::temp::TempReadingMsgFactory factory_;
     auto hdrs = factory_.GetPayload(data);
     for (auto &hdr : hdrs) {
-        this->CheckTempError(hdr.second);
-        AppLogger::Info("Receive temp id: "+std::to_string(hdr.first)+",temp:"+std::to_string(hdr.second));
+        ara::log::LogWarn() << "Receive temp id: " << hdr.first << ",temp:" << static_cast<float>(hdr.second);
         switch (hdr.first) {
             case 0:
-            this->temp1_event->SetValue(convertPayload(hdr.second));
+            this->service_ipc.newTempEvent_1.Update(static_cast<int16_t>(hdr.second * 10));
+            this->service_udp.newTempEvent_1.Update(static_cast<int16_t>(hdr.second * 10));
             break;
             case 1:
-            this->temp2_event->SetValue(convertPayload(hdr.second));
+            this->service_ipc.newTempEvent_2.Update(static_cast<int16_t>(hdr.second * 10));
+            this->service_udp.newTempEvent_2.Update(static_cast<int16_t>(hdr.second * 10));
             break;
             case 2:
-            this->temp3_event->SetValue(convertPayload(hdr.second));
+            this->service_ipc.newTempEvent_3.Update(static_cast<int16_t>(hdr.second * 10));
+            this->service_udp.newTempEvent_3.Update(static_cast<int16_t>(hdr.second * 10));
             break;
             default:
-            AppLogger::Warning("ID spoza zakresu:"+std::to_string(hdr.first));
+            ara::log::LogWarn() << "ID spoza zakresu:" << hdr.first;
             break;
         }
     }

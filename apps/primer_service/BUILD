@@ -7,10 +7,11 @@ cc_binary(
     ],
     visibility = ["//deployment:__subpackages__"],
     deps = [
-        "//core/application:simba_application",
-        "//communication-core/someip-controller:proxy",
-        "//communication-core/someip-controller:skeleton",
-        "//diag/dtc/controller:diag_dtc_",
         "//mw/gpio_server/controller:gpio_controller",
+        "//ara/exec:adaptive_application_lib",
+        "//core/common:condition_lib",
+        "//deployment/apps/prim_service:someip_lib",
+        "//deployment/apps/prim_service:ara",
+        "//core/json:simba_json",
     ],
 )

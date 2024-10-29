@@ -106,7 +106,7 @@ void TempService::SubCallback(const std::string& ip, const std::uint16_t& port,
 int TempService::LoadConfig(
     const std::map<ara::core::StringView, ara::core::StringView>& parms, std::unique_ptr<com::soc::IpcSocket> sock) {
     this->sub_sock_ = std::move(sock);
-    const std::string path = parms.at("app_name") + "etc/config.json";
+    const std::string path = parms.at("app_path") + "etc/config.json";
     auto parser_opt = core::json::JsonParser::Parser(path);
     if (!parser_opt.has_value()) {
         ara::log::LogError() <<("Failed to open temp_Service config file");

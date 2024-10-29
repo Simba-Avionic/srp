@@ -9,10 +9,9 @@
  * 
  */
 #include "apps/env_service/env_service.hpp"
-#include "core/application/application_factory.h"
-#include "untar/untar.h"
-
+#include "ara/exec/adaptive_lifecycle.h"
 int main(int argc, char const *argv[]) {
-  simba::core::ApplicationFactory<simba::envService::EnvService>::Start(argc, argv);
-  return 0;
+  // setsid();
+  return ara::exec::RunAdaptiveLifecycle<simba::envService::EnvService>(argc,
+                                                                     argv);
 }

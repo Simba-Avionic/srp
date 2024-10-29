@@ -17,21 +17,20 @@
 #include <memory>
 
 #include "mw/temp/controller/temp_controller.h"
-#include "core/application/application_no_ipc.h"
-#include "communication-core/someip-controller/event_skeleton.h"
-#include "diag/dtc/controller/dtc.h"
+#include "ara/exec/adaptive_application.h"
+#include "simba/env/EnvServiceSkeleton.h"
 
 namespace simba {
 namespace envService {
 
-class EnvService : public core::ApplicationNoIPC{
+class EnvService final : public ara::exec::AdaptiveApplication {
  private:
-  std::shared_ptr<simba::diag::dtc::DTCObject> dtc_temp_error;
-  std::shared_ptr<diag::dtc::DTCObject> dtc_temp_connection_error_0xB0;
+  env::EnvServiceSkeleton service_ipc;
+  env::EnvServiceSkeleton service_udp;
   std::unique_ptr<mw::temp::TempController> temp_{};
-  std::shared_ptr<com::someip::EventSkeleton> temp1_event;
-  std::shared_ptr<com::someip::EventSkeleton> temp2_event;
-  std::shared_ptr<com::someip::EventSkeleton> temp3_event;
+  // std::shared_ptr<com::someip::EventSkeleton> temp1_event;
+  // std::shared_ptr<com::someip::EventSkeleton> temp2_event;
+  // std::shared_ptr<com::someip::EventSkeleton> temp3_event;
 
  protected:
   /**
@@ -39,21 +38,21 @@ class EnvService : public core::ApplicationNoIPC{
    *
    * @param token stop token
    */
-  core::ErrorCode Run(const std::stop_token& token) final;
+  int Run(const std::stop_token& token) override;
   core::ErrorCode Init(std::unique_ptr<mw::temp::TempController> temp);
   /**
    * @brief This function is called to initialiaze the application
    *
    * @param parms map with parms
    */
-  core::ErrorCode Initialize(
-      const std::unordered_map<std::string, std::string>& parms) final;
+   int Initialize(const std::map<ara::core::StringView, ara::core::StringView>
+                      parms) override;
   void TempRxCallback(const std::string& ip, const std::uint16_t& port,
                                 const std::vector<std::uint8_t> data);
-  bool CheckTempError(const double &value);
 
  public:
   ~EnvService() = default;
+  EnvService();
 };
 
 }  // namespace envService

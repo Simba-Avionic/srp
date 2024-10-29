@@ -22,5 +22,6 @@ cc_binary(
         "//apps/ServoService:ara",
         "//mw/i2c_service/controller/pca9685:pca9685_controller",
         "//diag/jobs/skeleton:did_job_lib",
+        "//deployment/apps/servo_service:someip_lib",
     ],
 )

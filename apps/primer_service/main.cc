@@ -9,9 +9,9 @@
  * 
  */
 #include "apps/primer_service/primer_service.hpp"
-#include "core/application/application_factory.h"
+#include "ara/exec/adaptive_lifecycle.h"
 
 int main(int argc, char const *argv[]) {
-  simba::core::ApplicationFactory<simba::primer::PrimerService>::Start(argc, argv);
-  return 0;
+  return ara::exec::RunAdaptiveLifecycle<simba::primer::PrimerService>(argc,
+                                                                     argv);
 }
