@@ -60,9 +60,9 @@ int ServoService::Initialize(
   vent_servo_service_did_ = std::make_unique<ServoServiceDiD>(
                 ara::core::InstanceSpecifier("/simba/apps/servoService/VentServoStatus"), servo_controller, 61);
   service_ipc = std::make_unique<apps::MyServoService>(
-                ara::core::InstanceSpecifier("/simba/apps/servoService/ServoService_ipc"), this->servo_controller);
+                ara::core::InstanceSpecifier("simba/apps/servoService/ServoService_ipc"), this->servo_controller);
   service_udp = std::make_unique<apps::MyServoService>(
-                ara::core::InstanceSpecifier("/simba/apps/servoService/ServoService_udp"), this->servo_controller);
+                ara::core::InstanceSpecifier("simba/apps/servoService/ServoService_udp"), this->servo_controller);
   return 0;
 }
 
