@@ -12,6 +12,7 @@ cc_binary(
         "servoService.cpp",
         "servoService.hpp",
         "servo_service_did.h",
+        "service.hpp",
     ],
     visibility = [
         "//deployment/apps/servo_service:__subpackages__"
