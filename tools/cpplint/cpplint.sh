@@ -1,3 +1,5 @@
+#!/bin/bash
+
 cpp_files=$(find . -path "*libdoip/*" -prune -o -name "*.cc" -o -name "*.cpp" -o -name "*.h" -o -name "*.hpp" | grep -vE "^\.\/libdoip\/" | grep -vE "^\.\/tools\/diag_app_frontend\/")
 total_errors=0
 for file in $cpp_files; do
