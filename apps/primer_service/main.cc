@@ -8,7 +8,7 @@
  * @copyright Copyright (c) 2024
  * 
  */
-#include "apps/primer_service/primer_service.hpp"
+#include "apps/primer_service/app.hpp"
 #include "ara/exec/adaptive_lifecycle.h"
 
 int main(int argc, char const *argv[]) {

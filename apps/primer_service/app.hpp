@@ -8,8 +8,8 @@
  * @copyright Copyright (c) 2024
  * 
  */
-#ifndef APPS_PRIMER_SERVICE_PRIMER_SERVICE_HPP_
-#define APPS_PRIMER_SERVICE_PRIMER_SERVICE_HPP_
+#ifndef APPS_PRIMER_SERVICE_APP_HPP_
+#define APPS_PRIMER_SERVICE_APP_HPP_
 
 #include <string>
 #include <map>
@@ -19,7 +19,7 @@
 
 #include "ara/exec/adaptive_application.h"
 #include "apps/primer_service/service.hpp"
-#include "apps/primer_service/primer_controller.hpp"
+#include "apps/primer_service/controller/primer_controller.hpp"
 namespace simba {
 namespace primer {
 
@@ -52,4 +52,4 @@ class PrimerService final :  public ara::exec::AdaptiveApplication {
 
 }  // namespace primer
 }  // namespace simba
-#endif  // APPS_PRIMER_SERVICE_PRIMER_SERVICE_HPP_
+#endif  // APPS_PRIMER_SERVICE_APP_HPP_
