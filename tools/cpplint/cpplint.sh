@@ -1,15 +1,17 @@
 #!/bin/bash
 
-# Znajdź wszystkie pliki do przetworzenia i zapisz je w zmiennej.
-cpp_files=$(find . -path "./libdoip" -prune -o -path "./tools/diag_app_frontend" -prune -o \( -name "*.cc" -o -name "*.cpp" -o -name "*.h" -o -name "*.hpp" \) -print)
+cpp_files=$(find . -type f \( -name "*.cc" -o -name "*.cpp" -o -name "*.h" -o -name "*.hpp" \) -not -path "./libdoip/*" -not -path "./tools/diag_app_frontend/*")
 
-# Uruchom cpplint dla wszystkich plików jednocześnie i policz liczbę błędów.
-total_errors=$(cpplint --filter=-build/include_subdir --extensions=cc,cpp,h,hpp --linelength=120 $cpp_files 2>&1 | tee >(wc -l) | tail -n1)
+output=$(cpplint --filter=-build/include_subdir --extensions=cc,cpp,h,hpp --linelength=120 $cpp_files 2>&1)
 
-# Odejmij 1, aby dostosować wynik do warunku.
-total_errors=$((total_errors - 1))
+# Zliczanie błędów z wyjścia
+total_errors=$(echo "$output" | grep -o 'Total errors found: [0-9]*' | grep -o '[0-9]*')
 
-# Sprawdź liczbę błędów i wyświetl odpowiedni komunikat.
+# Sprawdzamy, czy wystąpiły błędy
+if [[ -z "$total_errors" ]]; then
+    total_errors=0  # Ustaw na 0, jeśli nie znaleziono błędów
+fi
+
 if [[ $total_errors -gt 0 ]]; then
     echo "Too many errors ($total_errors), failing the build."
     exit 1
