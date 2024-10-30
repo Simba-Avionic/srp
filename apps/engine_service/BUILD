@@ -1,0 +1,18 @@
+
+cc_binary(
+    name = "engine_service",
+    srcs = [
+        "main.cpp",
+        "engine_app.cpp",
+        "engine_app.hpp",
+    ],
+    visibility = [
+        "//deployment/apps:__subpackages__"
+        ],
+    deps = [
+        "//ara/exec:adaptive_application_lib",
+        "//core/common:condition_lib",
+        "//deployment/apps/engine_app:ara",
+        "//deployment/apps/engine_app:someip_lib",
+    ],
+)
