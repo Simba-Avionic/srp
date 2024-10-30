@@ -13,9 +13,8 @@
 #include <utility>
 #include <future>  // NOLINT
 
-#include "apps/primer_service/primer_service.hpp"
+#include "apps/primer_service/app.hpp"
 #include "core/common/condition.h"
-#include "core/json/json_parser.h"
 #include "ara/log/log.h"
 
 namespace simba {
@@ -37,7 +36,7 @@ int PrimerService::Initialize(const std::map<ara::core::StringView, ara::core::S
                       parms) {
   controller->Initialize(parms.at("app_path") + "etc/config.json");
   return core::ErrorCode::kOk;
-};
+}
 
 }  // namespace primer
 }  // namespace simba

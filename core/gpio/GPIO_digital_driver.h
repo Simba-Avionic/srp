@@ -24,8 +24,9 @@ namespace core {
 namespace gpio {
 
 class GpioDigitalDriver: public IgpioDigitalDriver{
-  protected:
+ protected:
   const ara::log::Logger& gpio_logger_;
+
  public:
   GpioDigitalDriver();
   ~GpioDigitalDriver();

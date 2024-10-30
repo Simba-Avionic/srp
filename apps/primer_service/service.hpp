@@ -8,12 +8,14 @@
  * @copyright Copyright (c) 2024
  * 
  */
+#ifndef APPS_PRIMER_SERVICE_SERVICE_HPP_
+#define APPS_PRIMER_SERVICE_SERVICE_HPP_
 
 #include <memory>
+#include <utility>
 #include <vector>
 #include "simba/apps/PrimerServiceSkeleton.h"
-#include "mw/gpio_server/controller/gpio_controller.hpp"
-#include "apps/primer_service/primer_controller.hpp"
+#include "apps/primer_service/controller/primer_controller.hpp"
 
 namespace simba {
 namespace apps {
@@ -30,14 +32,16 @@ class MyPrimerServiceSkeleton: public PrimerServiceSkeleton {
   }
  protected:
   ara::core::Result<bool> OnPrime() override {
-    return ara::core::Result<bool>(controller_->ChangePrimerState(1));
+  return ara::core::Result<bool>(controller_->ChangePrimerState(1));
   }
   ara::core::Result<bool> OffPrime() override {
-   return ara::core::Result<bool>(controller_->ChangePrimerState(0));
+  return ara::core::Result<bool>(controller_->ChangePrimerState(0));
   }
   ara::core::Result<bool> StartPrime() override {
-    return ara::com::MakeErrorCode(ara::com::ComErrc::kSetHandlerNotSet, "Method handler is not set");
-    }
+  return ara::com::MakeErrorCode(ara::com::ComErrc::kSetHandlerNotSet, "Method handler is not set");
+  }
 };
 }  // namespace apps
 }  // namespace simba
+
+#endif  // APPS_PRIMER_SERVICE_SERVICE_HPP_
