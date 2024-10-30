@@ -8,11 +8,12 @@
  * @copyright Copyright (c) 2024
  * 
  */
-#ifndef PLATFORM_COMMON_DIAG_DEMON_CODE_SERVICES_EXAMPLE_DID_H_
-#define PLATFORM_COMMON_DIAG_DEMON_CODE_SERVICES_EXAMPLE_DID_H_
+#ifndef APPS_SERVOSERVICE_SERVO_SERVICE_DID_H_
+#define APPS_SERVOSERVICE_SERVO_SERVICE_DID_H_
 #include <string>
 #include <vector>
 #include <strstream>
+#include <memory>
 #include "ara/log/log.h"
 #include "diag/jobs/skeleton/did_job.h"
 namespace simba {
@@ -44,13 +45,15 @@ diag::DiagResponse Write(const std::vector<uint8_t>& payload) {
   this->servoController->AutoSetServoPosition(this->actuator_id, payload[0]);
   return diag::DiagResponse{diag::DiagResponseCodes::kOk};
 }
+
  public:
-  ServoServiceDiD(const ara::core::InstanceSpecifier& instance, std::shared_ptr<i2c::PCA9685> servo_controller, uint8_t actuator_id)
-      : diag::DiDJob(instance),servoController(servo_controller), actuator_id(actuator_id) {
+  ServoServiceDiD(const ara::core::InstanceSpecifier& instance,
+      std::shared_ptr<i2c::PCA9685> servo_controller, uint8_t actuator_id):
+      diag::DiDJob(instance), servoController(servo_controller), actuator_id(actuator_id) {
       }
 };
 
-}  // namespace platform
+}  // namespace service
 }  // namespace simba
 
-#endif  // PLATFORM_COMMON_DIAG_DEMON_CODE_SERVICES_EXAMPLE_DID_H_
+#endif  // APPS_SERVOSERVICE_SERVO_SERVICE_DID_H_

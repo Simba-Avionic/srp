@@ -17,7 +17,8 @@ namespace simba {
 namespace core {
 namespace gpio {
 
-GpioDigitalDriver::GpioDigitalDriver(): gpio_logger_{ara::log::LoggingMenager::GetInstance()->CreateLogger("gpio","",ara::log::LogLevel::kInfo)} {}
+GpioDigitalDriver::GpioDigitalDriver(): gpio_logger_{
+    ara::log::LoggingMenager::GetInstance()->CreateLogger("gpio", "", ara::log::LogLevel::kInfo)} {}
 
 GpioDigitalDriver::~GpioDigitalDriver() {}
 

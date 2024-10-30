@@ -62,7 +62,8 @@ int TempService::Initialize(const std::map<ara::core::StringView, ara::core::Str
     for (const auto& id : sensorPathsToIds) {
         sensors_id.push_back(id.second);
     }
-    this->temp_did_ = std::make_unique<TempMWDID>(ara::core::InstanceSpecifier("/simba/mw/temp_service/temp_status_did"),sensors_id);
+    this->temp_did_ = std::make_unique<TempMWDID>(
+                ara::core::InstanceSpecifier("/simba/mw/temp_service/temp_status_did"), sensors_id);
     this->temp_did_->StartOffer();
     return simba::core::ErrorCode::kOk;
 }

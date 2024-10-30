@@ -15,6 +15,7 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
+#include <map>
 #include <memory>
 
 #include "core/gpio/GPIO_digital_driver.h"
@@ -39,7 +40,7 @@ class GPIOMWService final : public ara::exec::AdaptiveApplication {
     int InitPins();
     int Init(std::unique_ptr<com::soc::ISocketStream> socket,
                               std::shared_ptr<core::gpio::IgpioDigitalDriver> gpio);
-    
+
  public:
   ~GPIOMWService();
   int Run(const std::stop_token& token) override;

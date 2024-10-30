@@ -36,7 +36,8 @@ namespace {
     constexpr uint8_t LOSENING_DEFAULT_DELAY = 50;
 }
 
-PCA9685::PCA9685(): pac_logger_{ara::log::LoggingMenager::GetInstance()->CreateLogger("pca9","",ara::log::LogLevel::kDebug)} {
+PCA9685::PCA9685(): pac_logger_{
+    ara::log::LoggingMenager::GetInstance()->CreateLogger("pca9", "", ara::log::LogLevel::kDebug)} {
 }
 core::ErrorCode PCA9685::Init(const std::string& parms,
  std::unique_ptr<II2CController> i2c, std::unique_ptr<gpio::IGPIOController> gpio) {

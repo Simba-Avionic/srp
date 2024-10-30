@@ -15,7 +15,7 @@
 #include "ara/log/log.h"
 #include "core/common/condition.h"
 #include "simba/example/ExampleDataStructure.h"
-//#include "simba/example/ExampleServiceSkeleton.h"
+// #include "simba/example/ExampleServiceSkeleton.h"
 #include "example_service.h"
 namespace simba {
 namespace example {
