@@ -8,8 +8,8 @@
  * @copyright Copyright (c) 2024
  * 
  */
-#ifndef APPS_ENV_SERVICE_ENV_SERVICE_HPP_
-#define APPS_ENV_SERVICE_ENV_SERVICE_HPP_
+#ifndef APPS_ENGINE_SERVICE_ENGINE_APP_HPP_
+#define APPS_ENGINE_SERVICE_ENGINE_APP_HPP_
 
 #include <string>
 #include <unordered_map>
@@ -52,4 +52,4 @@ class EngineApp final : public ara::exec::AdaptiveApplication {
 }  // namespace simba
 
 
-#endif  // APPS_ENV_SERVICE_ENV_SERVICE_HPP_
+#endif  // APPS_ENGINE_SERVICE_ENGINE_APP_HPP_
