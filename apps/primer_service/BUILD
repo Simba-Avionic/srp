@@ -1,17 +1,42 @@
 cc_binary(
     name = "primer",
     srcs = [
-        "primer_service.cpp",
-        "primer_service.hpp",
         "main.cc",
     ],
     visibility = ["//deployment:__subpackages__"],
     deps = [
-        "//mw/gpio_server/controller:gpio_controller",
         "//ara/exec:adaptive_application_lib",
         "//core/common:condition_lib",
-        "//deployment/apps/prim_service:someip_lib",
         "//deployment/apps/prim_service:ara",
-        "//core/json:simba_json",
+
+        "//apps/primer_service",
+        "//apps/primer_service:primer_app",
+    ],
+)
+
+cc_library(
+    name = "primer_service",
+    deps = [
+        "//apps/primer_service/controller:primer_controller",
+        "//deployment/apps/prim_service:someip_lib",
+    ],
+    srcs = [
+    ],
+    hdrs = [
+        "service.hpp",
+    ],
+)
+cc_library(
+    name = "primer_app",
+    deps = [
+        "//apps/primer_service",
+        "//ara/exec:adaptive_application_lib",
+        "//core/common:condition_lib",
+    ],
+    srcs = [
+        "app.cpp",
+    ],
+    hdrs = [
+        "app.hpp",
     ],
 )

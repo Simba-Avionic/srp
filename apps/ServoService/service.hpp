@@ -8,6 +8,8 @@
  * @copyright Copyright (c) 2024
  * 
  */
+#ifndef APPS_SERVOSERVICE_SERVICE_HPP_
+#define APPS_SERVOSERVICE_SERVICE_HPP_
 #include <memory>
 
 #include "simba/apps/ServoServiceSkeleton.h"
@@ -22,10 +24,11 @@ class MyServoService : public ServoServiceSkeleton {
 
  public:
   MyServoService(const ara::core::InstanceSpecifier& instance, std::shared_ptr<i2c::PCA9685> servo_controller):
-    ServoServiceSkeleton{instance}, servo_(servo_controller) {
-    ServoStatusEvent.SetCallback(std::bind(&MyServoService::HandleEvent,this, std::placeholders::_1, std::placeholders::_2));
-    ServoVentStatusEvent.SetCallback(std::bind(&MyServoService::HandleEvent,this, std::placeholders::_1, std::placeholders::_2));
-   }
+      ServoServiceSkeleton{instance}, servo_(servo_controller) {ServoStatusEvent.SetCallback(
+      std::bind(&MyServoService::HandleEvent, this, std::placeholders::_1, std::placeholders::_2));
+      ServoVentStatusEvent.SetCallback(std::bind(&MyServoService::HandleEvent,
+      this, std::placeholders::_1, std::placeholders::_2));
+  }
 
  protected:
   ara::core::Result<bool> SetMainServoValue(const std::uint8_t& in_parm) override {
@@ -64,5 +67,7 @@ class MyServoService : public ServoServiceSkeleton {
   }
 };
 
-}
-}
+}  // namespace apps
+}  // namespace simba
+
+#endif  // APPS_SERVOSERVICE_SERVICE_HPP_

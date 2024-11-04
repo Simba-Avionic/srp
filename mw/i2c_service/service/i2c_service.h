@@ -23,10 +23,10 @@ namespace simba {
 namespace mw {
 class I2CService final : public ara::exec::AdaptiveApplication {
  private:
-   const ara::log::Logger& i2c_logger_;
-   std::mutex i2c_mtx;
-   std::shared_ptr<core::i2c::II2CDriver> i2c_;
-   std::unique_ptr<com::soc::ISocketStream> sock_;
+  const ara::log::Logger& i2c_logger_;
+  std::mutex i2c_mtx;
+  std::shared_ptr<core::i2c::II2CDriver> i2c_;
+  std::unique_ptr<com::soc::ISocketStream> sock_;
 
  protected:
     core::ErrorCode Init(std::shared_ptr<core::i2c::II2CDriver> i2c, std::unique_ptr<com::soc::ISocketStream> socket);
@@ -43,7 +43,7 @@ class I2CService final : public ara::exec::AdaptiveApplication {
   int Run(const std::stop_token& token) override;
   int Initialize(const std::map<ara::core::StringView, ara::core::StringView>
                       parms) override;
-   I2CService();
+  I2CService();
 };
 }  // namespace mw
 }  // namespace simba
