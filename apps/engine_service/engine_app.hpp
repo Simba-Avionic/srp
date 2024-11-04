@@ -20,6 +20,7 @@
 #include "ara/exec/adaptive_application.h"
 #include "simba/apps/PrimerService/PrimerServiceHandler.h"
 #include "simba/apps/ServoService/ServoServiceHandler.h"
+#include "apps/engine_service/service.hpp"
 
 
 namespace simba {
@@ -27,8 +28,16 @@ namespace apps {
 
 class EngineApp final : public ara::exec::AdaptiveApplication {
  private:
-    PrimerServiceHandler primer_;
-    ServoServiceHandler servo_;
+  std::shared_ptr<PrimerServiceHandler> primer_handler_;
+  std::shared_ptr<ServoServiceHandler> servo_handler_;
+  PrimerServiceProxy primer_proxy;
+  ServoServiceProxy servo_proxy;
+
+  service::MyEngineServiceSkeleton service_ipc;
+  service::MyEngineServiceSkeleton service_udp;
+
+  std::shared_ptr<service::MODE_t> mode;
+
  protected:
   /**
    * @brief This function is called to launch the application
