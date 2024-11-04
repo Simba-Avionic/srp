@@ -8,8 +8,8 @@
  * @copyright Copyright (c) 2024
  * 
  */
-#ifndef APPS_PRIMER_SERVICE_PRIMER_SERVICE_HPP_
-#define APPS_PRIMER_SERVICE_PRIMER_SERVICE_HPP_
+#ifndef APPS_PRIMER_SERVICE_APP_HPP_
+#define APPS_PRIMER_SERVICE_APP_HPP_
 
 #include <string>
 #include <map>
@@ -18,15 +18,18 @@
 #include <memory>
 
 #include "ara/exec/adaptive_application.h"
-#include "mw/gpio_server/controller/gpio_controller.hpp"
+#include "apps/primer_service/service.hpp"
+#include "apps/primer_service/controller/primer_controller.hpp"
 namespace simba {
 namespace primer {
 
 class PrimerService final :  public ara::exec::AdaptiveApplication {
  private:
-  core::ErrorCode ChangePrimerState(uint8_t state);
-  core::ErrorCode ReadConfig(const std::map<ara::core::StringView, ara::core::StringView>
-                      parms);
+  std::shared_ptr<gpio::GPIOController> gpio_;
+  std::shared_ptr<primer::PrimerController> controller;
+  apps::MyPrimerServiceSkeleton service_ipc;
+  apps::MyPrimerServiceSkeleton service_udp;
+
 
   /**
    * @brief This function is called to launch the application
@@ -42,19 +45,11 @@ class PrimerService final :  public ara::exec::AdaptiveApplication {
   int Initialize(const std::map<ara::core::StringView, ara::core::StringView>
                       parms) override;
 
-  gpio::GPIOController gpio_;
-  uint8_t primerState;
-  std::vector<uint8_t> primer_pins_;
-  std::uint16_t active_time;
  public:
   ~PrimerService() = default;
-
-  // std::shared_ptr<simba::com::someip::EventSkeleton> primer_event;
-
-  // std::shared_ptr<simba::diag::dtc::DTCObject> dtc_30;
-  // std::shared_ptr<simba::diag::dtc::DTCObject> dtc_31;
+  PrimerService();
 };
 
 }  // namespace primer
 }  // namespace simba
-#endif  // APPS_PRIMER_SERVICE_PRIMER_SERVICE_HPP_
+#endif  // APPS_PRIMER_SERVICE_APP_HPP_

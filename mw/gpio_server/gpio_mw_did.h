@@ -50,7 +50,8 @@ class GpioMWDID : public diag::DiDJob {
                               vec_res);
   }
 diag::DiagResponse Write(const std::vector<uint8_t>& payload) {
-  ara::log::LogInfo() << "Receive diag write req with payload size: " << (uint16_t)payload.size() << ",p[0] = " << payload[0] << ",p[1] = " << payload[1];
+  ara::log::LogInfo() << "Receive diag write req with payload size: "
+      << (uint16_t)payload.size() << ",p[0] = " << payload[0] << ",p[1] = " << payload[1];
   if (payload.size() != 2) {
     ara::log::LogWarn() << "Invalid payload size ";
     return diag::DiagResponse{diag::DiagResponseCodes::kInvalidMessageLengthFormat};

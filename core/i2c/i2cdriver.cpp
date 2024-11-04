@@ -19,12 +19,15 @@ namespace i2c {
 namespace {
   const constexpr char *path = "/dev/i2c-2";
 }
-I2CDriver::I2CDriver(): i2c_logger_{ara::log::LoggingMenager::GetInstance()->CreateLogger("i2c-","",ara::log::LogLevel::kInfo)} {
 
+I2CDriver::I2CDriver(): i2c_logger_ {
+  ara::log::LoggingMenager::GetInstance()->CreateLogger("i2c-",
+  "", ara::log::LogLevel::kInfo)} {
 }
+
 I2CDriver::~I2CDriver() {
   close(this->i2cFile);
-};
+}
 core::ErrorCode I2CDriver::Init() {
   if ((this->i2cFile = open(path, O_RDWR)) < 0) {
     return core::ErrorCode::kInitializeError;
@@ -64,7 +67,7 @@ std::optional<std::vector<uint8_t>> I2CDriver::Read(const uint8_t size) {
 }
 core::ErrorCode I2CDriver::PageWrite(std::vector<uint8_t> data) {
   data.insert(data.begin(), 0x00);
-  if (write(i2cFile, data.data(), data.size()) != data.size()) {
+  if (static_cast<std::size_t>(write(i2cFile, data.data(), data.size())) != data.size()) {
     return core::ErrorCode::kInitializeError;
   }
   return core::ErrorCode::kOk;
