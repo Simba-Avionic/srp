@@ -5,6 +5,8 @@ cc_binary(
         "main.cpp",
         "engine_app.cpp",
         "engine_app.hpp",
+        "service.hpp",
+        "service.cpp",
     ],
     visibility = [
         "//deployment/apps:__subpackages__"

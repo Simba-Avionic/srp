@@ -16,21 +16,32 @@
 namespace simba {
 namespace apps {
 
-EngineApp::EngineApp(): primer_(ara::core::InstanceSpecifier{"simba/apps/PrimerService/PrimService_ipc"}),
-                            servo_((ara::core::InstanceSpecifier{"simba/apps/servoService/ServoService_ipc"})) {
+EngineApp::EngineApp(): primer_proxy(ara::core::InstanceSpecifier{"simba/apps/PrimerService/PrimService_ipc"}),
+  servo_proxy((ara::core::InstanceSpecifier{"simba/apps/servoService/ServoService_ipc"})),
+  primer_handler_{nullptr}, servo_handler_{nullptr}, mode(std::make_shared<service::MODE_t>()),
+  service_ipc(ara::core::InstanceSpecifier{"simba/apps/EngineService/EngineService_ipc"},
+  primer_handler_, servo_handler_, mode), service_udp(ara::core::InstanceSpecifier{
+  "simba/apps/EngineService/EngineService_udp"}, primer_handler_, servo_handler_, mode) {
+    *mode = service::MODE_t::AUTO;
 }
 
-
 int EngineApp::Run(const std::stop_token& token) {
-    ara::log::LogInfo() << "Run complete, closing";
-    core::condition::wait(token);
+  ara::log::LogInfo() << "Run complete, closing";
+  core::condition::wait(token);
+  servo_proxy.StopFindService();
+  primer_proxy.StopFindService();
 }
 
 int EngineApp::Initialize(const std::map<ara::core::StringView, ara::core::StringView>
                       parms) {
-    ara::log::LogInfo() << "Initialize Complete";
+  servo_proxy.StartFindService([this](auto handler) {
+    this->servo_handler_ = handler;
+  });
+  primer_proxy.StartFindService([this](auto handler) {
+    this->primer_handler_ = handler;
+  });
+  ara::log::LogInfo() << "Initialize Complete";
 }
-
 
 }  // namespace apps
 }  // namespace simba
