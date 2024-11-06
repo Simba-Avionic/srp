@@ -17,7 +17,6 @@
 #include "mw/i2c_service/controller/adcsensor/controller.hpp"
 #include "core/json/json_parser.h"
 #include "core/common/error_code.h"
-#include "core/logger/Logger.h"
 namespace simba {
 namespace i2c {
 
@@ -38,11 +37,9 @@ core::ErrorCode ADCSensorController::Init(const std::unordered_map<std::string, 
   std::string file_path = "/opt/"+this->app_name+"/etc/config.json";
   auto obj_r = core::json::JsonParser::Parser(file_path);
   if (!obj_r.has_value()) {
-    AppLogger::Warning("Cant find file on path "+file_path);
     return core::ErrorCode::kInitializeError;
   }
   if (this->setPtr(std::move(adc_)) != core::ErrorCode::kOk) {
-    AppLogger::Warning("ADS7828 initialize error");
     return core::ErrorCode::kInitializeError;
   }
   this->db_ = this->ReadConfig(obj_r.value());
@@ -65,7 +62,6 @@ std::unordered_map<uint8_t, SensorConfig> ADCSensorController::ReadConfig(core::
     std::unordered_map<uint8_t, SensorConfig> db;
     auto sensors_opt = parser.GetArray("sensors");
     if (!sensors_opt.has_value()) {
-        AppLogger::Error("Invalid config in adcSensor");
         exit(1);
     }
     for (const auto &sensor__ : sensors_opt.value()) {
@@ -77,7 +73,6 @@ std::unordered_map<uint8_t, SensorConfig> ADCSensorController::ReadConfig(core::
         auto actuator_id = parser.GetNumber<uint8_t>("actuator_id");
         auto channel = parser.GetNumber<uint8_t>("channel");
         if (!(actuator_id.has_value() && channel.has_value())) {
-            AppLogger::Warning("Missing actuator_id or channel");
             continue;
         }
         auto a = parser.GetNumber<float>("a");
@@ -96,8 +91,6 @@ std::unordered_map<uint8_t, SensorConfig> ADCSensorController::ReadConfig(core::
             auto AMax = parser.GetNumber<float>("A_MAX");
             if (!r.has_value() || !resMin.has_value() || !resMax.has_value()
             || !AMax.has_value() || !AMin.has_value()) {
-                AppLogger::Warning("Invalid config for actuatorID:"
-                                            + std::to_string(actuator_id.value()));
                 continue;
             }
             config.a = CalculateA(r.value(), resMax.value(), resMin.value(), AMax.value(), AMin.value());
@@ -111,7 +104,6 @@ std::unordered_map<uint8_t, SensorConfig> ADCSensorController::ReadConfig(core::
 std::optional<float> ADCSensorController::GetValue(const uint8_t sensor_id) const {
     auto sensor = this->db_.find(sensor_id);
     if (sensor == db_.end()) {
-        AppLogger::Warning("Invalid pressure sensor request");
         return {};
     }
     auto res = this->adc_->GetAdcVoltage(sensor->second.channel);

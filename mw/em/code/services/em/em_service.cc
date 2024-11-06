@@ -40,7 +40,6 @@ void run_cmd(char* cmd) {
 }
 // #include "boost/process.hpp"
 #include "core/json/json_parser.h"
-#include "core/logger/Logger.h"
 namespace simba {
 namespace em {
 namespace service {
@@ -69,15 +68,11 @@ void EmService::LoadApps() noexcept {
                 this->app_level_list.end()) {
               this->app_level_list.push_back(res.value().GetStartUpPrio());
             }
-            AppLogger::Info("App: " + res.value().GetBinPath() +
-                            " added to boot list with prio: " +
-                            std::to_string(res.value().GetStartUpPrio()));
           }
         }
       }
     }
   } catch (std::exception& e) {
-    AppLogger::Error(e.what());
   }
 }
 
@@ -95,7 +90,6 @@ std::optional<data::AppConfig> EmService::GetAppConfig(
     if (bin_path_r.has_value()) {
       bin_path = bin_path_r.value();
     } else {
-      AppLogger::Error("Application from: " + path + ", don't have: bin_path");
       error_count++;
     }
   }
@@ -104,7 +98,6 @@ std::optional<data::AppConfig> EmService::GetAppConfig(
     if (parm_r.has_value()) {
       parm = parm_r.value();
     } else {
-      AppLogger::Error("Application from: " + path + ", don't have: parms");
       error_count++;
     }
   }
@@ -113,8 +106,6 @@ std::optional<data::AppConfig> EmService::GetAppConfig(
     if (prio_r.has_value()) {
       prio = prio_r.value();
     } else {
-      AppLogger::Error("Application from: " + path +
-                       ", don't have: startup_prio");
       error_count++;
     }
   }
@@ -123,15 +114,11 @@ std::optional<data::AppConfig> EmService::GetAppConfig(
     if (delay_r.has_value()) {
       delay = delay_r.value();
     } else {
-      AppLogger::Error("Application from: " + path +
-                       ", don't have: startup_after_delay");
       error_count++;
     }
     auto app_id_r = obj.GetNumber<uint16_t>("app_id");
     if (!app_id_r.has_value()) {
       error_count++;
-      AppLogger::Error("Application from: " + path +
-                       ", don't have: app_id");
     } else {
       app_id = app_id_r.value();
     }
@@ -145,11 +132,9 @@ std::optional<data::AppConfig> EmService::GetAppConfig(
 void EmService::StartApps() noexcept {
   std::sort(this->app_level_list.begin(), this->app_level_list.end(),
             std::greater<uint8_t>());
-  AppLogger::Info("Apps starting");
   for (const auto& level : app_level_list) {
     this->StartApps(level);
   }
-  AppLogger::Info("Apps started");
 }
 
 void EmService::StartApps(const uint8_t level) noexcept {
@@ -157,7 +142,6 @@ void EmService::StartApps(const uint8_t level) noexcept {
     if (app.GetStartUpPrio() == level) {
       pid_t pid = this->StartApp(app);
       if (pid == 0) {
-        AppLogger::Error("Failed to start app");
         return;
       }
       app.SetPid(pid);
@@ -179,12 +163,10 @@ std::optional<pid_t> EmService::RestartApp(const uint16_t appID) {
         i++;
       } while (status == -1 && i < 5);
       if (status == -1) {
-        AppLogger::Warning("App with PID: "+std::to_string(app.GetPid())+"change  to zombie");
         return {};
       }
       pid_t pid = this->StartApp(app);
       if (pid == 0) {
-        AppLogger::Error("Failed to start app");
         return {};
       }
       app.SetPid(pid);
@@ -200,8 +182,6 @@ pid_t EmService::StartApp(const simba::em::service::data::AppConfig &app) {
     char* argv[] = {app_args, NULL};
     posix_spawn(&pid, app.GetBinPath().c_str(), NULL, NULL, argv, NULL);
     delete[] app_args;
-    AppLogger::Info("Spawning app: " + app.GetBinPath() +
-                        " pid: " + std::to_string(pid));
     return pid;
   }
 
