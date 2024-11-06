@@ -18,7 +18,6 @@
 #include "mw/i2c_service/controller/ads7828/controller.hpp"
 #include "core/json/json_parser.h"
 #include "core/common/error_code.h"
-#include "core/logger/Logger.h"
 namespace simba {
 namespace i2c {
 

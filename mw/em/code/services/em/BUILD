@@ -7,7 +7,6 @@ cc_library(
     visibility = ["//mw/em/code:__subpackages__"],
     deps = [
         "//core/json:simba_json",
-        "//core/logger:Logger",
         # "@boost//:process",
         ":em_config"
     ],
