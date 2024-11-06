@@ -28,17 +28,16 @@ namespace {
   /**
    * @brief domyślne wartości
    */
-  const constexpr uint8_t IGNITER_PIN_ID = 5;
-  const constexpr uint16_t IGNITER_ACTIVE_TIME = 250;
-  const constexpr uint8_t ON_INGITER = 1;
-  const constexpr uint8_t OFF_INGITER = 0;
+  const constexpr uint8_t kIgniter_pin_id = 5;
+  const constexpr uint16_t kIgniter_active_time = 250;
+  const constexpr uint8_t kOff_ignite = 0;
 }  // namespace
 
 PrimerController::PrimerController(std::unique_ptr<gpio::GPIOController> gpio): gpio_(std::move(gpio)) {
 }
 void PrimerController::Initialize(std::string path) {
     this->ReadConfig(path);
-    ChangePrimerState(0);
+    ChangePrimerState(kOff_ignite);
 }
 
 bool PrimerController::ChangePrimerState(uint8_t state) {
@@ -58,11 +57,11 @@ uint8_t PrimerController::GetPrimerState() {
 
 bool PrimerController::ReadConfig(std::string path) {
     auto parser_opt = core::json::JsonParser::Parser(path);
-    this->active_time = IGNITER_ACTIVE_TIME;
+    this->active_time = kIgniter_active_time;
 
     if (!parser_opt.has_value()) {
         ara::log::LogWarn() << "cant find config file, use DEFAULT IGNITER_ID and ACTIVE_TIME";
-        this->primer_pins_.push_back(IGNITER_PIN_ID);
+        this->primer_pins_.push_back(kIgniter_pin_id);
         return false;
     }
     auto pin_ids_opt = parser_opt.value().GetArray<uint8_t>("primer_ids");
