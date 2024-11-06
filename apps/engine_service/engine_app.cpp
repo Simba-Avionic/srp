@@ -16,18 +16,30 @@
 namespace simba {
 namespace apps {
 
-EngineApp::EngineApp(): primer_proxy(ara::core::InstanceSpecifier{"simba/apps/PrimerService/PrimService_ipc"}),
-  servo_proxy((ara::core::InstanceSpecifier{"simba/apps/servoService/ServoService_ipc"})),
-  primer_handler_{nullptr}, servo_handler_{nullptr}, mode(std::make_shared<service::MODE_t>()),
-  service_ipc(ara::core::InstanceSpecifier{"simba/apps/EngineService/EngineService_ipc"},
-  primer_handler_, servo_handler_, mode), service_udp(ara::core::InstanceSpecifier{
-  "simba/apps/EngineService/EngineService_udp"}, primer_handler_, servo_handler_, mode) {
-    *mode = service::MODE_t::AUTO;
+namespace {
+  constexpr auto kPrimer_path_name = "simba/apps/PrimerService/PrimService_ipc";
+  constexpr auto kServo_path_name = "simba/apps/servoService/ServoService_ipc";
+  constexpr auto kEngine_path_name = "simba/apps/EngineService/EngineService_ipc";
+  constexpr auto kEngine_udp_path_name = "simba/apps/EngineService/EngineService_udp";
+}
+
+EngineApp::EngineApp():
+      primer_proxy(ara::core::InstanceSpecifier{kPrimer_path_name}),
+      servo_proxy((ara::core::InstanceSpecifier{kServo_path_name})),
+      service_ipc(ara::core::InstanceSpecifier{kEngine_path_name}, primer_handler_, servo_handler_, mode),
+      service_udp(ara::core::InstanceSpecifier{kEngine_udp_path_name}, primer_handler_, servo_handler_, mode),
+      primer_handler_{nullptr}, servo_handler_{nullptr}, mode(std::make_shared<service::MODE_t>()) {
+  *mode = service::MODE_t::AUTO;
+  service_ipc.StartOffer();
+  service_udp.StartOffer();
 }
 
 int EngineApp::Run(const std::stop_token& token) {
-  ara::log::LogInfo() << "Run complete, closing";
   core::condition::wait(token);
+  ara::log::LogInfo() << "Run complete, closing";
+  // Closing app
+  service_ipc.StopOffer();
+  service_udp.StopOffer();
   servo_proxy.StopFindService();
   primer_proxy.StopFindService();
 }
