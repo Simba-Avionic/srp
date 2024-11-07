@@ -1,4 +1,10 @@
 load("//deployment/tools/ara:adaptive_application.bzl", "ara_runtime_lib", "adaptive_application")
+
+gpio_drivers_deps = select({
+    "//:sim": ["//core/gpio:sim_gpio_drivers"],
+    "//conditions:default": ["//core/gpio:gpio_drivers"],
+})
+
 cc_library(
     name = "gpio_service_lib",
     srcs = [
@@ -9,13 +15,12 @@ cc_library(
         "gpio_mw_did.h",
     ],
     deps = [
-        "//core/gpio:gpio_drivers",
         "//mw/gpio_server/data:gpio_hdr",
         "//core/json:simba_json",
         "//ara/exec:adaptive_application_lib",
         "//core/common:condition_lib",
         "//diag/jobs/skeleton:did_job_lib",
-    ],
+    ] + gpio_drivers_deps,
     visibility = [
         "//mw/gpio_server/tests:__subpackages__",
         ],
