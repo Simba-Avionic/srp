@@ -1,16 +1,15 @@
 /**
- * @file IGPIO_driver.h
+ * @file Igpio_driver.hpp
  * @author Mateusz Krajewski (matikrajek42@gmail.com)
- * @brief Interface for digital GPIO drivers
+ * @brief 
  * @version 0.1
- * @date 2023-10-31
+ * @date 2024-11-07
  * 
- * @copyright Copyright (c) 2023
+ * @copyright Copyright (c) 2024
  * 
  */
-
-#ifndef CORE_GPIO_IGPIO_DIGITAL_DRIVER_H_
-#define CORE_GPIO_IGPIO_DIGITAL_DRIVER_H_
+#ifndef CORE_GPIO_IGPIO_DRIVER_HPP_
+#define CORE_GPIO_IGPIO_DRIVER_HPP_
 
 #include <stdint.h>
 
@@ -27,10 +26,10 @@ enum direction_t{
     ERROR,
 };
 
-class IgpioDigitalDriver{
+class IGpioDriver{
  public:
-    IgpioDigitalDriver() {}
-    virtual ~IgpioDigitalDriver() {}
+    IGpioDriver() {}
+    virtual ~IGpioDriver() {}
 
     virtual core::ErrorCode initializePin(uint8_t pinNumber, direction_t direction) = 0;
 
@@ -70,4 +69,4 @@ class IgpioDigitalDriver{
 }  // namespace core
 }  // namespace simba
 
-#endif  // CORE_GPIO_IGPIO_DIGITAL_DRIVER_H_
+#endif  // CORE_GPIO_IGPIO_DRIVER_HPP_

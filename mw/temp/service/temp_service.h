@@ -25,12 +25,11 @@
 
 #include "communication-core/sockets/ipc_socket.h"
 #include "communication-core/sockets/socket_config.h"
-#include "core/temp/ITempDriver.hpp"
 #include "ara/log/log.h"
 #include "ara/exec/adaptive_application.h"
 #include "mw/temp/subscribe_msg/subscribe_header.h"
 #include "mw/temp/subscribe_msg/subscribe_msg_factory.h"
-#include "core/temp/TempDriver.hpp"
+#include "core/temp/temp_driver.hpp"
 #include "mw/temp/temp_reading_msg/temp_reading_msg_factory.h"
 #include "mw/temp/service/temp_mw_did.h"
 

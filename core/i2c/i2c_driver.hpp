@@ -9,8 +9,8 @@
  *
  */
 
-#ifndef CORE_I2C_I2CDRIVER_HPP_
-#define CORE_I2C_I2CDRIVER_HPP_
+#ifndef CORE_I2C_I2C_DRIVER_HPP_
+#define CORE_I2C_I2C_DRIVER_HPP_
 
 #include <fcntl.h>
 #include <linux/i2c-dev.h>
@@ -26,7 +26,7 @@
 #include <vector>
 
 #include "core/common/error_code.h"
-#include "core/i2c/Ii2cdriver.hpp"
+#include "core/i2c/Ii2c_driver.hpp"
 #include "ara/log/logging_menager.h"
 namespace simba {
 namespace core {
@@ -57,4 +57,4 @@ class I2CDriver : public II2CDriver {
 }  // namespace core
 }  // namespace simba
 
-#endif  // CORE_I2C_I2CDRIVER_HPP_
+#endif  // CORE_I2C_I2C_DRIVER_HPP_

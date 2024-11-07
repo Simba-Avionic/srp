@@ -19,7 +19,7 @@
 #include "mw/gpio_server/data/header.hpp"
 #include "core/json/json_parser.h"
 #include "core/common/condition.h"
-#include "core/gpio/IGPIO_digital_driver.h"
+#include "core/gpio/Igpio_driver.hpp"
 #include "ara/log/log.h"
 using json = nlohmann::json;
 
@@ -31,7 +31,7 @@ namespace {
 }
 
 int GPIOMWService::Init(std::unique_ptr<com::soc::ISocketStream> socket,
-                              std::shared_ptr<core::gpio::IgpioDigitalDriver> gpio) {
+                              std::shared_ptr<core::gpio::IGpioDriver> gpio) {
   if (!socket || !gpio) {
     return 1;
   }
@@ -82,7 +82,7 @@ int GPIOMWService::Run(const std::stop_token& token) {
 
 int GPIOMWService::Initialize(const std::map<ara::core::StringView,
     ara::core::StringView> parms) {
-    this->Init(std::make_unique<com::soc::StreamIpcSocket>(), std::make_shared<core::gpio::GpioDigitalDriver>());
+    this->Init(std::make_unique<com::soc::StreamIpcSocket>(), std::make_shared<core::gpio::GpioDriver>());
     this->sock_->Init({SOCKET_PATH, 0, 0});
     this->sock_->SetRXCallback(std::bind(&GPIOMWService::RxCallback, this, std::placeholders::_1,
             std::placeholders::_2, std::placeholders::_3));

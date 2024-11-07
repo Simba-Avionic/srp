@@ -17,7 +17,7 @@
 #include <memory>
 #include "ara/exec/adaptive_application.h"
 #include "communication-core/sockets/stream_ipc_socket.h"
-#include "core/i2c/i2cdriver.hpp"
+#include "core/i2c/i2c_driver.hpp"
 #include "mw/i2c_service/data/header.h"
 namespace simba {
 namespace mw {

@@ -1,8 +1,8 @@
 cc_library(
     name = "temp_interface",
     hdrs = [
-        "ITempDriver.hpp",
-        "TempDriver.hpp"
+        "Itemp_driver.hpp",
+        "temp_driver.hpp"
     ],
     deps = [
         "//core/common:condition_lib",
@@ -13,7 +13,7 @@ cc_library(
 
 cc_library(
     name = "temp_driver",
-    srcs = ["TempDriver.cpp"],
+    srcs = ["temp_driver.cpp"],
     visibility = [
         "//core:__subpackages__",
         "//mw:__subpackages__",
@@ -27,7 +27,7 @@ cc_library(
 
 cc_library(
     name = "SIM_temp_driver",
-    srcs = ["SIMTempDriver.cpp"],
+    srcs = ["sim_temp_driver.cpp"],
     visibility = [
         "//core:__subpackages__",
         "//mw:__subpackages__",

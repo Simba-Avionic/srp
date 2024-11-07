@@ -18,7 +18,7 @@
 #include <map>
 #include <memory>
 
-#include "core/gpio/GPIO_digital_driver.h"
+#include "core/gpio/gpio_driver.hpp"
 #include "communication-core/sockets/stream_ipc_socket.h"
 #include "ara/exec/adaptive_application.h"
 #include "nlohmann/json.hpp"
@@ -31,7 +31,7 @@ class GPIOMWService final : public ara::exec::AdaptiveApplication {
  protected:
   std::unique_ptr<GpioMWDID> pin_did_;
     std::unique_ptr<com::soc::ISocketStream> sock_;
-    std::shared_ptr<core::gpio::IgpioDigitalDriver> gpio_driver_;
+    std::shared_ptr<core::gpio::IGpioDriver> gpio_driver_;
     std::unordered_map<uint8_t, GpioConf> config;
     std::vector<uint8_t> RxCallback(const std::string& ip, const std::uint16_t& port,
           const std::vector<std::uint8_t> data);
@@ -39,7 +39,7 @@ class GPIOMWService final : public ara::exec::AdaptiveApplication {
                               std::string path) const;
     int InitPins();
     int Init(std::unique_ptr<com::soc::ISocketStream> socket,
-                              std::shared_ptr<core::gpio::IgpioDigitalDriver> gpio);
+                              std::shared_ptr<core::gpio::IGpioDriver> gpio);
 
  public:
   ~GPIOMWService();

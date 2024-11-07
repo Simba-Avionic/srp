@@ -9,7 +9,7 @@
  *
  */
 
-#include "core/i2c/i2cdriver.hpp"
+#include "core/i2c/i2c_driver.hpp"
 #include <cstdint>
 
 namespace simba {

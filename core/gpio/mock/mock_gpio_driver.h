@@ -16,10 +16,9 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 
-#include "core/gpio/IGPIO_digital_driver.h"
+#include "core/gpio/Igpio_driver.hpp"
 
-
-class MockGPIO : public simba::core::gpio::IgpioDigitalDriver {
+class MockGPIO : public simba::core::gpio::IGpioDriver {
  public:
   MOCK_METHOD((simba::core::ErrorCode), initializePin, (uint8_t, simba::core::gpio::direction_t), (override));
   MOCK_METHOD((uint8_t), getValue, (uint8_t), (override));
