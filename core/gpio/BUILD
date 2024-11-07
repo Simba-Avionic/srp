@@ -18,3 +18,18 @@ cc_library(
         "//ara/log",
     ],
 )
+
+cc_library(
+    name = "sim_gpio_drivers",
+    srcs = ["SIM_GPIO_digital_driver.cpp"],
+    hdrs = ["GPIO_digital_driver.h"],
+    visibility = [
+        "//core:__subpackages__",
+        "//mw:__subpackages__",
+    ],
+    deps = [
+        ":gpio_interface",
+        "//core/common:common_types",
+        "//ara/log",
+    ],
+)
