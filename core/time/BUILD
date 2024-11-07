@@ -5,6 +5,5 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         "//core/common:common_types",
-        "//core/logger:Logger",
     ],
 )
