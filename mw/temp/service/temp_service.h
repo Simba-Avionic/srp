@@ -25,11 +25,12 @@
 
 #include "communication-core/sockets/ipc_socket.h"
 #include "communication-core/sockets/socket_config.h"
+#include "core/temp/ITempDriver.hpp"
 #include "ara/log/log.h"
 #include "ara/exec/adaptive_application.h"
 #include "mw/temp/subscribe_msg/subscribe_header.h"
 #include "mw/temp/subscribe_msg/subscribe_msg_factory.h"
-
+#include "core/temp/TempDriver.hpp"
 #include "mw/temp/temp_reading_msg/temp_reading_msg_factory.h"
 #include "mw/temp/service/temp_mw_did.h"
 
@@ -44,16 +45,17 @@ class TempService final : public ara::exec::AdaptiveApplication {
   std::unique_ptr<com::soc::IpcSocket> sub_sock_{};
 
  private:
+  std::unique_ptr<core::temp::ITempDriver> temp_driver_;
   std::unique_ptr<TempMWDID> temp_did_;
-  std::unique_ptr<std::jthread> temp_thread;
   std::set<std::uint16_t> subscribers{};
+  uint16_t delay_time;
+  //                 physical ID, sensor ID
   std::unordered_map<std::string, std::uint8_t> sensorPathsToIds{};
 
-  void StartTempThread();
 
   int LoadConfig(
     const std::map<ara::core::StringView, ara::core::StringView>& parms, std::unique_ptr<com::soc::IpcSocket> sock);
-  int ConfigSensors() const;
+  int ConfigSensors();
 
   /**
    * @brief This function is called to launch the application
@@ -74,6 +76,7 @@ class TempService final : public ara::exec::AdaptiveApplication {
   void SendTempReadings(const std::vector<TempReading>& readings) const;
 
  public:
+  TempService();
   int Loop(std::stop_token stoken);
 
   void SubCallback(const std::string& ip, const std::uint16_t& port,
