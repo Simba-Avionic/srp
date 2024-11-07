@@ -21,6 +21,10 @@ namespace simba {
 namespace mw {
 namespace temp {
 
+// first - sensor_id, second - value
+using TempReading = std::pair<uint8_t, double>;
+
+
 namespace {
     static constexpr char const*
         kTempServiceName = "SIMBA.TEMP.SERVICE";

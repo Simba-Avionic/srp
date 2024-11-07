@@ -13,7 +13,6 @@
 #include <memory>
 #include <array>
 #include "core/time/sys_time.hpp"
-#include "core/logger/Logger.h"
 
 namespace simba {
 namespace core {
@@ -91,7 +90,6 @@ std::optional<Date_t> TimeChanger::ReadSystemTime() {
     if (!res.has_value()) {
         return {};
     }
-    AppLogger::Info("Current time: "+res.value());
     return ParseDate(res.value());
 }
 }  // namespace  time
