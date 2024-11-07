@@ -9,7 +9,7 @@
  * 
  */
 
-#include <chrono>
+#include <chrono> // NOLINT
 #include <fstream>
 #include <iostream>
 #include <cstdint>
@@ -97,7 +97,8 @@ core::ErrorCode GpioDigitalDriver::setValue(uint8_t pinNumber , uint8_t value) {
 }
 
 core::ErrorCode GpioDigitalDriver::setDirection(uint8_t pinNumber , direction_t direction) {
-    AppLogger::Info("GPIO: Set Direction pin_num:"+std::to_string(pinNumber)+", direction: " + std::to_string(direction));
+    AppLogger::Info("GPIO: Set Direction pin_num:" + std::to_string(pinNumber)
+                                                + ", direction: " + std::to_string(direction));
     com::soc::StreamTCPSocket sock;
     nlohmann::json jsonObj;
     jsonObj["type"] = "gpio";

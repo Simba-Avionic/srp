@@ -8,6 +8,7 @@
  * @copyright Copyright (c) 2024
  * 
  */
+#include <cstdint>
 
 #include <cstdint>
 #include "core/i2c/i2cdriver.hpp"
