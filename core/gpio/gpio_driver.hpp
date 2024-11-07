@@ -1,35 +1,34 @@
 /**
- * @file GPIO_digital_driver.h
+ * @file gpio_driver.hpp
  * @author Mateusz Krajewski (matikrajek42@gmail.com)
  * @brief 
  * @version 0.1
- * @date 2023-10-31
+ * @date 2024-11-07
  * 
- * @copyright Copyright (c) 2023
+ * @copyright Copyright (c) 2024
  * 
  */
-#ifndef CORE_GPIO_GPIO_DIGITAL_DRIVER_H_
-#define CORE_GPIO_GPIO_DIGITAL_DRIVER_H_
-
-#include "IGPIO_digital_driver.h"
+#ifndef CORE_GPIO_GPIO_DRIVER_HPP_
+#define CORE_GPIO_GPIO_DRIVER_HPP_
 
 #include <stdint.h>
 #include <unordered_map>
 #include <string>
 #include <vector>
 #include "ara/log/logging_menager.h"
+#include "Igpio_driver.hpp"
 
 namespace simba {
 namespace core {
 namespace gpio {
 
-class GpioDigitalDriver: public IgpioDigitalDriver{
+class GpioDriver: public IGpioDriver{
  protected:
   const ara::log::Logger& gpio_logger_;
 
  public:
-  GpioDigitalDriver();
-  ~GpioDigitalDriver();
+  GpioDriver();
+  ~GpioDriver();
 
   core::ErrorCode initializePin(uint8_t pinNumber, direction_t direction) override;
   /**
@@ -80,4 +79,4 @@ class GpioDigitalDriver: public IgpioDigitalDriver{
 }  // namespace core
 }  // namespace simba
 
-#endif  // CORE_GPIO_GPIO_DIGITAL_DRIVER_H_
+#endif  // CORE_GPIO_GPIO_DRIVER_HPP_

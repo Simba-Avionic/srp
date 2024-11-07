@@ -1,8 +1,8 @@
 cc_library(
     name = "i2cdriver_base",
     hdrs = [
-        "i2cdriver.hpp",
-        "Ii2cdriver.hpp",
+        "i2c_driver.hpp",
+        "Ii2c_driver.hpp",
         ],
     deps = [
         "//core/common:common_types",
@@ -16,7 +16,7 @@ cc_library(
 
 cc_library(
     name = "i2cdriver",
-    srcs = ["i2cdriver.cpp"],
+    srcs = ["i2c_driver.cpp"],
     deps = [
         "//core/i2c:i2cdriver_base",
     ],
@@ -27,7 +27,7 @@ cc_library(
 )
 cc_library(
     name = "SIMi2cdriver",
-    srcs = ["SIM_i2cdriver.cpp"],
+    srcs = ["sim_i2c_driver.cpp"],
     deps = [
         "//core/i2c:i2cdriver_base",
     ],

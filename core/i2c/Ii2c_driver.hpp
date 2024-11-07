@@ -8,8 +8,8 @@
  * @copyright Copyright (c) 2024
  * 
  */
-#ifndef CORE_I2C_II2CDRIVER_HPP_
-#define CORE_I2C_II2CDRIVER_HPP_
+#ifndef CORE_I2C_II2C_DRIVER_HPP_
+#define CORE_I2C_II2C_DRIVER_HPP_
 
 #include <cstdint>
 #include <optional>
@@ -37,4 +37,4 @@ class II2CDriver {
 }  // namespace core
 }  // namespace simba
 
-#endif  // CORE_I2C_II2CDRIVER_HPP_
+#endif  // CORE_I2C_II2C_DRIVER_HPP_

@@ -1,28 +1,27 @@
 /**
- * @file GPIO_digital_driver.cpp
+ * @file gpio_driver.cpp
  * @author Mateusz Krajewski (matikrajek42@gmail.com)
  * @brief 
  * @version 0.1
- * @date 2023-10-31
+ * @date 2024-11-07
  * 
- * @copyright Copyright (c) 2023
+ * @copyright Copyright (c) 2024
  * 
  */
 
 #include <fstream>
-
-#include "GPIO_digital_driver.h"
+#include "gpio_driver.hpp"
 
 namespace simba {
 namespace core {
 namespace gpio {
 
-GpioDigitalDriver::GpioDigitalDriver(): gpio_logger_{
+GpioDriver::GpioDriver(): gpio_logger_{
     ara::log::LoggingMenager::GetInstance()->CreateLogger("gpio", "", ara::log::LogLevel::kInfo)} {}
 
-GpioDigitalDriver::~GpioDigitalDriver() {}
+GpioDriver::~GpioDriver() {}
 
-core::ErrorCode  GpioDigitalDriver::unregisterPin(uint8_t pinNumber) {
+core::ErrorCode  GpioDriver::unregisterPin(uint8_t pinNumber) {
     std::ofstream file;
     file.open(this->path+"/unexport");
     if (!file.is_open()) {
@@ -33,7 +32,7 @@ core::ErrorCode  GpioDigitalDriver::unregisterPin(uint8_t pinNumber) {
     return core::ErrorCode::kOk;
 }
 
-core::ErrorCode GpioDigitalDriver::initializePin(uint8_t pinNumber, direction_t direction) {
+core::ErrorCode GpioDriver::initializePin(uint8_t pinNumber, direction_t direction) {
     std::ofstream file;
     file.open(this->path+"/export");
     if (!file.is_open()) {
@@ -51,11 +50,11 @@ core::ErrorCode GpioDigitalDriver::initializePin(uint8_t pinNumber, direction_t 
 }
 
 
-std::string GpioDigitalDriver::getEndpointPath(uint8_t pinNumber, std::string endpoint) {
+std::string GpioDriver::getEndpointPath(uint8_t pinNumber, std::string endpoint) {
     return this->path+"/gpio"+std::to_string(pinNumber)+"/"+endpoint;
 }
 
-core::ErrorCode GpioDigitalDriver::setValue(uint8_t pinNumber , uint8_t value) {
+core::ErrorCode GpioDriver::setValue(uint8_t pinNumber , uint8_t value) {
     std::ofstream file;
     file.open(this->getEndpointPath(pinNumber, "value"));
     if (!file.is_open()) {
@@ -70,7 +69,7 @@ core::ErrorCode GpioDigitalDriver::setValue(uint8_t pinNumber , uint8_t value) {
     return core::ErrorCode::kOk;
 }
 
-core::ErrorCode GpioDigitalDriver::setDirection(uint8_t pinNumber , direction_t direction) {
+core::ErrorCode GpioDriver::setDirection(uint8_t pinNumber , direction_t direction) {
     std::ofstream file;
     file.open(this->getEndpointPath(pinNumber, "direction"));
     if (!file.is_open()) {
@@ -81,7 +80,7 @@ core::ErrorCode GpioDigitalDriver::setDirection(uint8_t pinNumber , direction_t 
     return ErrorCode::kOk;
 }
 
-uint8_t GpioDigitalDriver::getValue(uint8_t pinNumber) {
+uint8_t GpioDriver::getValue(uint8_t pinNumber) {
     std::ifstream file;
     file.open(this->getEndpointPath(pinNumber, "value"));
     if (!file.is_open()) {
@@ -94,7 +93,7 @@ uint8_t GpioDigitalDriver::getValue(uint8_t pinNumber) {
     return atoi(value.c_str());
 }
 
-direction_t GpioDigitalDriver::getDirection(uint8_t pinNumber) {
+direction_t GpioDriver::getDirection(uint8_t pinNumber) {
     std::ifstream file;
     file.open(this->getEndpointPath(pinNumber, "direction"));
     if (!file.is_open()) {

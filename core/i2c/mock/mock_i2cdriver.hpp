@@ -13,7 +13,7 @@
 #include <vector>
 #include <optional>
 #include "gmock/gmock.h"
-#include "core/i2c/i2cdriver.hpp"
+#include "core/i2c/i2c_driver.hpp"
 namespace simba {
 namespace mock {
 class I2CDriverMock : simba::core::i2c::II2CDriver {

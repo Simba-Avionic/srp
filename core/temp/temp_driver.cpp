@@ -17,7 +17,7 @@
 #include <stdexcept>
 #include "ara/log/log.h"
 #include "ara/core/result.h"
-#include "core/temp/TempDriver.hpp"
+#include "core/temp/temp_driver.hpp"
 #include "core/common/condition.h"
 #include "ara/com/com_error_domain.h"
 
@@ -26,7 +26,7 @@ namespace core {
 namespace temp {
 
 namespace {
-    constexpr const char* kSensorPath = "/sys/bus/w1/devices/";
+    constexpr auto kSensorPath = "/sys/bus/w1/devices/";
     constexpr auto kManagerName = "w1_bus_master1";
 }
 TempDriver::TempDriver() {
@@ -42,7 +42,7 @@ ara::core::Result<double> TempDriver::ReadTemp(const std::string& sensorPhysical
     std::string line;
     std::getline(file, line);
     try {
-        double value = std::stoi(line) / 1000.0;
+        const double value = static_cast<double>(std::stoi(line)) / 1000.0;
         ara::log::LogError() << "Read from ID: " << sensorPhysicalID << ", temp: " << std::to_string(value);
         return value;
     } catch (const std::invalid_argument& e) {
@@ -73,7 +73,7 @@ ara::core::Result<uint8_t> TempDriver::ReadResolution(const std::string& sensorP
     std::string line;
     std::getline(file, line);
     try {
-        uint8_t value = std::stoi(line);
+        const uint8_t value = std::stoi(line);
         ara::log::LogDebug() << "Read from ID: " << sensorPhysicalID << ", resolution: " << value;
         return value;
     } catch (const std::invalid_argument& e) {

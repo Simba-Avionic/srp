@@ -19,7 +19,7 @@
 #include <memory>
 
 #include "communication-core/sockets/stream_ipc_socket.h"
-#include "core/gpio/GPIO_digital_driver.h"
+#include "core/gpio/gpio_driver.hpp"
 #include "mw/gpio_server/data/header.hpp"
 #include "mw/gpio_server/controller/Igpio_controller.h"
 

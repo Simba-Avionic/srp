@@ -8,15 +8,15 @@
  * @copyright Copyright (c) 2024
  * 
  */
-#ifndef CORE_TEMP_TEMPDRIVER_HPP_
-#define CORE_TEMP_TEMPDRIVER_HPP_
+#ifndef CORE_TEMP_TEMP_DRIVER_HPP_
+#define CORE_TEMP_TEMP_DRIVER_HPP_
 
 #include <optional>
 #include <vector>
 #include <cstdint>
 #include <string>
 #include "ara/core/result.h"
-#include "core/temp/ITempDriver.hpp"
+#include "core/temp/Itemp_driver.hpp"
 
 namespace simba {
 namespace core {
@@ -36,4 +36,4 @@ class TempDriver : public ITempDriver {
 }  // namespace core
 }  // namespace simba
 
-#endif  // CORE_TEMP_TEMPDRIVER_HPP_
+#endif  // CORE_TEMP_TEMP_DRIVER_HPP_

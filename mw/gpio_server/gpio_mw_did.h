@@ -18,7 +18,7 @@
 #include <bitset>
 #include "ara/log/log.h"
 #include "diag/jobs/skeleton/did_job.h"
-#include "core/gpio/GPIO_digital_driver.h"
+#include "core/gpio/Igpio_driver.hpp"
 namespace simba {
 namespace mw {
 
@@ -29,7 +29,7 @@ struct GpioConf{
 
 class GpioMWDID : public diag::DiDJob {
  private:
-  std::shared_ptr<core::gpio::IgpioDigitalDriver> gpio_driver_;
+  std::shared_ptr<core::gpio::IGpioDriver> gpio_driver_;
   const std::unordered_map<uint8_t, GpioConf> gpio_config;
   /**
    * @brief Callback for 0x22 UDS job (Read data by id) *optional
@@ -72,7 +72,7 @@ diag::DiagResponse Write(const std::vector<uint8_t>& payload) {
 
  public:
   GpioMWDID(const ara::core::InstanceSpecifier& instance, std::shared_ptr<
-        core::gpio::IgpioDigitalDriver> gpio_driver, const std::unordered_map<uint8_t, GpioConf>& config)
+        core::gpio::IGpioDriver> gpio_driver, const std::unordered_map<uint8_t, GpioConf>& config)
                         : diag::DiDJob(instance), gpio_driver_(gpio_driver), gpio_config(config) {
       }
 };

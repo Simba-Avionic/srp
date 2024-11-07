@@ -17,7 +17,7 @@
 #include <stdexcept>
 #include "ara/log/log.h"
 #include "ara/core/result.h"
-#include "core/temp/TempDriver.hpp"
+#include "core/temp/temp_driver.hpp"
 #include "core/common/condition.h"
 #include "ara/com/com_error_domain.h"
 
@@ -26,11 +26,11 @@ namespace core {
 namespace temp {
 
 namespace {
-    constexpr const char* kSensorPath = "/sys/bus/w1/devices/";
+    constexpr auto kSensorPath = "/sys/bus/w1/devices/";
     constexpr auto kManagerName = "w1_bus_master1";
 }
 TempDriver::TempDriver() {
-     ara::log::LoggingMenager::GetInstance()->CreateLogger("TEMP", "", ara::log::LogLevel::kInfo);
+     ara::log::LoggingMenager::GetInstance()->CreateLogger("Dtem", "", ara::log::LogLevel::kInfo);
 }
 ara::core::Result<double> TempDriver::ReadTemp(const std::string& sensorPhysicalID) {
     ara::log::LogInfo() << "Receive Reading REQ from sensor " << sensorPhysicalID;

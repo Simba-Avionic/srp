@@ -8,8 +8,8 @@
  * @copyright Copyright (c) 2024
  * 
  */
-#ifndef CORE_TEMP_ITEMPDRIVER_HPP_
-#define CORE_TEMP_ITEMPDRIVER_HPP_
+#ifndef CORE_TEMP_ITEMP_DRIVER_HPP_
+#define CORE_TEMP_ITEMP_DRIVER_HPP_
 
 #include <optional>
 #include <vector>
@@ -35,4 +35,4 @@ class ITempDriver {
 }  // namespace core
 }  // namespace simba
 
-#endif  // CORE_TEMP_ITEMPDRIVER_HPP_
+#endif  // CORE_TEMP_ITEMP_DRIVER_HPP_

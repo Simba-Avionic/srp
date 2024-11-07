@@ -1,13 +1,15 @@
 cc_library(
     name = "gpio_interface",
-    hdrs = ["IGPIO_digital_driver.h"],
+    hdrs = [
+        "Igpio_driver.hpp",
+        "gpio_driver.hpp",
+    ],
     visibility = ["//core:__subpackages__"],
 )
 
 cc_library(
     name = "gpio_drivers",
-    srcs = ["GPIO_digital_driver.cpp"],
-    hdrs = ["GPIO_digital_driver.h"],
+    srcs = ["gpio_driver.cpp"],
     visibility = [
         "//core:__subpackages__",
         "//mw:__subpackages__",
@@ -21,8 +23,7 @@ cc_library(
 
 cc_library(
     name = "sim_gpio_drivers",
-    srcs = ["SIM_GPIO_digital_driver.cpp"],
-    hdrs = ["GPIO_digital_driver.h"],
+    srcs = ["sim_gpio_driver.cpp"],
     visibility = [
         "//core:__subpackages__",
         "//mw:__subpackages__",

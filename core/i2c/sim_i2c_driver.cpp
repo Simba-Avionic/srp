@@ -10,7 +10,7 @@
  */
 #include <cstdint>
 
-#include "core/i2c/i2cdriver.hpp"
+#include "core/i2c/i2c_driver.hpp"
 #include "ara/log/log.h"
 
 namespace simba {
@@ -48,7 +48,7 @@ core::ErrorCode I2CDriver::Write(const uint8_t& data) {
   return core::ErrorCode::kOk;
 }
 std::optional<std::vector<uint8_t>> I2CDriver::Read(const uint8_t size) {
-  ara::log::LogInfo() << "READ Data size:" << size;
+  ara::log::LogDebug() << "READ Data size:" << size;
   return std::nullopt;
 }
 core::ErrorCode I2CDriver::PageWrite(std::vector<uint8_t> data) {
