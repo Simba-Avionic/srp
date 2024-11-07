@@ -18,6 +18,7 @@ cc_library(
     ] + select({
         "//:sim":[
             "//communication-core/sockets:socket_tcp",
+            "//core/json:simba_json",
         ],
         "//conditions:default": [
         ],

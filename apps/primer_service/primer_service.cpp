@@ -60,8 +60,10 @@ core::ErrorCode PrimerService::Run(std::stop_token token) {
           -> std::optional<std::vector<uint8_t>> {
             AppLogger::Info("Receive onPrime method");
             if (this->ChangePrimerState(ON_INGITER) == core::ErrorCode::kOk) {
+              AppLogger::Info("Wykonano");
               return std::vector<uint8_t>{1};
             }
+            AppLogger::Info("nie wykonano");
             return std::vector<uint8_t>{0};
   });
   auto primerOffMethod = std::make_shared<com::someip::MethodSkeleton>(

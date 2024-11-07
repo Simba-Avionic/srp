@@ -97,6 +97,7 @@ std::vector<uint8_t> I2CService::ActionLogic(const std::shared_ptr<simba::i2c::H
 
 std::vector<uint8_t> I2CService::RxCallback(const std::string& ip, const std::uint16_t& port,
                                          const std::vector<std::uint8_t> data) {
+    AppLogger::Info("Receive Command on RX port");
     std::unique_lock<std::mutex> lock(this->i2c_mtx);
     auto headerPtr = i2c::I2CFactory::GetHeader(data);
     if (!headerPtr) {

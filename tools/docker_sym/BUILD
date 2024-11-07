@@ -4,6 +4,7 @@ sh_binary(
     visibility = ["//visibility:public"],
     args = ["ec", "192.168.10.101"],
 )
+
 sh_binary(
     name = "fc_initialize",
     srcs = ["initialize.sh"],
