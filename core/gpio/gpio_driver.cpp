@@ -21,7 +21,7 @@ GpioDriver::GpioDriver(): gpio_logger_{
 
 GpioDriver::~GpioDriver() {}
 
-core::ErrorCode GpioDigitalDriver::unregisterPin(const uint16_t& pinNumber) {
+core::ErrorCode GpioDriver::unregisterPin(const uint16_t& pinNumber) {
     std::ofstream file;
     file.open(this->path+"/unexport");
     if (!file.is_open()) {
@@ -32,7 +32,7 @@ core::ErrorCode GpioDigitalDriver::unregisterPin(const uint16_t& pinNumber) {
     return core::ErrorCode::kOk;
 }
 
-core::ErrorCode GpioDigitalDriver::initializePin(const uint16_t& pinNumber, const direction_t& direction) {
+core::ErrorCode GpioDriver::initializePin(const uint16_t& pinNumber, const direction_t& direction) {
     std::ofstream file;
     file.open(this->path+"/export");
     if (!file.is_open()) {
@@ -50,11 +50,11 @@ core::ErrorCode GpioDigitalDriver::initializePin(const uint16_t& pinNumber, cons
 }
 
 
-std::string GpioDigitalDriver::getEndpointPath(const uint16_t& pinNumber, const std::string& endpoint) {
+std::string GpioDriver::getEndpointPath(const uint16_t& pinNumber, const std::string& endpoint) {
     return this->path+"/gpio"+std::to_string(pinNumber)+"/"+endpoint;
 }
 
-core::ErrorCode GpioDigitalDriver::setValue(const uint16_t& pinNumber , const uint8_t& value) {
+core::ErrorCode GpioDriver::setValue(const uint16_t& pinNumber , const uint8_t& value) {
     std::ofstream file;
     file.open(this->getEndpointPath(pinNumber, "value"));
     if (!file.is_open()) {
@@ -69,7 +69,7 @@ core::ErrorCode GpioDigitalDriver::setValue(const uint16_t& pinNumber , const ui
     return core::ErrorCode::kOk;
 }
 
-core::ErrorCode GpioDigitalDriver::setDirection(const uint16_t& pinNumber , const direction_t& direction) {
+core::ErrorCode GpioDriver::setDirection(const uint16_t& pinNumber , const direction_t& direction) {
     std::ofstream file;
     file.open(this->getEndpointPath(pinNumber, "direction"));
     if (!file.is_open()) {
@@ -80,7 +80,7 @@ core::ErrorCode GpioDigitalDriver::setDirection(const uint16_t& pinNumber , cons
     return ErrorCode::kOk;
 }
 
-uint8_t GpioDigitalDriver::getValue(const uint16_t& pinNumber) {
+uint8_t GpioDriver::getValue(const uint16_t& pinNumber) {
     std::ifstream file;
     file.open(this->getEndpointPath(pinNumber, "value"));
     if (!file.is_open()) {
@@ -93,7 +93,7 @@ uint8_t GpioDigitalDriver::getValue(const uint16_t& pinNumber) {
     return atoi(value.c_str());
 }
 
-direction_t GpioDigitalDriver::getDirection(const uint16_t& pinNumber) {
+direction_t GpioDriver::getDirection(const uint16_t& pinNumber) {
     std::ifstream file;
     file.open(this->getEndpointPath(pinNumber, "direction"));
     if (!file.is_open()) {
