@@ -12,6 +12,11 @@ cc_binary(
     ],
 )
 
+temp_drivers_deps = select({
+    "//:sim": ["//core/temp:SIM_temp_driver"],
+    "//conditions:default": ["//core/temp:temp_driver"],
+})
+
 cc_library(
     name = "temp_service_lib",
     deps = [
@@ -26,7 +31,7 @@ cc_library(
         "//diag/jobs/skeleton:did_job_lib",
         "//ara/exec:adaptive_application_lib",
         "//deployment/mw/temp:ara",
-    ],
+    ] + temp_drivers_deps,
     srcs = [
         "temp_service.cpp",
         ],

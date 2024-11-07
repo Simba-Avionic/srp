@@ -4,6 +4,10 @@ cc_library(
         "ITempDriver.hpp",
         "TempDriver.hpp"
     ],
+    deps = [
+        "//core/common:condition_lib",
+        "//ara/com:com_error_domain",
+    ],
     visibility = ["//core:__subpackages__"],
 )
 

@@ -8,10 +8,10 @@
  * @copyright Copyright (c) 2024
  *
  */
+#include <cstdint>
 
 #include "core/i2c/i2cdriver.hpp"
 #include "ara/log/log.h"
-#include <cstdint>
 
 namespace simba {
 namespace core {
@@ -58,6 +58,7 @@ core::ErrorCode I2CDriver::PageWrite(std::vector<uint8_t> data) {
 std::optional<std::vector<uint8_t>> I2CDriver::ReadWrite(const uint8_t& reg, const uint8_t size) {
     ara::log::LogInfo() << "READ_WRITE from reg:" << reg << ", size:" << size;
     return std::nullopt;
+}
 }  // namespace i2c
 }  // namespace core
 }  // namespace simba

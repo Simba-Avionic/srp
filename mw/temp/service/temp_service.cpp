@@ -13,6 +13,8 @@
 #include <chrono>  // NOLINT
 #include <utility>  // NOLINT
 #include <map>
+#include <future>  // NOLINT
+#include <algorithm>
 
 #include "core/common/condition.h"
 #include "core/json/json_parser.h"
@@ -30,19 +32,32 @@ namespace {
         kTempServiceName = "SIMBA.TEMP.SERVICE";
     static constexpr char const*
         kSubscriberPrefix = "SIMBA.TEMP.";
-    constexpr uint8_t sensor_resolution = 10;
-    constexpr const char* sensor_path = "/sys/bus/w1/devices/";
-    constexpr auto SENSOR_TIMEOUT = 650;
+    constexpr uint8_t kSensor_resolution = 10;
+    constexpr auto kSensor_Delay = 500;
+    constexpr uint16_t kDefault_Response_Time = 125;
 }
 
 using temp_sub_factory = simba::mw::temp::SubMsgFactory;
 using temp_read_factory = simba::mw::temp::TempReadingMsgFactory;
 
+
+TempService::TempService() {
+    temp_driver_ = std::make_unique<core::temp::TempDriver>();
+    delay_time = 0;
+}
+
 int TempService::Run(const std::stop_token& token) {
     ConfigSensors();
-    this->StartTempThread();
-    ara::log::LogInfo() <<("Temp Service started!");
-    core::condition::wait(token);
+    std::vector<TempReading> readings;
+    while (!token.stop_requested()) {
+        readings = RetrieveTempReadings();
+        for (const auto& read : readings) {
+            this->temp_did_->UpdateTemp(read.first, read.second);
+        }
+        SendTempReadings(readings);
+        readings.clear();
+        std::this_thread::sleep_for(std::chrono::milliseconds(kSensor_Delay-kDefault_Response_Time));
+    }
     this->sub_sock_->StopRXThread();
     this->temp_did_->StopOffer();
     return 0;
@@ -72,27 +87,20 @@ int TempService::Initialize(const std::map<ara::core::StringView, ara::core::Str
     return simba::core::ErrorCode::kOk;
 }
 
-int TempService::ConfigSensors() const {
-    for (auto sensor : this->sensorPathsToIds) {
-        std::fstream file(sensor.first + "/resolution");
-        if (!file) {
-            ara::log::LogWarn() <<("Sensor " + sensor.first + " not available!");
-            break;
+int TempService::ConfigSensors() {
+    for (const auto& sensor : this->sensorPathsToIds) {
+        if (!temp_driver_->SetResolution(sensor.first, kSensor_resolution).HasValue()) {
+            ara::log::LogDebug() <<("INVALID TO SET RESOLUTION FOR "+sensor.first);
+        } else {
+            ara::log::LogDebug() <<("set resolution for sensor"+sensor.first);
         }
-        ara::log::LogDebug() <<("set resolution for sensor"+sensor.first);
-        file << static_cast<int>(sensor_resolution);
-        file.close();
+    }
+    for (const auto& sensor : sensorPathsToIds) {
+        auto res = temp_driver_->GetResponseTime(sensor.first);
+        this->delay_time = res.ValueOr(kDefault_Response_Time);
+        break;
     }
     return simba::core::ErrorCode::kOk;
-}
-
-void TempService::StartTempThread() {
-    if (temp_thread != nullptr) {
-        ara::log::LogError() <<("Error starting temperature thread!");
-        return;
-    }
-    this->temp_thread = std::make_unique<std::jthread>(
-        [&](std::stop_token stoken) { this->Loop(stoken); });
 }
 
 void TempService::SubCallback(const std::string& ip, const std::uint16_t& port,
@@ -134,30 +142,29 @@ int TempService::LoadConfig(
         if (!sensor_id.has_value() || !physical_id.has_value()) {
             continue;
         }
-        sensorPathsToIds[sensor_path+physical_id.value()] = sensor_id.value();
+        sensorPathsToIds[physical_id.value()] = sensor_id.value();
     }
     return simba::core::ErrorCode::kOk;
 }
 
 std::vector<TempReading> TempService::RetrieveTempReadings() const {
+    std::vector<std::future<std::optional<TempReading>>> futures;
+    for (const auto& sensor : sensorPathsToIds) {
+        futures.push_back(std::async(std::launch::async, [this, &sensor]() -> std::optional<TempReading> {
+            auto res = temp_driver_->ReadTemp(sensor.first);
+            if (res.HasValue()) {
+                double val = res.ValueOr(0.00);
+                return TempReading{sensor.second, val};
+            }
+            return std::nullopt;
+        }));
+    }
     std::vector<TempReading> readings;
-    for (const auto& path : sensorPathsToIds) {
-        std::ifstream file(path.first + "/temperature");
-
-        if (!file) {
-            ara::log::LogWarn() <<("Sensor " + path.first + " not available!");
-            break;
+    for (auto& future : futures) {
+        auto result = future.get();
+        if (result.has_value()) {
+            readings.push_back(result.value());
         }
-
-        std::string line;
-        std::getline(file, line);
-        const double sensorValueRaw = std::stoi(line)/ 1000.0;
-        file.close();
-
-        ara::log::LogDebug() <<("Sensor " + path.first +
-            ": " + std::to_string(sensorValueRaw));
-
-        readings.push_back(TempReading{path.second, sensorValueRaw});
     }
     return readings;
 }
@@ -173,19 +180,6 @@ void TempService::SendTempReadings(
             ara::log::LogError() <<("Can't send message to: " + ip);
             break;
         }
-    }
-}
-
-int TempService::Loop(std::stop_token stoken) {
-    std::vector<TempReading> readings;
-    while (!stoken.stop_requested()) {
-        readings = RetrieveTempReadings();
-        for (const auto& read : readings) {
-            this->temp_did_->UpdateTemp(read.first, read.second);
-        }
-        SendTempReadings(readings);
-        readings.clear();
-        std::this_thread::sleep_for(std::chrono::milliseconds(SENSOR_TIMEOUT));
     }
 }
 
