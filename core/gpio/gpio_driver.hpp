@@ -30,7 +30,7 @@ class GpioDriver: public IGpioDriver{
   GpioDriver();
   ~GpioDriver();
 
-  core::ErrorCode initializePin(uint8_t pinNumber, direction_t direction) override;
+  core::ErrorCode initializePin(const uint16_t& pinNumber, const direction_t& direction) override;
   /**
    * @brief Set the pin Value 
    * 
@@ -38,7 +38,7 @@ class GpioDriver: public IGpioDriver{
    * @param value 
    * @return core::ErrorCode 
    */
-  core::ErrorCode setValue(uint8_t pinNumber , uint8_t value) override;
+  core::ErrorCode setValue(const uint16_t& pinNumber , const uint8_t& value) override;
   /**
    * @brief Set the pin Direction
    * 
@@ -46,8 +46,8 @@ class GpioDriver: public IGpioDriver{
    * @param direction 
    * @return core::ErrorCode 
    */
-  core::ErrorCode setDirection(uint8_t pinNumber,
-               direction_t direction) override;
+  core::ErrorCode setDirection(const uint16_t& pinNumber,
+               const direction_t& direction) override;
 
   /**
    * @brief Get Pin Value
@@ -55,14 +55,14 @@ class GpioDriver: public IGpioDriver{
    * @param pinNumber 
    * @return uint8_t 
    */
-  uint8_t getValue(uint8_t pinNumber) override;
+  uint8_t getValue(const uint16_t& pinNumber) override;
   /**
    * @brief Get the pin Direction
    * 
    * @param pinNumber 
    * @return direction_t 
    */
-  direction_t getDirection(uint8_t pinNumber) override;
+  direction_t getDirection(const uint16_t& pinNumber) override;
   /**
    * @brief Get the Active Pin Low
    * 
@@ -71,8 +71,8 @@ class GpioDriver: public IGpioDriver{
    * @return false 
    */
  private:
-  std::string getEndpointPath(uint8_t pinNumber, std::string endpoint);
-  core::ErrorCode  unregisterPin(uint8_t pinNumber);
+  std::string getEndpointPath(const uint16_t& pinNumber, const std::string& endpoint);
+  core::ErrorCode  unregisterPin(const uint16_t& pinNumber);
   const std::string path = "/sys/class/gpio";
 };
 }  // namespace gpio

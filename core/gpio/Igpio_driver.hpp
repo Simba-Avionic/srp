@@ -31,7 +31,7 @@ class IGpioDriver{
     IGpioDriver() {}
     virtual ~IGpioDriver() {}
 
-    virtual core::ErrorCode initializePin(uint8_t pinNumber, direction_t direction) = 0;
+    virtual core::ErrorCode initializePin(const uint16_t& pinNumber, const direction_t& direction) = 0;
 
     /**
      * @brief Set the output Pin Value
@@ -39,7 +39,7 @@ class IGpioDriver{
      * @param pinNumber 
      * @param value 
      */
-    virtual core::ErrorCode setValue(uint8_t pinNumber , uint8_t value) = 0;
+    virtual core::ErrorCode setValue(const uint16_t &pinNumber , const uint8_t& value) = 0;
 
     /**
      * @brief Set the Pin direction (Pin direction must be set to output)
@@ -47,8 +47,8 @@ class IGpioDriver{
      * @param pinNumber 
      * @param direction 
      */
-    virtual core::ErrorCode setDirection(uint8_t pinNumber,
-                                direction_t direction) = 0;
+    virtual core::ErrorCode setDirection(const uint16_t &pinNumber,
+                                const direction_t& direction) = 0;
 
     /**
      * @brief read Pin Value
@@ -56,14 +56,14 @@ class IGpioDriver{
      * @param pinNumber 
      * @return uint8_t 
      */
-    virtual uint8_t getValue(uint8_t pinNumber) = 0;
+    virtual uint8_t getValue(const uint16_t &pinNumber) = 0;
     /**
      * @brief read Pin direction value
      * 
      * @param pinNumber 
      * @return direction_t 
      */
-    virtual direction_t getDirection(uint8_t pinNumber) = 0;
+    virtual direction_t getDirection(const uint16_t &pinNumber) = 0;
 };
 }  // namespace gpio
 }  // namespace core
