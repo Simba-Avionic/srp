@@ -26,13 +26,21 @@ namespace simba {
 namespace core {
 namespace uart {
 
+struct uart_config_t {
+  uint32_t baudrate = B9600;
+  bool enablePartity = false;
+  bool setTwoStopBits = false;
+  uint8_t bitsPerByte = CS8;
+  bool enableHardwareControl = false;
+};
+
 class IUartDriver {
  public:
-  virtual bool Open(const std::string& portName,const int32_t& mode) = 0;
-  virtual void Configure(const uint32_t& baudrate) = 0;
+  virtual bool Open(const std::string& portName) = 0;
+  virtual void Configure(const uart_config_t& config) = 0;
   virtual bool Write(const std::vector<uint8_t>& data) = 0;
   virtual bool ReadAvailable() = 0;
-  virtual ara::core::Result<std::vector<uint8_t>> Read(const uint8_t& size) = 0;
+  virtual std::optional<std::vector<uint8_t>> Read() = 0;
   virtual void Close() = 0;
 };
 

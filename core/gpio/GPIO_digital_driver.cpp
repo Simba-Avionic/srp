@@ -37,7 +37,6 @@ core::ErrorCode GpioDigitalDriver::initializePin(uint8_t pinNumber, direction_t 
     std::ofstream file;
     file.open(this->path+"/export");
     if (!file.is_open()) {
-        gpio_logger_.LogError() <<
         gpio_logger_.LogError() <<("Cant export pin");
         return core::ErrorCode::kError;
     }

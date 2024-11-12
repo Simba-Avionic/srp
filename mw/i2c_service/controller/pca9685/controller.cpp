@@ -18,6 +18,7 @@
 #include "mw/i2c_service/controller/pca9685/controller.hpp"
 #include "core/json/json_parser.h"
 #include "core/common/error_code.h"
+#include "ara/log/log.h"
 namespace simba {
 namespace i2c {
 
@@ -54,7 +55,9 @@ core::ErrorCode PCA9685::Init(const std::string& parms,
   }
   this->db_ = db_opt.value();
   for (auto chan : this->db_) {
-      this->SetServo(chan.second.channel, chan.second.off_pos);
+      if (this->SetServo(chan.second.channel, chan.second.off_pos) != core::ErrorCode::kOk) {
+        ara::log::LogWarn() << "invalid set servo for id:" << chan.first;
+      } 
   }
   return core::ErrorCode::kOk;
 }

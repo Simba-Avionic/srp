@@ -16,6 +16,7 @@
 #include "core/common/condition.h"
 #include "simba/example/ExampleDataStructure.h"
 #include "example_service.h"
+#include "core/uart/uart_driver.hpp"
 namespace simba {
 namespace example {
 ExampleApp::ExampleApp() {}
@@ -23,23 +24,24 @@ ExampleApp::~ExampleApp() {}
 
 int ExampleApp::Initialize(
     const std::map<ara::core::StringView, ara::core::StringView> parms) {
-  simba::example::ExampleDataStructure struc{};
-  struc.name = 10;
-  //  struc.other_struct.name = -10;
-  //  struc.other_struct.name = "test";
   ara::log::LogInfo() << "App Initialized";
   return 0;
 }
 
 int ExampleApp::Run(const std::stop_token& token) {
   ara::log::LogInfo() << "App start";
-  MyExampleService skeleton2{
-      ara::core::InstanceSpecifier{"simba/example/ExampleApp/service2"}};
-  skeleton2.StartOffer();
-  uint8_t c = 0;
+  core::uart::UartDriver uart_;
+  uart_.Open("/dev/ttyS1");
+  core::uart::uart_config_t config;
+  uart_.Configure(config);
   while (!token.stop_requested()) {
-    skeleton2.Status.Update(c++);
-    core::condition::wait_for(std::chrono::seconds{1}, token);
+    core::condition::wait_for(std::chrono::milliseconds(50), token);
+    if (uart_.ReadAvailable()) {
+      auto res = uart_.Read();
+      if (res.has_value()) {
+        ara::log::LogInfo() << res.value();
+      }
+    }
   }
   ara::log::LogInfo() << "App Stop";
   return 0;
