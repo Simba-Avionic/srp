@@ -1,4 +1,18 @@
 cc_library(
+    name = "core",
+    visibility = [
+        "//visibility:public",
+    ],
+    deps = [
+        "//core/common:common_types",
+        "//core/common:condition_lib",
+        "//core/common:common_converter",
+        "//core/common:crc_lib",
+        "//core/common:wait_queue",
+    ]
+)
+
+cc_library(
     name = "common_types",
     hdrs = ["error_code.h"],
     visibility = [
