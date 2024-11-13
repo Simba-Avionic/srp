@@ -22,7 +22,7 @@ namespace {
 
 class TestWrapper : public simba::mw::GPIOMWService {
  public:
-  simba::core::ErrorCode TestInit(std::unique_ptr<MockStreamSocket> socket,
+  int TestInit(std::unique_ptr<MockStreamSocket> socket,
     std::unique_ptr<MockGPIO> gpio) {
       return this->Init(std::move(socket), std::move(gpio));
   }
@@ -32,7 +32,7 @@ class TestWrapper : public simba::mw::GPIOMWService {
   void SetConfig(const std::unordered_map<uint8_t, simba::mw::GpioConf>& config) {
     this->config = config;
   }
-  simba::core::ErrorCode TestInitPins() {
+  int TestInitPins() {
     return this->InitPins();
   }
   std::vector<uint8_t> TestRxCallback(const std::vector<std::uint8_t>& data) {

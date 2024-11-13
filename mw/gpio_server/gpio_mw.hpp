@@ -27,7 +27,7 @@
 namespace simba {
 namespace mw {
 
-class GPIOMWService final : public ara::exec::AdaptiveApplication {
+class GPIOMWService : public ara::exec::AdaptiveApplication {
  protected:
   std::unique_ptr<GpioMWDID> pin_did_;
     std::unique_ptr<com::soc::ISocketStream> sock_;
