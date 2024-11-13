@@ -20,11 +20,11 @@
 
 class MockGPIO : public simba::core::gpio::IGpioDriver {
  public:
-  MOCK_METHOD((simba::core::ErrorCode), initializePin, (uint8_t, simba::core::gpio::direction_t), (override));
-  MOCK_METHOD((uint8_t), getValue, (uint8_t), (override));
-  MOCK_METHOD((simba::core::gpio::direction_t), getDirection, (uint8_t), (override));
-  MOCK_METHOD((simba::core::ErrorCode), setValue, (uint8_t, uint8_t), (override));
-  MOCK_METHOD((simba::core::ErrorCode), setDirection, (uint8_t, simba::core::gpio::direction_t), (override));
+  MOCK_METHOD((simba::core::ErrorCode), initializePin, (const uint16_t&, const simba::core::gpio::direction_t&), (override));
+  MOCK_METHOD((uint8_t), getValue, (const uint16_t&), (override));
+  MOCK_METHOD((simba::core::gpio::direction_t), getDirection, (const uint16_t&), (override));
+  MOCK_METHOD((simba::core::ErrorCode), setValue, (const uint16_t&, const uint8_t&), (override));
+  MOCK_METHOD((simba::core::ErrorCode), setDirection, (const uint16_t&, const simba::core::gpio::direction_t&), (override));
   virtual ~MockGPIO() = default;
 };
 

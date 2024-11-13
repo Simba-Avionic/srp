@@ -19,6 +19,7 @@
 #include "communication-core/sockets/stream_ipc_socket.h"
 #include "core/i2c/i2c_driver.hpp"
 #include "mw/i2c_service/data/header.h"
+#include "mw/i2c_service/tests/test_i2cservice.cc"
 namespace simba {
 namespace mw {
 class I2CService final : public ara::exec::AdaptiveApplication {
