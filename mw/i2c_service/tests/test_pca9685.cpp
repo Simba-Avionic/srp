@@ -58,7 +58,7 @@ class TestWrapper : public simba::i2c::PCA9685 {
 
 TEST(TestBasicRead, TestRead) {
   TestWrapper wrapper;
-  EXPECT_TRUE(wrapper.read_config(FILE_PREFIX+"basic.json").has_value());
+  EXPECT_TRUE(wrapper.read_config(FILE_PREFIX+"basic.json"));
 }
 TEST(TestBasicRead, NoFile) {
   TestWrapper wrapper;
