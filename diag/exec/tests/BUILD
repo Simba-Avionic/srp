@@ -6,4 +6,5 @@ cc_test(
         "//diag/exec/data:diag_exec_header",
         "@com_google_googletest//:gtest_main",
     ],
+    size = "medium",
 )

@@ -5,6 +5,7 @@ cc_test(
         "//ara/com/someip:someip_lib",
         "@com_google_googletest//:gtest_main",
     ],
+    size = "medium",
 )
 
 cc_test(
@@ -18,4 +19,5 @@ cc_test(
         "//communication-core/someip/factory:bench2",
         "@com_google_benchmark//:benchmark_main",
     ],
+    size = "medium",
 )

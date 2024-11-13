@@ -5,4 +5,5 @@ cc_test(
         "//core/common:crc_lib",
         "@com_google_googletest//:gtest_main",
     ],
+    size = "medium",
 )

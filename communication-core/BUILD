@@ -21,6 +21,7 @@ cc_test(
     name = "com_core_test",
     srcs = ["test/sample_test.cc"],
     deps = ["@com_google_googletest//:gtest_main"],
+    size = "medium",
 )
 
 #bazel run :benchmark
