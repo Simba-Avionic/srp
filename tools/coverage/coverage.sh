@@ -1,11 +1,14 @@
 #!/bin/bash
 export GCOV=/usr/bin/gcov-13
+bazel fetch
+bazel build //...
+bazel test //...
 # Uruchomienie bazel coverage i ukrycie wyjścia
 bazel coverage //... -s \
   --instrument_test_targets \
   --experimental_cc_coverage \
   --combined_report=lcov \
-  --instrumentation_filter="[:]"
+  --instrumentation_filter="[:],-external/[:]"
   --coverage_report_generator=@bazel_tools//tools/test/CoverageOutputGenerator/java/com/google/devtools/coverageoutputgenerator:Main > /dev/null 2>&1
 
 # Uruchomienie polecenia lcov i zapisanie wyniku do zmiennej

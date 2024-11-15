@@ -42,17 +42,6 @@ cc_test(
     ],
 )
 cc_test(
-    name = "i2c_service_test",
-    srcs = [
-        "test_i2cservice.cc"
-        ],
-    visibility = ["//visibility:public"],
-    deps=[
-        "@com_google_googletest//:gtest_main",
-        "//core/common:common_types",
-    ],
-)
-cc_test(
     name = "adcsensor_test",
     srcs = [
         "test_adcsensor.cc"
