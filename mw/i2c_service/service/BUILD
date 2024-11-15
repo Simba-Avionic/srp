@@ -13,6 +13,5 @@ cc_library(
         "//mw/i2c_service/data:i2c_factory",
         "//ara/exec:adaptive_application_lib",
         "//core/common:condition_lib",
-        "//mw/i2c_service/tests:i2c_service_test",
     ] + i2c_drivers_deps,
 )

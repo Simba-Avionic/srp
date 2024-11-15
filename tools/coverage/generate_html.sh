@@ -1,5 +1,10 @@
 #!/bin/bash
 export GCOV=/usr/bin/gcov-13
+
+bazel fetch
+bazel build //...
+bazel test //...
+
 bazel coverage //... -s \
   --instrument_test_targets \
   --experimental_cc_coverage \
@@ -7,6 +12,7 @@ bazel coverage //... -s \
   --instrumentation_filter="[:]"
   --coverage_report_generator=@bazel_tools//tools/test/CoverageOutputGenerator/java/com/google/devtools/coverageoutputgenerator:Main > /dev/null 2>&1
 
-lcov --summary bazel-out/_coverage/_coverage_report.dat
+lcov  --summary bazel-out/_coverage/_coverage_report.dat
+python3 tools/coverage/remove_external.py
 
-genhtml bazel-out/_coverage/_coverage_report.dat --output-directory coverage-report
+genhtml bazel-out/_coverage/coverage_report.dat --output-directory coverage-report
