@@ -36,9 +36,9 @@ struct Date_t {
 
 class TimeChanger {
  protected:
-  std::string ConvertVariableToCommand(Date_t date);
-  std::optional<std::string> exec(const std::string& cmd);
-  Date_t ParseDate(const std::string& dateStr);
+  static std::string ConvertVariableToCommand(Date_t date);
+  static std::optional<std::string> exec(const std::string& cmd);
+  static Date_t ParseDate(const std::string& dateStr);
  public:
  /**
   * @brief 
@@ -47,9 +47,10 @@ class TimeChanger {
   * Example: "060210002024.00" sets the date to June 2, 2024, at 10:00:00 AM
   * @return core::ErrorCode 
   */
-  core::ErrorCode ChangeSystemTime(std::string time);
-  core::ErrorCode ChangeSystemTime(Date_t date);
-  std::optional<Date_t> ReadSystemTime();
+  static core::ErrorCode ChangeSystemTime(std::string time);
+  static core::ErrorCode ChangeSystemTime(Date_t date);
+  static std::optional<Date_t> ReadSystemTime();
+  static std::optional<std::string> ReadSystemTimeAsString();
 };
 }  // namespace  time
 }  // namespace  core

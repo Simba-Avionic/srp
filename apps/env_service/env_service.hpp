@@ -19,15 +19,15 @@
 
 #include "mw/temp/controller/temp_controller.h"
 #include "ara/exec/adaptive_application.h"
-#include "simba/env/EnvServiceSkeleton.h"
+#include "simba/env/EnvAppSkeleton.h"
 
 namespace simba {
 namespace envService {
 
 class EnvService final : public ara::exec::AdaptiveApplication {
  private:
-  env::EnvServiceSkeleton service_ipc;
-  env::EnvServiceSkeleton service_udp;
+  env::EnvAppSkeleton service_ipc;
+  env::EnvAppSkeleton service_udp;
   std::unique_ptr<mw::temp::TempController> temp_{};
 
  protected:
