@@ -64,3 +64,10 @@ pip_parse(
 load("@pip_deps//:requirements.bzl", "install_deps")
 
 install_deps()
+
+http_archive(
+    name = "mavlink",
+    build_file = "//bazel/libs:mavlink.BUILD",
+    sha256 = "1bd58c75f25b83828a70a7c4458cd7af0fe10dd7d6c8b51596631165777e1cb3",
+    urls = ["https://github.com/Simba-Avionic/simba_mavlink/releases/download/test/mavlink.zip"],
+)
