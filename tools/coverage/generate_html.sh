@@ -1,10 +1,5 @@
 #!/bin/bash
 export GCOV=/usr/bin/gcov-13
-
-bazel fetch
-bazel build //...
-bazel test //...
-
 bazel coverage //... -s \
   --instrument_test_targets \
   --experimental_cc_coverage \

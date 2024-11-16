@@ -44,7 +44,7 @@ class Result final {
   T &&operator*() { return std::get<T>(value_); }
   const T *operator->() const { return &std::get<T>(value_); }
   const T &Value() const { return std::get<T>(value_); }
-  T &&Value() { return std::get<T>(value_); }
+  //  T &&Value() { return std::get<T>(value_); }
   const E &Error() const { return std::get<E>(value_); }
   template <typename U>
   T ValueOr(U &&defaultValue) const {

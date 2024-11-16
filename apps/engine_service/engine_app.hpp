@@ -22,7 +22,6 @@
 #include "simba/apps/ServoService/ServoServiceHandler.h"
 #include "apps/engine_service/service.hpp"
 
-
 namespace simba {
 namespace apps {
 
@@ -35,8 +34,6 @@ class EngineApp final : public ara::exec::AdaptiveApplication {
 
   service::MyEngineServiceSkeleton service_ipc;
   service::MyEngineServiceSkeleton service_udp;
-
-  std::shared_ptr<service::MODE_t> mode;
 
  protected:
   /**

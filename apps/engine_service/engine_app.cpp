@@ -17,8 +17,8 @@ namespace simba {
 namespace apps {
 
 namespace {
-  constexpr auto kPrimer_path_name = "simba/apps/PrimerService/PrimService_ipc";
-  constexpr auto kServo_path_name = "simba/apps/servoService/ServoService_ipc";
+  constexpr auto kPrimer_path_name = "simba/apps/EngineService/PrimerService";
+  constexpr auto kServo_path_name = "simba/apps/EngineService/ServoService";
   constexpr auto kEngine_path_name = "simba/apps/EngineService/EngineService_ipc";
   constexpr auto kEngine_udp_path_name = "simba/apps/EngineService/EngineService_udp";
 }
@@ -26,33 +26,36 @@ namespace {
 EngineApp::EngineApp():
       primer_proxy(ara::core::InstanceSpecifier{kPrimer_path_name}),
       servo_proxy((ara::core::InstanceSpecifier{kServo_path_name})),
-      service_ipc(ara::core::InstanceSpecifier{kEngine_path_name}, primer_handler_, servo_handler_, mode),
-      service_udp(ara::core::InstanceSpecifier{kEngine_udp_path_name}, primer_handler_, servo_handler_, mode),
-      primer_handler_{nullptr}, servo_handler_{nullptr}, mode(std::make_shared<service::MODE_t>()) {
-  *mode = service::MODE_t::AUTO;
-  service_ipc.StartOffer();
-  service_udp.StartOffer();
+      service_ipc(ara::core::InstanceSpecifier{kEngine_path_name}),
+      service_udp(ara::core::InstanceSpecifier{kEngine_udp_path_name}),
+      primer_handler_{nullptr}, servo_handler_{nullptr} {
 }
 
 int EngineApp::Run(const std::stop_token& token) {
+  service_ipc.StartOffer();
+  service_udp.StartOffer();
   core::condition::wait(token);
   ara::log::LogInfo() << "Run complete, closing";
-  // Closing app
   service_ipc.StopOffer();
   service_udp.StopOffer();
   servo_proxy.StopFindService();
   primer_proxy.StopFindService();
+  return 0;
 }
 
 int EngineApp::Initialize(const std::map<ara::core::StringView, ara::core::StringView>
                       parms) {
   servo_proxy.StartFindService([this](auto handler) {
-    this->servo_handler_ = handler;
+    servo_handler_ = handler;
   });
   primer_proxy.StartFindService([this](auto handler) {
     this->primer_handler_ = handler;
   });
+
+  this->service_ipc.Init(primer_handler_, servo_handler_);
+  this->service_udp.Init(primer_handler_, servo_handler_);
   ara::log::LogInfo() << "Initialize Complete";
+  return 0;
 }
 
 }  // namespace apps

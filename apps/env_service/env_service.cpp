@@ -15,7 +15,7 @@
 #include "core/common/condition.h"
 #include "ara/log/log.h"
 #include "mw/temp/temp_reading_msg/temp_reading_msg_factory.h"
-#include "simba/env/EnvServiceSkeleton.h"
+#include "simba/env/EnvAppSkeleton.h"
 
 namespace simba {
 namespace envService {

@@ -92,6 +92,18 @@ std::optional<Date_t> TimeChanger::ReadSystemTime() {
     }
     return ParseDate(res.value());
 }
+std::optional<std::string> TimeChanger::ReadSystemTimeAsString() {
+    auto date = ReadSystemTime();
+    if (!date.has_value()) {
+        return std::nullopt;
+    }
+    std::string res = "";
+    res += std::to_string(date.value().day) + ":";
+    res += std::to_string(date.value().hour) + ".";
+    res += std::to_string(date.value().minute) + ".";
+    res += std::to_string(date.value().seconds) + ".";
+    return res;
+}
 }  // namespace  time
 }  // namespace  core
 }  // namespace  simba
