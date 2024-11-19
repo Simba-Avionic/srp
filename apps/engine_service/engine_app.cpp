@@ -17,8 +17,8 @@ namespace simba {
 namespace apps {
 
 namespace {
-  constexpr auto kPrimer_path_name = "simba/apps/PrimerService/PrimService_ipc";
-  constexpr auto kServo_path_name = "simba/apps/servoService/ServoService_ipc";
+  constexpr auto kPrimer_path_name = "simba/apps/EngineService/PrimerService";
+  constexpr auto kServo_path_name = "simba/apps/EngineService/ServoService";
   constexpr auto kEngine_path_name = "simba/apps/EngineService/EngineService_ipc";
   constexpr auto kEngine_udp_path_name = "simba/apps/EngineService/EngineService_udp";
 }
@@ -32,8 +32,8 @@ EngineApp::EngineApp():
 }
 
 int EngineApp::Run(const std::stop_token& token) {
-  servo_handler_->StartFind(token);
-  primer_handler_->StartFind(token);
+  // servo_handler_->StartFind(token);
+  // primer_handler_->StartFind(token);
   //service_ipc.StartOffer();
   //service_udp.StartOffer();
 
@@ -42,10 +42,11 @@ int EngineApp::Run(const std::stop_token& token) {
   // Closing app
   //service_ipc.StopOffer();
   //service_udp.StopOffer();
-  servo_handler_->StopFind();
-  primer_handler_->StopFind();
+  // servo_handler_->StopFind();
+  // primer_handler_->StopFind();
   servo_proxy.StopFindService();
   primer_proxy.StopFindService();
+  return 0;
 }
 
 int EngineApp::Initialize(const std::map<ara::core::StringView, ara::core::StringView>
@@ -65,6 +66,7 @@ int EngineApp::Initialize(const std::map<ara::core::StringView, ara::core::Strin
   //this->service_ipc.Init(primer_handler_, servo_handler_);
   //this->service_udp.Init(primer_handler_, servo_handler_);
   ara::log::LogInfo() << "Initialize Complete";
+  return 0;
 }
 
 }  // namespace apps
