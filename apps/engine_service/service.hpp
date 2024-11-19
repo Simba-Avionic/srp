@@ -32,11 +32,11 @@ class MyEngineServiceSkeleton: public EngineServiceSkeleton {
  private:
   std::shared_ptr<PrimerServiceHandler> primer_handler_;
   std::shared_ptr<ServoServiceHandler> servo_handler_;
-  std::shared_ptr<MODE_t> mode_;
+  MODE_t mode_ = MODE_t::AUTO;
  public:
-  MyEngineServiceSkeleton(const ara::core::InstanceSpecifier& instance,
-   std::shared_ptr<PrimerServiceHandler> primer_handler,
-   std::shared_ptr<ServoServiceHandler> servo_handler, std::shared_ptr<MODE_t> mode);
+  MyEngineServiceSkeleton(const ara::core::InstanceSpecifier& instance);
+  void Init(const std::shared_ptr<PrimerServiceHandler>& primer_handler,
+            const std::shared_ptr<ServoServiceHandler>& servo_handler);
  protected:
   ara::core::Result<bool> Start() override;
   ara::core::Result<bool> SetMode(const std::uint8_t& in_parm) override;
