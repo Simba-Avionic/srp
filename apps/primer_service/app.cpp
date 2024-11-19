@@ -22,20 +22,22 @@ namespace primer {
 
 int PrimerService::Run(const std::stop_token& token) {
   core::condition::wait(token);
-  return core::ErrorCode::kOk;
+  service_ipc.StopOffer();
+  service_udp.StopOffer();
+  return 0;
 }
 
 PrimerService::PrimerService() :
-  gpio_(std::make_shared<gpio::GPIOController>()),
+  controller(std::make_shared<PrimerController>()),
   service_ipc{ara::core::InstanceSpecifier{"simba/apps/PrimerService/PrimService_ipc"}, this->controller},
-  service_udp{ara::core::InstanceSpecifier{"simba/apps/PrimerService/PrimService_udp"}, this->controller},
-  controller(std::make_unique<primer::PrimerController>(std::make_unique<gpio::GPIOController>(
-                                                  std::make_unique<com::soc::StreamIpcSocket>()))) {}
+  service_udp{ara::core::InstanceSpecifier{"simba/apps/PrimerService/PrimService_udp"}, this->controller} {}
 
-int PrimerService::Initialize(const std::map<ara::core::StringView, ara::core::StringView>
+  int PrimerService::Initialize(const std::map<ara::core::StringView, ara::core::StringView>
                       parms) {
   controller->Initialize(parms.at("app_path") + "etc/config.json");
-  return core::ErrorCode::kOk;
+  service_ipc.StartOffer();
+  service_udp.StartOffer();
+  return 0;
 }
 
 }  // namespace primer

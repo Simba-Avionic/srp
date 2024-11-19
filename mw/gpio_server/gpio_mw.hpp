@@ -29,7 +29,7 @@ namespace mw {
 
 class GPIOMWService : public ara::exec::AdaptiveApplication {
  protected:
-  std::unique_ptr<GpioMWDID> pin_did_;
+    std::unique_ptr<GpioMWDID> pin_did_;
     std::unique_ptr<com::soc::ISocketStream> sock_;
     std::shared_ptr<core::gpio::IGpioDriver> gpio_driver_;
     std::unordered_map<uint8_t, GpioConf> config;

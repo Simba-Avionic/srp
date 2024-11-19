@@ -42,5 +42,12 @@ def include_spdlog():
         urls = ["https://github.com/jacobschaer/python-doipclient/archive/refs/tags/v1.1.1.zip"],
         type = "zip",
     )
+    http_archive(
+    name = "mavlink",
+    build_file = "//bazel/libs:mavlink.BUILD",
+    sha256 = "1bd58c75f25b83828a70a7c4458cd7af0fe10dd7d6c8b51596631165777e1cb3",
+    urls = ["https://github.com/Simba-Avionic/simba_mavlink/releases/download/test/mavlink.zip"],
+)
+
 
     

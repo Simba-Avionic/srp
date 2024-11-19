@@ -23,20 +23,27 @@ namespace {
 }
 
 
-MyEngineServiceSkeleton::MyEngineServiceSkeleton(const ara::core::InstanceSpecifier& instance,
-        std::shared_ptr<PrimerServiceHandler> primer_handler, std::shared_ptr<ServoServiceHandler> servo_handler,
-        std::shared_ptr<MODE_t> mode): EngineServiceSkeleton{instance}, primer_handler_(primer_handler),
-        servo_handler_(servo_handler), mode_(mode) {
-    CurrentMode.Update(static_cast<uint8_t>(*mode_));
+MyEngineServiceSkeleton::MyEngineServiceSkeleton(const ara::core::InstanceSpecifier& instance):
+        EngineServiceSkeleton{instance} {
+    this->primer_handler_ = nullptr;
+    this->servo_handler_ = nullptr;
+    CurrentMode.Update(static_cast<uint8_t>(mode_));
+}
+void MyEngineServiceSkeleton::Init(const std::shared_ptr<PrimerServiceHandler>& primer_handler,
+                                    const std::shared_ptr<ServoServiceHandler>& servo_handler) {
+    this->primer_handler_ = primer_handler;
+    this->servo_handler_ = servo_handler;
+}
+MODE_t MyEngineServiceSkeleton::GetMode() const {
+    return this->mode_;
 }
 
-
 ara::core::Result<bool> MyEngineServiceSkeleton::Start() {
-    if (!(primer_handler_ || servo_handler_)) {
+    if ((primer_handler_ == nullptr || servo_handler_ == nullptr)) {
         return ara::com::MakeErrorCode(
             ara::com::ComErrc::kWrongMethodCallProcessingMode, "Invalid pointer to Primer or Servo");
     }
-    if (*mode_ != MODE_t::AUTO) {
+    if (mode_ != MODE_t::AUTO) {
         return ara::com::MakeErrorCode(
             ara::com::ComErrc::kWrongMethodCallProcessingMode, "Invalid engine computer MODE");
     }
@@ -55,8 +62,8 @@ ara::core::Result<bool> MyEngineServiceSkeleton::Start() {
 }
 
 ara::core::Result<bool> MyEngineServiceSkeleton::SetMode(const std::uint8_t& in_parm) {
-    *this->mode_ = static_cast<MODE_t>(in_parm);
-    CurrentMode.Update(static_cast<uint8_t>(*mode_));
+    this->mode_ = static_cast<MODE_t>(in_parm);
+    CurrentMode.Update(static_cast<uint8_t>(mode_));
     return true;
 }
 
