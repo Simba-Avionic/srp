@@ -26,24 +26,19 @@ namespace {
 EngineApp::EngineApp():
       primer_proxy(ara::core::InstanceSpecifier{kPrimer_path_name}),
       servo_proxy((ara::core::InstanceSpecifier{kServo_path_name})),
-      //service_ipc(ara::core::InstanceSpecifier{kEngine_path_name}),
-      //service_udp(ara::core::InstanceSpecifier{kEngine_udp_path_name}),
+      service_ipc(ara::core::InstanceSpecifier{kEngine_path_name}),
+      service_udp(ara::core::InstanceSpecifier{kEngine_udp_path_name}),
       primer_handler_{nullptr}, servo_handler_{nullptr} {
 }
 
 int EngineApp::Run(const std::stop_token& token) {
-  // servo_handler_->StartFind(token);
-  // primer_handler_->StartFind(token);
-  //service_ipc.StartOffer();
-  //service_udp.StartOffer();
+  service_ipc.StartOffer();
+  service_udp.StartOffer();
 
   core::condition::wait(token);
   ara::log::LogInfo() << "Run complete, closing";
-  // Closing app
-  //service_ipc.StopOffer();
-  //service_udp.StopOffer();
-  // servo_handler_->StopFind();
-  // primer_handler_->StopFind();
+  service_ipc.StopOffer();
+  service_udp.StopOffer();
   servo_proxy.StopFindService();
   primer_proxy.StopFindService();
   return 0;
@@ -63,8 +58,8 @@ int EngineApp::Initialize(const std::map<ara::core::StringView, ara::core::Strin
     ara::log::LogError() << "4";
   });
   
-  //this->service_ipc.Init(primer_handler_, servo_handler_);
-  //this->service_udp.Init(primer_handler_, servo_handler_);
+  this->service_ipc.Init(primer_handler_, servo_handler_);
+  this->service_udp.Init(primer_handler_, servo_handler_);
   ara::log::LogInfo() << "Initialize Complete";
   return 0;
 }

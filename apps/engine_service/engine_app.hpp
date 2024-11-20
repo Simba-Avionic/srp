@@ -33,8 +33,8 @@ class EngineApp final : public ara::exec::AdaptiveApplication {
   PrimerServiceProxy primer_proxy;
   ServoServiceProxy servo_proxy;
 
-  //service::MyEngineServiceSkeleton service_ipc;
-  //service::MyEngineServiceSkeleton service_udp;
+  service::MyEngineServiceSkeleton service_ipc;
+  service::MyEngineServiceSkeleton service_udp;
 
  protected:
   /**
