@@ -25,6 +25,7 @@
 #include "communication-core/someip-controller/event_proxy.h"
 #include "core/common/wait_queue.h"
 #include "apps/logger_service/csvdriver/csvdriver.h"
+#include "core/json/json_parser.h"
 namespace simba {
 namespace logger {
 
@@ -43,8 +44,14 @@ class LoggerService final : public core::ApplicationNoIPC {
    *
    * @param parms map with parms
    */
+  core::ErrorCode ReadConfig(core::json::JsonParser parser);
+
   core::ErrorCode Initialize(
       const std::unordered_map<std::string, std::string>& parms) final;
+
+  std::string getCurrentTime();
+
+  std::chrono::time_point<std::chrono::steady_clock> start_time{};
 
   std::mutex data_mtx;
   SensorData data_;
@@ -65,6 +72,17 @@ class LoggerService final : public core::ApplicationNoIPC {
 
   std::shared_ptr<simba::com::someip::MethodSkeleton> start_method;
   std::shared_ptr<simba::com::someip::MethodSkeleton> stop_method;
+
+  bool T = 0;
+  bool main_valve = 0;
+  bool vent_valve = 0;
+  bool primer = 0;
+  bool nozle_press = 0;
+  bool tank_press = 0;
+  bool temp_1 = 0;
+  bool temp_2 = 0;
+  bool temp_3 = 0;
+  bool d_press = 0;
 
   std::unique_ptr<std::jthread> save_thread_;
 

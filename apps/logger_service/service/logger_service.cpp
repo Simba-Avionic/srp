@@ -24,6 +24,7 @@ namespace {
   constexpr auto TANK_TEMP3_EVENT = "LoggerApp/Temp_Event_3";
   constexpr auto MAIN_VALVE_EVENT = "LoggerApp/main_valve";
   constexpr auto VENT_VALVE_EVENT = "LoggerApp/vent_valve";
+  constexpr float T_DEFAULT = 1.1;
 }  // namespace
 
 float convertTemp(const std::vector<uint8_t> &bytes) {
@@ -40,14 +41,34 @@ core::ErrorCode LoggerService::Run(std::stop_token token) {
   return core::ErrorCode::kOk;
 }
 
+std::string LoggerService::getCurrentTime() {
+    auto now = std::chrono::system_clock::now();
+    auto timeT = std::chrono::system_clock::to_time_t(now);
+    auto localTime = *std::localtime(&timeT);
+
+    std::stringstream timeStream;
+    timeStream << std::put_time(&localTime, "%d-%m-%Y.%H-%M");
+    return timeStream.str();
+}
+
 void LoggerService::SaveFunc(std::stop_token stopToken) {
   const float T = 1.1;
   auto lastActuatorSentTime = std::chrono::high_resolution_clock::now();
   auto lastSensorSentTime = std::chrono::high_resolution_clock::now();
-  CSVDriver csv_act("/log/actuators");
-  csv_act.Init("TIMESTAMP;MAIN_VALVE;VENT_VALVE;PRIMER");
-  CSVDriver csv_sens("/log/sensors");
-  csv_sens.Init("TIMESTAMP;NOZLE_PRESS;TANK_PRESS;TANK_TEMP_1;TANK_TEMP_2;TANK_TEMP_3;TANK_D_PRESS");
+  std::string time = getCurrentTime();
+  CSVDriver csv_act("/log/actuators/" + time);
+  csv_act.main_valve = this->main_valve;
+  csv_act.vent_valve = this->vent_valve;
+  csv_act.primer = this->primer;
+  csv_act.Init();
+  CSVDriver csv_sens("/log/sensors/" + time);
+  csv_sens.nozle_press = this->nozle_press;
+  csv_sens.tank_press = this->tank_press;
+  csv_sens.temp_1 = this->temp_1;
+  csv_sens.temp_2 = this->temp_2;
+  csv_sens.temp_3 = this->temp_3;
+  csv_sens.d_press = this->d_press;
+  csv_sens.Init();
   while (!stopToken.stop_requested()) {
     bool actuatorConditionsMet = this->gotPrimer && this->gotMainValve && this->gotVentValve;
     bool sensorConditionsMet = this->gotTemp1 && this->gotTemp2 && this->gotTemp3 &&
@@ -55,13 +76,15 @@ void LoggerService::SaveFunc(std::stop_token stopToken) {
     auto currentTime = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> elapsedActuator = currentTime - lastActuatorSentTime;
     std::chrono::duration<double> elapsedSensor = currentTime - lastSensorSentTime;
+    auto timestamp = std::chrono::duration_cast<std::chrono::milliseconds>
+        (std::chrono::steady_clock::now() - start_time);
     if (actuatorConditionsMet || elapsedActuator.count() >= T) {
-      csv_act.WriteLine(data_actuator_, 1);
+      csv_act.WriteLine(data_actuator_, timestamp.count());
       lastActuatorSentTime = std::chrono::high_resolution_clock::now();
       this->gotPrimer = false, this->gotMainValve = false, this->gotVentValve = false;
     }
     if (sensorConditionsMet || elapsedSensor.count() >= T) {
-      csv_sens.WriteLine(data_, 1);
+      csv_sens.WriteLine(data_, timestamp.count());
       lastSensorSentTime = std::chrono::high_resolution_clock::now();
       this->gotTemp1 = false, this->gotTemp2 = false, this->gotTemp3 = false, this->gotDPress = false,
        this->gotTankPress = false, this->gotNozlePress = false;
@@ -78,8 +101,29 @@ core::ErrorCode LoggerService::StopThread() {
   return core::ErrorCode::kError;
 }
 
+core::ErrorCode LoggerService::ReadConfig(core::json::JsonParser parser) {
+  auto config = parser.GetObject();
+  this->T = config.value("T", T_DEFAULT);
+  this->main_valve = config.value("main_valve", 0);
+  this->vent_valve = config.value("vent_valve", 0);
+  this->primer = config.value("primer", 0);
+  this->nozle_press = config.value("nozle_press", 0);
+  this->tank_press = config.value("tank_press", 0);
+  this->temp_1 = config.value("temp_1", 0);
+  this->temp_2 = config.value("temp_2", 0);
+  this->temp_3 = config.value("temp_3", 0);
+  this->d_press = config.value("d_press", 0);
+}
+
 core::ErrorCode LoggerService::Initialize(
-    const std::unordered_map<std::string, std::string>& parms) {
+  const std::unordered_map<std::string, std::string>& parms) {
+  std::string app_name = parms.at("app_name");
+  std::string file_path = "/opt/"+app_name+"/etc/config.json";
+  auto obj_r = core::json::JsonParser::Parser(file_path);
+  if (!obj_r.has_value()) {
+    return core::ErrorCode::kInitializeError;
+  }
+
   this->primer_event =
       std::make_shared<com::someip::EventProxyBase>(PRIM_EVENT,
                                             [this](const std::vector<uint8_t> payload) {
@@ -182,6 +226,7 @@ core::ErrorCode LoggerService::Initialize(
   if (!save_thread_) {
     this->save_thread_ = std::make_unique<std::jthread>([this](std::stop_token st) { this->SaveFunc(st); });
       return std::vector<uint8_t>{1};
+      this->start_time = start_time = std::chrono::steady_clock::now();
   }
   return std::vector<uint8_t>{0};
   });

@@ -32,13 +32,11 @@ struct SensorData {
 };
 
 class ICSVDriver {
- private:
-  std::string fileName;
  public:
   virtual ~ICSVDriver() = default;
-  virtual core::ErrorCode Init(const std::string& firstLine) = 0;
-  virtual core::ErrorCode WriteLine(const ActuatorData& data, const double& timestamp) = 0;
-  virtual core::ErrorCode WriteLine(const SensorData& data, const double& timestamp) = 0;
+  virtual core::ErrorCode Init(const char& separator) = 0;
+  virtual core::ErrorCode WriteLine(const ActuatorData& data, const uint32_t& timestamp) = 0;
+  virtual core::ErrorCode WriteLine(const SensorData& data, const uint32_t& timestamp) = 0;
 };
 }  // namespace logger
 }  // namespace simba

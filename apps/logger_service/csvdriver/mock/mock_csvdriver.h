@@ -17,7 +17,7 @@ namespace simba {
 namespace mock {
 class MOCKCSVDRIVER : public logger::ICSVDriver {
  public:
-  MOCK_METHOD(core::ErrorCode, Init, (const std::string& firstLine), (override));
+  MOCK_METHOD(core::ErrorCode, Init, (const std::string& firstLine, const char& separator), (override));
   MOCK_METHOD(core::ErrorCode, WriteLine, (const logger::ActuatorData& data, const double& timestamp), (override));
   MOCK_METHOD(core::ErrorCode, WriteLine, (const logger::SensorData& data, const double& timestamp), (override));
 };
