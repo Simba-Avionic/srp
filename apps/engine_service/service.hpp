@@ -37,6 +37,7 @@ class MyEngineServiceSkeleton: public EngineServiceSkeleton {
   MyEngineServiceSkeleton(const ara::core::InstanceSpecifier& instance);
   void Init(const std::shared_ptr<PrimerServiceHandler>& primer_handler,
             const std::shared_ptr<ServoServiceHandler>& servo_handler);
+  MODE_t GetMode() const;
  protected:
   ara::core::Result<bool> Start() override;
   ara::core::Result<bool> SetMode(const std::uint8_t& in_parm) override;

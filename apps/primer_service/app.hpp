@@ -25,7 +25,6 @@ namespace primer {
 
 class PrimerService final :  public ara::exec::AdaptiveApplication {
  private:
-  std::shared_ptr<gpio::GPIOController> gpio_;
   std::shared_ptr<primer::PrimerController> controller;
   apps::MyPrimerServiceSkeleton service_ipc;
   apps::MyPrimerServiceSkeleton service_udp;

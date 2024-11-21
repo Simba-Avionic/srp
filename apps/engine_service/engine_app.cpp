@@ -28,13 +28,14 @@ EngineApp::EngineApp():
       servo_proxy((ara::core::InstanceSpecifier{kServo_path_name})),
       service_ipc(ara::core::InstanceSpecifier{kEngine_path_name}),
       service_udp(ara::core::InstanceSpecifier{kEngine_udp_path_name}),
-      primer_handler_{nullptr}, servo_handler_{nullptr} {
+      primer_handler_{nullptr}, servo_handler_{nullptr},
+      did_(std::make_unique<app::EngineAppDID>(ara::core::InstanceSpecifier{"simba/apps/EngineService/engineDID"})){
 }
 
 int EngineApp::Run(const std::stop_token& token) {
   service_ipc.StartOffer();
   service_udp.StartOffer();
-
+  
   core::condition::wait(token);
   ara::log::LogInfo() << "Run complete, closing";
   service_ipc.StopOffer();

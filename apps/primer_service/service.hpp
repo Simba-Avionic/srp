@@ -26,15 +26,15 @@ class MyPrimerServiceSkeleton: public PrimerServiceSkeleton {
  public:
   MyPrimerServiceSkeleton(const ara::core::InstanceSpecifier& instance,
         std::shared_ptr<primer::PrimerController> controller):
-                PrimerServiceSkeleton{instance}, controller_(std::move(controller)) {
-    primeStatusEvent.SetCallback(std::bind(&MyPrimerServiceSkeleton::HandleEvent,
-        this, std::placeholders::_1, std::placeholders::_2));
+                PrimerServiceSkeleton{instance}, controller_(controller) {
   }
  protected:
   ara::core::Result<bool> OnPrime() override {
+      this->primeStatusEvent.Update(1);
   return ara::core::Result<bool>(controller_->ChangePrimerState(1));
   }
   ara::core::Result<bool> OffPrime() override {
+      this->primeStatusEvent.Update(0);
   return ara::core::Result<bool>(controller_->ChangePrimerState(0));
   }
   ara::core::Result<bool> StartPrime() override {

@@ -15,6 +15,7 @@
 #include <arpa/inet.h>
 #include <utility>
 
+#include "ara/log/log.h"
 #include "gpio_controller.hpp"
 
 namespace simba {
