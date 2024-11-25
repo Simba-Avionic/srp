@@ -35,7 +35,7 @@ class ADS7828 : public IADS7828 {
    * @param channel from 0-7
    * @return uint8_t 
    */
-  std::optional<uint8_t> GetConfigData(const uint8_t& channel) const override;
+  static std::optional<uint8_t> GetConfigData(const uint8_t& channel);
   /**
    * @brief Get the Adc Read object
    * 

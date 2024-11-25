@@ -10,6 +10,7 @@ cc_binary(
         "//example_adaptive/ExampleApp2/code:ara",
         "//core/common:condition_lib",
         "//example_adaptive/ExampleApp2/code:someip_lib",
+        "//core/ptp/timestamp:global_timestamp_controller",
     ],
     visibility = ["//deployment/example_adaptive/ExampleApp2:__pkg__"],
 )

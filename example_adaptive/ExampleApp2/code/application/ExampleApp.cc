@@ -15,6 +15,7 @@
 
 #include "ara/log/log.h"
 #include "core/common/condition.h"
+#include "core/ptp/timestamp/global_timestamp.hpp"
 #include "simba/example/ExampleService/ExampleServiceHandler.h"
 // #include "simba/example/ExampleDataStructure.h"
 // #include "simba/example/ExampleServiceSkeleton.h"
@@ -53,7 +54,14 @@ int ExampleApp::Run(const std::stop_token& token) {
       });
     });
   });
+  ptp::GlobalTimestampController timestamp_;
   while (!token.stop_requested()) {
+    auto val = timestamp_.GetTimestamp();
+    if (val.has_value()) {
+      ara::log::LogWarn() << std::to_string(static_cast<int>(val.value()));
+    } else {
+      ara::log::LogWarn() << "huj";
+    }
     if (handler_ != nullptr) {
       const auto& res = handler_->SetStatus3();
       if (!res.HasValue()) {

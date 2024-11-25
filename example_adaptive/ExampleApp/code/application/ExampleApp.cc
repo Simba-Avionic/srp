@@ -16,6 +16,7 @@
 #include "core/common/condition.h"
 #include "simba/example/ExampleDataStructure.h"
 #include "example_service.h"
+#include "core/ptp/ptp_controller/ptp_controller.hpp"
 namespace simba {
 namespace example {
 ExampleApp::ExampleApp() {}
@@ -36,6 +37,8 @@ int ExampleApp::Run(const std::stop_token& token) {
   MyExampleService skeleton2{
       ara::core::InstanceSpecifier{"simba/example/ExampleApp/service2"}};
   skeleton2.StartOffer();
+  ptp::PTPController ptp_;
+  ptp_.Init();
   uint8_t c = 0;
   while (!token.stop_requested()) {
     skeleton2.Status.Update(c++);

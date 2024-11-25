@@ -22,8 +22,12 @@ namespace simba {
 namespace i2c {
 
 namespace {
+    // 1 - Single-Ended / 0 - Differential Inputs
+    constexpr auto kInput_mode = 1;
+    constexpr auto kPd_mode = 3;
+    constexpr uint8_t kChannel_map[] = {0, 4, 1, 5, 2, 6, 3, 7};
     constexpr uint8_t ADS7828_ADDRESS = 0x90;
-    constexpr float ADS7828_REF_VOLTAGE = 5.0f;
+    constexpr float ADS7828_REF_VOLTAGE = 3.3f;
     constexpr float ADC_RESOLUTION = 4096.0f;  // for 12 Bit
 }
 
@@ -37,14 +41,14 @@ core::ErrorCode ADS7828::Init(std::unique_ptr<II2CController> i2c_) {
     return core::ErrorCode::kOk;
 }
 
-std::optional<uint8_t> ADS7828::GetConfigData(const uint8_t& channel) const {
+std::optional<uint8_t> ADS7828::GetConfigData(const uint8_t& channel) {
     if (channel > 7) {
         return {};
     }
-    const int channelMap[] = {0, 4, 1, 5, 2, 6, 3, 7};
-    uint8_t res = 0;  // [0:1] unused
-    res |= (channelMap[channel] << 4);
-    res |= (1 << 7);  // [7] Single-Ennded / Differencial Input
+    uint8_t res = 0;
+    res |= (kInput_mode << 7);  // Select Input Mode
+    res |= (kChannel_map[channel] << 4);
+    res |= (kPd_mode << 2);
     return res;
 }
 std::optional<uint16_t> ADS7828::GetAdcRawRead(const uint8_t& channel) const {

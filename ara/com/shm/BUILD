@@ -5,7 +5,10 @@ cc_library(
         "shm_skeleton.h",
     ],
     visibility = ["//visibility:public"],
-    deps = ["//ara/com:com_error_domain"],
+    deps = [
+        "//ara/com:com_error_domain",
+        "//ara/core:instance_specifier",
+        ],
 )
 
 cc_library(
