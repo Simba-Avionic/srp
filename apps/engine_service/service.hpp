@@ -34,7 +34,7 @@ class MyEngineServiceSkeleton: public EngineServiceSkeleton {
   std::shared_ptr<ServoServiceHandler> servo_handler_;
   MODE_t mode_ = MODE_t::AUTO;
  public:
-  MyEngineServiceSkeleton(const ara::core::InstanceSpecifier& instance);
+  explicit MyEngineServiceSkeleton(const ara::core::InstanceSpecifier& instance);
   void Init(const std::shared_ptr<PrimerServiceHandler>& primer_handler,
             const std::shared_ptr<ServoServiceHandler>& servo_handler);
   MODE_t GetMode() const;

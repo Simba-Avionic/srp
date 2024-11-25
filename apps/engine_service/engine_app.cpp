@@ -28,14 +28,12 @@ EngineApp::EngineApp():
       servo_proxy((ara::core::InstanceSpecifier{kServo_path_name})),
       service_ipc(ara::core::InstanceSpecifier{kEngine_path_name}),
       service_udp(ara::core::InstanceSpecifier{kEngine_udp_path_name}),
-      primer_handler_{nullptr}, servo_handler_{nullptr},
-      did_(std::make_unique<app::EngineAppDID>(ara::core::InstanceSpecifier{"simba/apps/EngineService/engineDID"})){
+      primer_handler_{nullptr}, servo_handler_{nullptr} {
 }
 
 int EngineApp::Run(const std::stop_token& token) {
   service_ipc.StartOffer();
   service_udp.StartOffer();
-  
   core::condition::wait(token);
   ara::log::LogInfo() << "Run complete, closing";
   service_ipc.StopOffer();
@@ -47,18 +45,13 @@ int EngineApp::Run(const std::stop_token& token) {
 
 int EngineApp::Initialize(const std::map<ara::core::StringView, ara::core::StringView>
                       parms) {
-  ara::log::LogError() << "123";
   servo_proxy.StartFindService([this](auto handler) {
-    ara::log::LogError() << "2";
     servo_handler_ = handler;
-    ara::log::LogError() << "22";
   });
-  ara::log::LogError() << "3";
   primer_proxy.StartFindService([this](auto handler) {
     this->primer_handler_ = handler;
-    ara::log::LogError() << "4";
   });
-  
+
   this->service_ipc.Init(primer_handler_, servo_handler_);
   this->service_udp.Init(primer_handler_, servo_handler_);
   ara::log::LogInfo() << "Initialize Complete";
