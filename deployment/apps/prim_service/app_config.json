@@ -1,0 +1,55 @@
+{
+    "include": [
+        "deployment/apps/prim_service/service.json"
+    ],
+    "package": "simba.apps",
+    "adaptive_application": {
+        "PrimerService": {
+            "app": {
+                "bootMode": 6,
+                "parms": "",
+                "logger": {
+                    "app_id": "PRIM",
+                    "app_des": "Serwis od spłonki",
+                    "log_level": "kInfo",
+                    "log_mode": "kConsole|kRemote",
+                    "ctx": [
+                        {
+                            "ctx_id": "ara",
+                            "log_level": "kInfo",
+                            "ctx_des": "Default ctx for ara"
+                        },
+                        {
+                            "ctx_id": "acom",
+                            "log_level": "kInfo",
+                            "ctx_des": "Default ctx for ara::com"
+                        },
+                        {
+                            "ctx_id": "adiag",
+                            "log_level": "kInfo",
+                            "ctx_des": "Default ctx for ara::diag"
+                        },
+                        {
+                            "ctx_id": "exec",
+                            "log_level": "kDebug",
+                            "ctx_des": "Default ctx for ara::exec"
+                        }
+                    ]
+                }
+            },
+            "provide": [
+                {
+                    "name": "PrimerService as PrimService_ipc",
+                    "on": "ipc",
+                    "instance": 2
+                },
+                {
+                    "name": "PrimerService as PrimService_udp",
+                    "on": "udp",
+                    "port": "1013",
+                    "instance": 1
+                }
+            ]
+        }
+    }
+}

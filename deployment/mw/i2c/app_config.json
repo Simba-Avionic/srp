@@ -1,0 +1,43 @@
+{
+    "include": [
+    ],
+    "package": "simba.mw",
+    "adaptive_application": {
+        "i2cMWService": {
+            "app": {
+                "bootMode": 9,
+                "parms": "",
+                "logger": {
+                    "app_id": "I2C-",
+                    "app_des": "I2C server",
+                    "log_level": "kInfo",
+                    "log_mode": "kConsole|kRemote",
+                    "ctx": [
+                        {
+                            "ctx_id": "ara",
+                            "log_level": "kInfo",
+                            "ctx_des": "Default ctx for ara"
+                        },
+                        {
+                            "ctx_id": "acom",
+                            "log_level": "kInfo",
+                            "ctx_des": "Default ctx for ara::com"
+                        },
+                        {
+                            "ctx_id": "adiag",
+                            "log_level": "kInfo",
+                            "ctx_des": "Default ctx for ara::diag"
+                        },
+                        {
+                            "ctx_id": "exec",
+                            "log_level": "kDebug",
+                            "ctx_des": "Default ctx for ara::exec"
+                        }
+                    ]
+                }
+            },
+            "provide": [
+            ]
+        }
+    }
+}

@@ -1,0 +1,35 @@
+{
+    "include":[],
+    "package":"simba.apps",
+    "someip":{
+        "FileLoggerApp":{
+            "service_id":517,
+            "major_version":1,
+            "minor_version":0,
+            "methods":{
+                "Start":{
+                    "id":1,
+                    "data_structure":{
+                        "in": {
+                            "type":"void"
+                        },
+                        "out":{
+                            "type":"bool"
+                        }
+                    }
+                },
+                "Stop":{
+                    "id":2,
+                    "data_structure":{
+                        "in": {
+                            "type":"void"
+                        },
+                        "out":{
+                            "type":"bool"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

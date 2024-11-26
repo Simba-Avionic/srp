@@ -1,0 +1,54 @@
+{
+    "include": [
+        "deployment/example_adaptive/ExampleApp/example_service.json",
+        "deployment/system_definition/diag/jobs/read_vin.json",
+        "deployment/system_definition/diag/dtc/example_dtc_hex.json",
+        "deployment/system_definition/diag/dtc/example_dtc.json"
+    ],
+    "package": "simba.example",
+    "adaptive_application": {
+        "ExampleApp2": {
+            "app": {
+                "bootMode": 0,
+                "parms": "-t -10- 100",
+                "logger": {
+                    "app_id": "EXA2",
+                    "app_des": "Example Adaptive application 2",
+                    "log_level": "kInfo",
+                    "log_mode": "kRemote|kConsole",
+                    "ctx": [
+                        {
+                            "ctx_id": "ara",
+                            "log_level": "kInfo",
+                            "ctx_des": "Default ctx for ara"
+                        },
+                        {
+                            "ctx_id": "acom",
+                            "log_level": "kInfo",
+                            "ctx_des": "Default ctx for ara::com"
+                        },
+                        {
+                            "ctx_id": "adiag",
+                            "log_level": "kInfo",
+                            "ctx_des": "Default ctx for ara::diag"
+                        },
+                        {
+                            "ctx_id": "exec",
+                            "log_level": "kInfo",
+                            "ctx_des": "Default ctx for ara::exec"
+                        }
+                    ]
+                }
+            },
+            "provide": [
+            ],
+            "require": [
+                {
+                    "name": "ExampleService as service2",
+                    "on": "ipc",
+                    "instance": 2
+                }
+            ]
+        }
+    }
+}

@@ -1,0 +1,21 @@
+{
+    "servos" : [
+        {
+        "actuator_id":60,
+        "channel": 0,
+        "on_pos" : 500,
+        "off_pos" : 3,
+        "mosfet_id" : 1,
+        "on_losening_pos": 200,
+        "off_losening_pos":4000,
+        "servo_delay":1000,
+        "mosfet_delay":1000
+        },
+        {
+        "actuator_id":61,
+        "channel": 1,
+        "on_pos" : 1000,
+        "off_pos" : 10
+        }
+]
+}

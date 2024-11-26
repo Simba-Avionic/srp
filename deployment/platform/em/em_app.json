@@ -1,0 +1,43 @@
+{
+    "include": [
+    ],
+    "package": "simba.platform",
+    "adaptive_application": {
+        "em": {
+            "app": {
+                "bootMode": 0,
+                "parms": "",
+                "logger": {
+                    "app_id": "EM--",
+                    "app_des": "EM server",
+                    "log_level": "kInfo",
+                    "log_mode": "kConsole|kRemote",
+                    "ctx": [
+                        {
+                            "ctx_id": "ara",
+                            "log_level": "kInfo",
+                            "ctx_des": "Default ctx for ara"
+                        },
+                        {
+                            "ctx_id": "acom",
+                            "log_level": "kInfo",
+                            "ctx_des": "Default ctx for ara::com"
+                        },
+                        {
+                            "ctx_id": "adiag",
+                            "log_level": "kInfo",
+                            "ctx_des": "Default ctx for ara::diag"
+                        },
+                        {
+                            "ctx_id": "exec",
+                            "log_level": "kDebug",
+                            "ctx_des": "Default ctx for ara::exec"
+                        }
+                    ]
+                }
+            },
+            "provide": [
+            ]
+        }
+    }
+}

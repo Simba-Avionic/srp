@@ -1,0 +1,13 @@
+{
+    "include": [
+        "deployment/system_definition/diag/global/did.json"
+    ],
+    "diag": {
+        "job": {
+            "file_logger_did": {
+                "type": "did",
+                "sub_service_id": 16
+            }
+        }
+    }
+}

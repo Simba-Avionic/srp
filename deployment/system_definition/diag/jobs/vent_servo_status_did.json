@@ -1,0 +1,13 @@
+{
+    "include": [
+        "deployment/system_definition/diag/global/did.json"
+    ],
+    "diag": {
+        "job": {
+            "VentServoStatusDiD": {
+                "type": "did",
+                "sub_service_id": 11
+            }
+        }
+    }
+}

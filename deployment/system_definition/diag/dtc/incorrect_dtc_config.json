@@ -1,0 +1,13 @@
+{
+    "include": [
+    ],
+    "diag": {
+        "dtc": {
+            "incorrect_dtc_config": {
+                "id_hex": "FFAAAA",
+                "snapshot_list": [],
+                "desc":"Incorrect DTC MW config"
+            }
+        }
+    }
+}

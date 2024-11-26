@@ -1,0 +1,53 @@
+{
+    "include": [
+        "deployment/system_definition/diag/jobs/read_vin.json"
+    ],
+    "package": "simba.platform",
+    "adaptive_application": {
+        "diag_demon": {
+            "app": {
+                "bootMode": 10,
+                "parms": "",
+                "logger": {
+                    "app_id": "DIAG",
+                    "app_des": "Diagnostic Demon",
+                    "log_level": "kInfo",
+                    "log_mode": "kConsole|kRemote",
+                    "ctx": [
+                        {
+                            "ctx_id": "ara",
+                            "log_level": "kInfo",
+                            "ctx_des": "Default ctx for ara"
+                        },
+                        {
+                            "ctx_id": "acom",
+                            "log_level": "kInfo",
+                            "ctx_des": "Default ctx for ara::com"
+                        },
+                        {
+                            "ctx_id": "diag",
+                            "log_level": "kInfo",
+                            "ctx_des": "Default ctx for ara::diag"
+                        },
+                        {
+                            "ctx_id": "exec",
+                            "log_level": "kDebug",
+                            "ctx_des": "Default ctx for ara::exec"
+                        },
+                        {
+                            "ctx_id": "doip",
+                            "log_level": "kDebug",
+                            "ctx_des": "Default ctx for doip"
+                        }
+                    ]
+                }
+            },
+            "provide": [
+                {
+                    "name": "read_vin as UDSReadVin",
+                    "on": "diag"
+                }
+            ]
+        }
+    }
+}

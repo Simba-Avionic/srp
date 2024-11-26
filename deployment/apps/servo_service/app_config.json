@@ -1,0 +1,65 @@
+{
+    "include": [
+        "deployment/system_definition/diag/jobs/servo_status_did.json",
+        "deployment/system_definition/diag/jobs/vent_servo_status_did.json",
+        "deployment/apps/servo_service/service.json"
+    ],
+    "package": "simba.apps",
+    "adaptive_application": {
+        "servoService": {
+            "app": {
+                "bootMode": 6,
+                "parms": "",
+                "logger": {
+                    "app_id": "SERV",
+                    "app_des": "Serwis od servo",
+                    "log_level": "kInfo",
+                    "log_mode": "kConsole|kRemote",
+                    "ctx": [
+                        {
+                            "ctx_id": "ara",
+                            "log_level": "kInfo",
+                            "ctx_des": "Default ctx for ara"
+                        },
+                        {
+                            "ctx_id": "acom",
+                            "log_level": "kInfo",
+                            "ctx_des": "Default ctx for ara::com"
+                        },
+                        {
+                            "ctx_id": "adiag",
+                            "log_level": "kInfo",
+                            "ctx_des": "Default ctx for ara::diag"
+                        },
+                        {
+                            "ctx_id": "exec",
+                            "log_level": "kDebug",
+                            "ctx_des": "Default ctx for ara::exec"
+                        }
+                    ]
+                }
+            },
+            "provide": [
+                {
+                    "name": "MainServoStatusDiD as MainServoStatus",
+                    "on": "diag"
+                },
+                {
+                    "name": "VentServoStatusDiD as VentServoStatus",
+                    "on": "diag"
+                },
+                {
+                    "name": "ServoService as ServoService_ipc",
+                    "on": "ipc",
+                    "instance": 2
+                },
+                {
+                    "name": "ServoService as ServoService_udp",
+                    "on": "udp",
+                    "port": "1011",
+                    "instance": 1
+                }
+            ]
+        }
+    }
+}

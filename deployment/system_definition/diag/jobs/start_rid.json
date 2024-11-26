@@ -1,0 +1,13 @@
+{
+    "include": [
+        "deployment/system_definition/diag/global/rid.json"
+    ],
+    "diag": {
+        "job": {
+            "start_rid": {
+                "type": "rid",
+                "sub_service_id": 4384
+            }
+        }
+    }
+}

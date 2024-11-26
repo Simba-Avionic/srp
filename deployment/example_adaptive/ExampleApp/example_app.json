@@ -1,0 +1,69 @@
+{
+    "include": [
+        "deployment/example_adaptive/ExampleApp/example_service.json",
+        "deployment/system_definition/diag/jobs/read_vin.json",
+        "deployment/system_definition/diag/dtc/example_dtc_hex.json",
+        "deployment/system_definition/diag/dtc/example_dtc.json"
+    ],
+    "package": "simba.example",
+    "adaptive_application": {
+        "ExampleApp": {
+            "app": {
+                "bootMode": 0,
+                "parms": "-t -10- 100",
+                "logger": {
+                    "app_id": "EXAA",
+                    "app_des": "Example Adaptive application",
+                    "log_level": "kInfo",
+                    "log_mode": "kRemote|kConsole",
+                    "ctx": [
+                        {
+                            "ctx_id": "ara",
+                            "log_level": "kInfo",
+                            "ctx_des": "Default ctx for ara"
+                        },
+                        {
+                            "ctx_id": "acom",
+                            "log_level": "kDebug",
+                            "ctx_des": "Default ctx for ara::com"
+                        },
+                        {
+                            "ctx_id": "adiag",
+                            "log_level": "kInfo",
+                            "ctx_des": "Default ctx for ara::diag"
+                        },
+                        {
+                            "ctx_id": "exec",
+                            "log_level": "kInfo",
+                            "ctx_des": "Default ctx for ara::exec"
+                        }
+                    ]
+                }
+            },
+            "provide": [
+                {
+                    "name": "ExampleService as service2",
+                    "on": "udp",
+                    "port": "10001",
+                    "instance": 1
+                },
+                {
+                    "name": "read_vin as UDSReadVin",
+                    "on": "diag"
+                },
+                {
+                    "name": "example_dtc_hex as dtcMonitor1",
+                    "on": "monitor"
+                }
+            ],
+            "require": [
+                {
+                    "name": "ExampleService as service3",
+                    "on": "udp",
+                    "port": "10001",
+                    "instance": 4
+                }
+            ]
+        }
+    }
+}

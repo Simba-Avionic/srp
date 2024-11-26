@@ -1,7 +1,3 @@
-[submodule "deployment"]
-	path = deployment
-	url = git@github.com:Simba-Avionic/deployment.git
-	
 [submodule "libdoip"]
 	path = libdoip
 	url = https://github.com/Simba-Avionic/libdoip

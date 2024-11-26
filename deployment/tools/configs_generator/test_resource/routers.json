@@ -1,0 +1,20 @@
+{
+  "routers": [
+    {
+      "name": "router 1",
+      "interfaces": [
+        "app1",
+        "app3"
+        
+      ],
+      "interface":"rut1"
+    },
+    {
+      "name": "router 2",
+      "interfaces": [
+        "app2"
+      ],
+      "interface":"rut2"
+    }
+  ]
+}

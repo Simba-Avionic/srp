@@ -1,0 +1,10 @@
+{
+    "platform":{
+        "name":"engine_computer",
+        "ip":"192.168.10.101",
+        "mask": "255.255.255.0",
+        "interface_name" : "eth0",
+        "someip_multicast_ip": "224.224.224.245",
+        "someip_multicast_port": 30490
+    }
+}

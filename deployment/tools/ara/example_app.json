@@ -1,0 +1,17 @@
+{
+    "include": [
+        "deployment/tools/ara/example_service.json"
+    ],
+    "package": "simba.example",
+    "adaptive_application": {
+        "ExampleApp": {
+            "provide": [
+                {
+                    "name": "ExampleService as service",
+                    "on": "kIPC | kUDP",
+                    "port": "1011"
+                }
+            ]
+        }
+    }
+}

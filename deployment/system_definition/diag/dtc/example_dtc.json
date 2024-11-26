@@ -1,0 +1,15 @@
+{
+    "include": [
+        "deployment/system_definition/diag/jobs/read_vin.json"
+    ],
+    "diag": {
+        "dtc": {
+            "example_dtc": {
+                "id": 15492865,
+                "snapshot_list": [
+                    "read_vin"
+                ]
+            }
+        }
+    }
+}

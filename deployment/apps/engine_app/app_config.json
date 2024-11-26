@@ -1,0 +1,69 @@
+{
+    "include": [
+        "deployment/apps/engine_app/service.json",
+        "deployment/apps/servo_service/service.json",
+        "deployment/apps/prim_service/service.json"
+    ],
+    "package": "simba.apps",
+    "adaptive_application": {
+        "EngineService": {
+            "app": {
+                "bootMode": 2,
+                "parms": "",
+                "logger": {
+                    "app_id": "ENG-",
+                    "app_des": "głowny servis komputera silnika",
+                    "log_level": "kInfo",
+                    "log_mode": "kConsole|kRemote",
+                    "ctx": [
+                        {
+                            "ctx_id": "ara",
+                            "log_level": "kInfo",
+                            "ctx_des": "Default ctx for ara"
+                        },
+                        {
+                            "ctx_id": "acom",
+                            "log_level": "kInfo",
+                            "ctx_des": "Default ctx for ara::com"
+                        },
+                        {
+                            "ctx_id": "adiag",
+                            "log_level": "kInfo",
+                            "ctx_des": "Default ctx for ara::diag"
+                        },
+                        {
+                            "ctx_id": "exec",
+                            "log_level": "kDebug",
+                            "ctx_des": "Default ctx for ara::exec"
+                        }
+                    ]
+                }
+            },
+            "provide": [
+                {
+                    "name": "EngineService as EngineService_ipc",
+                    "on": "ipc",
+                    "instance": 2
+                },
+                {
+                    "name": "EngineService as EngineService_udp",
+                    "on": "udp",
+                    "port": "1016",
+                    "instance": 1
+                }
+            ],
+            "require": [
+                {
+                    "name": "ServoService as ServoService",
+                    "on": "ipc",
+                    "instance": 2
+                },
+                {
+                    "name": "PrimerService as PrimerService",
+                    "on": "ipc",
+                    "instance": 2
+                }
+            ]
+        }
+    }
+}

@@ -1,0 +1,48 @@
+{
+    "include": [
+        "deployment/system_definition/diag/jobs/temp_did.json"
+    ],
+    "package": "simba.mw",
+    "adaptive_application": {
+        "temp_service": {
+            "app": {
+                "bootMode": 7,
+                "parms": "",
+                "logger": {
+                    "app_id": "TEMP",
+                    "app_des": "Service responsible for reading temperature sensors as well as handling subscribers",
+                    "log_level": "kInfo",
+                    "log_mode": "kConsole|kRemote",
+                    "ctx": [
+                        {
+                            "ctx_id": "ara",
+                            "log_level": "kInfo",
+                            "ctx_des": "Default ctx for ara"
+                        },
+                        {
+                            "ctx_id": "acom",
+                            "log_level": "kInfo",
+                            "ctx_des": "Default ctx for ara::com"
+                        },
+                        {
+                            "ctx_id": "adiag",
+                            "log_level": "kInfo",
+                            "ctx_des": "Default ctx for ara::diag"
+                        },
+                        {
+                            "ctx_id": "exec",
+                            "log_level": "kDebug",
+                            "ctx_des": "Default ctx for ara::exec"
+                        }
+                    ]
+                }
+            },
+            "provide": [
+                {
+                    "name": "temp_did as temp_status_did",
+                    "on": "diag"
+                }
+            ]
+        }
+    }
+}

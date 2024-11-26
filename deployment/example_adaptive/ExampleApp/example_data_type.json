@@ -1,0 +1,9 @@
+{
+    "package":"simba.example",
+    "data_structure":{
+        "ExampleDataStructure":{
+            "name": "int16",
+            "status":"uint8"
+        }
+    }
+}

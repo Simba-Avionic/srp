@@ -1,0 +1,54 @@
+{
+    "app": {
+        "name": "PC_APP",
+        "bootMode": 0,
+        "app_id": 1,
+        "logger": {
+            "app_id": "DIAG",
+            "app_des": "diagnostyka i OTA",
+            "log_level": "kInfo",
+            "log_mode": "kConsole|kDLT"
+        },
+        "someip": {
+            "service_id": 1,
+            "mode": "kUDP",
+            "port": 10001,
+            "platform": "pc_dev",
+            "methods": [],
+            "events": [],
+            "req_methods": [
+                "ServoApp/setServoValue as setServoValue",
+                "ServoApp/readServoValue as readServoValue",
+                "ServoApp/setServoVentValue as setVentValue",
+                "ServoApp/readServoVentValue as readVentValue",
+                "PrimerApp/startPrime as startPrime",
+                "PrimerApp/onPrime as onPrime",
+                "PrimerApp/offPrime as offPrime",
+                "LoggerApp/start as LoggerStart",
+                "LoggerApp/stop as LoggerStop",
+                "EngineApp/start as EngineStart",
+                "EngineApp/setMode as EngineSetMode",
+                "EC_DiagOtaApp/diagMethodRequestJob as EC_diagMethodRequestJob",
+                "EC_DiagOtaApp/diagMethodRequestRead as EC_diagMethodRequestRead",
+                "EC_DiagOtaApp/diagMethodRequestWrite as EC_diagMethodRequestWrite",
+                "FC_DiagOtaApp/diagMethodRequestJob as FC_diagMethodRequestJob",
+                "FC_DiagOtaApp/diagMethodRequestRead as FC_diagMethodRequestRead",
+                "FC_DiagOtaApp/diagMethodRequestWrite as FC_diagMethodRequestWrite"
+            ],
+            "req_events": [
+                "ServoApp/servoVentStatusEvent as servoVentStatusEvent",
+                "ServoApp/servoStatusEvent as servoStatusEvent",
+                "EnvApp/newTempEvent_1 as newTempEvent_1",
+                "EnvApp/newTempEvent_2 as newTempEvent_2",
+                "EnvApp/newTempEvent_3 as newTempEvent_3",
+                "EnvApp/newTempEvent_4 as newTempEvent_4",
+                "EnvApp/newPressEvent as newPressEvent",
+                "EnvApp/newDPressEvent as newDPressEvent",
+                "PrimerApp/primeStatusEvent as primeStatusEvent",
+                "EC_DiagOtaApp/newDTCEvent as EC_newDTCEvent",
+                "FC_DiagOtaApp/currentMode as FC_currentCPUMode",
+                "EngineApp/currentMode as currentMode"
+            ]
+        }
+    }
+}

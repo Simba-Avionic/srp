@@ -1,0 +1,11 @@
+{
+    "diag": {
+        "global": {
+            "did": {
+                "service_id": 34,
+                "sub_service_max_size": 2,
+                "sub_service_min_size": 2
+            }
+        }
+    }
+}

@@ -1,0 +1,11 @@
+{
+    "diag": {
+        "global": {
+            "restart": {
+                "service_id": 17,
+                "sub_service_max_size": 1,
+                "sub_service_min_size": 1
+            }
+        }
+    }
+}

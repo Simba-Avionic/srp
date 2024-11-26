@@ -1,0 +1,76 @@
+{
+    "include":[],
+    "package":"simba.apps",
+    "someip":{
+        "ServoService":{
+            "service_id":515,
+            "major_version":1,
+            "minor_version":0,
+            "methods":{
+                "SetMainServoValue":{
+                    "id":1,
+                    "data_structure":{
+                        "in":{
+                            "name": "pos",
+                            "type":"uint8"
+                        },
+                        "out":{
+                            "type":"bool"
+                        }
+                    }
+                },
+                "ReadMainServoValue":{
+                    "id":2,
+                    "data_structure":{
+                        "in":{
+                            "type":"void"
+                        },
+                        "out":{
+                            "type":"uint8"
+                        }
+                    }
+                }, "SetVentServoValue":{
+                    "id":3,
+                    "data_structure":{
+                        "in":{
+                            "name": "pos",
+                            "type":"uint8"
+                        },
+                        "out":{
+                            "type":"bool"
+                        }
+                    }
+                },
+                "ReadVentServoValue":{
+                    "id":4,
+                    "data_structure":{
+                        "in":{
+                            "type":"void"
+                        },
+                        "out":{
+                            "type":"uint8"
+                        }
+                    }
+                }
+            },
+            "events":{
+                "ServoStatusEvent": {
+                    "id":32769,
+                    "data_structure":{
+                        "out":{
+                            "type":"uint8"
+                        }
+                    }
+                },
+                "ServoVentStatusEvent": {
+                    "id":32770,
+                    "data_structure":{
+                        "out":{
+                            "type":"uint8"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

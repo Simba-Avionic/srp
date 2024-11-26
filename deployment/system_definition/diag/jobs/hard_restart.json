@@ -1,0 +1,13 @@
+{
+    "include": [
+        "deployment/system_definition/diag/global/restart.json"
+    ],
+    "diag": {
+        "job": {
+            "hard_reset": {
+                "type": "restart",
+                "sub_service_id": 1
+            }
+        }
+    }
+}
