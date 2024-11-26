@@ -23,14 +23,13 @@ namespace uart {
 class UartDriver : public IUartDriver {
  private:
   int file;
-  uart_config_t config_;
  public:
-  bool Open(const std::string& portName) override;
-  void Configure(const uart_config_t& config) override;
-  bool Write(const std::vector<uint8_t>& data) override;
-  bool ReadAvailable() override;
-  std::optional<std::vector<uint8_t>> Read() override;
-  void Close() override;
+  bool Open(const std::string& portName) noexcept override;
+  void Configure(const uart_config_t& config) noexcept override;
+  bool Write(const std::vector<uint8_t>& data) noexcept override;
+  bool ReadAvailable() noexcept override;
+  std::optional<std::vector<uint8_t>> Read() noexcept override;
+  void Close() noexcept override;
 };
 
 }  // namespace uart
