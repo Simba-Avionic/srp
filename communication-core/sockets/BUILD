@@ -47,6 +47,7 @@ cc_library(
         "//communication-core:__subpackages__",
         "//diag/base/controller:__subpackages__",
         "//mw:__subpackages__",
+        "//core/ntp:__subpackages__",
     ],
     deps = [
         ":socket_interface",

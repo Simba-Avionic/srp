@@ -11,5 +11,6 @@ cc_binary(
         "//core/common:condition_lib",
         "//deployment/platform/em:ara",
         "//platform/common/em/code/services/em:em_service",
+        "//core/ntp/ntp_controller",
     ],
 )

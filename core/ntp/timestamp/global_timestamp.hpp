@@ -8,20 +8,26 @@
  * @copyright Copyright (c) 2024
  * 
  */
-#ifndef CORE_PTP_TIMESTAMP_GLOBAL_TIMESTAMP_HPP_
-#define CORE_PTP_TIMESTAMP_GLOBAL_TIMESTAMP_HPP_
+#ifndef CORE_NTP_TIMESTAMP_GLOBAL_TIMESTAMP_HPP_
+#define CORE_NTP_TIMESTAMP_GLOBAL_TIMESTAMP_HPP_
 
 #include <chrono>  // NOLINT
 #include <optional>
 #include "ara/com/shm/shm_proxy.h"
-using kTime_t = std::chrono::time_point<std::chrono::high_resolution_clock>;
+using kTime_t = uint64_t;
 
 namespace simba {
-namespace ptp {
+namespace ntp {
+
+static uint64_t GetNowInMS() {
+    auto now = std::chrono::high_resolution_clock::now();
+    return std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count();
+}
 
 class GlobalTimestampController {
  private:
   ara::com::shm::ShmProxy<kTime_t> shm_;
+  uint64_t globalTimestamp_;
  public:
   GlobalTimestampController();
   ~GlobalTimestampController();
@@ -33,7 +39,7 @@ class GlobalTimestampController {
   std::optional<uint64_t> GetTimestamp();
 };
 
-}  // namespace ptp
+}  // namespace ntp
 }  // namespace simba
 
-#endif  // CORE_PTP_TIMESTAMP_GLOBAL_TIMESTAMP_HPP_
+#endif  // CORE_NTP_TIMESTAMP_GLOBAL_TIMESTAMP_HPP_

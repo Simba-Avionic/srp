@@ -20,6 +20,7 @@
 #include <string>
 
 #include "ara/exec/adaptive_application.h"
+#include "core/ntp/ntp_controller/ntp_controller.hpp"
 #include "platform/common/em/code/services/em/em_service.h"
 namespace simba {
 namespace em {
@@ -40,6 +41,7 @@ class EmApplication final : public ara::exec::AdaptiveApplication {
   int Run(const std::stop_token& token) override;
 
   service::EmService em_service{};
+  ntp::NTPController ntp_;
 
  public:
   EmApplication(/* args */);

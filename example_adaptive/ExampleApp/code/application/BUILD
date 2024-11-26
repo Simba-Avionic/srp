@@ -11,7 +11,7 @@ cc_binary(
         "//example_adaptive/ExampleApp/code:ara",
         "//core/common:condition_lib",
         "//example_adaptive/ExampleApp/code:someip_lib",
-        "//core/ptp/ptp_controller",
+        "//core/ntp/ntp_controller",
     ],
     visibility = ["//deployment/example_adaptive/ExampleApp:__pkg__"],
 )

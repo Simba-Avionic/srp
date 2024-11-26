@@ -32,6 +32,7 @@ int EmApplication::Run(const std::stop_token& token) {
  */
 int EmApplication::Initialize(
     const std::map<ara::core::StringView, ara::core::StringView> parms) {
+  ntp_.Init();
   this->em_service.LoadApps();
   return 0;
 }

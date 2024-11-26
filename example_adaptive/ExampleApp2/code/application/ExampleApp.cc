@@ -15,7 +15,7 @@
 
 #include "ara/log/log.h"
 #include "core/common/condition.h"
-#include "core/ptp/timestamp/global_timestamp.hpp"
+#include "core/ntp/timestamp/global_timestamp.hpp"
 #include "simba/example/ExampleService/ExampleServiceHandler.h"
 // #include "simba/example/ExampleDataStructure.h"
 // #include "simba/example/ExampleServiceSkeleton.h"
@@ -54,7 +54,7 @@ int ExampleApp::Run(const std::stop_token& token) {
       });
     });
   });
-  ptp::GlobalTimestampController timestamp_;
+  ntp::GlobalTimestampController timestamp_;
   while (!token.stop_requested()) {
     auto val = timestamp_.GetTimestamp();
     if (val.has_value()) {

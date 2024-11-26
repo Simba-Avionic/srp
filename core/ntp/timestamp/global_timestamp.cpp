@@ -8,10 +8,10 @@
  * @copyright Copyright (c) 2024
  * 
  */
-#include "core/ptp/timestamp/global_timestamp.hpp"
+#include "core/ntp/timestamp/global_timestamp.hpp"
 #include <chrono>  // NOLINT
 namespace simba {
-namespace ptp {
+namespace ntp {
 
 namespace {
   constexpr auto kShm_name = "global_timestamp";
@@ -23,14 +23,15 @@ GlobalTimestampController::GlobalTimestampController():shm_(ara::core::InstanceS
 GlobalTimestampController::~GlobalTimestampController() {
 }
 std::optional<uint64_t> GlobalTimestampController::GetTimestamp() {
-  auto now = std::chrono::high_resolution_clock::now();
+  auto duration = GetNowInMS();
+
   auto val_opt = shm_.GetNewSamples();
   if (!val_opt.HasValue()) {
     return std::nullopt;
   }
-
-  return std::chrono::duration(now - val_opt.Value()).count();
+  this->globalTimestamp_ = duration - val_opt.Value();
+  return globalTimestamp_;
 }
 
-}  // namespace ptp
+}  // namespace ntp
 }  // namespace simba
