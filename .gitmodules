@@ -8,3 +8,6 @@
 [submodule "third_party/python/someipy"]
 	path = third_party/python/someipy
 	url = git@github.com:Simba-Avionic/someipy.git
+[submodule "deployment/system_definition"]
+	path = deployment/system_definition
+	url = git@github.com:Simba-Avionic/system_definition.git

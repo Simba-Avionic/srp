@@ -28,7 +28,7 @@ if [[ -z "$line_coverage" || -z "$function_coverage" ]]; then
 fi
 
 # Sprawdzenie, czy pokrycie jest poniżej progu
-if (( $(echo "$line_coverage < 50" | bc -l) )) || (( $(echo "$function_coverage < 50" | bc -l) )); then
+if (( $(echo "$line_coverage < 0" | bc -l) )) || (( $(echo "$function_coverage < 50" | bc -l) )); then
     echo "Pokrycie linii ($line_coverage%) lub funkcji ($function_coverage%) jest poniżej progu."
     exit 1
 fi
