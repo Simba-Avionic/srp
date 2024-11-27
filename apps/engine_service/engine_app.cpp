@@ -34,7 +34,6 @@ EngineApp::EngineApp():
 int EngineApp::Run(const std::stop_token& token) {
   service_ipc.StartOffer();
   service_udp.StartOffer();
-
   core::condition::wait(token);
   ara::log::LogInfo() << "Run complete, closing";
   service_ipc.StopOffer();
@@ -46,16 +45,11 @@ int EngineApp::Run(const std::stop_token& token) {
 
 int EngineApp::Initialize(const std::map<ara::core::StringView, ara::core::StringView>
                       parms) {
-  ara::log::LogError() << "123";
   servo_proxy.StartFindService([this](auto handler) {
-    ara::log::LogError() << "2";
     servo_handler_ = handler;
-    ara::log::LogError() << "22";
   });
-  ara::log::LogError() << "3";
   primer_proxy.StartFindService([this](auto handler) {
     this->primer_handler_ = handler;
-    ara::log::LogError() << "4";
   });
 
   this->service_ipc.Init(primer_handler_, servo_handler_);

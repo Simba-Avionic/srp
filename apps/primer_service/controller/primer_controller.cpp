@@ -28,12 +28,13 @@ namespace {
   /**
    * @brief domyślne wartości
    */
-  const constexpr uint8_t kIgniter_pin_id = 5;
+  const constexpr uint8_t kIgniter_pin_id = 1;
   const constexpr uint16_t kIgniter_active_time = 250;
   const constexpr uint8_t kOff_ignite = 0;
 }  // namespace
 
-PrimerController::PrimerController(std::shared_ptr<gpio::GPIOController> gpio): gpio_(gpio), primerState{0} {
+PrimerController::PrimerController():
+            gpio_(std::make_unique<com::soc::StreamIpcSocket>()) {
 }
 void PrimerController::Initialize(std::string path) {
     this->ReadConfig(path);
@@ -41,10 +42,10 @@ void PrimerController::Initialize(std::string path) {
 }
 
 bool PrimerController::ChangePrimerState(uint8_t state) {
-    ara::log::LogError() << "try to change primer state";
+    ara::log::LogError() << "changePrimerState";
     for (const auto primer : primer_pins_) {
-        if (this->gpio_->SetPinValue(primer, state) != core::ErrorCode::kOk) {
-            ara::log::LogError() << "cant set primer pin state";
+        if (this->gpio_.SetPinValue(primer, state) != core::ErrorCode::kOk) {
+            ara::log::LogError() << "Failed to enable primer";
         }
     }
     this->primerState = state;

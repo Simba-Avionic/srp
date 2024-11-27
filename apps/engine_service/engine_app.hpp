@@ -22,7 +22,6 @@
 #include "simba/apps/ServoService/ServoServiceHandler.h"
 #include "apps/engine_service/service.hpp"
 
-
 namespace simba {
 namespace apps {
 

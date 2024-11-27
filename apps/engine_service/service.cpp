@@ -29,10 +29,13 @@ MyEngineServiceSkeleton::MyEngineServiceSkeleton(const ara::core::InstanceSpecif
     this->servo_handler_ = nullptr;
     CurrentMode.Update(static_cast<uint8_t>(mode_));
 }
-  void MyEngineServiceSkeleton::Init(const std::shared_ptr<PrimerServiceHandler>& primer_handler,
+void MyEngineServiceSkeleton::Init(const std::shared_ptr<PrimerServiceHandler>& primer_handler,
                                     const std::shared_ptr<ServoServiceHandler>& servo_handler) {
     this->primer_handler_ = primer_handler;
     this->servo_handler_ = servo_handler;
+}
+MODE_t MyEngineServiceSkeleton::GetMode() const {
+    return this->mode_;
 }
 
 ara::core::Result<bool> MyEngineServiceSkeleton::Start() {
