@@ -102,7 +102,7 @@ int SomeIpApplication::Initialize(
     return EXIT_FAILURE;
   }
   const auto& port_list_opt =
-      endpoint_json.value().GetArray<std::uint16_t>("udp");
+      endpoint_json.value().GetArray<uint16_t>("udp");
   if (!port_list_opt.has_value()) {
     ara::log::LogError() << "UDP endpoint not exist";
     return EXIT_FAILURE;

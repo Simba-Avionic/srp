@@ -65,7 +65,7 @@ int DiagDemon::Initialize(
     ara::log::LogError() << "File not found: /opt/cpu_simba/diag_config.json";
     return core::kError;
   }
-  auto json_obj = obj_r.value();
+  auto json_obj = std::move(obj_r.value());
   {
     auto ip_t = json_obj.GetNumber<uint32_t>("ecu_id");
     if (!ip_t.has_value()) {

@@ -21,7 +21,6 @@
 #include <unordered_map>
 #include <set>
 #include "core/json/json_parser.h"
-#include "nlohmann/json.hpp"
 
 #include "communication-core/sockets/ipc_socket.h"
 #include "communication-core/sockets/socket_config.h"
@@ -32,8 +31,6 @@
 #include "core/temp/temp_driver.hpp"
 #include "mw/temp/temp_reading_msg/temp_reading_msg_factory.h"
 #include "mw/temp/service/temp_mw_did.h"
-
-using json = nlohmann::json;
 
 namespace simba {
 namespace mw {

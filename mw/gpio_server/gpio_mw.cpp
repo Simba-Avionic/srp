@@ -21,7 +21,6 @@
 #include "core/common/condition.h"
 #include "core/gpio/Igpio_driver.hpp"
 #include "ara/log/log.h"
-using json = nlohmann::json;
 
 namespace simba {
 namespace mw {
@@ -103,24 +102,31 @@ int GPIOMWService::Initialize(const std::map<ara::core::StringView,
 }
 std::optional<std::unordered_map<uint8_t, GpioConf>> GPIOMWService::ReadConfig(
       std::string path) const {
+        std::cout << "HUJ" <<std::endl;
     auto parser_opt = core::json::JsonParser::Parser(path);
     if (!parser_opt.has_value()) {
         return std::nullopt;
     }
+    std::cout << "HUJ2" <<std::endl;
     std::unordered_map<uint8_t, GpioConf> db;
-    auto parser = parser_opt.value();
-    auto gpio_opt = parser.GetArray<nlohmann::json>("gpio");
+    auto parser = std::move(parser_opt.value());
+    auto gpio_opt = parser.GetArray("gpio");
+    std::cout << "HUJ3" <<std::endl;
     if (!gpio_opt.has_value()) {
         return std::nullopt;
     }
-    for (const auto & data : gpio_opt.value()) {
+    std::cout << "HUJ4" <<std::endl;
+    for (simdjson::dom::object data : gpio_opt.value()) {
+        std::cout << "HUJ5" <<std::endl;
         auto parser_opt = core::json::JsonParser::Parser(data);
+        std::cout << "HUJ6" <<std::endl;
         if (!parser_opt.has_value()) {
             continue;
         }
-        auto parser = parser_opt.value();
+        auto parser = std::move(parser_opt.value());
 
         auto pin_id_opt = parser.GetNumber<uint8_t>("id");
+        std::cout << "HUJ7" <<std::endl;
         auto pin_num_opt = parser.GetNumber<uint16_t>("num");
         auto str_direction_opt = parser.GetString("direction");
         if (!(pin_id_opt.has_value() && pin_num_opt.has_value() && str_direction_opt.has_value())) {

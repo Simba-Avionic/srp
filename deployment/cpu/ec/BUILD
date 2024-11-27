@@ -25,7 +25,7 @@ cpu_def(
         "//deployment/apps/prim_service:PrimerService",
         "//deployment/apps/engine_app:EngineService",
         "//deployment/apps/logger_service:FileLoggerApp",
-        "//deployment/platform/someip_demon",
+        # "//deployment/platform/someip_demon",
     ],
 )
 

@@ -14,3 +14,12 @@ cc_binary(
     ],
     visibility = ["//deployment/example_adaptive/ExampleApp:__pkg__"],
 )
+
+cc_binary(
+    name = "test",
+    srcs = ["test.cpp"],
+    data = ["test.json"],
+    deps = [
+        "//core/json:simba_json"
+    ],
+)

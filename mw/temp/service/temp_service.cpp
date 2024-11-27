@@ -125,7 +125,7 @@ int TempService::LoadConfig(
         ara::log::LogError() <<("Failed to open temp_Service config file");
         exit(1);
     }
-    auto temp_opt = parser_opt.value().GetArray<nlohmann::json>("sensors-temp");
+    auto temp_opt = parser_opt.value().GetArray("sensors-temp");
     if (!temp_opt.has_value()) {
         ara::log::LogError() <<("Invalid temp_Service config format");
         exit(2);
@@ -135,7 +135,7 @@ int TempService::LoadConfig(
         if (!parser_opt.has_value()) {
             continue;
         }
-        auto parser = parser_opt.value();
+        auto parser = std::move(parser_opt.value());
 
         auto sensor_id = parser.GetNumber<uint8_t>("sensor_id");
         auto physical_id = parser.GetString("id");
