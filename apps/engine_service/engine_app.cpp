@@ -57,7 +57,7 @@ int EngineApp::Initialize(const std::map<ara::core::StringView, ara::core::Strin
     this->primer_handler_ = handler;
     ara::log::LogError() << "4";
   });
-  
+
   this->service_ipc.Init(primer_handler_, servo_handler_);
   this->service_udp.Init(primer_handler_, servo_handler_);
   ara::log::LogInfo() << "Initialize Complete";

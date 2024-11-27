@@ -15,6 +15,7 @@
 #include <arpa/inet.h>
 #include <utility>
 
+#include "ara/log/log.h"
 #include "gpio_controller.hpp"
 
 namespace simba {
@@ -30,8 +31,10 @@ GPIOController::GPIOController(std::unique_ptr<com::soc::ISocketStream> socket)
 
 core::ErrorCode GPIOController::SetPinValue(uint8_t actuatorID, int8_t value) {
     if (this->sock_== nullptr) {
+
         return core::ErrorCode::kInitializeError;
     }
+    ara::log::LogWarn() << " try to SetPinValue";
     gpio::Header hdr(actuatorID, value, ACTION::SET);
     auto res = this->sock_->Transmit(PATH, 0, hdr.GetBuffor());
     if (res.has_value()) {

@@ -42,6 +42,7 @@ int GPIOMWService::Init(std::unique_ptr<com::soc::ISocketStream> socket,
 
 std::vector<uint8_t> GPIOMWService::RxCallback(const std::string& ip, const std::uint16_t& port,
   const std::vector<std::uint8_t> data) {
+    ara::log::LogWarn() << "callback in mw gpio";
     gpio::Header hdr(0, 0, gpio::ACTION::GET);
     hdr.SetBuffor(data);
     auto it = this->config.find(hdr.GetActuatorID());

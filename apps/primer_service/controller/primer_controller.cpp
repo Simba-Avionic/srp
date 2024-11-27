@@ -33,7 +33,7 @@ namespace {
   const constexpr uint8_t kOff_ignite = 0;
 }  // namespace
 
-PrimerController::PrimerController(std::unique_ptr<gpio::GPIOController> gpio): gpio_(std::move(gpio)) {
+PrimerController::PrimerController(std::shared_ptr<gpio::GPIOController> gpio): gpio_(gpio), primerState{0} {
 }
 void PrimerController::Initialize(std::string path) {
     this->ReadConfig(path);
@@ -41,14 +41,14 @@ void PrimerController::Initialize(std::string path) {
 }
 
 bool PrimerController::ChangePrimerState(uint8_t state) {
-    if (this->primerState != state) {
-        for (const auto primer : primer_pins_) {
-            this->gpio_->SetPinValue(primer, state);
+    ara::log::LogError() << "try to change primer state";
+    for (const auto primer : primer_pins_) {
+        if (this->gpio_->SetPinValue(primer, state) != core::ErrorCode::kOk) {
+            ara::log::LogError() << "cant set primer pin state";
         }
-        this->primerState = state;
-        return true;
     }
-    return false;
+    this->primerState = state;
+    return true;
 }
 
 uint8_t PrimerController::GetPrimerState() {

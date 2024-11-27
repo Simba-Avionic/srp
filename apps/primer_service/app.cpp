@@ -21,16 +21,22 @@ namespace simba {
 namespace primer {
 
 int PrimerService::Run(const std::stop_token& token) {
+  while (!token.stop_requested()) {
+    controller->ChangePrimerState(1);
+    ara::log::LogWarn() << "1";
+    core::condition::wait_for(std::chrono::seconds(1),token);
+    controller->ChangePrimerState(0);
+    ara::log::LogWarn() << "0";
+    core::condition::wait_for(std::chrono::seconds(1),token);
+  }
   core::condition::wait(token);
   return core::ErrorCode::kOk;
 }
 
 PrimerService::PrimerService() :
-  gpio_(std::make_shared<gpio::GPIOController>()),
+  controller(std::make_unique<primer::PrimerController>(std::make_shared<gpio::GPIOController>(std::make_unique<com::soc::StreamIpcSocket>()))),
   service_ipc{ara::core::InstanceSpecifier{"simba/apps/PrimerService/PrimService_ipc"}, this->controller},
-  service_udp{ara::core::InstanceSpecifier{"simba/apps/PrimerService/PrimService_udp"}, this->controller},
-  controller(std::make_unique<primer::PrimerController>(std::make_unique<gpio::GPIOController>(
-                                                  std::make_unique<com::soc::StreamIpcSocket>()))) {}
+  service_udp{ara::core::InstanceSpecifier{"simba/apps/PrimerService/PrimService_udp"}, this->controller} {}
 
 int PrimerService::Initialize(const std::map<ara::core::StringView, ara::core::StringView>
                       parms) {

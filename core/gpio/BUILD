@@ -32,5 +32,7 @@ cc_library(
         ":gpio_interface",
         "//core/common:common_types",
         "//ara/log",
+        "//core/curl:curl_drivers",
+        "//core/json:simba_json",
     ],
 )

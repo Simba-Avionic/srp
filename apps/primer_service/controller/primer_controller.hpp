@@ -26,13 +26,13 @@ namespace primer {
 
 class PrimerController {
  private:
-  std::unique_ptr<gpio::GPIOController> gpio_;
+  std::shared_ptr<gpio::GPIOController> gpio_;
   std::vector<uint8_t> primer_pins_;
   std::uint16_t active_time;
   std::uint8_t primerState;
 
  public:
-  explicit PrimerController(std::unique_ptr<gpio::GPIOController> gpio);
+  explicit PrimerController(std::shared_ptr<gpio::GPIOController> gpio);
   void Initialize(std::string path);
 
   bool ChangePrimerState(uint8_t state);
