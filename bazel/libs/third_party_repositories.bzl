@@ -11,7 +11,14 @@ def include_spdlog():
         urls = ["https://github.com/fmtlib/fmt/archive/refs/tags/10.1.1.zip"],
         build_file = "//bazel/libs:fmtlib.BUILD",
     )
-
+    http_archive(
+        name = "simdjson",
+        build_file = "//bazel/libs:simdjson.BUILD",
+        sha256 = "17a30ceeec26ccb55d5b784b8559ffa2adbc76bf0609ea6671e8d9aadb5c4c10",
+        strip_prefix = "simdjson-3.10.1",
+        type = "zip",
+        urls = ["https://github.com/simdjson/simdjson/archive/refs/tags/v3.10.1.zip"],   
+    )
     http_archive(
         name = "com_github_gabime_spdlog",
         build_file = "//bazel/libs:spdlog.BUILD",

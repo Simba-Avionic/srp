@@ -21,7 +21,6 @@
 #include "core/gpio/gpio_driver.hpp"
 #include "communication-core/sockets/stream_ipc_socket.h"
 #include "ara/exec/adaptive_application.h"
-#include "nlohmann/json.hpp"
 #include "mw/gpio_server/gpio_mw_did.h"
 
 namespace simba {
