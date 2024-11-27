@@ -108,18 +108,18 @@ static std::optional<JsonParser> Parser(const std::string& path) noexcept {
         try {
             simdjson::dom::array arr = json_[name].get_array().value();
             std::vector<T> result;
-            for (const auto& value : arr) {
-              if constexpr (std::is_same<T, float>::value || std::is_same<T, double>::value) {
-                result.push_back(static_cast<T>(value.get_double().value()));
-              } else if constexpr (std::is_same<T, uint8_t>::value || std::is_same<T, uint16_t>::value
-                    || std::is_same<T, uint32_t>::value || std::is_same<T, uint64_t>::value) {
-                result.push_back(static_cast<T>(value.get_uint64().value()));
-              } else if constexpr (std::is_same<T, int8_t>::value || std::is_same<T, int16_t>::value
-                    || std::is_same<T, int32_t>::value || std::is_same<T, int64_t>::value) {
-                result.push_back(static_cast<T>(value.get_int64().value()));
-              }
-              return result;
+            for (const auto& elem : arr) {
+                if constexpr (std::is_floating_point_v<T>) {
+                    result.push_back(static_cast<T>(elem.get_double().value()));
+                } else if constexpr (std::is_integral_v<T> && std::is_unsigned_v<T>) {
+                    result.push_back(static_cast<T>(elem.get_uint64().value()));
+                } else if constexpr (std::is_integral_v<T>) {
+                    result.push_back(static_cast<T>(elem.get_int64().value()));
+                } else if constexpr (std::is_same_v<T, std::string>) {
+                    result.push_back(std::string(elem.get_string().value()));
+                }
             }
+            return result;
         } catch (const simdjson::simdjson_error& e) {
             return std::nullopt;
         }
@@ -128,17 +128,12 @@ static std::optional<JsonParser> Parser(const std::string& path) noexcept {
     template <typename T>
     std::optional<T> GetNumber(const std::string& name) noexcept {
         try {
-            if constexpr (std::is_same<T, float>::value || std::is_same<T, double>::value) {
-                return static_cast<T>(json_[std::string_view(name)].get_double().value());
-            }
-            if constexpr (std::is_same<T, uint8_t>::value || std::is_same<T, uint16_t>::value
-            || std::is_same<T, uint32_t>::value || std::is_same<T, uint64_t>::value) {
-                auto val_opt = json_[std::string_view(name)].get_uint64().value();
-                return static_cast<T>(val_opt);
-            }
-            if constexpr (std::is_same<T, int8_t>::value || std::is_same<T, int16_t>::value
-            || std::is_same<T, int32_t>::value || std::is_same<T, int64_t>::value) {
-                return static_cast<T>(json_[std::string_view(name)].get_int64().value());
+            if constexpr (std::is_floating_point_v<T>) {
+                return static_cast<T>(json_[name].get_double().value());
+            } else if constexpr (std::is_integral_v<T> && std::is_unsigned_v<T>) {
+                return static_cast<T>(json_[name].get_uint64().value());
+            } else if constexpr (std::is_integral_v<T>) {
+                return static_cast<T>(json_[name].get_int64().value());
             }
         } catch (const simdjson::simdjson_error& e) {
             return std::nullopt;
