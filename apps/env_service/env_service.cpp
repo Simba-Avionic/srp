@@ -70,7 +70,7 @@ void EnvService::TempRxCallback(const std::string& ip, const std::uint16_t& port
     mw::temp::TempReadingMsgFactory factory_;
     auto hdrs = factory_.GetPayload(data);
     for (auto &hdr : hdrs) {
-        ara::log::LogWarn() << "Receive temp id: " << hdr.first << ",temp:" << static_cast<float>(hdr.second);
+        ara::log::LogDebug() << "Receive temp id: " << hdr.first << ",temp:" << static_cast<float>(hdr.second);
         switch (hdr.first) {
             case 0:
             this->service_ipc.newTempEvent_1.Update(static_cast<int16_t>(hdr.second * 10));

@@ -43,7 +43,7 @@ ara::core::Result<double> TempDriver::ReadTemp(const std::string& sensorPhysical
     std::getline(file, line);
     try {
         const double value = static_cast<double>(std::stoi(line)) / 1000.0;
-        ara::log::LogError() << "Read from ID: " << sensorPhysicalID << ", temp: " << std::to_string(value);
+        ara::log::LogDebug() << "Read from ID: " << sensorPhysicalID << ", temp: " << std::to_string(value);
         return value;
     } catch (const std::invalid_argument& e) {
         ara::log::LogWarn() << "Invalid temperature data for sensor " << sensorPhysicalID;
