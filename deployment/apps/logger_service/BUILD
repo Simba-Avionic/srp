@@ -15,6 +15,7 @@ ara_someip_lib(
 filegroup(
     name = "instance",
     srcs = [
+        "app_config.json",
         "//deployment/system_definition/someip/logger_service:logger_service_someipy",
         "//deployment/apps/env_service:instance",
         "//deployment/system_definition/diag/jobs/file_logger:file_logger_job",

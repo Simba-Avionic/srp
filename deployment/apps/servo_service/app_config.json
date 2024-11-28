@@ -2,7 +2,7 @@
     "include": [
         "deployment/system_definition/diag/jobs/servo_status_did.json",
         "deployment/system_definition/diag/jobs/vent_servo_status_did.json",
-        "deployment/apps/servo_service/service.json"
+        "deployment/system_definition/someip/servo_service/service.json"
     ],
     "package": "simba.apps",
     "adaptive_application": {

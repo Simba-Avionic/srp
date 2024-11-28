@@ -5,7 +5,7 @@ filegroup(
     name = "instance",
     srcs = [
         "app_config.json",
-        "service.json",
+        "//deployment/system_definition/someip/engine_service:service_someipy",
         "//deployment/apps/servo_service:instance",
         "//deployment/apps/prim_service:instance",
     ],
