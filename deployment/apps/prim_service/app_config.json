@@ -1,6 +1,6 @@
 {
     "include": [
-        "deployment/apps/prim_service/service.json"
+        "deployment/system_definition/someip/prim_service/service.json"
     ],
     "package": "simba.apps",
     "adaptive_application": {

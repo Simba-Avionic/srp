@@ -5,7 +5,7 @@ filegroup(
     name = "instance",
     srcs = [
         "app_config.json",
-        "service.json",
+        "//deployment/system_definition/someip/prim_service:service_someipy",
     ],
     visibility = [
         "//apps/prim_service:__subpackages__",

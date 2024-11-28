@@ -1,18 +1,18 @@
 {
     "include": [
-        "deployment/system_definition/someip/engine_service/service.json",
-        "deployment/system_definition/someip/servo_service/service.json",
-        "deployment/system_definition/someip/prim_service/service.json"
+        "deployment/system_definition/someip/logger_service/service.json",
+        "deployment/system_definition/someip/env_service/service.json",
+        "deployment/system_definition/diag/jobs/file_logger/file_logger_did.json"
     ],
     "package": "simba.apps",
     "adaptive_application": {
-        "EngineService": {
+        "FileLoggerApp": {
             "app": {
-                "bootMode": 2,
+                "bootMode": 0,
                 "parms": "",
                 "logger": {
-                    "app_id": "ENG-",
-                    "app_des": "głowny servis komputera silnika",
+                    "app_id": "FLOG",
+                    "app_des": "Log data to FILE",
                     "log_level": "kInfo",
                     "log_mode": "kConsole|kRemote",
                     "ctx": [
@@ -41,25 +41,24 @@
             },
             "provide": [
                 {
-                    "name": "EngineService as EngineService_ipc",
+                    "name": "FileLoggerApp as logService_udp",
+                    "on": "udp",
+                    "port": "1012",
+                    "instance": 1
+                },
+                {
+                    "name": "FileLoggerApp as logService_ipc",
                     "on": "ipc",
                     "instance": 2
                 },
                 {
-                    "name": "EngineService as EngineService_udp",
-                    "on": "udp",
-                    "port": "1016",
-                    "instance": 1
+                    "name": "file_logger_did as logger_did",
+                    "on": "diag"
                 }
             ],
             "require": [
                 {
-                    "name": "ServoService as ServoService",
-                    "on": "ipc",
-                    "instance": 2
-                },
-                {
-                    "name": "PrimerService as PrimerService",
+                    "name": "simba.env.EnvApp as EnvApp",
                     "on": "ipc",
                     "instance": 2
                 }
@@ -67,3 +66,4 @@
         }
     }
 }
+

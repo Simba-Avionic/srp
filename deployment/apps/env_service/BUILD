@@ -16,7 +16,7 @@ filegroup(
     name = "instance",
     srcs = [
         "app_config.json",
-        "service.json",
+        "//deployment/system_definition/someip/env_service:service_someipy",
     ],
     visibility = [
         "//apps/env_service:__subpackages__",

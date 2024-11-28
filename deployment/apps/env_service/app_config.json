@@ -1,6 +1,6 @@
 {
     "include": [
-        "deployment/apps/env_service/service.json"
+        "deployment/system_definition/someip/env_service/service.json"
     ],
     "package": "simba.env",
     "adaptive_application": {
