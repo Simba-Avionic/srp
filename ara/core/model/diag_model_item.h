@@ -42,7 +42,7 @@ class ModelUds {
 };
 
 class ModelDtc {
- private:
+ public:
   const std::string name_;
   const std::uint32_t id_;
   const std::string event_path_;

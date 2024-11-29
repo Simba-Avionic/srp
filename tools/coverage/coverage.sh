@@ -1,7 +1,7 @@
 #!/bin/bash
 export GCOV=/usr/bin/gcov-13
 # Uruchomienie bazel coverage i ukrycie wyjścia
-bazel coverage //... -s \
+bazel coverage --nocache_test_results `bazel query 'kind(cc_test, //...)'` -s \
   --instrument_test_targets \
   --experimental_cc_coverage \
   --combined_report=lcov \

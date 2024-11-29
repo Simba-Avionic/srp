@@ -1,6 +1,6 @@
 #!/bin/bash
 export GCOV=/usr/bin/gcov-13
-bazel coverage //... -s \
+bazel coverage `bazel query 'kind(cc_test, //...)'`  -s \
   --instrument_test_targets \
   --experimental_cc_coverage \
   --combined_report=lcov \

@@ -41,6 +41,7 @@ enum class DiagOfferErrc : ara::core::ErrorDomain::CodeType {
   kDebouncingConfigurationInconsistent = 103
 };
 
+
 class DiagErrorDomain final : public ara::core::ErrorDomain {
  public:
   using Errc = DiagErrc;
@@ -51,10 +52,10 @@ class DiagErrorDomain final : public ara::core::ErrorDomain {
       ara::core::ErrorDomain::CodeType errorCode) const noexcept override;
 };
 
-constexpr ara::core::ErrorCode MakeErrorCode(
+ara::core::ErrorCode MakeErrorCode(
     DiagErrc code, ara::core::ErrorDomain::SupportDataType data) noexcept;
 
-constexpr ara::core::ErrorCode MakeErrorCode(
+ara::core::ErrorCode MakeErrorCode(
     DiagOfferErrc code, ara::core::ErrorDomain::SupportDataType data) noexcept;
 
 constexpr const ara::core::ErrorDomain& GetDiagDomain() noexcept;
