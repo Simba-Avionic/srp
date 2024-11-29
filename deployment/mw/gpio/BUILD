@@ -4,7 +4,7 @@ filegroup(
     name = "instance",
     srcs = [
         "app_config.json",
-        "//deployment/system_definition/diag/jobs:gpio_mw_job",
+        "//deployment/system_definition/diag/jobs/gpio_mw:gpio_mw_job",
     ],
     visibility = ["//mw/gpio_server:__subpackages__"],
 )

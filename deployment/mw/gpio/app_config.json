@@ -1,6 +1,6 @@
 {
     "include": [
-        "deployment/system_definition/diag/jobs/gpio_pin_did.json"
+        "deployment/system_definition/diag/jobs/gpio_mw/gpio_pin_did.json"
     ],
     "package": "simba.mw",
     "adaptive_application": {

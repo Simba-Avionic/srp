@@ -1,7 +1,7 @@
 {
     "include": [
-        "deployment/system_definition/diag/jobs/servo_status_did.json",
-        "deployment/system_definition/diag/jobs/vent_servo_status_did.json",
+        "deployment/system_definition/diag/jobs/servo_service/servo_status_did.json",
+        "deployment/system_definition/diag/jobs/servo_service/vent_servo_status_did.json",
         "deployment/system_definition/someip/servo_service/service.json"
     ],
     "package": "simba.apps",
@@ -56,7 +56,7 @@
                 {
                     "name": "ServoService as ServoService_udp",
                     "on": "udp",
-                    "port": "1011",
+                    "port": "10001",
                     "instance": 1
                 }
             ]
