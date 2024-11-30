@@ -8,9 +8,6 @@ bazel coverage --nocache_test_results `bazel query 'kind(cc_test, //...)'` -s \
   --instrumentation_filter="[:],-external/[:]"
   --coverage_report_generator=@bazel_tools//tools/test/CoverageOutputGenerator/java/com/google/devtools/coverageoutputgenerator:Main > /dev/null 2>&1
 
-
-python3 tools/coverage/remove_external.py
-
 # Uruchomienie polecenia lcov i zapisanie wyniku do zmiennej
 output=$(lcov --summary bazel-out/_coverage/coverage_report.dat)
 

@@ -28,6 +28,9 @@ void Header::SetValue(uint8_t value) {
 void Header::SetAction(ACTION action) {
     this->action.Set(static_cast<uint8_t>(action));
 }
+void  Header::SetPinID(uint8_t pin_id) {
+    this->pin_id.Set(pin_id);
+}
 
 void Header::SetData() {
     this->AddData(&action);

@@ -33,14 +33,14 @@ ADCSensorController::ADCSensorController() {}
 
 core::ErrorCode ADCSensorController::Init(const std::unordered_map<std::string, std::string>& parms,
     std::unique_ptr<IADS7828> adc_) {
+  if (this->setPtr(std::move(adc_)) != core::ErrorCode::kOk) {
+    return core::ErrorCode::kInitializeError;
+  }
   this->app_name = parms.at("app_name");
   std::string file_path = "/opt/"+this->app_name+"/etc/config.json";
   auto obj_r = core::json::JsonParser::Parser(file_path);
   if (!obj_r.has_value()) {
-    return core::ErrorCode::kInitializeError;
-  }
-  if (this->setPtr(std::move(adc_)) != core::ErrorCode::kOk) {
-    return core::ErrorCode::kInitializeError;
+    return core::ErrorCode::kNotDefine;
   }
   this->db_ = this->ReadConfig(obj_r.value());
   return core::ErrorCode::kOk;
@@ -62,7 +62,7 @@ std::unordered_map<uint8_t, SensorConfig> ADCSensorController::ReadConfig(core::
     std::unordered_map<uint8_t, SensorConfig> db;
     auto sensors_opt = parser_.GetArray<nlohmann::json>("sensors");
     if (!sensors_opt.has_value()) {
-        exit(1);
+        return db;
     }
     for (const auto &sensor__ : sensors_opt.value()) {
         auto parser_opt = core::json::JsonParser::Parser(sensor__);
