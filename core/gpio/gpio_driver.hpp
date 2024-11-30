@@ -14,9 +14,11 @@
 #include <stdint.h>
 #include <unordered_map>
 #include <string>
+#include <memory>
 #include <vector>
 #include "ara/log/logging_menager.h"
 #include "Igpio_driver.hpp"
+#include "core/file/file.hpp"
 
 namespace simba {
 namespace core {
@@ -24,10 +26,11 @@ namespace gpio {
 
 class GpioDriver: public IGpioDriver{
  protected:
-  const ara::log::Logger& gpio_logger_;
+  std::unique_ptr<FileHandler> file_;
+  ara::log::Logger gpio_logger_;
 
  public:
-  GpioDriver();
+  explicit GpioDriver(std::unique_ptr<FileHandler> file);
   ~GpioDriver();
 
   core::ErrorCode initializePin(const uint16_t& pinNumber, const direction_t& direction) override;
@@ -70,10 +73,8 @@ class GpioDriver: public IGpioDriver{
    * @return true 
    * @return false 
    */
- private:
-  std::string getEndpointPath(const uint16_t& pinNumber, const std::string& endpoint);
+  static std::string getEndpointPath(const uint16_t& pinNumber, const std::string& endpoint);
   core::ErrorCode  unregisterPin(const uint16_t& pinNumber);
-  const std::string path = "/sys/class/gpio";
 };
 }  // namespace gpio
 }  // namespace core

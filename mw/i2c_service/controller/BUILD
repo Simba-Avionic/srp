@@ -14,5 +14,6 @@ cc_library(
     visibility = [
         "//apps:__subpackages__",
         "//mw/i2c_service/controller:__subpackages__",
+        "//mw/i2c_service/tests:__subpackages__",
         ],
 )

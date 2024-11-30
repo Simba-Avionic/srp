@@ -24,9 +24,7 @@ namespace {
 
 
 MyEngineServiceSkeleton::MyEngineServiceSkeleton(const ara::core::InstanceSpecifier& instance):
-        EngineServiceSkeleton{instance} {
-    this->primer_handler_ = nullptr;
-    this->servo_handler_ = nullptr;
+        EngineServiceSkeleton{instance}, primer_handler_{nullptr}, servo_handler_{nullptr} {
     CurrentMode.Update(static_cast<uint8_t>(mode_));
 }
 void MyEngineServiceSkeleton::Init(const std::shared_ptr<PrimerServiceHandler>& primer_handler,
@@ -47,16 +45,16 @@ ara::core::Result<bool> MyEngineServiceSkeleton::Start() {
         return ara::com::MakeErrorCode(
             ara::com::ComErrc::kWrongMethodCallProcessingMode, "Invalid engine computer MODE");
     }
-    auto res = this->servo_handler_->SetMainServoValue.Call(1);
+    auto res2 = this->primer_handler_->OnPrime();
+    if (!res2.HasValue()) {
+      return ara::com::MakeErrorCode(
+            ara::com::ComErrc::kWrongMethodCallProcessingMode, "Invalid request to MW:GPIOService");
+    }
+    std::this_thread::sleep_for(std::chrono::milliseconds(PRIMER_DELAY));
+    auto res = this->servo_handler_->SetMainServoValue(1);
     if (!res.HasValue()) {
       return ara::com::MakeErrorCode(
             ara::com::ComErrc::kWrongMethodCallProcessingMode, "Invalid request to MW:I2CService");
-    }
-    std::this_thread::sleep_for(std::chrono::milliseconds(PRIMER_DELAY));
-    auto res2 = this->primer_handler_->OnPrime.Call();
-    if (!res.HasValue()) {
-      return ara::com::MakeErrorCode(
-            ara::com::ComErrc::kWrongMethodCallProcessingMode, "Invalid request to MW:GPIOService");
     }
     return true;
 }

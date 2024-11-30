@@ -14,6 +14,7 @@
 #include <unordered_map>
 #include <iostream>
 #include <utility>
+#include <sstream>
 
 #include "gpio_mw.hpp"
 #include "mw/gpio_server/data/header.hpp"
@@ -82,7 +83,8 @@ int GPIOMWService::Run(const std::stop_token& token) {
 
 int GPIOMWService::Initialize(const std::map<ara::core::StringView,
     ara::core::StringView> parms) {
-    this->Init(std::make_unique<com::soc::StreamIpcSocket>(), std::make_shared<core::gpio::GpioDriver>());
+    this->Init(std::make_unique<com::soc::StreamIpcSocket>(),
+            std::make_shared<core::gpio::GpioDriver>(std::make_unique<core::FileHandler>()));
     this->sock_->Init({SOCKET_PATH, 0, 0});
     this->sock_->SetRXCallback(std::bind(&GPIOMWService::RxCallback, this, std::placeholders::_1,
             std::placeholders::_2, std::placeholders::_3));

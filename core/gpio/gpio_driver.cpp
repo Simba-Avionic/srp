@@ -10,38 +10,43 @@
  */
 
 #include <fstream>
+#include <utility>
 #include "gpio_driver.hpp"
 
 namespace simba {
 namespace core {
 namespace gpio {
 
-GpioDriver::GpioDriver(): gpio_logger_{
+namespace {
+    constexpr std::string kGpioPath = "/sys/class/gpio";
+}
+
+GpioDriver::GpioDriver(std::unique_ptr<FileHandler> file): file_(std::move(file)), gpio_logger_{
     ara::log::LoggingMenager::GetInstance()->CreateLogger("gpio", "", ara::log::LogLevel::kInfo)} {}
 
 GpioDriver::~GpioDriver() {}
 
 core::ErrorCode GpioDriver::unregisterPin(const uint16_t& pinNumber) {
-    std::ofstream file;
-    file.open(this->path+"/unexport");
-    if (!file.is_open()) {
+    if (file_->open(kGpioPath + "/unexport", File_mode_t::WRITE)) {
         return core::ErrorCode::kError;
     }
-    file << std::to_string(pinNumber);
-    file.close();
+    if (!file_->write(std::to_string(pinNumber))) {
+        return core::ErrorCode::kError;
+    }
+    file_->close();
     return core::ErrorCode::kOk;
 }
 
 core::ErrorCode GpioDriver::initializePin(const uint16_t& pinNumber, const direction_t& direction) {
-    std::ofstream file;
-    file.open(this->path+"/export");
-    if (!file.is_open()) {
+    if (!file_->open(kGpioPath + "/export", File_mode_t::WRITE)) {
         gpio_logger_.LogError() <<
         gpio_logger_.LogError() <<("Cant export pin");
         return core::ErrorCode::kError;
     }
-    file << std::to_string(pinNumber);
-    file.close();
+    if (!file_->write(std::to_string(pinNumber))) {
+        return core::ErrorCode::kError;
+    }
+    file_->close();
     if (this->setDirection(pinNumber, direction) != core::ErrorCode::kOk) {
         gpio_logger_.LogError() <<("cant set direction");
         return core::ErrorCode::kError;
@@ -51,18 +56,17 @@ core::ErrorCode GpioDriver::initializePin(const uint16_t& pinNumber, const direc
 
 
 std::string GpioDriver::getEndpointPath(const uint16_t& pinNumber, const std::string& endpoint) {
-    return this->path+"/gpio"+std::to_string(pinNumber)+"/"+endpoint;
+    return kGpioPath + "/gpio" + std::to_string(pinNumber) + "/" + endpoint;
 }
 
 core::ErrorCode GpioDriver::setValue(const uint16_t& pinNumber , const uint8_t& value) {
-    std::ofstream file;
-    file.open(this->getEndpointPath(pinNumber, "value"));
-    if (!file.is_open()) {
-        gpio_logger_.LogError() <<("error");
+    if (!file_->open(this->getEndpointPath(pinNumber, "value"), File_mode_t::WRITE)) {
         return core::ErrorCode::kError;
     }
-    file << std::to_string(value);
-    file.close();
+    if (!file_->write(std::to_string(value))) {
+        return core::ErrorCode::kError;
+    }
+    file_->close();
     if (this->getValue(pinNumber) != value) {
         return core::ErrorCode::kError;
     }
@@ -70,39 +74,38 @@ core::ErrorCode GpioDriver::setValue(const uint16_t& pinNumber , const uint8_t& 
 }
 
 core::ErrorCode GpioDriver::setDirection(const uint16_t& pinNumber , const direction_t& direction) {
-    std::ofstream file;
-    file.open(this->getEndpointPath(pinNumber, "direction"));
-    if (!file.is_open()) {
-        return core::ErrorCode::kInitializeError;
+    if (!file_->open(this->getEndpointPath(pinNumber, "direction"), File_mode_t::WRITE)) {
+        return core::ErrorCode::kError;
     }
-    file << (direction == direction_t::IN ? "in" : "out");
-    file.close();
+    if (!file_->write((direction == direction_t::IN ? "in" : "out"))) {
+        return core::ErrorCode::kError;
+    }
+    file_->close();
     return ErrorCode::kOk;
 }
 
 uint8_t GpioDriver::getValue(const uint16_t& pinNumber) {
-    std::ifstream file;
-    file.open(this->getEndpointPath(pinNumber, "value"));
-    if (!file.is_open()) {
-        return 2;
+    if (!file_->open(this->getEndpointPath(pinNumber, "value"), File_mode_t::READ)) {
+        return core::ErrorCode::kError;
     }
-    std::string value;
-    file >> value;
-    file.close();
-    gpio_logger_.LogDebug() << ("Value is:" + value);
-    return atoi(value.c_str());
+    auto val = file_->read();
+    if (!val.has_value()) {
+        return core::ErrorCode::kError;
+    }
+    file_->close();
+    return atoi(val.value().c_str());
 }
 
 direction_t GpioDriver::getDirection(const uint16_t& pinNumber) {
-    std::ifstream file;
-    file.open(this->getEndpointPath(pinNumber, "direction"));
-    if (!file.is_open()) {
-        return OUT;
+    if (!file_->open(this->getEndpointPath(pinNumber, "direction"), File_mode_t::READ)) {
+        return direction_t::ERROR;
     }
-    uint8_t direction;
-    file >> direction;
-    file.close();
-    return static_cast<direction_t>(direction);
+    auto val = file_->read();
+    file_->close();
+    if (!val.has_value()) {
+        return direction_t::ERROR;
+    }
+    return static_cast<direction_t>(atoi(val.value().c_str()));
 }
 
 }  // namespace gpio

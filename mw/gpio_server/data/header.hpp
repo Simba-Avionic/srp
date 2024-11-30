@@ -39,6 +39,7 @@ class Header : public com::core::network::NetworkDataStructure {
     ACTION GetAction() { return static_cast<ACTION>(this->action.Get());}
     void SetValue(uint8_t value);
     void SetAction(ACTION action);
+    void SetPinID(uint8_t pin_id);
     Header(uint8_t actuator_id, uint8_t value, ACTION action);
 };
 

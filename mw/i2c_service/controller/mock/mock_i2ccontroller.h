@@ -31,7 +31,7 @@ class MockI2CController : public i2c::II2CController {
         (const uint8_t address, const uint8_t reg, const uint8_t size), (override));
   MOCK_METHOD(std::optional<std::vector<uint8_t>>, WriteRead, (const uint8_t address,
         const uint8_t WriteData, const uint8_t ReadSize), (override));
-  MOCK_METHOD(core::ErrorCode, Init, (std::unique_ptr<com::soc::StreamIpcSocket> socket), (override));
+  MOCK_METHOD(core::ErrorCode, Init, (std::unique_ptr<com::soc::ISocketStream> socket), (override));
 };
 }  // namespace mock
 }  // namespace simba
