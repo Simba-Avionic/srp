@@ -1,12 +1,12 @@
 /**
  * @file service_proxy.h
  * @author Bartosz Snieg (snieg45@gmail.com)
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2024-09-15
- * 
+ *
  * @copyright Copyright (c) 2024
- * 
+ *
  */
 #ifndef ARA_COM_SOMEIP_SERVICE_PROXY_H_
 #define ARA_COM_SOMEIP_SERVICE_PROXY_H_
@@ -14,7 +14,7 @@
 #include <functional>
 #include <memory>
 #include <stop_token>  // NOLINT
-#include <thread>  // NOLINT
+#include <thread>      // NOLINT
 
 #include "ara/core/instance_specifier.h"
 
@@ -35,8 +35,9 @@ class ServiceProxy {
     if (handler_ == nullptr) {
       handler_ = std::make_shared<ServiceHandler_t>(instance_);
 
-      // TODO(Bartosz Snieg): need to be fixed
-      std::ignore = handler_->StartFind(token);
+      if (!handler_->StartFind(token).HasValue()) {
+        return;
+      }
     }
     if (!token.stop_requested()) {
       find_callback_(handler_);
