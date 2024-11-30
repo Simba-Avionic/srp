@@ -32,7 +32,8 @@ void signal_callback_handler(int signum) {
 }
 void reap_child(int sig) {
   int status;
-  waitpid(-1, &status, WNOHANG);
+  waitpid(0, &status, WNOHANG);
+  waitpid(0, &status, SA_NOCLDWAIT);
 }
 template <typename APPTYPE, typename... Params>
 static int RunAdaptiveLifecycle(int argc, char const *argv[],
@@ -42,7 +43,7 @@ static int RunAdaptiveLifecycle(int argc, char const *argv[],
   AdaptiveLifecycleMenager::CreateAdaptiveLifecycleMenager<APPTYPE>(
       argc, argv, true, std::forward<Params>(args)...);
 
-  signal(SIGCHLD, reap_child);
+  signal(SIGCHLD, SIG_IGN);
   signal(SIGTERM, signal_callback_handler);
   signal(SIGINT, signal_callback_handler);
 
@@ -55,14 +56,14 @@ static int RunAdaptiveLifecycle(int argc, char const *argv[],
 }
 template <typename APPTYPE, typename... Params>
 static int RunAdaptiveLifecycleWithoutControl(int argc, char const *argv[],
-                                               Params &&...args) {
+                                              Params &&...args) {
   setsid();
   ara::core::Initialize();
 
   AdaptiveLifecycleMenager::CreateAdaptiveLifecycleMenager<APPTYPE>(
       argc, argv, false, std::forward<Params>(args)...);
 
-  signal(SIGCHLD, reap_child);
+  signal(SIGCHLD, SIG_IGN);
   signal(SIGTERM, signal_callback_handler);
   signal(SIGINT, signal_callback_handler);
 

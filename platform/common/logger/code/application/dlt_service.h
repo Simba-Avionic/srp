@@ -31,7 +31,7 @@ class DltService final : public ara::exec::AdaptiveApplication {
   uint16_t tx_port;
   std::string ec_name;
 
-  core::WaitQueue<std::shared_ptr<simba::dlt::data::IDLTFrame>, 200> logs{};
+  core::WaitQueue<std::shared_ptr<simba::dlt::data::IDLTFrame>, 1000> logs{};
   /**
    * @brief This function is called to initialiaze the application
    *

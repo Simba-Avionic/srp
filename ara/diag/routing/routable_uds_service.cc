@@ -54,7 +54,7 @@ ara::core::Result<void> RoutableUdsService::Offer() {
     this->job_id_ = model.com_id_;
     diag_logger_.LogInfo() << "Mapping: " << mSpecifier
                            << " to id: " << this->job_id_;
-    const auto res = sock_->Init(this->job_id_);
+    const auto res = sock_->Init("SIMBA.DIAG." +this->job_id_);
     sock_->SetRXCallback(
         std::bind(&RoutableUdsService::RXLoop, this, std::placeholders::_1));
     sock_->StartRXThread();

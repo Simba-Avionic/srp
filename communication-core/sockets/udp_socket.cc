@@ -82,7 +82,7 @@ void UdpSocket::Loop(std::stop_token stoken) {
   tv.tv_sec = 2;
   tv.tv_usec = 0;
   setsockopt(server_sock, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
-  std::stop_callback stop_wait{
+  const std::stop_callback stop_wait{
       stoken, [this]() { shutdown(this->server_sock, SHUT_RDWR); }};
   while (true) {
     std::array<char, 256 * 2> buffor;

@@ -3,14 +3,17 @@ cc_binary(
     srcs = [
         "ExampleApp.cc",
         "ExampleApp.h",
-        "main.cc",
+        "example_did.h",
         "example_service.h",
-    ],
-    deps = [
-        "//ara/exec:adaptive_application_lib",
-        "//example_adaptive/ExampleApp/code:ara",
-        "//core/common:condition_lib",
-        "//example_adaptive/ExampleApp/code:someip_lib",
+        "main.cc",
     ],
     visibility = ["//deployment/example_adaptive/ExampleApp:__pkg__"],
+    deps = [
+        "//ara/diag:uds_lib",
+        "//ara/exec:adaptive_application_lib",
+        "//ara/log",
+        "//core/common:condition_lib",
+        "//example_adaptive/ExampleApp/code:ara",
+        "//example_adaptive/ExampleApp/code:someip_lib",
+    ],
 )

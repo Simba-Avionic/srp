@@ -110,7 +110,7 @@ ara::core::Result<void> ProccessSocket::Transmit(
 }
 
 void ProccessSocket::RxLoop(std::stop_token token) noexcept {
-  std::stop_callback stop_wait{token,
+  const std::stop_callback stop_wait{token,
                                [this]() { shutdown(this->sfd_, SHUT_RD); }};
   while (true) {
     std::array<char, 256 * 2> buffor;

@@ -11,7 +11,7 @@
                     "app_id": "EM--",
                     "app_des": "EM server",
                     "log_level": "kInfo",
-                    "log_mode": "kConsole|kRemote",
+                    "log_mode": "kRemote|kConsole",
                     "ctx": [
                         {
                             "ctx_id": "ara",

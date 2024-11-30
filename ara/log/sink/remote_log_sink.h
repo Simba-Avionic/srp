@@ -29,7 +29,7 @@ class RemoteLogSink : public LogSink {
   simba::com::soc::IpcSocket ipc_soc{};
   std::unique_ptr<std::jthread> thread;
   void Loop(std::stop_token token);
-  simba::core::WaitQueue<std::vector<uint8_t>, 200> q{};
+  simba::core::WaitQueue<std::vector<uint8_t>, 400> q{};
   uint32_t last{0};
 
  public:

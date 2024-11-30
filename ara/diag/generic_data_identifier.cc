@@ -22,8 +22,8 @@ constexpr size_t kSubFunctionIndex{0};
 constexpr size_t kDiDIdMsbIndex{1};
 constexpr size_t kDiDIdIdLsbIndex{2};
 
-constexpr uint8_t kReadSubFunction{0x01};
-constexpr uint8_t kWriteSubFunction{0x02};
+constexpr uint8_t kReadSubFunction{0x22};
+constexpr uint8_t kWriteSubFunction{0x2E};
 }  // namespace
 
 const uint8_t GenericDiD::cSid;
@@ -46,7 +46,7 @@ ara::core::Result<OperationOutput> GenericDiD::HandleMessage(
       const auto res = Read();
       if (res.HasValue()) {
         auto &tem = res.Value().responseData;
-        positive_response.insert(positive_response.begin(), tem.begin(),
+        positive_response.insert(positive_response.end(), tem.begin(),
                                  tem.end());
         return OperationOutput{positive_response};
       }

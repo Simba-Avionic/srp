@@ -14,7 +14,7 @@
                     "app_id": "FLOG",
                     "app_des": "Log data to FILE",
                     "log_level": "kInfo",
-                    "log_mode": "kConsole|kRemote",
+                    "log_mode": "kRemote",
                     "ctx": [
                         {
                             "ctx_id": "ara",

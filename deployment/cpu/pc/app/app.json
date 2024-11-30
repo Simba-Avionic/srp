@@ -7,7 +7,7 @@
             "app_id": "DIAG",
             "app_des": "diagnostyka i OTA",
             "log_level": "kInfo",
-            "log_mode": "kConsole|kDLT"
+            "log_mode": "kDLT"
         },
         "someip": {
             "service_id": 1,

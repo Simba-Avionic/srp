@@ -46,9 +46,9 @@ int DiagDemon::Run(const std::stop_token& token) {
   if (uds_server) {
     uds_server->Start();
   }
-  this->example_did->StartOffer();
+  // this->example_did->StartOffer();
   core::condition::wait(token);
-  this->example_did->StopOffer();
+  // this->example_did->StopOffer();
   uds_server->Stop();
   return 0;
 }

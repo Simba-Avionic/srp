@@ -14,7 +14,7 @@
                     "app_id": "ENG-",
                     "app_des": "głowny servis komputera silnika",
                     "log_level": "kInfo",
-                    "log_mode": "kConsole|kRemote",
+                    "log_mode": "kRemote",
                     "ctx": [
                         {
                             "ctx_id": "ara",

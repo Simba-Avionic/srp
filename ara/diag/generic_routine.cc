@@ -50,7 +50,7 @@ ara::core::Result<OperationOutput> GenericRoutine::HandleMessage(
         const auto res = Start(_routineId, payload);
         if (res.HasValue()) {
           auto &tem = res.Value().responseData;
-          positive_response.insert(positive_response.begin(), tem.begin(),
+          positive_response.insert(positive_response.end(), tem.begin(),
                                    tem.end());
           return OperationOutput{positive_response};
         }
@@ -63,7 +63,7 @@ ara::core::Result<OperationOutput> GenericRoutine::HandleMessage(
         const auto res = Stop(_routineId, payload);
         if (res.HasValue()) {
           auto &tem = res.Value().responseData;
-          positive_response.insert(positive_response.begin(), tem.begin(),
+          positive_response.insert(positive_response.end(), tem.begin(),
                                    tem.end());
           return OperationOutput{positive_response};
         }
@@ -76,7 +76,7 @@ ara::core::Result<OperationOutput> GenericRoutine::HandleMessage(
         const auto res = RequestResults(_routineId, payload);
         if (res.HasValue()) {
           auto &tem = res.Value().responseData;
-          positive_response.insert(positive_response.begin(), tem.begin(),
+          positive_response.insert(positive_response.end(), tem.begin(),
                                    tem.end());
           return OperationOutput{positive_response};
         }

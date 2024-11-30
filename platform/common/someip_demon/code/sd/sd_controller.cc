@@ -120,7 +120,7 @@ SdController::SdController(
     db::Database& sd_db)
     : multicast_controller_{multicast_controller},
       logger_{ara::log::LoggingMenager::GetInstance()->CreateLogger(
-          "sd  ", "", ara::log::LogLevel::kDebug)},
+          "sd  ", "", ara::log::LogLevel::kInfo)},
       sd_db_{sd_db} {}
 
 SdController::~SdController() {}
@@ -130,11 +130,11 @@ void SdController::SdLoop(std::stop_token token) {
   while (!token.stop_requested()) {
     core::condition::wait_for(std::chrono::seconds{1}, token);
     if (multicast_controller_ != nullptr) {
-      logger_.LogInfo() << "Find ("
+      logger_.LogDebug() << "Find ("
                         << static_cast<uint8_t>(sd_db_.GetConsumeList().size())
                         << ")";
       this->FindService();
-      logger_.LogInfo() << "Offer ("
+      logger_.LogDebug() << "Offer ("
                         << static_cast<uint8_t>(sd_db_.GetProvideList().size())
                         << ")";
       this->OfferService();
