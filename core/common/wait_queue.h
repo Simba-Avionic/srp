@@ -47,7 +47,7 @@ class WaitQueue final {
   }
   std::optional<T> Get(const std::stop_token& stoken) noexcept {
     if (q.empty()) {
-      std::stop_callback stop_wait{stoken, [this]() { this->cv.notify_one(); }};
+      const std::stop_callback stop_wait{stoken, [this]() { this->cv.notify_one(); }};
       std::unique_lock lk(m);
       cv.wait(lk, [this, &stoken] {
         return !q.empty() || stoken.stop_requested();
@@ -63,7 +63,7 @@ class WaitQueue final {
   }
   std::optional<T> GetWithoutRemove(const std::stop_token& stoken) noexcept {
     if (q.empty()) {
-      std::stop_callback stop_wait{stoken, [this]() { this->cv.notify_one(); }};
+      const std::stop_callback stop_wait{stoken, [this]() { this->cv.notify_one(); }};
       std::unique_lock lk(m);
       cv.wait(lk, [this, &stoken] {
         return !q.empty() || stoken.stop_requested();

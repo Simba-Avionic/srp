@@ -11,7 +11,7 @@
                     "app_id": "SOME",
                     "app_des": "SomeIP Demon",
                     "log_level": "kInfo",
-                    "log_mode": "kConsole|kRemote",
+                    "log_mode": "kRemote",
                     "ctx": [
                         {
                             "ctx_id": "ara",

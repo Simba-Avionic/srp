@@ -73,14 +73,14 @@ const char* DiagErrorDomain::Message(
   return kKeyList[errorCode].c_str();
 }
 
-constexpr ara::core::ErrorCode MakeErrorCode(
+ara::core::ErrorCode MakeErrorCode(
     DiagErrc code, ara::core::ErrorDomain::SupportDataType data) noexcept {
   return ara::core::ErrorCode{
       static_cast<ara::core::ErrorDomain::CodeType>(code), GetDiagDomain(),
       data};
 }
 
-constexpr ara::core::ErrorCode MakeErrorCode(
+ara::core::ErrorCode MakeErrorCode(
     DiagOfferErrc code, ara::core::ErrorDomain::SupportDataType data) noexcept {
   return ara::core::ErrorCode{
       static_cast<ara::core::ErrorDomain::CodeType>(code), GetDiagDomain(),

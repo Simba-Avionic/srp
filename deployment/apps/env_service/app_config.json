@@ -12,7 +12,7 @@
                     "app_id": "ENVA",
                     "app_des": "Enviroment Adaptive application",
                     "log_level": "kInfo",
-                    "log_mode": "kConsole|kRemote",
+                    "log_mode": "kRemote",
                     "ctx": [
                         {
                             "ctx_id": "ara",

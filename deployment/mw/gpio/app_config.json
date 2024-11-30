@@ -12,7 +12,7 @@
                     "app_id": "GPIO",
                     "app_des": "GPIO server",
                     "log_level": "kInfo",
-                    "log_mode": "kConsole|kRemote",
+                    "log_mode": "kRemote",
                     "ctx": [
                         {
                             "ctx_id": "ara",

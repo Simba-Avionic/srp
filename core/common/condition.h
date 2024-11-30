@@ -23,7 +23,7 @@ void wait_for(const std::chrono::duration<_Rep, _Period>& dur,
   std::condition_variable_any cv;
   std::mutex mutex_;
   std::unique_lock<std::mutex> ul_{mutex_};
-  std::stop_callback stop_wait{stoken, [&cv]() { cv.notify_one(); }};
+  const std::stop_callback stop_wait{stoken, [&cv]() { cv.notify_one(); }};
   cv.wait_for(ul_, dur, [&stoken]() { return stoken.stop_requested(); });
 }
 

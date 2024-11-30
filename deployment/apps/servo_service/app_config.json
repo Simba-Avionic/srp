@@ -14,7 +14,7 @@
                     "app_id": "SERV",
                     "app_des": "Serwis od servo",
                     "log_level": "kInfo",
-                    "log_mode": "kConsole|kRemote",
+                    "log_mode": "kRemote",
                     "ctx": [
                         {
                             "ctx_id": "ara",

@@ -91,7 +91,7 @@ void StreamIpcSocket::Loop(std::stop_token stoken) {
   sockaddr_un client_addr;
   int client_socket;
   rc = bind(server_sock, (struct sockaddr*)&server_sockaddr, len);
-  std::stop_callback stop_wait{
+  const std::stop_callback stop_wait{
       stoken, [this]() { shutdown(this->server_sock, SHUT_RDWR); }};
   if (rc == -1) {
     return;

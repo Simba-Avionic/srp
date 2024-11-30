@@ -178,11 +178,14 @@ std::optional<pid_t> EmService::RestartApp(const uint16_t appID) {
 
 pid_t EmService::StartApp(const simba::em::service::data::AppConfig& app) {
   pid_t pid{0};
-  char* app_args = new char[app.GetBinPath().size()];
-  sprintf(app_args, "%s", app.GetBinPath().c_str());  // NOLINT
-  char* argv[] = {app_args, NULL};
-  posix_spawnp(&pid, app.GetBinPath().c_str(), NULL, NULL, argv, NULL);
-  delete[] app_args;
+  posix_spawnattr_t attr;
+  posix_spawnattr_init(&attr);
+  posix_spawnattr_setflags(&attr, POSIX_SPAWN_SETPGROUP);
+  posix_spawnattr_setflags(&attr, POSIX_SPAWN_SETSID);
+  auto path = app.GetBinPath();
+  auto parms = app.GetParms();
+  char* argv[] = {path.data(), parms.data(), NULL};
+  posix_spawnp(&pid, app.GetBinPath().c_str(), NULL, &attr, argv, NULL);
   ara::log::LogInfo() << "Spawning app: " << app.GetBinPath()
                       << " pid: " << std::to_string(pid);
   return pid;

@@ -73,7 +73,7 @@ class Database {
   void WaitForNewService(std::stop_token token) noexcept {
     uint8_t i{0};
     std::unique_lock<std::mutex> ul_{mutex_};
-    std::stop_callback stop_wait{token, [this]() { cv_.notify_one(); }};
+    const std::stop_callback stop_wait{token, [this]() { cv_.notify_one(); }};
     cv_.wait(ul_,
              [&token, &i]() { return token.stop_requested() || (i++ != 0); });
   }

@@ -128,7 +128,7 @@ void UdpMulticastSocket::StartRXThread() {
 }
 
 void UdpMulticastSocket::Loop(std::stop_token stoken) {
-  std::stop_callback stop_wait{stoken,
+  const std::stop_callback stop_wait{stoken,
                                [this]() { shutdown(this->sd, SHUT_RD); }};
   while (!stoken.stop_requested()) {
     struct sockaddr_in si_other;

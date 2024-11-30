@@ -18,7 +18,7 @@ void wait(const std::stop_token& stoken) {
   std::condition_variable_any cv;
   std::mutex mutex_;
   std::unique_lock<std::mutex> ul_{mutex_};
-  std::stop_callback stop_wait{stoken, [&cv]() { cv.notify_one(); }};
+  const std::stop_callback stop_wait{stoken, [&cv]() { cv.notify_one(); }};
   cv.wait(ul_, [&stoken]() { return stoken.stop_requested(); });
 }
 

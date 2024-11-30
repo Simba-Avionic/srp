@@ -11,7 +11,7 @@
                     "app_id": "I2C-",
                     "app_des": "I2C server",
                     "log_level": "kInfo",
-                    "log_mode": "kConsole|kRemote",
+                    "log_mode": "kRemote",
                     "ctx": [
                         {
                             "ctx_id": "ara",

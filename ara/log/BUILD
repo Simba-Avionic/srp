@@ -34,3 +34,24 @@ cc_library(
         "//ara/log:common",
     ],
 )
+
+################################ ONLY FOR UT ################################
+cc_library(
+    name = "log_for_test",
+    testonly = True,
+    srcs = [
+        "dummy/logging_menager.cpp",
+        "logger.cpp",
+    ],
+    hdrs = [
+        "log.h",
+        "logger.h",
+        "logging_menager.h",
+    ],
+    visibility = ["//visibility:public"],
+    deps = [
+        "//ara/log:LogStream",
+        "//ara/log:common",
+        "//ara/log/sink:sink_lib",
+    ],
+)

@@ -15,7 +15,7 @@
                     "app_id": "EXA2",
                     "app_des": "Example Adaptive application 2",
                     "log_level": "kInfo",
-                    "log_mode": "kRemote|kConsole",
+                    "log_mode": "kRemote",
                     "ctx": [
                         {
                             "ctx_id": "ara",
@@ -44,9 +44,14 @@
             ],
             "require": [
                 {
-                    "name": "ExampleService as service2",
+                    "name": "ExampleService as service_ipc_1",
                     "on": "ipc",
                     "instance": 2
+                },
+                {
+                    "name": "ExampleService as service_ipc_2",
+                    "on": "ipc",
+                    "instance": 3
                 }
             ]
         }
