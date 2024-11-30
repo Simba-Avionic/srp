@@ -6,10 +6,11 @@ cc_library(
         "diag_response.h",
         "job_common.h",
     ],
+    deprecation = "Please use: //ara/diag:uds_lib",
     visibility = ["//diag/jobs:__subpackages__"],
     deps = [
-        "//communication-core/sockets:socket_ipc",
         "//ara/core:model_db_lib",
         "//ara/log",
+        "//communication-core/sockets:socket_ipc",
     ],
 )
