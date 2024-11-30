@@ -23,7 +23,7 @@ namespace {
 }
 
 
-MyEngineServiceSkeleton::MyEngineServiceSkeleton(ara::core::InstanceSpecifier instance):
+MyEngineServiceSkeleton::MyEngineServiceSkeleton(const ara::core::InstanceSpecifier& instance):
         EngineServiceSkeleton{instance}, primer_handler_{nullptr}, servo_handler_{nullptr} {
     CurrentMode.Update(static_cast<uint8_t>(mode_));
 }
