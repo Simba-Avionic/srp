@@ -41,7 +41,7 @@
                 {
                     "name": "EnvApp as envService_udp",
                     "on": "udp",
-                    "port": "1011",
+                    "port": "10001",
                     "instance": 1
                 },
                 {

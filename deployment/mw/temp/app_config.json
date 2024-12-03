@@ -1,6 +1,6 @@
 {
     "include": [
-        "deployment/system_definition/diag/jobs/temp_did.json"
+        "deployment/system_definition/diag/jobs/temp_service/temp_did.json"
     ],
     "package": "simba.mw",
     "adaptive_application": {
