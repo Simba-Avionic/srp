@@ -5,7 +5,7 @@ cc_library(
     visibility = ["//platform/common/logger/code:__subpackages__"],
     deps = [
         "//communication-core/sockets:socket_ipc",
-        "//communication-core/sockets:socket_udp_multicast",
+        "//platform/common/someip_demon/code/common:udp_lib",
         "//ara/exec:adaptive_application_lib",
         "//core/common:wait_queue",
         "//core/json:simba_json",

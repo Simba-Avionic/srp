@@ -9,7 +9,10 @@ cc_library(
         "udp_socket.h",
     ],
     data = [],
-    visibility = ["//platform/common/someip_demon/code:__subpackages__"],
+    visibility = [
+        "//platform/common/logger/code/application:__subpackages__",
+        "//platform/common/someip_demon/code:__subpackages__",
+    ],
     deps = [
         "//ara/log",
         "//core/common:common_types",
