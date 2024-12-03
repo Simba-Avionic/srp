@@ -17,7 +17,6 @@
 #include <vector>
 
 #include "ara/log/log.h"
-#include "communication-core/sockets/socket_config.h"
 #include "core/json/json_parser.h"
 #include "platform/common/logger/code/data/dlt_frame.h"
 #include "platform/common/logger/code/data/dlt_log_type.h"
@@ -25,17 +24,15 @@
 namespace simba {
 namespace dlt {
 
-int DltService::Run(const std::stop_token& token) {
+int DltService::Run(const std::stop_token &token) {
   while (!token.stop_requested()) {
     auto res_v = this->logs.GetWithoutRemove(token);
     if (token.stop_requested()) {
       return 0;
     }
     auto res = res_v.value()->ParseFrame();
-    if (soc.Transmit("231.255.42.99", tx_port, res.value()) ==
-        core::ErrorCode::kOk) {
-      this->logs.Remove();
-    }
+    soc.Transmit(res.value());
+    this->logs.Remove();
   }
   this->ipc_soc.StopRXThread();
   ara::log::LogInfo() << "Stop";
@@ -93,8 +90,8 @@ DltService::~DltService() {
 void DltService::InitIPC() noexcept {
   if (ipc_soc.Init(com::soc::SocketConfig{"SIMBA.ARA.DLT", 0, 0}) ==
       core::ErrorCode::kOk) {
-    ipc_soc.SetRXCallback([this](const std::string& ip,
-                                 const std::uint16_t& port,
+    ipc_soc.SetRXCallback([this](const std::string &ip,
+                                 const std::uint16_t &port,
                                  std::vector<std::uint8_t> payload) {
       if (payload.size() > 13) {
         const uint8_t mode = payload.at(0);
@@ -142,9 +139,7 @@ void DltService::InitIPC() noexcept {
 }
 
 void DltService::InitUDP() noexcept {
-  const com::soc::SocketConfig conf{ip_, tx_port, 0};
-
-  if (soc.Init(conf) != core::ErrorCode::kOk) {
+  if (soc.Init(ip_, "231.255.42.99", tx_port) != core::ErrorCode::kOk) {
     ara::log::LogError() << "UDP socket error";
   }
   ara::log::LogInfo() << "UDP socket started";
