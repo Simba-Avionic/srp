@@ -16,7 +16,7 @@
 
 #include "ara/exec/adaptive_application.h"
 #include "communication-core/sockets/ipc_socket.h"
-#include "communication-core/sockets/udp_multicast_socket.h"
+#include "platform/common/someip_demon/code/common/udp_multicast_socket.h"
 #include "core/common/wait_queue.h"
 #include "platform/common/logger/code/data/idlt_frame.h"
 
@@ -25,7 +25,7 @@ namespace simba {
 namespace dlt {
 class DltService final : public ara::exec::AdaptiveApplication {
  private:
-  com::soc::UdpMulticastSocket soc{};
+  simba::common::soc::UdpMulticastSocket soc{};
   com::soc::IpcSocket ipc_soc{};
   std::string ip_;
   uint16_t tx_port;
