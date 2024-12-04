@@ -20,7 +20,7 @@ namespace ara {
 namespace com {
 class IComClient {
  public:
-  enum MsgType : uint8_t { kSomeIp = 0x01 };
+  enum MsgType : uint8_t { kSomeIp = 0x01, kDiag = 0x02 };
   using SendCallback = std::function<void(
       uint32_t pid, const std::vector<uint8_t>& payload, MsgType type)>;
   using SendCallbackTo =

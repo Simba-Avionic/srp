@@ -1,5 +1,13 @@
+load("//deployment/tools/ara:data_structure_generator.bzl", "data_structure_generator")
+
+data_structure_generator(
+    name = "dtc_com_data",
+    model = ["//deployment/system_definition/platform/data_structure:dtc_com_data_structure"],
+    visibility = ["//visibility:private"],
+)
+
 cc_library(
-    name = "monitor_lib",
+    name = "monitor",
     srcs = ["monitor.cc"],
     hdrs = [
         "monitor.h",
@@ -9,6 +17,8 @@ cc_library(
     deps = [
         "//ara/core:Result",
         "//ara/core:instance_specifier",
+        "//ara/core:model_db_lib",
+        "//ara/diag:diagnostic_menager",
     ],
 )
 
@@ -40,5 +50,16 @@ cc_library(
     deps = [
         "//ara/diag:diag_error_domain",
         "//ara/diag/routing",
+    ],
+)
+
+cc_library(
+    name = "diagnostic_menager",
+    srcs = ["diagnostic_menager.cc"],
+    hdrs = ["diagnostic_menager.h"],
+    visibility = ["//ara:__subpackages__"],
+    deps = [
+        "//ara/com:com_controller",
+        "//ara/diag:dtc_com_data",
     ],
 )
