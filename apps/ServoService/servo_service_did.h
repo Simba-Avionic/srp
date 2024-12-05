@@ -15,41 +15,40 @@
 #include <strstream>
 #include <memory>
 #include "ara/log/log.h"
-#include "diag/jobs/skeleton/did_job.h"
+#include "ara/diag/generic_data_identifier.h"
 namespace simba {
 namespace service {
 
-class ServoServiceDiD : public diag::DiDJob {
+class ServoServiceDiD : public ara::diag::GenericDiD {
  private:
-  const uint8_t actuator_id;
   std::shared_ptr<i2c::PCA9685>  servoController;
-  /**
-   * @brief Callback for 0x22 UDS job (Read data by id) *optional
-   *
-   * @return DiagResponse
-   */
-  diag::DiagResponse Read() {
+  const uint8_t actuator_id;
+  ara::core::InstanceSpecifier instance_;
+  ara::core::Result<ara::diag::OperationOutput> Read() noexcept override {
     auto res = this->servoController->ReadServoPosition(actuator_id);
     if (!res.has_value()) {
-      return diag::DiagResponse(diag::DiagResponseCodes::kConditionsNotCorrect);
+      return ara::diag::OperationOutput{};
     }
-    ara::log::LogInfo() << "ServoServiceDID.READ" << instance_.ToString() << "::" << res.value();
-    return diag::DiagResponse(diag::DiagResponseCodes::kOk,
-                              {res.value()});
+    ara::log::LogInfo() << "ServoServiceDID.READ";
+    return ara::diag::OperationOutput{{res.value()}};
   }
-diag::DiagResponse Write(const std::vector<uint8_t>& payload) {
-  if (payload.size() != 1) {
-    return diag::DiagResponse{diag::DiagResponseCodes::kInvalidMessageLengthFormat};
+  ara::core::Result<void> Write(const std::vector<uint8_t>& payload) noexcept override {
+    if (payload.size() != 1) {
+      return {};
+    }
+    ara::log::LogInfo() <<  "Set position:" << payload[0] << ", to actuator ID:" <<this->actuator_id;
+    auto res = this->servoController->AutoSetServoPosition(this->actuator_id, payload[0]);
+    if (res != core::ErrorCode::kOk) {
+      ara::log::LogWarn() << "huj";
+    }
+    return {};
   }
-  ara::log::LogInfo() <<  "Set position:" << payload[0] << ", to actuator ID:" <<this->actuator_id;
-  this->servoController->AutoSetServoPosition(this->actuator_id, payload[0]);
-  return diag::DiagResponse{diag::DiagResponseCodes::kOk};
-}
 
  public:
   ServoServiceDiD(const ara::core::InstanceSpecifier& instance,
       std::shared_ptr<i2c::PCA9685> servo_controller, uint8_t actuator_id):
-      diag::DiDJob(instance), servoController(servo_controller), actuator_id(actuator_id) {
+      servoController(servo_controller), actuator_id(actuator_id),
+      instance_(instance), ara::diag::GenericDiD{instance_} {
       }
 };
 
