@@ -20,8 +20,9 @@ namespace simba {
 namespace service {
 
 int ServoService::Run(const std::stop_token& token) {
-  main_servo_service_did_->StartOffer();
-  vent_servo_service_did_->StartOffer();
+  main_servo_service_did_->Offer();
+  vent_servo_service_did_->Offer();
+  servo_did_->Offer();
 
   service_ipc->StartOffer();
   service_udp->StartOffer();
@@ -46,6 +47,7 @@ int ServoService::Run(const std::stop_token& token) {
 
   main_servo_service_did_->StopOffer();
   vent_servo_service_did_->StopOffer();
+
   return 0;
 }
 
@@ -63,6 +65,8 @@ int ServoService::Initialize(
                 ara::core::InstanceSpecifier("simba/apps/servoService/ServoService_ipc"), this->servo_controller);
   service_udp = std::make_unique<apps::MyServoService>(
                 ara::core::InstanceSpecifier("simba/apps/servoService/ServoService_udp"), this->servo_controller);
+  servo_did_ = std::make_unique<ServoSecondDid>(
+              ara::core::InstanceSpecifier("/simba/apps/servoService/ServoDID"), this->servo_controller);
   return 0;
 }
 

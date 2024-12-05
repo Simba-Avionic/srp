@@ -25,9 +25,6 @@ namespace simba {
 namespace primer {
 
 namespace {
-  /**
-   * @brief domyślne wartości
-   */
   const constexpr uint8_t kIgniter_pin_id = 1;
   const constexpr uint16_t kIgniter_active_time = 250;
   const constexpr uint8_t kOff_ignite = 0;
@@ -46,11 +43,11 @@ bool PrimerController::ChangePrimerState(uint8_t state) {
     for (const auto primer : primer_pins_) {
         if (this->gpio_.SetPinValue(primer, state) != core::ErrorCode::kOk) {
             ara::log::LogError() << "Failed to enable primer";
+            return false;
         }
     }
     this->primerState = state;
     return true;
-    return false;
 }
 
 uint8_t PrimerController::GetPrimerState() {

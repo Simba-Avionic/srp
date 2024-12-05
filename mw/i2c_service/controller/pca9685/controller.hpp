@@ -59,7 +59,10 @@ class PCA9685 {
   core::ErrorCode setGPIO(std::unique_ptr<gpio::IGPIOController> gpio);
   uint8_t CalculateFirstRegister(const uint8_t& channel);
   uint8_t CalculatePosition(const std::vector<uint8_t>& val);
+<<<<<<< HEAD
 
+=======
+>>>>>>> 6e1dfd2 (The changes made to the code are related to the `PCA9685` class in the `i2c` namespace. The main changes are:)
  public:
   PCA9685();
   bool ChangeConfigPosition(const uint8_t& actuator_id, const uint16_t new_open_val, const uint16_t new_close_val);
