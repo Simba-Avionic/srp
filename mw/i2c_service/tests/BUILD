@@ -51,8 +51,22 @@ cc_test(
         "@com_google_googletest//:gtest_main",
         "//mw/i2c_service/controller/adcsensor:adc_sensor_controller",
         "//mw/i2c_service/controller/mock:mock_ads7828",
+        "//core/i2c/mock:mock_i2c",
+        "//mw/i2c_service/controller/mock:mock_i2c_controller",
     ],
     data = [
         "//mw/i2c_service/tests/test_adcsensor:adc_test_data",
+    ],
+)
+cc_test(
+    name = "i2c_controller_test",
+    srcs = [
+        "test_i2ccontroller.cc",
+        ],
+    visibility = ["//visibility:public"],
+    deps=[
+        "@com_google_googletest//:gtest_main",
+        "//communication-core/sockets/mock:mock_socket",
+        "//mw/i2c_service/controller:i2c_controller",
     ],
 )

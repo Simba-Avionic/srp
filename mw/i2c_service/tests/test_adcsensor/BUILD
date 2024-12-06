@@ -12,7 +12,8 @@ filegroup(
         "t_9.json",
         "t_10.json",
         "t_11.json",
-        "t_12.json"
+        "t_12.json",
+        "t_13.json",
         ],
     visibility = ["//visibility:public"],
 )

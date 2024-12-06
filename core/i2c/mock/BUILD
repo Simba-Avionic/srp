@@ -1,7 +1,7 @@
 cc_library(
     name = "mock_i2c",
     srcs = [
-        "mock_i2c_driver.hpp",
+        "mock_i2cdriver.hpp",
         ],
     visibility = ["//visibility:public"],
     deps=[

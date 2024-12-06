@@ -12,8 +12,10 @@
 #define CORE_GPIO_IGPIO_DRIVER_HPP_
 
 #include <stdint.h>
+#include <string>
 
 #include "core/common/error_code.h"
+#include "core/file/file.hpp"
 
 
 namespace simba {
@@ -28,9 +30,6 @@ enum direction_t{
 
 class IGpioDriver{
  public:
-    IGpioDriver() {}
-    virtual ~IGpioDriver() {}
-
     virtual core::ErrorCode initializePin(const uint16_t& pinNumber, const direction_t& direction) = 0;
 
     /**
@@ -64,6 +63,8 @@ class IGpioDriver{
      * @return direction_t 
      */
     virtual direction_t getDirection(const uint16_t &pinNumber) = 0;
+    static std::string getEndpointPath(const uint16_t& pinNumber, const std::string& endpoint);
+    virtual core::ErrorCode  unregisterPin(const uint16_t& pinNumber) = 0;
 };
 }  // namespace gpio
 }  // namespace core

@@ -16,7 +16,6 @@ namespace csv {
 
 class ICSVDriver {
  public:
-  virtual ~ICSVDriver() = default;
   virtual int WriteLine(const std::string& line) = 0;
   virtual int Open(const std::string& fileName, const std::string& HEADER) = 0;
   virtual void Close() = 0;

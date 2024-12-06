@@ -20,7 +20,7 @@ namespace {
     const constexpr char* I2C_IPC = "SIMBA.I2C";
 }
 
-core::ErrorCode I2CController::Init(std::unique_ptr<com::soc::StreamIpcSocket> socket) {
+core::ErrorCode I2CController::Init(std::unique_ptr<com::soc::ISocketStream> socket) {
     this->sock_ = std::move(socket);
     return core::ErrorCode::kOk;
 }

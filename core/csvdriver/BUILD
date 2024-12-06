@@ -9,5 +9,6 @@ cc_library(
     visibility = [
         "//apps/logger_service:__subpackages__",
         "//core/csvdriver/mock:__subpackages__",
+        "//core/test:__subpackages__",
     ],
 )
