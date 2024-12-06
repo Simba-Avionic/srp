@@ -73,11 +73,11 @@ async def main():
         instance_id=SAMPLE_INSTANCE_ID,
         endpoint=(
             ipaddress.IPv4Address(INTERFACE_IP),
-            3000,
+            3002,
         ),  # src IP and port of the service
         ttl=5,
         sd_sender=service_discovery,
-        cyclic_offer_delay_ms=2000,
+        cyclic_offer_delay_ms=500,
         protocol=TransportLayerProtocol.UDP,
     )
 

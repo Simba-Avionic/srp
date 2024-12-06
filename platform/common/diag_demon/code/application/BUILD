@@ -14,5 +14,6 @@ cc_binary(
         "//deployment/platform/diag_demon:ara",
         "//platform/common/diag_demon/code/services:example_did",
         "//platform/common/diag_demon/code/services:uds_server",
+        "//platform/common/diag_demon/code/services/dtc",
     ],
 )

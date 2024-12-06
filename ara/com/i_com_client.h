@@ -21,10 +21,10 @@ namespace com {
 class IComClient {
  public:
   enum MsgType : uint8_t { kSomeIp = 0x01, kDiag = 0x02 };
-  using SendCallback = std::function<void(
+  using SendCallback = std::function<bool(
       uint32_t pid, const std::vector<uint8_t>& payload, MsgType type)>;
   using SendCallbackTo =
-      std::function<void(const std::string& desc,
+      std::function<bool(const std::string& desc,
                          const std::vector<uint8_t>& payload, MsgType type)>;
 
  protected:

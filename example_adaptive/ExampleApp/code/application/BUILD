@@ -15,5 +15,6 @@ cc_binary(
         "//core/common:condition_lib",
         "//example_adaptive/ExampleApp/code:ara",
         "//example_adaptive/ExampleApp/code:someip_lib",
+        "//ara/diag:monitor",
     ],
 )

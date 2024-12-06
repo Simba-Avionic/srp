@@ -19,6 +19,7 @@ cc_library(
         "//ara/core:instance_specifier",
         "//ara/core:model_db_lib",
         "//ara/diag:diagnostic_menager",
+        "//core/common:condition_lib",
     ],
 )
 
@@ -60,6 +61,7 @@ cc_library(
     visibility = ["//ara:__subpackages__"],
     deps = [
         "//ara/com:com_controller",
+        "//ara/diag:diag_error_domain",
         "//ara/diag:dtc_com_data",
     ],
 )

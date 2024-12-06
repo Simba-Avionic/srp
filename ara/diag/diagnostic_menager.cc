@@ -13,6 +13,7 @@
 #include <utility>
 #include <vector>
 
+#include "ara/diag/diag_error_domain.h"
 #include "simba/platform/diag/DtcComDataStructure.h"
 
 namespace ara {
@@ -31,7 +32,7 @@ ara::core::Result<void> DiagnosticMenager::SendDtcUpdate(
   simba::platform::diag::DtcComDataStructure msg{id, 0x01, new_status};
   const auto raw_o = ara::com::Convert2Vector<
       simba::platform::diag::DtcComDataStructure>::Conv(msg);
-    this->send_callback_to_("SIMBA.DTC", raw_o, com::IComClient::kDiag);
+  this->send_callback_to_("SIMBA.ARA.DTC", raw_o, com::IComClient::kDiag);
 
   return {};
 }
@@ -45,8 +46,28 @@ std::shared_ptr<DiagnosticMenager> DiagnosticMenager::GetInstance() noexcept {
 
 ara::core::Result<void> DiagnosticMenager::RegisterDtcHandler(
     const uint32_t& id, DtcUpdateCallback&& callback_) {
-  this->dtc_handler_list_.insert({id, std::move(callback_)});
-  return {};
+  if (this->dtc_handler_list_.insert({id, std::move(callback_)}).second) {
+    simba::platform::diag::DtcComDataStructure msg{id, 0x00, 0x00};
+
+    const auto raw_o = ara::com::Convert2Vector<
+        simba::platform::diag::DtcComDataStructure>::Conv(msg);
+
+    if (this->send_callback_to_("SIMBA.ARA.DTC", raw_o,
+                                com::IComClient::kDiag)) {
+      return {};
+    }
+
+  } else {
+    simba::platform::diag::DtcComDataStructure msg{id, 0x00, 0x00};
+    const auto raw_o = ara::com::Convert2Vector<
+        simba::platform::diag::DtcComDataStructure>::Conv(msg);
+    if (this->send_callback_to_("SIMBA.ARA.DTC", raw_o,
+                                com::IComClient::kDiag)) {
+      return {};
+    }
+  }
+  return ara::diag::MakeErrorCode(diag::DiagErrc::kBusy,
+                                  "dtc already offered localy");
 }
 
 }  // namespace diag

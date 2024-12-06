@@ -14,6 +14,7 @@
 
 #include "ara/core/model/diag_model_item.h"
 #include "ara/core/model_db.h"
+#include "core/common/condition.h"
 
 namespace ara {
 namespace diag {
@@ -66,12 +67,23 @@ ara::core::Result<void> Monitor::Offer() {
   const auto& model_v = model.Value();
   id_ = model_v.id_;
   name = model_v.name_;
-
-  this->menager_->RegisterDtcHandler(id_, [](uint8_t new_status) {});
-
+  this->offer_loop_ = std::make_unique<std::jthread>([this](auto token) {
+    while (!token.stop_requested()) {
+      if (this->menager_->RegisterDtcHandler(id_, [](uint8_t new_status) {})
+              .HasValue()) {
+        break;
+      }
+      simba::core::condition::wait_for(std::chrono::milliseconds{250}, token);
+    }
+    this->init_monitor_callback_(ara::diag::InitMonitorReason::kRestart);
+  });
   return {};
 }
-void Monitor::StopOffer() {}
+void Monitor::StopOffer() {
+  if (offer_loop_) {
+    offer_loop_.release();
+  }
+}
 Monitor::~Monitor() {}
 
 }  // namespace diag

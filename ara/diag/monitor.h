@@ -15,6 +15,7 @@
 #include <memory>
 #include <optional>
 #include <string>
+#include <thread>  // NOLINT
 
 #include "ara/core/instance_specifier.h"
 #include "ara/core/result.h"
@@ -26,8 +27,8 @@ class Monitor final {
  private:
   uint32_t id_{0x0U};
   std::string name{};
-
-    const ara::core::InstanceSpecifier instance_;
+  std::unique_ptr<std::jthread> offer_loop_;
+  const ara::core::InstanceSpecifier instance_;
   std::optional<CounterBased> counter_based_;
   std::optional<TimeBased> time_base_;
   std::function<void(InitMonitorReason)> init_monitor_callback_;
