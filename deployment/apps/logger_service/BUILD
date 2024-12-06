@@ -3,13 +3,13 @@ load("//deployment/tools/ara:adaptive_application.bzl", "adaptive_application", 
 ara_runtime_lib(
     name = "ara",
     model_src = ["//deployment/apps/logger_service:instance"],
-    visibility = ["//apps/logger_service:__subpackages__"],
+    visibility = ["//apps/ec/logger_service:__subpackages__"],
 )
 
 ara_someip_lib(
     name = "someip_lib",
     model_src = ["//deployment/apps/logger_service:instance"],
-    visibility = ["//apps/logger_service:__subpackages__"],
+    visibility = ["//apps/ec/logger_service:__subpackages__"],
 )
 
 filegroup(
@@ -25,7 +25,7 @@ filegroup(
 
 adaptive_application(
     name = "FileLoggerApp",
-    bin = "//apps/logger_service/service:logger_service",
+    bin = "//apps/ec/logger_service/service:logger_service",
     model_src = ["//deployment/apps/logger_service:instance"],
     visibility = ["//visibility:public"],
 )

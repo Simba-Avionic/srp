@@ -6,7 +6,7 @@ cc_library(
     ],
     visibility = [
         "//deployment:__subpackages__",
-        "//apps/env_service:__subpackages__",
+        "//apps/ec/env_service:__subpackages__",
         "//mw/temp:__subpackages__",
         ],
     

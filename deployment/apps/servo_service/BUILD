@@ -21,18 +21,18 @@ filegroup(
 ara_someip_lib(
     name = "someip_lib",
     model_src = ["//deployment/apps/servo_service:instance"],
-    visibility = ["//apps/ServoService:__subpackages__"],
+    visibility = ["//apps/ec/ServoService:__subpackages__"],
 )
 
 ara_runtime_lib(
     name = "ara",
     model_src = ["//deployment/apps/servo_service:instance"],
-    visibility = ["//apps/ServoService:__subpackages__"],
+    visibility = ["//apps/ec/ServoService:__subpackages__"],
 )
 
 adaptive_application(
     name = "servoService",
-    bin = "//apps/ServoService",
+    bin = "//apps/ec/ServoService",
     model_src = ["//deployment/apps/servo_service:instance"],
     etcs = ["config.json"],
     visibility = ["//visibility:public"],

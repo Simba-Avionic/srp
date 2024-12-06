@@ -48,6 +48,7 @@ class PCA9685 {
   std::unique_ptr<gpio::IGPIOController> gpio_;
   std::string app_name;
   const ara::log::Logger& pac_logger_;
+
  protected:
   std::unordered_map<uint8_t, Servo> db_;
   std::optional<std::unordered_map<uint8_t, Servo>> ReadConfig(std::string file_path) const;
@@ -58,6 +59,7 @@ class PCA9685 {
   core::ErrorCode setGPIO(std::unique_ptr<gpio::IGPIOController> gpio);
   uint8_t CalculateFirstRegister(const uint8_t& channel);
   uint8_t CalculatePosition(const std::vector<uint8_t>& val);
+
  public:
   PCA9685();
   bool ChangeConfigPosition(const uint8_t& actuator_id, const uint16_t new_open_val, const uint16_t new_close_val);

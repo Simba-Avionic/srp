@@ -131,7 +131,8 @@ bool PCA9685::ChangeConfigPosition(const uint8_t& actuator_id,
     }
     servo->second.on_pos = new_open_val;
     servo->second.off_pos = new_close_val;
-    auto res = this->SetServo(servo->second.channel, (servo->second.position == 0) ? servo->second.on_pos : servo->second.off_pos);
+    auto res = this->SetServo(servo->second.channel,
+            (servo->second.position == 0) ? servo->second.on_pos : servo->second.off_pos);
     if (res != core::ErrorCode::kOk) {
         return false;
     }

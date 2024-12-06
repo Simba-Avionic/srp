@@ -17,18 +17,18 @@ filegroup(
 ara_someip_lib(
     name = "someip_lib",
     model_src = ["//deployment/apps/engine_app:instance"],
-    visibility = ["//apps/engine_service:__subpackages__"],
+    visibility = ["//apps/ec/engine_service:__subpackages__"],
 )
 
 ara_runtime_lib(
     name = "ara",
     model_src = ["//deployment/apps/engine_app:instance"],
-    visibility = ["//apps/engine_service:__subpackages__"],
+    visibility = ["//apps/ec/engine_service:__subpackages__"],
 )
 
 adaptive_application(
     name = "EngineService",
-    bin = "//apps/engine_service",
+    bin = "//apps/ec/engine_service",
     model_src = ["//deployment/apps/engine_app:instance"],
     visibility = ["//visibility:public"],
 )
