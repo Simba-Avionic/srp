@@ -35,6 +35,6 @@ adaptive_application(
     bin = "//apps/ec/ServoService",
     model_src = ["//deployment/apps/servo_service:instance"],
     etcs = ["config.json"],
-    visibility = ["//visibility:public"],
+    visibility = ["//deployment/cpu/ec:__subpackages__"],
 )
 

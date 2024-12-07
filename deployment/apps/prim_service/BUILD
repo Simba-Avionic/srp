@@ -30,6 +30,6 @@ adaptive_application(
     bin = "//apps/ec/primer_service:primer",
     model_src = ["//deployment/apps/prim_service:instance"],
     etcs = ["config.json"],
-    visibility = ["//visibility:public"],
+    visibility = ["//deployment/cpu/ec:__subpackages__"],
 )
 

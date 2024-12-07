@@ -28,5 +28,5 @@ adaptive_application(
     name = "EnvApp",
     bin = "//apps/ec/env_service",
     model_src = ["//deployment/apps/env_service:instance"],
-    visibility = ["//visibility:public"],
+    visibility = ["//deployment/cpu/ec:__subpackages__"],
 )

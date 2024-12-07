@@ -85,17 +85,48 @@ core::ErrorCode PCA9685::AutoSetServoPosition(const uint8_t &actuator_id, const 
         return core::ErrorCode::kNotDefine;
     }
     it->second.position = state;
+    /**
+     * @brief uruchamiamy mosfet jesli wymagany
+     * 
+     */
     if (it->second.need_mosfet) {
-        pac_logger_.LogError() << "change servo position to " << state;
-        std::ignore = std::async(std::launch::async, &PCA9685::MosfetFunc,
-                                                    this, it->second.mosfet_id, it->second.mosfet_time);
+       if (this->gpio_->SetPinValue(it->second.mosfet_id, 1) != core::ErrorCode::kOk) {
+            // TODO(matikrajek42@gmail.com) generate DTC error
+       }
     }
+    /**
+     * @brief odczekujemy na załączenie mosfetu
+     * 
+     */
     std::this_thread::sleep_for(std::chrono::milliseconds(it->second.servo_delay));
-    this->SetServo(it->second.channel, (it->second.position == 1) ? it->second.on_pos : it->second.off_pos);
+    /**
+     * @brief ustawiamy servo w odpowiednia pozycje
+     * 
+     */
+    if (this->SetServo(it->second.channel,
+            (it->second.position == 1) ? it->second.on_pos : it->second.off_pos) != core::ErrorCode::kOk) {
+        // TODO(matikrajek42@gmail.com) generate DTC error
+    }
+    /**
+     * @brief jesli wymagane luzowanie, dajemy czas na ruch serva i zmieniamy pwm na pozycje luzowania
+     * 
+     */
     if (it->second.need_loosening) {
         std::this_thread::sleep_for(std::chrono::milliseconds(LOSENING_DEFAULT_DELAY));
-        this->SetServo(it->second.channel,
-                    (it->second.position == 1) ? it->second.on_loosening : it->second.off_loosening);
+        if (this->SetServo(it->second.channel, (it->second.position == 1) ?
+                it->second.on_loosening : it->second.off_loosening)  != core::ErrorCode::kOk) {
+            // TODO(matikrajek42@gmail.com) generate DTC error
+        }
+    }
+    /**
+     * @brief jesli byl potrzebny mosfet wyłączamy zasilanie serva po mosfet_time
+     * 
+     */
+    if (it->second.need_mosfet) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(it->second.mosfet_time - it->second.servo_delay));
+        if (this->gpio_->SetPinValue(it->second.mosfet_id, 0) != core::ErrorCode::kOk) {
+            // TODO(matikrajek42@gmail.com) generate DTC error
+        }
     }
     return core::ErrorCode::kOk;
 }
@@ -106,7 +137,7 @@ std::vector<uint8_t> PCA9685::GenerateData(const uint8_t &channel, const uint16_
     PRESCALE_REG, 121,  // przeskalowanie dla 50 Hz
     static_cast<uint8_t>(LED0_ON_L+4*channel), 0x0 & 0xFF,  // ON LOW REG Val
     static_cast<uint8_t>(LED0_ON_H+4*channel), 0x0 >> 8,   // ON HIGH REG Val
-    static_cast<uint8_t>(LED0_OFF_L+4*channel), static_cast<uint8_t>(pos & 0x00FF),  // OFF LOW REG Val
+    static_cast<uint8_t>(LED0_OFF_L+4*channel), static_cast<uint8_t>(pos & 0x00FFU),  // OFF LOW REG Val
     static_cast<uint8_t>(LED0_OFF_H+4*channel), static_cast<uint8_t>(pos >> 8)};   // OFF HIGH REG Val;
 }
 

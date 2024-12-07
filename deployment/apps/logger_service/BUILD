@@ -27,6 +27,6 @@ adaptive_application(
     name = "FileLoggerApp",
     bin = "//apps/ec/logger_service/service:logger_service",
     model_src = ["//deployment/apps/logger_service:instance"],
-    visibility = ["//visibility:public"],
+    visibility = ["//deployment/cpu/ec:__subpackages__"],
 )
 
