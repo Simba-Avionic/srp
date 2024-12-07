@@ -63,24 +63,25 @@ bool ComController::AddHandler(IComClient::MsgType msg_type,
 
   return handlers_.insert({msg_type, handler_}).second;
 }
-void ComController::SendCallback(uint32_t pid,
+bool ComController::SendCallback(uint32_t pid,
                                  const std::vector<uint8_t>& payload,
                                  IComClient::MsgType type) {
   std::vector<uint8_t> temp_payload{type};
   temp_payload.insert(temp_payload.end(), payload.begin(), payload.end());
-  this->ipc_soc_->TransmitToPid(pid, std::move(temp_payload));
+  return this->ipc_soc_->TransmitToPid(pid, std::move(temp_payload)).HasValue();
 }
 
-void ComController::SendCallbackTo(const std::string& desc,
+bool ComController::SendCallbackTo(const std::string& desc,
                                    const std::vector<uint8_t>& payload,
                                    IComClient::MsgType type) {
   LogDebug() << "Sending to: " << desc;
   std::vector<uint8_t> temp_payload{type};
   temp_payload.insert(temp_payload.end(), payload.begin(), payload.end());
   if (ipc_soc_ != nullptr) {
-    this->ipc_soc_->Transmit(desc, temp_payload);
+    return this->ipc_soc_->Transmit(desc, temp_payload).HasValue();
   } else {
     LogError() << "Missing ipc sock!!";
+    return false;
   }
 }
 

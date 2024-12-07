@@ -14,11 +14,11 @@ from addition_method_parameters import Addends, Sum
 
 SD_MULTICAST_GROUP = "224.224.224.245"
 SD_PORT = 30490
-INTERFACE_IP = "192.168.10.4"
+INTERFACE_IP = "127.0.0.1"
 
 SAMPLE_SERVICE_ID = 100
-SAMPLE_INSTANCE_ID = 1
-SAMPLE_METHOD_ID = 0x04
+SAMPLE_INSTANCE_ID = 4
+SAMPLE_METHOD_ID = 0x0123
 
 async def main():
 
@@ -43,7 +43,7 @@ async def main():
     client_instance_addition = await construct_client_service_instance(
         service=addition_service,
         instance_id=SAMPLE_INSTANCE_ID,
-        endpoint=(ipaddress.IPv4Address(INTERFACE_IP), 3002),
+        endpoint=(ipaddress.IPv4Address(INTERFACE_IP), 3001),
         ttl=5,
         sd_sender=service_discovery,
         protocol=TransportLayerProtocol.UDP,

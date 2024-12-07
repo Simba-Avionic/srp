@@ -2,12 +2,12 @@
 /**
  * @file diag_demon.cc
  * @author Bartosz Snieg (snieg45@gmail.com)
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2024-09-01
- * 
+ *
  * @copyright Copyright (c) 2024
- * 
+ *
  */
 #include "platform/common/diag_demon/code/application/diag_demon.h"
 
@@ -22,8 +22,8 @@
 #include "ara/log/log.h"
 #include "core/common/condition.h"
 #include "core/json/json_parser.h"
+#include "platform/common/diag_demon/code/services/dtc/dtc_service.h"
 #include "platform/common/diag_demon/code/services/example_did.h"
-
 namespace simba {
 namespace platform {
 namespace diag_demon {
@@ -46,10 +46,16 @@ int DiagDemon::Run(const std::stop_token& token) {
   if (uds_server) {
     uds_server->Start();
   }
-  // this->example_did->StartOffer();
+  if (dtc_service_) {
+    dtc_service_->Start();
+  }
   core::condition::wait(token);
-  // this->example_did->StopOffer();
-  uds_server->Stop();
+  if (uds_server) {
+    uds_server->Stop();
+  }
+  if (dtc_service_) {
+    dtc_service_->Stop();
+  }
   return 0;
 }
 /**
@@ -118,9 +124,8 @@ int DiagDemon::Initialize(
     } else {
       ara::log::LogError() << "Wrong parms for UDS";
     }
+    dtc_service_ = std::make_unique<dtc::DtcService>();
   }
-  this->example_did = std::make_unique<ExampleDiD>(
-      ara::core::InstanceSpecifier{"/simba/platform/diag_demon/UDSReadVin"});
   return 0;
 }
 }  // namespace diag_demon

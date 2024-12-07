@@ -47,7 +47,7 @@ ara::core::Result<OperationOutput> GenericRoutine::HandleMessage(
       case cStartSubFunction: {
         const std::vector<uint8_t> payload{requestData.begin() + 4,
                                            requestData.end()};
-        const auto res = Start(_routineId, payload);
+        const auto res = Start(payload);
         if (res.HasValue()) {
           auto &tem = res.Value().responseData;
           positive_response.insert(positive_response.end(), tem.begin(),
@@ -60,7 +60,7 @@ ara::core::Result<OperationOutput> GenericRoutine::HandleMessage(
       case cStopSubFunction: {
         const std::vector<uint8_t> payload{requestData.begin() + 4,
                                            requestData.end()};
-        const auto res = Stop(_routineId, payload);
+        const auto res = Stop(payload);
         if (res.HasValue()) {
           auto &tem = res.Value().responseData;
           positive_response.insert(positive_response.end(), tem.begin(),
@@ -73,7 +73,7 @@ ara::core::Result<OperationOutput> GenericRoutine::HandleMessage(
       case cResultRequestSubFunction: {
         const std::vector<uint8_t> payload{requestData.begin() + 4,
                                            requestData.end()};
-        const auto res = RequestResults(_routineId, payload);
+        const auto res = RequestResults(payload);
         if (res.HasValue()) {
           auto &tem = res.Value().responseData;
           positive_response.insert(positive_response.end(), tem.begin(),
