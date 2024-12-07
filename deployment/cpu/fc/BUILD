@@ -13,10 +13,12 @@ cpu_def(
         # "//deployment/apps/diag_ota/ec:diag_ota",
         # "//deployment/mw/em",
         # "//deployment/mw/gpio",
-        "//deployment/example_adaptive/ExampleApp",
+        "//deployment/platform/diag_demon",
         "//deployment/platform/em",
         "//deployment/platform/logger",
-        "//deployment/platform/diag_demon",
+        "//deployment/mw/i2c:i2cMWService",
+        "//deployment/mw/gpio:gpio_service",
+        "//deployment/platform/someip_demon",
     ],
 )
 

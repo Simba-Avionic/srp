@@ -8,6 +8,7 @@ filegroup(
         "//deployment/system_definition/someip/servo_service:service_someipy",
         "//deployment/system_definition/diag/jobs/servo_service:servo_status_job",
         "//deployment/system_definition/diag/jobs/servo_service:vent_servo_status_job",
+        "//deployment/system_definition/diag/jobs/servo_service:basic_servo_job",
     ],
     visibility = [
         "//apps/ServoService:__subpackages__",
@@ -20,20 +21,20 @@ filegroup(
 ara_someip_lib(
     name = "someip_lib",
     model_src = ["//deployment/apps/servo_service:instance"],
-    visibility = ["//apps/ServoService:__subpackages__"],
+    visibility = ["//apps/ec/ServoService:__subpackages__"],
 )
 
 ara_runtime_lib(
     name = "ara",
     model_src = ["//deployment/apps/servo_service:instance"],
-    visibility = ["//apps/ServoService:__subpackages__"],
+    visibility = ["//apps/ec/ServoService:__subpackages__"],
 )
 
 adaptive_application(
     name = "servoService",
-    bin = "//apps/ServoService",
+    bin = "//apps/ec/ServoService",
     model_src = ["//deployment/apps/servo_service:instance"],
     etcs = ["config.json"],
-    visibility = ["//visibility:public"],
+    visibility = ["//deployment/cpu/ec:__subpackages__"],
 )
 

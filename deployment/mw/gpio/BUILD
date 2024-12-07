@@ -19,5 +19,7 @@ adaptive_application(
     bin = "//mw/gpio_server:gpio_service",
     model_src = ["//deployment/mw/gpio:instance"],
     etcs = ["config.json"],
-    visibility = ["//deployment/cpu/ec:__subpackages__"],
+    visibility = [
+        "//deployment/cpu/ec:__subpackages__",
+        "//deployment/cpu/fc:__subpackages__",],
 )

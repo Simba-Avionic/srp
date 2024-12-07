@@ -7,7 +7,7 @@ cc_library(
         "Icsvdriver.h",
         ],
     visibility = [
-        "//apps/logger_service:__subpackages__",
+        "//apps/ec/logger_service:__subpackages__",
         "//core/csvdriver/mock:__subpackages__",
     ],
 )

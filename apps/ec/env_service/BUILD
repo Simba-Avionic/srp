@@ -12,21 +12,22 @@ ara_someip_lib(
     visibility = ["//apps/ec/env_service:__subpackages__"],
 )
 
-filegroup(
-    name = "instance",
+cc_binary(
+    name = "env_service",
     srcs = [
-        "app_config.json",
-        "//deployment/system_definition/someip/env_service:service_someipy",
+        "main.cpp",
+        "env_service.cpp",
+        "env_service.hpp"
     ],
     visibility = [
-        "//apps/ec:__subpackages__",
-        "//apps/env_service:__pkg__",
-        "//deployment/apps/logger_service:__subpackages__"],
-)
-
-adaptive_application(
-    name = "EnvApp",
-    bin = "//apps/ec/env_service",
-    model_src = ["//deployment/apps/env_service:instance"],
-    visibility = ["//deployment/cpu/ec:__subpackages__"],
+        "//deployment/apps:__subpackages__"
+        ],
+    deps = [
+        "//ara/exec:adaptive_application_lib",
+        "//core/common:condition_lib",
+        "//ara/diag:uds_lib",
+        "//mw/temp/controller:temp_controller_mw",
+        "//deployment/apps/env_service:ara",
+        "//deployment/apps/env_service:someip_lib",
+    ],
 )
