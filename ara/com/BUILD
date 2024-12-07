@@ -1,6 +1,9 @@
 cc_library(
     name = "com_error_domain",
-    srcs = ["com_error_domain.cc","someip_error.cc"],
+    srcs = [
+        "com_error_domain.cc",
+        "someip_error.cc",
+    ],
     hdrs = [
         "com_error_domain.h",
         "someip_error.h",
@@ -29,6 +32,7 @@ cc_library(
         "//ara/com:com_controller",
         "//ara/com/someip/controller",
         "//ara/core:Result",
+        "//ara/diag:diagnostic_menager",
     ],
 )
 

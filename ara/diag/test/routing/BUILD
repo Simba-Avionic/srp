@@ -4,7 +4,7 @@ cc_test(
     features = ["test_target"],
     deps = [
         "//ara/com/socket/mock",
-        "//ara/diag/routing",
+        # "//ara/diag/routing",
         "//ara/diag/routing:routing_for_ut",
     ],
 )
