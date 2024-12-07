@@ -12,6 +12,7 @@
 
 #include <iostream>
 
+#include "ara/diag/monitor.h"
 #include "ara/log/log.h"
 #include "core/common/condition.h"
 #include "example_adaptive/ExampleApp/code/application/example_did.h"
@@ -19,6 +20,7 @@
 #include "simba/example/ExampleDataStructure.h"
 #include "simba/example/ExampleService/ExampleServiceHandler.h"
 #include "simba/example/ExampleServiceSkeleton.h"
+
 namespace simba {
 namespace example {
 ExampleApp::ExampleApp() {}
@@ -34,12 +36,22 @@ int ExampleApp::Run(const std::stop_token& token) {
   ara::log::LogInfo() << "App start";
   const ara::core::InstanceSpecifier diag_instance{
       "/simba/example/ExampleApp/UDSReadVin"};
+  const ara::core::InstanceSpecifier dtc_instance{
+      "/simba/example/ExampleApp/dtcMonitor1"};
+  ara::diag::Monitor dtc_{dtc_instance, [](auto) {}};
   ExampleDiD did{diag_instance};
 
   did.Offer();
+  dtc_.Offer();
 
   ara::log::LogInfo() << "App started";
-  core::condition::wait(token);
+  while (!token.stop_requested()) {
+    dtc_.ReportMonitorAction(ara::diag::MonitorAction::kFailed);
+    core::condition::wait_for(std::chrono::seconds{1}, token);
+    dtc_.ReportMonitorAction(ara::diag::MonitorAction::kPassed);
+    core::condition::wait_for(std::chrono::seconds{1}, token);
+  }
+
   ara::log::LogInfo() << "App Stop";
   did.StopOffer();
   return 0;

@@ -30,9 +30,9 @@ class ComController {
   ComController(/* args */);
   std::unique_ptr<ProccessSocket> ipc_soc_;
   void IpcRxCallback(const uint32_t pid, const std::vector<uint8_t>& payload);
-  void SendCallback(uint32_t pid, const std::vector<uint8_t>& payload,
+  bool SendCallback(uint32_t pid, const std::vector<uint8_t>& payload,
                     IComClient::MsgType type);
-  void SendCallbackTo(const std::string& desc,
+  bool SendCallbackTo(const std::string& desc,
                       const std::vector<uint8_t>& payload,
                       IComClient::MsgType type);
 

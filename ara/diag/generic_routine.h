@@ -33,22 +33,19 @@ class GenericRoutine : public routing::RoutableUdsService {
       const std::vector<uint8_t> &requestData) override;
 
   /// @brief Request starting a routine
-  /// @param routineId Routine ID to be started
   /// @param requestData Start request byte array
   virtual ara::core::Result<OperationOutput> Start(
-      uint16_t routineId, std::vector<uint8_t> requestData) = 0;
+      std::vector<uint8_t> requestData) = 0;
 
   /// @brief Request stopping a routine
-  /// @param routineId Routine ID to be stopped
   /// @param requestData Stop request byte array
   virtual ara::core::Result<OperationOutput> Stop(
-      uint16_t routineId, std::vector<uint8_t> requestData) = 0;
+      std::vector<uint8_t> requestData) = 0;
 
   /// @brief Request the results of a routine
-  /// @param routineId Routine ID for the results request
   /// @param requestData Results request byte array
   virtual ara::core::Result<OperationOutput> RequestResults(
-      uint16_t routineId, std::vector<uint8_t> requestData) = 0;
+      std::vector<uint8_t> requestData) = 0;
 };
 }  // namespace diag
 }  // namespace ara

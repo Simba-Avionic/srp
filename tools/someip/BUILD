@@ -17,3 +17,11 @@ py_binary(
         "//third_party/python/someipy/src:someipy_lib"
     ],
 )
+py_binary(
+    name = "test3",
+    srcs = ["test3.py","addition_method_parameters.py","temperature_msg.py"],
+    imports = ["."],
+    deps = [
+        "//third_party/python/someipy/src:someipy_lib"
+    ],
+)

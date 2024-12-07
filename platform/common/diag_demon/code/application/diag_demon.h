@@ -20,6 +20,7 @@
 #include "ara/exec/adaptive_application.h"
 #include "diag/jobs/job_common.h"
 #include "platform/common/diag_demon/code/services/uds_server.h"
+#include "platform/common/diag_demon/code/services/dtc/i_dtc_service.h"
 namespace simba {
 namespace platform {
 namespace diag_demon {
@@ -31,7 +32,7 @@ class DiagDemon : public ara::exec::AdaptiveApplication {
   uint32_t plant_token{0};
   uint32_t mode{0};
   std::unique_ptr<uds::UdsServer> uds_server;
-  std::unique_ptr<diag::JobCommon> example_did;
+  std::unique_ptr<dtc::IDtcService> dtc_service_;
   /**
    * @brief This function is called to launch the application
    *

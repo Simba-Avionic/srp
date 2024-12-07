@@ -28,7 +28,7 @@ const CoreErrorDomain domain_;
 
 CoreErrorDomain::CoreErrorDomain() noexcept : ErrorDomain{0x01} {}
 const char* CoreErrorDomain::Name() const noexcept {
-  return StringView{"CoreErrorDomain"}.c_str();
+  return ara::core::StringView{"CoreErrorDomain"}.c_str();
 }
 const char* CoreErrorDomain::Message(
     ErrorDomain::CodeType errorCode) const noexcept {
