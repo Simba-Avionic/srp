@@ -36,4 +36,3 @@ class FileHandler {
 }  // namespace simba
 
 #endif  // CORE_FILE_FILE_HPP_
-
