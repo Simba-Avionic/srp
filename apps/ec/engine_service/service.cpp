@@ -45,29 +45,17 @@ ara::core::Result<bool> MyEngineServiceSkeleton::Start() {
         return ara::com::MakeErrorCode(
             ara::com::ComErrc::kWrongMethodCallProcessingMode, "Invalid engine computer MODE");
     }
-<<<<<<< HEAD:apps/ec/engine_service/service.cpp
     auto res2 = this->primer_handler_->OnPrime();
     if (!res2.HasValue()) {
       return ara::com::MakeErrorCode(
             ara::com::ComErrc::kWrongMethodCallProcessingMode, "Invalid request to MW:GPIOService");
     }
     std::this_thread::sleep_for(std::chrono::milliseconds(PRIMER_DELAY));
-=======
->>>>>>> 6e1dfd2 (The changes made to the code are related to the `PCA9685` class in the `i2c` namespace. The main changes are:):apps/engine_service/service.cpp
     auto res = this->servo_handler_->SetMainServoValue(1);
     if (!res.HasValue()) {
       return ara::com::MakeErrorCode(
             ara::com::ComErrc::kWrongMethodCallProcessingMode, "Invalid request to MW:I2CService");
     }
-<<<<<<< HEAD:apps/ec/engine_service/service.cpp
-=======
-    std::this_thread::sleep_for(std::chrono::milliseconds(PRIMER_DELAY));
-    auto res2 = this->primer_handler_->OnPrime();
-    if (!res.HasValue()) {
-      return ara::com::MakeErrorCode(
-            ara::com::ComErrc::kWrongMethodCallProcessingMode, "Invalid request to MW:GPIOService");
-    }
->>>>>>> 6e1dfd2 (The changes made to the code are related to the `PCA9685` class in the `i2c` namespace. The main changes are:):apps/engine_service/service.cpp
     return true;
 }
 

@@ -8,8 +8,8 @@
  * @copyright Copyright (c) 2024
  * 
  */
-#ifndef APPS_SERVOSERVICE_SERVO_DID_H_
-#define APPS_SERVOSERVICE_SERVO_DID_H_
+#ifndef APPS_EC_SERVOSERVICE_SERVO_DID_H_
+#define APPS_EC_SERVOSERVICE_SERVO_DID_H_
 #include <string>
 #include <vector>
 #include <strstream>
@@ -54,7 +54,6 @@ class ServoSecondDid : public ara::diag::GenericDiD {
   ServoSecondDid(const ara::core::InstanceSpecifier &specifier,
       std::shared_ptr<i2c::PCA9685> servo_controller): specifier_(specifier),
     servoController(servo_controller), ara::diag::GenericDiD{specifier_} {
-
     }
   ~ServoSecondDid() = default;
 };
@@ -62,4 +61,4 @@ class ServoSecondDid : public ara::diag::GenericDiD {
 }  // namespace service
 }  // namespace simba
 
-#endif  // APPS_SERVOSERVICE_SERVO_DID_H_
+#endif  // APPS_EC_SERVOSERVICE_SERVO_DID_H_

@@ -85,7 +85,6 @@ core::ErrorCode PCA9685::AutoSetServoPosition(const uint8_t &actuator_id, const 
         return core::ErrorCode::kNotDefine;
     }
     it->second.position = state;
-<<<<<<< HEAD
     /**
      * @brief uruchamiamy mosfet jesli wymagany
      * 
@@ -128,19 +127,6 @@ core::ErrorCode PCA9685::AutoSetServoPosition(const uint8_t &actuator_id, const 
         if (this->gpio_->SetPinValue(it->second.mosfet_id, 0) != core::ErrorCode::kOk) {
             // TODO(matikrajek42@gmail.com) generate DTC error
         }
-=======
-    if (it->second.need_mosfet) {
-        pac_logger_.LogError() << "change servo position to " << state;
-        std::ignore = std::async(std::launch::async, &PCA9685::MosfetFunc,
-                                                    this, it->second.mosfet_id, it->second.mosfet_time);
-    }
-    std::this_thread::sleep_for(std::chrono::milliseconds(it->second.servo_delay));
-    this->SetServo(it->second.channel, (it->second.position == 1) ? it->second.on_pos : it->second.off_pos);
-    if (it->second.need_loosening) {
-        std::this_thread::sleep_for(std::chrono::milliseconds(LOSENING_DEFAULT_DELAY));
-        this->SetServo(it->second.channel,
-                    (it->second.position == 1) ? it->second.on_loosening : it->second.off_loosening);
->>>>>>> 6e1dfd2 (The changes made to the code are related to the `PCA9685` class in the `i2c` namespace. The main changes are:)
     }
     return core::ErrorCode::kOk;
 }
@@ -151,11 +137,7 @@ std::vector<uint8_t> PCA9685::GenerateData(const uint8_t &channel, const uint16_
     PRESCALE_REG, 121,  // przeskalowanie dla 50 Hz
     static_cast<uint8_t>(LED0_ON_L+4*channel), 0x0 & 0xFF,  // ON LOW REG Val
     static_cast<uint8_t>(LED0_ON_H+4*channel), 0x0 >> 8,   // ON HIGH REG Val
-<<<<<<< HEAD
     static_cast<uint8_t>(LED0_OFF_L+4*channel), static_cast<uint8_t>(pos & 0x00FFU),  // OFF LOW REG Val
-=======
-    static_cast<uint8_t>(LED0_OFF_L+4*channel), static_cast<uint8_t>(pos & 0x00FF),  // OFF LOW REG Val
->>>>>>> 6e1dfd2 (The changes made to the code are related to the `PCA9685` class in the `i2c` namespace. The main changes are:)
     static_cast<uint8_t>(LED0_OFF_H+4*channel), static_cast<uint8_t>(pos >> 8)};   // OFF HIGH REG Val;
 }
 
@@ -180,12 +162,8 @@ bool PCA9685::ChangeConfigPosition(const uint8_t& actuator_id,
     }
     servo->second.on_pos = new_open_val;
     servo->second.off_pos = new_close_val;
-<<<<<<< HEAD
     auto res = this->SetServo(servo->second.channel,
             (servo->second.position == 0) ? servo->second.on_pos : servo->second.off_pos);
-=======
-    auto res = this->SetServo(servo->second.channel, (servo->second.position == 0) ? servo->second.on_pos : servo->second.off_pos);
->>>>>>> 6e1dfd2 (The changes made to the code are related to the `PCA9685` class in the `i2c` namespace. The main changes are:)
     if (res != core::ErrorCode::kOk) {
         return false;
     }
