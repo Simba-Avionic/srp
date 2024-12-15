@@ -1,0 +1,20 @@
+{
+    "include": [],
+    "package": "simba.example",
+    "adaptive_application": {
+        "test_app": {
+            "app": {
+                "bootMode": 0,
+                "parms": "-t -10- 100",
+                "logger": {
+                    "app_id": "TA01",
+                    "app_des": "App for testing purposes",
+                    "log_level": "kInfo",
+                    "log_mode": "kRemote|kConsole"
+                }
+            },
+            "provide": [],
+            "require": []
+        }
+    }
+}
