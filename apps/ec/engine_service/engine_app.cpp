@@ -32,8 +32,6 @@ EngineApp::EngineApp():
 }
 
 int EngineApp::Run(const std::stop_token& token) {
-  service_ipc.StartOffer();
-  service_udp.StartOffer();
   core::condition::wait(token);
   ara::log::LogInfo() << "Run complete, closing";
   service_ipc.StopOffer();
@@ -54,6 +52,8 @@ int EngineApp::Initialize(const std::map<ara::core::StringView, ara::core::Strin
 
   this->service_ipc.Init(primer_handler_, servo_handler_);
   this->service_udp.Init(primer_handler_, servo_handler_);
+  service_ipc.StartOffer();
+  service_udp.StartOffer();
   ara::log::LogInfo() << "Initialize Complete";
   return 0;
 }
