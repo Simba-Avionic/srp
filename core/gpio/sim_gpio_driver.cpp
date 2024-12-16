@@ -13,13 +13,19 @@
 
 #include "gpio_driver.hpp"
 #include "ara/log/log.h"
+#include "core/file/file.hpp"
 
 namespace simba {
 namespace core {
 namespace gpio {
+namespace {
+    constexpr std::string kGpioPath = "/sys/class/gpio";
+}
 
-GpioDriver::GpioDriver(): gpio_logger_{
-    ara::log::LoggingMenager::GetInstance()->CreateLogger("GPIO", "", ara::log::LogLevel::kDebug)} {}
+GpioDriver::GpioDriver(std::unique_ptr<FileHandler> file): gpio_logger_{
+    ara::log::LoggingMenager::GetInstance()->CreateLogger("GPIO", "", ara::log::LogLevel::kDebug)},
+    file_(std::move(file)) {
+}
 
 GpioDriver::~GpioDriver() {}
 
@@ -36,7 +42,7 @@ core::ErrorCode GpioDriver::initializePin(const uint16_t& pinNumber, const direc
 
 
 std::string GpioDriver::getEndpointPath(const uint16_t& pinNumber, const std::string& endpoint) {
-    return this->path+"/gpio"+std::to_string(pinNumber)+"/"+endpoint;
+    return kGpioPath + "/gpio" + std::to_string(pinNumber) + "/" + endpoint;
 }
 
 core::ErrorCode GpioDriver::setValue(const uint16_t& pinNumber , const uint8_t& value) {

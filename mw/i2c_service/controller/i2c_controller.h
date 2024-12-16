@@ -24,14 +24,15 @@ namespace simba {
 namespace i2c {
 class I2CController: public II2CController{
  private:
-  std::unique_ptr<com::soc::StreamIpcSocket> sock_;
+  std::unique_ptr<com::soc::ISocketStream> sock_;
 
  protected:
   std::optional<std::vector<uint8_t>> SendData(ACTION action,
                         uint8_t address, const std::vector<uint8_t>& payload) override;
 
  public:
-  core::ErrorCode Init(std::unique_ptr<com::soc::StreamIpcSocket> socket) override;
+  core::ErrorCode Init(std::unique_ptr<com::soc::ISocketStream> socket
+                            = std::make_unique<com::soc::StreamIpcSocket>()) override;
   /**
    * @brief 
    * 

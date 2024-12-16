@@ -1,13 +1,12 @@
 #!/bin/bash
 export GCOV=/usr/bin/gcov-13
 # Uruchomienie bazel coverage i ukrycie wyjścia
-bazel coverage --nocache_test_results `bazel query 'kind(cc_test, //...)'` -s \
+bazel coverage --nocache_test_results `bazel query 'kind(cc_test, //...)'`  -s \
   --instrument_test_targets \
   --experimental_cc_coverage \
   --combined_report=lcov \
-  --instrumentation_filter="[:],-external/[:]"
-  --coverage_report_generator=@bazel_tools//tools/test/CoverageOutputGenerator/java/com/google/devtools/coverageoutputgenerator:Main > /dev/null 2>&1
-
+  --instrumentation_filter="[:]" \
+  --coverage_report_generator=@bazel_tools//tools/test/CoverageOutputGenerator/java/com/google/devtools/coverageoutputgenerator:Main
 
 python3 tools/coverage/remove_external.py
 
@@ -22,16 +21,4 @@ function_coverage=$(echo "$output" | grep "functions..:" | awk '{print $2}' | se
 echo "Pokrycie linii: $line_coverage%"
 echo "Pokrycie funkcji: $function_coverage%"
 
-# if [[ -z "$line_coverage" || -z "$function_coverage" ]]; then
-#     echo "Błąd: Brak danych pokrycia testowego."
-#     exit 1
-# fi
-
-# Sprawdzenie, czy pokrycie jest poniżej progu
-# if (( $(echo "$line_coverage < 0" | bc -l) )) || (( $(echo "$function_coverage < 0" | bc -l) )); then
-#     echo "Pokrycie linii ($line_coverage%) lub funkcji ($function_coverage%) jest poniżej progu."
-#     exit 1
-# fi
 exit 0
-# Zwrócenie danych
-#echo "$line_coverage $function_coverage"
