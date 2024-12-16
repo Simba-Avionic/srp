@@ -84,23 +84,51 @@ core::ErrorCode PCA9685::AutoSetServoPosition(const uint8_t &actuator_id, const 
         pac_logger_.LogWarn() << ("Not find service");
         return core::ErrorCode::kNotDefine;
     }
-    if (it->second.position != state) {
-        it->second.position = state;
-        if (it->second.need_mosfet) {
-            pac_logger_.LogError() << "turn on servo xD";
-            std::ignore = std::async(std::launch::async, &PCA9685::MosfetFunc,
-                                                        this, it->second.mosfet_id, it->second.mosfet_time);
-        }
-        std::this_thread::sleep_for(std::chrono::milliseconds(it->second.servo_delay));
-        this->SetServo(it->second.channel, it->second.position == 1 ? it->second.on_pos : it->second.off_pos);
-        if (it->second.need_loosening) {
-            std::this_thread::sleep_for(std::chrono::milliseconds(LOSENING_DEFAULT_DELAY));
-            this->SetServo(it->second.channel,
-                        it->second.position == 1 ? it->second.on_loosening : it->second.off_loosening);
-        }
-        return core::ErrorCode::kOk;
+    it->second.position = state;
+    /**
+     * @brief uruchamiamy mosfet jesli wymagany
+     * 
+     */
+    if (it->second.need_mosfet) {
+       if (this->gpio_->SetPinValue(it->second.mosfet_id, 1) != core::ErrorCode::kOk) {
+            // TODO(matikrajek42@gmail.com) generate DTC error
+       }
     }
-    return core::ErrorCode::kError;
+    /**
+     * @brief odczekujemy na załączenie mosfetu
+     * 
+     */
+    std::this_thread::sleep_for(std::chrono::milliseconds(it->second.servo_delay));
+    /**
+     * @brief ustawiamy servo w odpowiednia pozycje
+     * 
+     */
+    if (this->SetServo(it->second.channel,
+            (it->second.position == 1) ? it->second.on_pos : it->second.off_pos) != core::ErrorCode::kOk) {
+        // TODO(matikrajek42@gmail.com) generate DTC error
+    }
+    /**
+     * @brief jesli wymagane luzowanie, dajemy czas na ruch serva i zmieniamy pwm na pozycje luzowania
+     * 
+     */
+    if (it->second.need_loosening) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(LOSENING_DEFAULT_DELAY));
+        if (this->SetServo(it->second.channel, (it->second.position == 1) ?
+                it->second.on_loosening : it->second.off_loosening)  != core::ErrorCode::kOk) {
+            // TODO(matikrajek42@gmail.com) generate DTC error
+        }
+    }
+    /**
+     * @brief jesli byl potrzebny mosfet wyłączamy zasilanie serva po mosfet_time
+     * 
+     */
+    if (it->second.need_mosfet) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(it->second.mosfet_time - it->second.servo_delay));
+        if (this->gpio_->SetPinValue(it->second.mosfet_id, 0) != core::ErrorCode::kOk) {
+            // TODO(matikrajek42@gmail.com) generate DTC error
+        }
+    }
+    return core::ErrorCode::kOk;
 }
 
 std::vector<uint8_t> PCA9685::GenerateData(const uint8_t &channel, const uint16_t &pos) const {
@@ -109,21 +137,68 @@ std::vector<uint8_t> PCA9685::GenerateData(const uint8_t &channel, const uint16_
     PRESCALE_REG, 121,  // przeskalowanie dla 50 Hz
     static_cast<uint8_t>(LED0_ON_L+4*channel), 0x0 & 0xFF,  // ON LOW REG Val
     static_cast<uint8_t>(LED0_ON_H+4*channel), 0x0 >> 8,   // ON HIGH REG Val
-    static_cast<uint8_t>(LED0_OFF_L+4*channel), static_cast<uint8_t>(pos & 0xFF),  // OFF LOW REG Val
+    static_cast<uint8_t>(LED0_OFF_L+4*channel), static_cast<uint8_t>(pos & 0x00FFU),  // OFF LOW REG Val
     static_cast<uint8_t>(LED0_OFF_H+4*channel), static_cast<uint8_t>(pos >> 8)};   // OFF HIGH REG Val;
 }
 
 core::ErrorCode PCA9685::SetServo(uint8_t channel, uint16_t pos) {
   return this->i2c_->Write(PCA9685_ADDRESS, GenerateData(channel, pos));
 }
-
-std::optional<uint8_t> PCA9685::ReadServoPosition(const uint8_t &actuator_id) const {
-    auto servo = this->db_.find(actuator_id);
-    if (servo != this->db_.end()) {
-        return servo->second.position;
-    }
-    return {};
+uint8_t PCA9685::CalculateFirstRegister(const uint8_t& channel) {
+  return 6 + 4 * channel;
 }
+uint8_t PCA9685::CalculatePosition(const std::vector<uint8_t>& val) {
+    const uint8_t lsb =  val[2];
+    const uint8_t msb = val[3];
+    return static_cast<uint16_t>(lsb) | (static_cast<uint16_t>(msb) << 8);
+}
+
+
+bool PCA9685::ChangeConfigPosition(const uint8_t& actuator_id,
+                                const uint16_t new_open_val, const uint16_t new_close_val) {
+    auto servo = this->db_.find(actuator_id);
+    if (servo == db_.end()) {
+        return false;
+    }
+    servo->second.on_pos = new_open_val;
+    servo->second.off_pos = new_close_val;
+    auto res = this->SetServo(servo->second.channel,
+            (servo->second.position == 0) ? servo->second.on_pos : servo->second.off_pos);
+    if (res != core::ErrorCode::kOk) {
+        return false;
+    }
+    return true;
+}
+std::optional<uint16_t> PCA9685::ReadRawServoPosition(const uint8_t &actuator_id) {
+    auto servo = this->db_.find(actuator_id);
+    if (servo == this->db_.end()) {
+        return std::nullopt;
+    }
+    auto val_opt = i2c_->Read(PCA9685_ADDRESS, this->CalculateFirstRegister(servo->second.channel), 4);
+    if (!val_opt.has_value()) {
+        return std::nullopt;
+    }
+    return CalculatePosition(val_opt.value());
+}
+std::optional<uint8_t> PCA9685::ReadServoPosition(const uint8_t &actuator_id) {
+    auto servo = this->db_.find(actuator_id);
+    if (servo == this->db_.end()) {
+        return std::nullopt;
+    }
+    auto val_opt = i2c_->Read(PCA9685_ADDRESS, this->CalculateFirstRegister(servo->second.channel), 4);
+    if (!val_opt.has_value()) {
+        return std::nullopt;
+    }
+    auto pos = CalculatePosition(val_opt.value());
+    if (servo->second.on_pos == pos) {
+        servo->second.position = 1;
+        return 1;
+    } else {
+        servo->second.position = 0;
+        return 0;
+    }
+}
+
 
 std::optional<std::unordered_map<uint8_t, Servo>> PCA9685::ReadConfig(std::string file_path) const {
     std::unordered_map<uint8_t, Servo> db;

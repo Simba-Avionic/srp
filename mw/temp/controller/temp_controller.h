@@ -35,6 +35,10 @@ namespace simba {
 namespace mw {
 namespace temp {
 
+/**
+ * @brief Function to receive temp readings from 1Wire using TEMP_MW
+ * 
+ */
 class TempController {
  private:
   uint16_t service_id;
@@ -47,6 +51,14 @@ class TempController {
   simba::core::ErrorCode Init(uint16_t service_id, std::unique_ptr<com::soc::ISocket> sock);
   simba::core::ErrorCode SetUp(simba::com::soc::RXCallback callback);
  public:
+ /**
+  * @brief Initialize function for temp receive
+  * 
+  * @param service_id 
+  * @param callback 
+  * @param sock 
+  * @return simba::core::ErrorCode 
+  */
   simba::core::ErrorCode Initialize(uint16_t service_id,
                 simba::com::soc::RXCallback callback, std::unique_ptr<com::soc::ISocket> sock);
 };
