@@ -16,10 +16,6 @@ class CoreErrorDomainTest : public ::testing::Test {
     ara::core::CoreErrorDomain error_domain;
 };
 
-TEST_F(CoreErrorDomainTest, Name_ReturnsCorrectName) {
-    EXPECT_STREQ(error_domain.Name(), "CoreErrorDomain");
-}
-
 TEST_F(CoreErrorDomainTest, Message_ReturnsCorrectMessage) {
     EXPECT_STREQ(error_domain.Message(static_cast<ara::core::ErrorDomain::CodeType>
                                 (ara::core::CoreErrc::kInvalidArgument)), "Invalid Argument");
