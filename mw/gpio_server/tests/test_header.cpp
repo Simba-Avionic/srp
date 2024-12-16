@@ -48,3 +48,16 @@ TEST_P(HeaderConstructorTest, CHECK_BUFFOR) {
     EXPECT_EQ(hdr.GetActuatorID(), hdr2.GetActuatorID());
     EXPECT_EQ(hdr.GetValue(), hdr2.GetValue());
 }
+TEST_P(HeaderConstructorTest, CHECK_SET) {
+    auto params = GetParam();
+    const uint8_t actuatorID = std::get<0>(params);
+    const uint8_t value = std::get<1>(params);
+    const simba::gpio::ACTION action = std::get<2>(params);
+    simba::gpio::Header hdr{0, 0, simba::gpio::ACTION::GET};
+    hdr.SetPinID(actuatorID);
+    hdr.SetAction(action);
+    hdr.SetValue(value);
+    EXPECT_EQ(hdr.GetActuatorID(), actuatorID);
+    EXPECT_EQ(hdr.GetValue(), value);
+    EXPECT_EQ(hdr.GetActuatorID(), actuatorID);
+}

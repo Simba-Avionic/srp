@@ -24,7 +24,7 @@ class II2CController{
                         uint8_t address, const std::vector<uint8_t>& payload) = 0;
 
  public:
-  virtual core::ErrorCode Init(std::unique_ptr<com::soc::StreamIpcSocket> socket) = 0;
+  virtual core::ErrorCode Init(std::unique_ptr<com::soc::ISocketStream> socket) = 0;
   /**
    * @brief  write data to adress, data format is {reg1, data1, reg2, data2 , ...}
    * 

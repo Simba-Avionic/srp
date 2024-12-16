@@ -37,7 +37,7 @@ class WaitQueue final {
   bool push(T obj) {
     bool flag = true;
     std::lock_guard<std::mutex> guard(add_mutex);
-    if (static_cast<uint16_t>(q.size()) > maxsize && maxsize != 0) {
+    if (static_cast<uint16_t>(q.size()) >= maxsize && maxsize != 0) {
       q.pop();
       flag = false;
     }

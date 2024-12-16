@@ -24,3 +24,39 @@ cc_test(
     ],
     size = "medium",
 )
+
+cc_test(
+    name = "wait_queue_test",
+    srcs = ["wait_queue.cc"],
+    deps = [
+        "//core/common:wait_queue",
+        "@com_google_googletest//:gtest_main",
+    ],
+    size = "medium",
+)
+cc_test(
+    name = "condition_test",
+    srcs = ["condition_test.cc"],
+    deps = [
+        "//core/common:condition_lib",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "csv_driver_test",
+    srcs = ["csv_driver_test.cc"],
+    deps = [
+        "//core/csvdriver",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+cc_test(
+    name = "gpio_driver_test",
+    srcs = ["test_gpio_driver.cpp"],
+    deps = [
+        "//core/gpio:gpio_drivers",
+        "//core/file:mock_file",
+        "@com_google_googletest//:gtest_main",
+    ],
+)

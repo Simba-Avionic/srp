@@ -46,7 +46,7 @@ class ADS7828 : public IADS7828 {
  public:
   ADS7828();
   std::optional<float> GetAdcVoltage(const uint8_t& channel) const override;
-  core::ErrorCode Init(std::unique_ptr<II2CController> i2c_);
+  core::ErrorCode Init(std::unique_ptr<II2CController> i2c_ = std::make_unique<I2CController>());
 };
 
 }  // namespace i2c
