@@ -16,20 +16,20 @@ filegroup(
 ara_someip_lib(
     name = "someip_lib",
     model_src = ["//deployment/apps/prim_service:instance"],
-    visibility = ["//apps/primer_service:__subpackages__"],
+    visibility = ["//apps/ec/primer_service:__subpackages__"],
 )
 
 ara_runtime_lib(
     name = "ara",
     model_src = ["//deployment/apps/prim_service:instance"],
-    visibility = ["//apps/primer_service:__subpackages__"],
+    visibility = ["//apps/ec/primer_service:__subpackages__"],
 )
 
 adaptive_application(
     name = "PrimerService",
-    bin = "//apps/primer_service:primer",
+    bin = "//apps/ec/primer_service:primer",
     model_src = ["//deployment/apps/prim_service:instance"],
     etcs = ["config.json"],
-    visibility = ["//visibility:public"],
+    visibility = ["//deployment/cpu/ec:__subpackages__"],
 )
 
