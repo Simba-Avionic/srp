@@ -23,12 +23,12 @@ namespace {
 }
 
 
-MyEngineServiceSkeleton::MyEngineServiceSkeleton(const ara::core::InstanceSpecifier& instance):
+MyEngineServiceSkeleton::MyEngineServiceSkeleton(ara::core::InstanceSpecifier instance):
         EngineServiceSkeleton{instance}, primer_handler_{nullptr}, servo_handler_{nullptr} {
     CurrentMode.Update(static_cast<uint8_t>(mode_));
 }
-void MyEngineServiceSkeleton::Init(const std::shared_ptr<PrimerServiceHandler>& primer_handler,
-                                    const std::shared_ptr<ServoServiceHandler>& servo_handler) {
+void MyEngineServiceSkeleton::Init(std::shared_ptr<PrimerServiceHandler> primer_handler,
+                                    std::shared_ptr<ServoServiceHandler> servo_handler) {
     this->primer_handler_ = primer_handler;
     this->servo_handler_ = servo_handler;
 }
