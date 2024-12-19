@@ -16,5 +16,6 @@ cc_binary(
         "//mw/i2c_service/controller/pca9685:pca9685_controller",
         "//deployment/apps/fc/recovery_service:someip_lib",
         "//deployment/apps/fc/recovery_service:ara",
+        "//mw/gpio_server/controller:gpio_controller",
     ],
 )

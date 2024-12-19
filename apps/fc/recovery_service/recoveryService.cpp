@@ -26,17 +26,20 @@ int RecoveryService::Run(const std::stop_token& token) {
   }
   return 0;
 }
+RecoveryService::RecoveryService() : service_ipc_instance("simba/apps/servoService/ServoService_ipc"),
+    service_udp_instance("simba/apps/servoService/ServoService_udp") {
+}
 
 int RecoveryService::Initialize(
     const std::map<ara::core::StringView, ara::core::StringView> parms) {
   this->servo_controller = std::make_shared<i2c::PCA9685>();
-  this->servo_controller->Init(parms.at("app_path"),
-                              std::make_unique<simba::i2c::I2CController>(),
+  this->gpio_controller = std::make_shared<gpio::GPIOController>();
+  this->servo_controller->Init(parms.at("app_path"), std::make_unique<simba::i2c::I2CController>(),
                               std::make_unique<gpio::GPIOController>());
-  service_ipc = std::make_unique<apps::MyServoService>(
-                ara::core::InstanceSpecifier("simba/apps/servoService/ServoService_ipc"), this->servo_controller);
-  service_udp = std::make_unique<apps::MyServoService>(
-                ara::core::InstanceSpecifier("simba/apps/servoService/ServoService_udp"), this->servo_controller);
+  service_ipc = std::make_unique<apps::MyRecoveryServiceSkeleton>(this->service_ipc_instance, this->servo_controller,
+                                                        this->gpio_controller);
+  service_udp = std::make_unique<apps::MyRecoveryServiceSkeleton>(this->service_udp_instance, this->servo_controller,
+                                                        this->gpio_controller);
   return 0;
 }
 

@@ -16,13 +16,21 @@
 #include <map>
 
 #include "ara/exec/adaptive_application.h"
-
+#include "mw/gpio_server/controller/gpio_controller.hpp"
 #include "mw/i2c_service/controller/pca9685/controller.hpp"
+#include "apps/fc/recovery_service/service.hpp"
 namespace simba {
 namespace service {
 class RecoveryService final : public ara::exec::AdaptiveApplication {
  private:
   std::shared_ptr<i2c::PCA9685> servo_controller;
+  std::shared_ptr<gpio::IGPIOController> gpio_controller;
+
+  std::unique_ptr<apps::MyRecoveryServiceSkeleton> service_ipc;
+  std::unique_ptr<apps::MyRecoveryServiceSkeleton> service_udp;
+  const ara::core::InstanceSpecifier service_ipc_instance;
+  const ara::core::InstanceSpecifier service_udp_instance;
+
  protected:
   /**
    * @brief This function is called to initialiaze the application
@@ -40,6 +48,7 @@ class RecoveryService final : public ara::exec::AdaptiveApplication {
 
  public:
   ~RecoveryService() = default;
+  RecoveryService();
 };
 
 }  // namespace service
