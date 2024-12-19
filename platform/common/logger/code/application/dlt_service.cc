@@ -42,7 +42,7 @@ int DltService::Run(const std::stop_token &token) {
 int DltService::Initialize(
     const std::map<ara::core::StringView, ara::core::StringView> parms) {
   auto obj_r = core::json::JsonParser::Parser(
-      std::string{"/opt/cpu_simba/logger_config.json"});
+      std::string{"/srp/opt/cpu_simba/logger_config.json"});
   if (!obj_r.has_value()) {
     ara::log::LogError() << "File not found: /opt/cpu_simba/logger_config.json";
     return -1;

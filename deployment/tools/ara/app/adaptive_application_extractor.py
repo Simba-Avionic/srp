@@ -15,5 +15,5 @@ class AdaptiveApplicationExtractor:
         out_json["startup_prio"] = app.bootMode
         out_json["parms"] = app.parms
         out_json["startup_after_delay"] = app.startup_delay
-        out_json["bin_path"] = f"/opt/{app.name}/bin/{app.name}"
+        out_json["bin_path"] = f"/srp/opt/{app.name}/bin/{app.name}"
         return out_json
