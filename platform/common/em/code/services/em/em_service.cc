@@ -42,8 +42,8 @@ bool EmService::IsSrpApp(const std::string& path) noexcept {
 
 void EmService::LoadApps() noexcept {
   try {
-    for (auto& p : std::filesystem::directory_iterator("/opt")) {
-      if (p.is_directory() && p.path() != "/opt/em") {
+    for (auto& p : std::filesystem::directory_iterator("/srp/opt")) {
+      if (p.is_directory() && p.path() != "/srp/opt/em") {
         if (this->IsSrpApp(p.path().c_str())) {
           std::string pp{p.path().string() + "/etc/srp_app.json"};
           auto res = this->GetAppConfig(pp);
