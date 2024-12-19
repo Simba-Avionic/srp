@@ -34,7 +34,7 @@ def _start_service_script(ctx):
 #
 echo "Starting components SRP EM "
 sleep 3
-/opt/em/bin/em &
+/srp/opt/em/bin/em &
 echo "Simab SRP start up component script [DONE]"
 """
     return content
@@ -50,8 +50,8 @@ def _startup_script(ctx):
 #
 echo "Simab SRP start up script"
 
-/opt/cpu_simba/network_interface.sh
-/opt/cpu_simba/component_start_up.sh &
+/srp/opt/cpu_simba/network_interface.sh
+/srp/opt/cpu_simba/component_start_up.sh &
 
 echo "Simab SRP start up script [DONE]"
 
