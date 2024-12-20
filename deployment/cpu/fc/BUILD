@@ -8,17 +8,13 @@ cpu_def(
         "logger_config.json",
     ],
     srp_components = [
-        # "//deployment/mw/loger/dlt_fc/fc:dlt_server",
-        # "//deployment/apps/example2/example",
-        # "//deployment/apps/diag_ota/ec:diag_ota",
-        # "//deployment/mw/em",
-        # "//deployment/mw/gpio",
         "//deployment/platform/diag_demon",
         "//deployment/platform/em",
         "//deployment/platform/logger",
         "//deployment/mw/i2c:i2cMWService",
         "//deployment/mw/gpio:gpio_service",
         "//deployment/platform/someip_demon",
+        "//deployment/apps/fc/gps_app:GPSApp",
     ],
 )
 
