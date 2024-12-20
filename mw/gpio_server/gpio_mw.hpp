@@ -36,7 +36,7 @@ class GPIOMWService : public ara::exec::AdaptiveApplication {
     std::vector<uint8_t> RxCallback(const std::string& ip, const std::uint16_t& port,
           const std::vector<std::uint8_t> data);
     std::optional<std::unordered_map<uint8_t, GpioConf>> ReadConfig(
-                              std::string path) const;
+                              const std::string& path) const;
     int InitPins();
     int Init(std::unique_ptr<com::soc::ISocketStream> socket,
                               std::shared_ptr<core::gpio::IGpioDriver> gpio);

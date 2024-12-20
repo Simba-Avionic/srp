@@ -64,8 +64,9 @@ class PCA9685 {
   PCA9685();
   bool ChangeConfigPosition(const uint8_t& actuator_id, const uint16_t new_open_val, const uint16_t new_close_val);
   std::optional<uint16_t> ReadRawServoPosition(const uint8_t &actuator_id);
-  core::ErrorCode Init(const std::string& parms, std::unique_ptr<II2CController> i2c,
-    std::unique_ptr<gpio::IGPIOController> gpio);
+  core::ErrorCode Init(const std::string& parms,
+                      std::unique_ptr<II2CController> i2c = std::make_unique<I2CController>(),
+                      std::unique_ptr<gpio::IGPIOController> gpio = std::make_unique<gpio::GPIOController>());
     /**
      * @brief Allow to set servo position in Engine AUTO mode, dont use in Diag
      * 
