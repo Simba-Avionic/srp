@@ -4,7 +4,7 @@ bazel coverage --nocache_test_results `bazel query 'kind(cc_test, //...)'`  -s \
   --instrument_test_targets \
   --experimental_cc_coverage \
   --combined_report=lcov \
-  --instrumentation_filter="[:]"
+  --instrumentation_filter="[:]" \
   --coverage_report_generator=@bazel_tools//tools/test/CoverageOutputGenerator/java/com/google/devtools/coverageoutputgenerator:Main > /dev/null 2>&1
 
 lcov  --summary bazel-out/_coverage/_coverage_report.dat

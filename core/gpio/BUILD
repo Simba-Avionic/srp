@@ -18,6 +18,7 @@ cc_library(
         ":gpio_interface",
         "//core/common:common_types",
         "//ara/log",
+        "//core/file:file_lib",
     ],
 )
 
@@ -32,5 +33,6 @@ cc_library(
         ":gpio_interface",
         "//core/common:common_types",
         "//ara/log",
+        "//core/file:file_lib",
     ],
 )

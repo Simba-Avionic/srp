@@ -30,10 +30,13 @@ class MockSocket : public simba::com::soc::ISocket {
 
 class MockStreamSocket : public simba::com::soc::ISocketStream {
  public:
-  MOCK_METHOD(void, SetRXCallback, (simba::com::soc::RXCallbackStream), (override));
-  MOCK_METHOD(simba::core::ErrorCode, Init, (const simba::com::soc::SocketConfig&), (override));
-  MOCK_METHOD(std::optional<std::vector<uint8_t>>, Transmit, (const std::string&, const std::uint16_t,
-                                   std::vector<std::uint8_t>), (override));
+  MOCK_METHOD(simba::core::ErrorCode, Init, (const simba::com::soc::SocketConfig& config), (override));
+  MOCK_METHOD(void, SetRXCallback, (simba::com::soc::RXCallbackStream callback), (override));
+  MOCK_METHOD(std::optional<std::vector<uint8_t>>, Transmit,
+              (const std::string& ip, const std::uint16_t port,
+               std::vector<std::uint8_t> payload),
+              (override));
   MOCK_METHOD(void, StartRXThread, (), (override));
+  MOCK_METHOD(void, StopRXThread, (), (override));
 };
 #endif  // COMMUNICATION_CORE_SOCKETS_MOCK_MOCKSOCKET_H_
