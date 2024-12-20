@@ -262,7 +262,7 @@ class SomeipExtractor:
             file+="  "+event.name+"EventSkeleton(): ara::com::someip::EventSkeleton{"+hex(event.id)+"} {}\n"
             file+="  void Update(const "
             if event.out_parm.typ_str == "struct":
-                file+=event.out_parm.name.replace(".","/")
+                file+=event.out_parm.name.replace(".","::")
             else:
                 file+=event.out_parm.typ_str
             file +="& new_value) const {\n"
