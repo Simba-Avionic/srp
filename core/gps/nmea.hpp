@@ -30,16 +30,7 @@ struct GPS_DATA_T {
   uint16_t satellite_nr;
   float HDOP;
   float height;
-  std::string to_string() {
-    std::ostringstream oss;
-    oss << "Timestamp: " << timestamp << ", "
-        << "Latitude: " << latitude << " " << latitude_dir << ", "
-        << "Longitude: " << longitude << " " << longitude_dir << ", "
-        << "Satellites: " << satellite_nr << ", "
-        << "HDOP: " << HDOP << ", "
-        << "Height: " << height;
-    return oss.str();
-  }
+  std::string to_string();
 };
 
 class Nmea {
