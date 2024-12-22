@@ -88,7 +88,8 @@ int GPIOMWService::Initialize(const std::map<ara::core::StringView,
     this->sock_->Init({SOCKET_PATH, 0, 0});
     this->sock_->SetRXCallback(std::bind(&GPIOMWService::RxCallback, this, std::placeholders::_1,
             std::placeholders::_2, std::placeholders::_3));
-    const std::string path = parms.at("app_path") + "etc/config.json";
+    // const std::string path = parms.at("app_path") + "etc/config.json";
+    const std::string path = "/srp/opt/gpio_service/etc/config.json";
     auto config_opt = ReadConfig(path);
     if (!config_opt.has_value()) {
         ara::log::LogError() << "fail to read config";
@@ -104,7 +105,7 @@ int GPIOMWService::Initialize(const std::map<ara::core::StringView,
     return 0;
 }
 std::optional<std::unordered_map<uint8_t, GpioConf>> GPIOMWService::ReadConfig(
-      std::string path) const {
+      const std::string& path) const {
     auto parser_opt = core::json::JsonParser::Parser(path);
     if (!parser_opt.has_value()) {
         return std::nullopt;
