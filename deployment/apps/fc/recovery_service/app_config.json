@@ -7,7 +7,8 @@
     "adaptive_application": {
         "RecoveryService": {
             "app": {
-                "bootMode": 2,
+                "functional_groups": ["Running", " Flight"],
+                "reporting_mode": "AutoReporting",
                 "parms": "",
                 "logger": {
                     "app_id": "REC-",
