@@ -6,7 +6,8 @@
     "adaptive_application": {
         "PrimerService": {
             "app": {
-                "bootMode": 6,
+                "functional_groups": ["Running", " Flight"],
+                "reporting_mode": "AutoReporting",
                 "parms": "",
                 "logger": {
                     "app_id": "PRIM",

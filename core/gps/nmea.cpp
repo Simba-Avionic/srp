@@ -19,6 +19,18 @@
 #include <algorithm>
 namespace simba {
 namespace core {
+
+std::string GPS_DATA_T::to_string() {
+    std::ostringstream oss;
+    oss << "Timestamp: " << timestamp << ", "
+        << "Latitude: " << latitude << " " << latitude_dir << ", "
+        << "Longitude: " << longitude << " " << longitude_dir << ", "
+        << "Satellites: " << satellite_nr << ", "
+        << "HDOP: " << HDOP << ", "
+        << "Height: " << height;
+    return oss.str();
+}
+
 std::vector<std::string> Nmea::splitString(const std::string& str, const char& delimiter) {
     std::vector<std::string> result;
     std::stringstream ss(str);
