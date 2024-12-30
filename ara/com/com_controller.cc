@@ -10,6 +10,7 @@
  */
 #include "ara/com/com_controller.h"
 
+#include <memory>
 #include <utility>
 
 #include "ara/com/com_error_domain.h"
@@ -17,7 +18,11 @@
 #include "ara/log/logging_menager.h"
 namespace ara {
 namespace com {
-ComController::ComController(/* args */) {}
+namespace {
+static std::shared_ptr<ComController> instance_;
+}  // namespace
+
+ComController::ComController(const uint32_t& app_id) : app_id_{app_id} {}
 
 ComController::~ComController() {}
 
@@ -26,7 +31,7 @@ ara::core::Result<void> ComController::Init() noexcept {
     return MakeErrorCode(ComOfferErrc::kAlreadyOffered,
                          "Controller already Started");
   }
-  ipc_soc_ = std::make_unique<ProccessSocket>();
+  ipc_soc_ = std::make_unique<ProccessSocket>(app_id_);
 
   ipc_soc_->SetCallback(std::bind(&ComController::IpcRxCallback, this,
                                   std::placeholders::_1,
@@ -85,10 +90,12 @@ bool ComController::SendCallbackTo(const std::string& desc,
   }
 }
 
-ComController& ComController::GetInstance() noexcept {
-  static ComController instance_{};
-  return instance_;
+ComController& ComController::GetInstance() noexcept { return *instance_; }
+ComController& ComController::GetInstance(const uint32_t app_id) noexcept {
+  if (nullptr == instance_) {
+    instance_ = std::make_unique<ComController>(app_id);
+  }
+  return *instance_;
 }
-
 }  // namespace com
 }  // namespace ara

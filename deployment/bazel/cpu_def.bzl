@@ -11,7 +11,7 @@ def _netinterface_script(ctx):
 #
 ################################################################################
 #
-echo "Setting interface: """ + json_data.encode("interface_name") + """ for """ + json_data.encode("name")  + """ "
+echo "Setting interface: """ + json_data.encode("interface_name") + """ for """ + json_data.encode("name") + """ "
 echo "ip: """ + json_data.encode("ip") + """"
 echo "net mask """ + json_data.encode("mask") + """ "
 ifconfig """ + json_data.encode("interface_name") + """ """ + json_data.encode("ip") + """ netmask """ + json_data.encode("mask") + """
@@ -34,7 +34,8 @@ def _start_service_script(ctx):
 #
 echo "Starting components SRP EM "
 sleep 3
-/srp/opt/em/bin/em &
+/srp/platform/em/bin/em &
+/srp/platform/state_manager/bin/state_manager &
 echo "Simab SRP start up component script [DONE]"
 """
     return content
@@ -64,6 +65,7 @@ def _start_service_list_impl(ctx):
     out3 = ctx.actions.declare_file("network_interface.sh")
     ctx.actions.write(output = out1, content = _startup_script(ctx))
     ctx.actions.write(output = out2, content = _start_service_script(ctx))
+
     # ctx.actions.write(output = out3, content = _netinterface_script(ctx))
     # out = ctx.actions.declare_file("srp_app.json")
     args = [out3.path, ctx.files.configs[0].path]
@@ -91,7 +93,7 @@ cpu_def_r = rule(
     },
 )
 
-def cpu_def(name, srp_components,config,etcs = []):
+def cpu_def(name, srp_components, config, etcs = [], platform_etcs = []):
     cpu_def_r(
         name = "cpu",
         configs = [config],
@@ -99,12 +101,17 @@ def cpu_def(name, srp_components,config,etcs = []):
     pkg_tar(
         name = "config_pkg",
         package_dir = "opt/cpu_simba",
-        srcs = [":cpu"]+etcs,
+        srcs = [":cpu"] + etcs,
         visibility = ["//visibility:private"],
     )
-
+    pkg_tar(
+        name = "platform_config_pkg",
+        package_dir = "platform/etc",
+        srcs = platform_etcs,
+        visibility = ["//visibility:private"],
+    )
     connect_tar(
-            name = name,
-        srcs = [":config_pkg"] + srp_components,
+        name = name,
+        srcs = [":config_pkg", ":platform_config_pkg"] + srp_components,
         visibility = ["//visibility:public"],
     )

@@ -1,8 +1,11 @@
 from __future__ import annotations
+
 import sys
 import os
 import json
+
 from datetime import date
+
 from deployment.tools.ara.common.common_parser import CommonParser
 from deployment.tools.ara.app.adaptive_application_db import AdaptiveApplicationDb
 from deployment.tools.ara.app.adaptive_application_extractor import AdaptiveApplicationExtractor
@@ -10,7 +13,42 @@ from deployment.tools.ara.app.adaptive_application_runtime_env import AdaptiveAp
 from deployment.tools.ara.diag.diag_runtime_env import DiagRuntimeEnv
 from deployment.tools.ara.someip.lib.someip_runtime_env import SomeipRuntimeEnv
 
-file_content_core = """/**
+
+
+file_content_core_end = """}  // namespace core
+}  // namespace ara
+"""
+
+def LoadJson(path:str):
+    CommonParser.LoadJson(path)
+
+if __name__ == "__main__":
+    out_path = sys.argv[1]
+    src_path = ""
+    for val in sys.argv:
+        if ".json" in val:
+            if os.path.isfile(val):
+                with open(val,"r") as file:
+                    json_obj = json.load(file)
+                    if "adaptive_application" in json_obj:
+                        if len(src_path) == 0:
+                            src_path = val
+                        else:
+                            raise Exception("Multiple Adaptive App model found!")
+    
+    if len(src_path) != 0:                
+        LoadJson(src_path)
+        temp_s = ""
+        temp_s = DiagRuntimeEnv.CreateInitDB(list(AdaptiveApplicationDb().app_list.keys())[0].replace(".","/"),
+                                             AdaptiveApplicationDb().app_list[list(AdaptiveApplicationDb().app_list.keys())[0]].GetDtcList(),
+                                             AdaptiveApplicationDb().app_list[list(AdaptiveApplicationDb().app_list.keys())[0]].GetJobList())
+        temp_s+="\n"
+        temp_s+= SomeipRuntimeEnv.CreateInitDB(list(AdaptiveApplicationDb().app_list.keys())[0].replace(".","/"),
+                                               AdaptiveApplicationDb().app_list[list(AdaptiveApplicationDb().app_list.keys())[0]].GetServiceList())
+        temp_s+="\n"
+        temp_s+=AdaptiveApplicationRuntimeEnv.CreateLogerInit(AdaptiveApplicationDb().app_list[list(AdaptiveApplicationDb().app_list.keys())[0]])
+        app_id = AdaptiveApplicationDb().app_list[list(AdaptiveApplicationDb().app_list.keys())[0]].id
+        file_content_core = """/**
  * @file initialization.cc
  * ARA Env Generator by Bartosz Snieg (snieg45@gmail.com)
  * @brief 
@@ -55,7 +93,7 @@ Result<void> Initialize() noexcept {
   }
   
   ara_logger_.LogInfo() << "ARA environment has been initialized";
-  ara::com::Initialize();
+  ara::com::Initialize("""+str(app_id)+"""U);
   ara_logger_.LogInfo() << "ARA::COM environment has been initialized";
   return {};
 }
@@ -69,39 +107,6 @@ Result<void> Deinitialize() noexcept {
 }
 
 """
-
-file_content_core_end = """}  // namespace core
-}  // namespace ara
-"""
-
-def LoadJson(path:str):
-    CommonParser.LoadJson(path)
-
-if __name__ == "__main__":
-    out_path = sys.argv[1]
-    src_path = ""
-    for val in sys.argv:
-        if ".json" in val:
-            if os.path.isfile(val):
-                with open(val,"r") as file:
-                    json_obj = json.load(file)
-                    if "adaptive_application" in json_obj:
-                        if len(src_path) == 0:
-                            src_path = val
-                        else:
-                            raise Exception("Multiple Adaptive App model found!")
-    
-    if len(src_path) != 0:                
-        LoadJson(src_path)
-        temp_s = ""
-        temp_s = DiagRuntimeEnv.CreateInitDB(list(AdaptiveApplicationDb().app_list.keys())[0].replace(".","/"),
-                                             AdaptiveApplicationDb().app_list[list(AdaptiveApplicationDb().app_list.keys())[0]].GetDtcList(),
-                                             AdaptiveApplicationDb().app_list[list(AdaptiveApplicationDb().app_list.keys())[0]].GetJobList())
-        temp_s+="\n"
-        temp_s+= SomeipRuntimeEnv.CreateInitDB(list(AdaptiveApplicationDb().app_list.keys())[0].replace(".","/"),
-                                               AdaptiveApplicationDb().app_list[list(AdaptiveApplicationDb().app_list.keys())[0]].GetServiceList())
-        temp_s+="\n"
-        temp_s+=AdaptiveApplicationRuntimeEnv.CreateLogerInit(AdaptiveApplicationDb().app_list[list(AdaptiveApplicationDb().app_list.keys())[0]])
         with open(out_path+"/initialization.cc","w") as out_file:
             out_file.write(file_content_core+temp_s+file_content_core_end)
     else:

@@ -14,7 +14,7 @@
 
 namespace ara {
 namespace com {
-ara::core::Result<void> Initialize() noexcept;
+ara::core::Result<void> Initialize(const uint32_t& app_id) noexcept;
 
 ara::core::Result<void> Deinitialize() noexcept;
 }  // namespace com

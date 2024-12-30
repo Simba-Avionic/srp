@@ -22,16 +22,17 @@
 #include <filesystem>
 #include <fstream>
 #include <functional>
+#include <memory>
 #include <string>
 
 #include "ara/log/log.h"
-#include "core/json/json_parser.h"
+#include "platform/common/em/code/services/em/json_parser.h"
 
 namespace simba {
 namespace em {
 namespace service {
 
-EmService::EmService(/* args */) {}
+EmService::EmService(std::shared_ptr<data::IAppDb> db) : db_{db} {}
 
 EmService::~EmService() {}
 
@@ -43,22 +44,15 @@ bool EmService::IsSrpApp(const std::string& path) noexcept {
 void EmService::LoadApps() noexcept {
   try {
     for (auto& p : std::filesystem::directory_iterator("/srp/opt")) {
-      if (p.is_directory() && p.path() != "/srp/opt/em") {
+      if (p.is_directory()) {
         if (this->IsSrpApp(p.path().c_str())) {
           std::string pp{p.path().string() + "/etc/srp_app.json"};
-          auto res = this->GetAppConfig(pp);
+          auto res = json::JsonParser::GetAppConfig(pp);
           if (res.has_value()) {
-            this->app_list.push_back(res.value());
-            if (std::find(this->app_level_list.begin(),
-                          this->app_level_list.end(),
-                          res.value().GetStartUpPrio()) ==
-                this->app_level_list.end()) {
-              this->app_level_list.push_back(res.value().GetStartUpPrio());
+            if (db_->InsertNewApp(res.value()) == 0) {
+              ara::log::LogInfo()
+                  << "App: " << res.value().GetAppName() << " added to db";
             }
-
-            ara::log::LogInfo() << "App: " << res.value().GetBinPath()
-                                << " added to boot list with prio: "
-                                << std::to_string(res.value().GetStartUpPrio());
           }
         }
       }
@@ -68,81 +62,32 @@ void EmService::LoadApps() noexcept {
   }
 }
 
-std::optional<data::AppConfig> EmService::GetAppConfig(
-    const std::string& path) noexcept {
-  auto obj = core::json::JsonParser::Parser(path).value();
-  std::string bin_path{""};
-  std::string parm{""};
-  uint8_t prio{0};
-  uint8_t delay{0};
-  uint8_t error_count{0};
-  uint16_t app_id{0};
-  {
-    auto bin_path_r = obj.GetString("bin_path");
-    if (bin_path_r.has_value()) {
-      bin_path = bin_path_r.value();
-    } else {
-      ara::log::LogError() << "Application from: " << path
-                           << ", don't have: bin_path";
-      error_count++;
-    }
+void EmService::SetActiveState(const uint16_t& state_id_) noexcept {
+  std::vector<uint16_t> terminate_list{};
+  const auto currect_list_opt = db_->GetFgAppList(active_state);
+  const auto next_list_opt = db_->GetFgAppList(state_id_);
+  if (!next_list_opt.has_value()) {
+    ara::log::LogError() << "State: " << state_id_ << " not supported!";
+    return;
   }
-  {
-    auto parm_r = obj.GetString("parms");
-    if (parm_r.has_value()) {
-      parm = parm_r.value();
-    } else {
-      ara::log::LogError() << "Application from: " << path
-                           << ", don't have: parms";
-      error_count++;
-    }
-  }
-  {
-    auto prio_r = obj.GetNumber<uint8_t>("startup_prio");
-    if (prio_r.has_value()) {
-      prio = prio_r.value();
-    } else {
-      ara::log::LogError() << "Application from: " << path
-                           << ", don't have: startup_prio";
-      error_count++;
-    }
-  }
-  {
-    auto delay_r = obj.GetNumber<uint8_t>("startup_after_delay");
-    if (delay_r.has_value()) {
-      delay = delay_r.value();
-    } else {
-      ara::log::LogError() << "Application from: " << path
-                           << ", don't have: startup_after_delay";
-      error_count++;
-    }
-  }
-  if (error_count != 0) {
-    return {};
-  } else {
-    return std::optional{data::AppConfig{bin_path, parm, prio, delay}};
-  }
-}
-void EmService::StartApps() noexcept {
-  std::sort(this->app_level_list.begin(), this->app_level_list.end(),
-            std::greater<uint8_t>());
-  ara::log::LogInfo() << "Apps starting";
-  for (const auto& level : app_level_list) {
-    this->StartApps(level);
-  }
-  ara::log::LogInfo() << "Apps started";
-}
-
-void EmService::StartApps(const uint8_t level) noexcept {
-  for (auto& app : app_list) {
-    if (app.GetStartUpPrio() == level) {
-      pid_t pid = this->StartApp(app);
-      if (pid == 0) {
-        ara::log::LogError() << "Failed to start app";
-        return;
+  const auto& next_list = next_list_opt.value().get();
+  if (currect_list_opt.has_value()) {
+    const auto& currect_list = currect_list_opt.value().get();
+    for (const auto& app_id : currect_list) {
+      if (!next_list.contains(app_id)) {
+        terminate_list.push_back(app_id);
       }
-      app.SetPid(pid);
-      /**todo Dodać sleep  w  gdy serwis oczekuje czekania*/
+    }
+  }
+  // TODO(bartek): kill app
+  for (const auto& app_id_ : next_list) {
+    auto app_config_opt = db_->GetAppConfig(app_id_);
+    if (app_config_opt.has_value()) {
+      const auto& app_config = app_config_opt.value().get();
+      if (app_config.GetPid() == 0) {
+        const auto new_pid = this->StartApp(app_config);
+        db_->SetPidForApp(app_id_, new_pid);
+      }
     }
   }
 }
@@ -174,6 +119,7 @@ std::optional<pid_t> EmService::RestartApp(const uint16_t appID) {
   //     return std::optional<pid_t>{pid};
   //   }
   // }
+  return std::nullopt;
 }
 
 pid_t EmService::StartApp(const simba::em::service::data::AppConfig& app) {
@@ -186,7 +132,7 @@ pid_t EmService::StartApp(const simba::em::service::data::AppConfig& app) {
   auto parms = app.GetParms();
   char* argv[] = {path.data(), parms.data(), NULL};
   posix_spawnp(&pid, app.GetBinPath().c_str(), NULL, &attr, argv, NULL);
-  ara::log::LogInfo() << "Spawning app: " << app.GetBinPath()
+  ara::log::LogInfo() << "Spawning app: " << app.GetAppName()
                       << " pid: " << std::to_string(pid);
   return pid;
 }

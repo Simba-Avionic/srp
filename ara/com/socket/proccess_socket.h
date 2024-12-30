@@ -50,6 +50,7 @@ class ProccessSocket {
   ara::core::Result<void> Transmit(
       const std::string& path, const std::vector<uint8_t>& payload) noexcept;
   ProccessSocket(/* args */);
+  explicit ProccessSocket(const uint32_t app_id);
   explicit ProccessSocket(const std::string& sock_path_);
   ~ProccessSocket();
 };

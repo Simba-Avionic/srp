@@ -16,8 +16,8 @@
 #include "ara/diag/diagnostic_menager.h"
 namespace ara {
 namespace com {
-ara::core::Result<void> Initialize() noexcept {
-  auto& controller = ara::com::ComController::GetInstance();
+ara::core::Result<void> Initialize(const uint32_t& app_id) noexcept {
+  auto& controller = ara::com::ComController::GetInstance(app_id);
   controller.AddHandler(IComClient::MsgType::kSomeIp,
                         ara::com::someip::SomeipController::GetInstance());
   controller.AddHandler(IComClient::MsgType::kDiag,

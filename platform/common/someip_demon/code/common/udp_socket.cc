@@ -136,8 +136,6 @@ void UdpSocket::Loop(std::stop_token stoken) {
                                                    buffor.begin() + bytes_rec});
             });
       }
-    } else {
-      std::cout << "Run empty" << std::endl;
     }
   }
 }
