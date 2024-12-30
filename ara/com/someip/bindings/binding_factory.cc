@@ -34,6 +34,7 @@ BindingsFactory::GetBindings(const ara::core::model::ModelSomeIp& model) {
       return std::make_shared<UdpProxyBindings>(model.port_);
     }
   }
+  return nullptr;
 }
 }  // namespace bindings
 }  // namespace someip

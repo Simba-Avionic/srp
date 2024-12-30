@@ -42,10 +42,10 @@ nlohmann::json JsonParser::GetObject() const { return this->obj; }
 
 std::optional<JsonParser> JsonParser::GetObject(const std::string &name) const {
   if (!obj.contains(name)) {
-    return {};
+    return std::nullopt;
   }
   if (!obj.at(name).is_object()) {
-    return {};
+    return std::nullopt;
   }
   return JsonParser::Parser(obj.at(name));
 }
@@ -68,12 +68,12 @@ std::optional<std::string> JsonParser::GetString(
         const std::string res = obj.at(name);
         return std::optional{res};
       }
-      return {};
+      return std::nullopt;
     } else {
-      return {};
+      return std::nullopt;
     }
   } catch (std::exception&) {
-    return {};
+    return std::nullopt;
   }
 }
 JsonParser::~JsonParser() {}

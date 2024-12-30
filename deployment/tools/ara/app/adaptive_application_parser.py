@@ -14,7 +14,7 @@ class AdaptiveApplicationParser:
             return
         
         json_object = json_object["adaptive_application"]
-        temp_app = AdaptiveApplication(s_name,json_object[s_name]["app"]["bootMode"],AdaptiveApplicationParser.ParseLogger(json_object[s_name]["app"]["logger"]))
+        temp_app = AdaptiveApplication(name,AdaptiveApplicationParser.ParseLogger(json_object[s_name]["app"]["logger"]),json_object[s_name]["app"]["functional_groups"])
         if "parms" in json_object[s_name]["app"]:
             temp_app.parms = json_object[s_name]["app"]["parms"]
         if "provide" in json_object[s_name]:

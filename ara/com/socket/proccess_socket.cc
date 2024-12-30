@@ -1,12 +1,12 @@
 /**
  * @file proccess_socket.cc
  * @author Bartosz Snieg (snieg45@gmail.com)
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2024-11-26
- * 
+ *
  * @copyright Copyright (c) 2024
- * 
+ *
  */
 #include "ara/com/socket/proccess_socket.h"
 
@@ -32,7 +32,9 @@ namespace com {
 ProccessSocket::ProccessSocket(/* args */)
     : local_pid_{getpid()},
       local_soc_{"/run/p-" + std::to_string(local_pid_)} {}
-
+ProccessSocket::ProccessSocket(const uint32_t app_id)
+    : local_pid_{app_id},
+      local_soc_{"/run/p-" + std::to_string(local_pid_)} {}
 ProccessSocket::ProccessSocket(const std::string& sock_path_)
     : local_pid_{getpid()}, local_soc_{"/run/" + sock_path_} {}
 
@@ -110,8 +112,8 @@ ara::core::Result<void> ProccessSocket::Transmit(
 }
 
 void ProccessSocket::RxLoop(std::stop_token token) noexcept {
-  const std::stop_callback stop_wait{token,
-                               [this]() { shutdown(this->sfd_, SHUT_RD); }};
+  const std::stop_callback stop_wait{
+      token, [this]() { shutdown(this->sfd_, SHUT_RD); }};
   while (true) {
     std::array<char, 256 * 2> buffor;
     int bytes_rec =

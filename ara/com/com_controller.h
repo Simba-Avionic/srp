@@ -1,12 +1,12 @@
 /**
  * @file com_controller.h
  * @author Bartosz Snieg (snieg45@gmail.com)
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2024-11-26
- * 
+ *
  * @copyright Copyright (c) 2024
- * 
+ *
  */
 #ifndef ARA_COM_COM_CONTROLLER_H_
 #define ARA_COM_COM_CONTROLLER_H_
@@ -26,8 +26,8 @@ class ComController {
  private:
   std::unordered_map<IComClient::MsgType, std::shared_ptr<IComClient>>
       handlers_{};
+  const uint32_t app_id_;
 
-  ComController(/* args */);
   std::unique_ptr<ProccessSocket> ipc_soc_;
   void IpcRxCallback(const uint32_t pid, const std::vector<uint8_t>& payload);
   bool SendCallback(uint32_t pid, const std::vector<uint8_t>& payload,
@@ -37,10 +37,12 @@ class ComController {
                       IComClient::MsgType type);
 
  public:
+  explicit ComController(const uint32_t& app_id);
   ara::core::Result<void> Init() noexcept;
   bool AddHandler(IComClient::MsgType msg_type,
                   std::shared_ptr<IComClient> handler_);
   static ComController& GetInstance() noexcept;
+  static ComController& GetInstance(const uint32_t app_id) noexcept;
   ~ComController();
 };
 

@@ -21,6 +21,8 @@
 
 #include "ara/exec/adaptive_application.h"
 #include "platform/common/em/code/services/em/em_service.h"
+
+
 namespace simba {
 namespace em {
 class EmApplication final : public ara::exec::AdaptiveApplication {
@@ -39,7 +41,7 @@ class EmApplication final : public ara::exec::AdaptiveApplication {
    */
   int Run(const std::stop_token& token) override;
 
-  service::EmService em_service{};
+  std::shared_ptr<service::EmService> em_service;
 
  public:
   EmApplication(/* args */);
