@@ -23,7 +23,7 @@ namespace simba {
 namespace core {
 namespace json {
 class JsonParser {
- private:
+ public:
   nlohmann::json obj;
 
  public:

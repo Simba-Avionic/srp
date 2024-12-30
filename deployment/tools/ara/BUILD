@@ -13,40 +13,58 @@ py_binary(
     name = "json2config",
     srcs = ["json2config.py"],
     data = ["//deployment/tools/ara:example_res"],
+    visibility = ["//visibility:public"],
     deps = [
         "//deployment/tools/ara/common:common_parser",
     ],
-    visibility = ["//visibility:public"],
 )
 
 py_binary(
     name = "json2runtime_env",
     srcs = ["json2runtime_env.py"],
     data = ["//deployment/tools/ara:example_res"],
+    visibility = ["//visibility:public"],
     deps = [
         "//deployment/tools/ara/common:common_parser",
     ],
-    visibility = ["//visibility:public"],
 )
 
 py_binary(
     name = "json2someip_lib",
     srcs = ["json2someip_lib.py"],
     data = ["//deployment/tools/ara:example_res"],
+    visibility = ["//visibility:public"],
     deps = [
         "//deployment/tools/ara/common:common_parser",
     ],
-    visibility = ["//visibility:public"],
 )
 
 py_binary(
     name = "data_structure_gen",
     srcs = ["data_structure_gen.py"],
     data = ["//deployment/tools/ara:example_res"],
+    visibility = ["//visibility:public"],
     deps = [
         "//deployment/tools/ara/common:common_parser",
     ],
+)
+
+py_binary(
+    name = "json2sm_code",
+    srcs = ["json2sm_code.py"],
     visibility = ["//visibility:public"],
+    deps = [
+        "//deployment/tools/ara/sm:sm_lib",
+    ],
+)
+
+py_binary(
+    name = "json2sm_config",
+    srcs = ["json2sm_config.py"],
+    visibility = ["//visibility:public"],
+    deps = [
+        "//deployment/tools/ara/sm:sm_lib",
+    ],
 )
 
 filegroup(

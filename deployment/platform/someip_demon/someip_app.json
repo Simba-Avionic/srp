@@ -1,11 +1,15 @@
 {
-    "include": [
-    ],
+    "include": [],
     "package": "simba.platform.com",
     "adaptive_application": {
         "someip_demon": {
             "app": {
-                "bootMode": 10,
+                "functional_groups": [
+                    "Startup2",
+                    "Platform",
+                    "Running",
+                    "SafetyMode"
+                ],
                 "parms": "",
                 "logger": {
                     "app_id": "SOME",
@@ -46,8 +50,7 @@
                     ]
                 }
             },
-            "provide": [
-            ]
+            "provide": []
         }
     }
 }

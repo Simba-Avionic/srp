@@ -143,7 +143,7 @@ def ara_runtime_lib(name, model_src, visibility = []):
         visibility = visibility,
     )
 
-def adaptive_application(name, model_src, bin, etcs = [], visibility = []):
+def adaptive_application(name, model_src, bin, etcs = [], visibility = [], tar_path="opt/"):
     ara_json2config(
         name = "config",
         src = model_src,
@@ -157,21 +157,21 @@ def adaptive_application(name, model_src, bin, etcs = [], visibility = []):
     )
     pkg_tar(
         name = "config_files",
-        package_dir = "opt/" + name,
+        package_dir =  tar_path + name,
         srcs = [":config"] + etcs,
         visibility = ["//visibility:private"],
     )
     if len(etcs) != 0:
         pkg_tar(
             name = "config_files_other",
-            package_dir = "opt/" + name + "/etc",
+            package_dir = tar_path + name + "/etc",
             srcs = etcs,
             visibility = ["//visibility:private"],
         )
 
     pkg_tar(
         name = "bin-pkg",
-        package_dir = "opt/" + name + "/bin",
+        package_dir = tar_path + name + "/bin",
         srcs = [
             ":out_bin",
         ],

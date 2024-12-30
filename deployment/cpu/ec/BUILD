@@ -1,4 +1,10 @@
 load("//deployment/bazel:cpu_def.bzl", "cpu_def")
+load("//deployment/tools/ara:adaptive.bzl", "ara_json2sm_config")
+
+ara_json2sm_config(
+    name = "sm_config",
+    src = "//deployment/system_definition/sm:example_config",
+)
 
 cpu_def(
     name = "pkg",
@@ -6,26 +12,17 @@ cpu_def(
     etcs = [
         "diag_config.json",
         "logger_config.json",
+    ],
+    platform_etcs = [
+        "//deployment/cpu/ec:sm_config",
         "platform_config.json",
     ],
     srp_components = [
-        # "//deployment/mw/em",
-        # "//deployment/apps/diag_ota/ec:diag_ota",
-        # # "//deployment/mw/diag/dtc:dtc_service",
         "//deployment/platform/diag_demon",
         "//deployment/platform/em",
         "//deployment/platform/logger",
-        "//deployment/mw/i2c:i2cMWService",
-        "//deployment/mw/temp:temp_service",
-        "//deployment/mw/gpio:gpio_service",
-        "//deployment/example_adaptive/ExampleApp",
-        "//deployment/example_adaptive/ExampleApp2",
-        "//deployment/apps/env_service:EnvApp",
-        "//deployment/apps/servo_service:servoService",
-        "//deployment/apps/prim_service:PrimerService",
-        "//deployment/apps/engine_app:EngineService",
-        "//deployment/apps/logger_service:FileLoggerApp",
         "//deployment/platform/someip_demon",
+        "//deployment/platform/state_manager",
     ],
 )
 
