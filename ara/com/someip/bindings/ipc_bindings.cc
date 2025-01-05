@@ -139,7 +139,9 @@ void IPCProxyBindings::ShmLoop(std::stop_token token) {
   std::stop_callback callback{token, [this]() { this->cv_.NotifyAll(); }};
   ara::com::LogDebug() << "[IPCProxyBindings]: SHM loop Start";
   while (!token.stop_requested()) {
-    cv_.Wait();
+    if (*buffor_.GetNewSamplesPointer() == last_msg_id) {
+      cv_.Wait();
+    }
     if (token.stop_requested()) {
       break;
     }
@@ -158,7 +160,7 @@ void IPCProxyBindings::ShmLoop(std::stop_token token) {
             << "[IPCProxyBindings]: Service_id: " << frame.header_.service_id;
         ara::com::LogDebug()
             << "[IPCProxyBindings]: Method_id: " << frame.header_.method_id;
-        std::async(std::launch::async, [this, &frame]() {
+        std::ignore = std::async(std::launch::async, [this, &frame]() {
           this->event_notification_callback_(frame.header_.method_id,
                                              frame.payload_);
         });

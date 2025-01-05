@@ -1,12 +1,12 @@
 /**
  * @file service_proxy.h
  * @author Bartosz Snieg (snieg45@gmail.com)
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2024-09-15
- * 
+ *
  * @copyright Copyright (c) 2024
- * 
+ *
  */
 #ifndef ARA_COM_SOMEIP_SERVICE_PROXY_H_
 #define ARA_COM_SOMEIP_SERVICE_PROXY_H_
@@ -14,7 +14,7 @@
 #include <functional>
 #include <memory>
 #include <stop_token>  // NOLINT
-#include <thread>  // NOLINT
+#include <thread>      // NOLINT
 
 #include "ara/core/instance_specifier.h"
 
@@ -25,6 +25,7 @@ template <typename ServiceHandler_t>
 class ServiceProxy {
  public:
   using FindCallback = std::function<void(std::shared_ptr<ServiceHandler_t>)>;
+  using handler_t = std::shared_ptr<ServiceHandler_t>;
 
  protected:
   const ara::core::InstanceSpecifier instance_;

@@ -10,6 +10,7 @@ class DB(metaclass=SingletonMeta):
         self.states: dict[str,State] = {}
         self.hash_list: list[int] = []
         self.package = ""
+        self.init_id = 0;
     def AddState(self, state:State) -> bool:
         if state.name in self.states:
             return False

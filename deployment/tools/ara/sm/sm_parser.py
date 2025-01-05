@@ -47,3 +47,5 @@ class SmParser:
             mode = SmParser.ParseMode(v["mode"])
             print(k)
             db_.AddState(State(k,mode,after_finish,error,did))
+        if "startup" in json_o:
+            db_.init_id = db_.states[json_o["startup"]].id

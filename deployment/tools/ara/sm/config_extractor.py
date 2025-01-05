@@ -5,7 +5,7 @@ import copy
 from deployment.tools.ara.sm.db import DB
 
 class ConfigExtractor:
-    def ExtractConfigFile(file_path:str, db:DB):
+    def ExtractConfigFile(file_path:str, db:DB,):
         json_obj = {}
         json_obj["states"] = []
         for name, state in db.states.items():

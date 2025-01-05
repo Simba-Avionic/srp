@@ -59,6 +59,15 @@ py_binary(
 )
 
 py_binary(
+    name = "json2sm_code_init",
+    srcs = ["json2sm_code.py"],
+    visibility = ["//visibility:public"],
+    deps = [
+        "//deployment/tools/ara/sm:sm_lib",
+    ],
+)
+
+py_binary(
     name = "json2sm_config",
     srcs = ["json2sm_config.py"],
     visibility = ["//visibility:public"],

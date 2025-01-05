@@ -32,7 +32,10 @@ namespace simba {
 namespace em {
 namespace service {
 
-EmService::EmService(std::shared_ptr<data::IAppDb> db) : db_{db} {}
+EmService::EmService(
+    std::shared_ptr<data::IAppDb> db,
+    const std::function<void(const uint16_t&)>&& update_callback)
+    : db_{db}, update_callback_(std::move(update_callback)) {}
 
 EmService::~EmService() {}
 
@@ -90,35 +93,13 @@ void EmService::SetActiveState(const uint16_t& state_id_) noexcept {
       }
     }
   }
+  if (update_callback_) {
+    update_callback_(state_id_);
+  }
+  this->active_state = state_id_;
 }
 
 std::optional<pid_t> EmService::RestartApp(const uint16_t appID) {
-  // for (auto& app : this->app_list) {
-  //   if (app.GetAppID() == appID) {
-  //     if (kill(app.GetPid(), SIGKILL) != 0) {
-  //       return {};
-  //     }
-  //     int status;
-  //     uint8_t i = 0;
-  //     do {
-  //       waitpid(app.GetPid(), &status, 0);
-  //       i++;
-  //     } while (status == -1 && i < 5);
-  //     if (status == -1) {
-  //       ara::log::LogWarn() << "App with PID: " <<
-  //       std::to_string(app.GetPid())
-  //                           << "change  to zombie";
-  //       return {};
-  //     }
-  //     pid_t pid = this->StartApp(app);
-  //     if (pid == 0) {
-  //       ara::log::LogError() << "Failed to start app";
-  //       return {};
-  //     }
-  //     app.SetPid(pid);
-  //     return std::optional<pid_t>{pid};
-  //   }
-  // }
   return std::nullopt;
 }
 

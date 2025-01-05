@@ -18,7 +18,6 @@
 #include "core/common/condition.h"
 #include "core/json/json_parser.h"
 #include "platform/common/em/code/services/em/app_db.h"
-#include "platform/common/em/code/services/sm_service.h"
 
 namespace simba {
 namespace em {
@@ -27,19 +26,24 @@ static const ara::core::InstanceSpecifier kSmServiceInstance{
     "simba/platform/em/SmServicePPort"};
 }  // namespace
 
-EmApplication::EmApplication(/* args */) {}
+EmApplication::EmApplication(/* args */)
+    : sm_service_{kSmServiceInstance, [this](uint16_t new_state) {
+                    this->cmd_list_.push(new_state);
+                    return 0;
+                  }} {}
 
 EmApplication::~EmApplication() {}
 
 int EmApplication::Run(const std::stop_token& token) {
   // this->em_service->StartApps();
-  service::SmService sm_service{kSmServiceInstance, [this](uint16_t new_state) {
-                                  em_service->SetActiveState(new_state);
-                                  return 0;
-                                }};
-  sm_service.StartOffer();
-  core::condition::wait(token);
-  sm_service.StopOffer();
+  sm_service_.StartOffer();
+  while (!token.stop_requested()) {
+    const auto val = this->cmd_list_.Get(token);
+    if (val.has_value()) {
+      this->em_service->SetActiveState(val.value());
+    }
+  }
+  sm_service_.StopOffer();
   return 0;
 }
 /**
@@ -50,7 +54,10 @@ int EmApplication::Run(const std::stop_token& token) {
 int EmApplication::Initialize(
     const std::map<ara::core::StringView, ara::core::StringView> parms) {
   const auto db = std::make_shared<service::data::AppDb>();
-  em_service = std::make_shared<service::EmService>(db);
+  em_service =
+      std::make_shared<service::EmService>(db, [this](const uint16_t& new_id) {
+        this->sm_service_.CurrentState.Update(new_id);
+      });
 
   const auto json_opt = simba::core::json::JsonParser::Parser(
       std::string{"/srp/platform/etc/state_config.json"});

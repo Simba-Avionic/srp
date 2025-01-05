@@ -16,6 +16,7 @@
 #include <unordered_map>
 #include <utility>
 #include <vector>
+#include <functional>
 
 #include "app_config.h"
 #include "core/json/json_parser.h"
@@ -28,7 +29,7 @@ class EmService {
  private:
   uint16_t active_state{0U};
   const std::shared_ptr<data::IAppDb> db_;
-
+  const std::function<void(const uint16_t&)> update_callback_;
   bool IsSrpApp(const std::string& path) noexcept;
 
   pid_t StartApp(const simba::em::service::data::AppConfig& app);
@@ -37,7 +38,7 @@ class EmService {
   void LoadApps() noexcept;
   void SetActiveState(const uint16_t& state_id_) noexcept;
   std::optional<pid_t> RestartApp(const uint16_t appID);
-  explicit EmService(std::shared_ptr<data::IAppDb> db);
+  EmService(std::shared_ptr<data::IAppDb> db, const std::function<void(const uint16_t&)>&& update_callback);
   ~EmService();
 };
 

@@ -10,9 +10,9 @@ cc_library(
     ],
     visibility = ["//platform/common/em/code:__subpackages__"],
     deps = [
-        "//core/json:simba_json",
-        "//ara/log",
         ":em_db",
+        "//ara/log",
+        "//core/json:simba_json",
     ],
 )
 

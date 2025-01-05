@@ -10,6 +10,7 @@ cc_binary(
         "//ara/exec:adaptive_application_lib",
         "//ara/log",
         "//core/common:condition_lib",
+        "//core/common:wait_queue",
         "//core/json:simba_json",
         "//deployment/platform/em:ara",
         "//platform/common/em/code/services:IPC_Service",

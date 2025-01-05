@@ -17,6 +17,7 @@ filegroup(
     srcs = [
         "sm_app.json",
         "//deployment/system_definition/platform/sm_service:SM_service",
+        "//deployment/system_definition/platform/sm_service:sm_diag",
     ],
     visibility = ["//platform/common/state_manager/code:__subpackages__"],
 )
