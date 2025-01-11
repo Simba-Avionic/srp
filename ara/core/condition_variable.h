@@ -16,8 +16,8 @@
 #include <chrono>  // NOLINT
 #include <functional>
 
-#include "ara/com/shm/shm_proxy.h"
-#include "ara/com/shm/shm_skeleton.h"
+#include "bindings/common/shm/shm_proxy.h"
+#include "bindings/common/shm/shm_skeleton.h"
 #include "ara/core/condition_variable_type.h"
 #include "ara/core/instance_specifier.h"
 #include "ara/core/result.h"

@@ -16,7 +16,7 @@
 
 #include "ara/log/log.h"
 #include "core/common/condition.h"
-namespace simba {
+namespace srp {
 namespace service {
 
 int ServoService::Run(const std::stop_token& token) {
@@ -54,20 +54,20 @@ int ServoService::Initialize(
     const std::map<ara::core::StringView, ara::core::StringView> parms) {
   this->servo_controller = std::make_shared<i2c::PCA9685>();
   this->servo_controller->Init(parms.at("app_path"),
-                              std::make_unique<simba::i2c::I2CController>(),
+                              std::make_unique<srp::i2c::I2CController>(),
                               std::make_unique<gpio::GPIOController>());
   main_servo_service_did_ = std::make_unique<ServoServiceDiD>(
-                ara::core::InstanceSpecifier("/simba/apps/servoService/MainServoStatus"), servo_controller, 60);
+                ara::core::InstanceSpecifier("/srp/apps/servoService/MainServoStatus"), servo_controller, 60);
   vent_servo_service_did_ = std::make_unique<ServoServiceDiD>(
-                ara::core::InstanceSpecifier("/simba/apps/servoService/VentServoStatus"), servo_controller, 61);
+                ara::core::InstanceSpecifier("/srp/apps/servoService/VentServoStatus"), servo_controller, 61);
   service_ipc = std::make_unique<apps::MyServoService>(
-                ara::core::InstanceSpecifier("simba/apps/servoService/ServoService_ipc"), this->servo_controller);
+                ara::core::InstanceSpecifier("srp/apps/servoService/ServoService_ipc"), this->servo_controller);
   service_udp = std::make_unique<apps::MyServoService>(
-                ara::core::InstanceSpecifier("simba/apps/servoService/ServoService_udp"), this->servo_controller);
+                ara::core::InstanceSpecifier("srp/apps/servoService/ServoService_udp"), this->servo_controller);
   servo_did_ = std::make_unique<ServoSecondDid>(
-              ara::core::InstanceSpecifier("/simba/apps/servoService/ServoDID"), this->servo_controller);
+              ara::core::InstanceSpecifier("/srp/apps/servoService/ServoDID"), this->servo_controller);
   return 0;
 }
 
 }  // namespace service
-}  // namespace simba
+}  // namespace srp

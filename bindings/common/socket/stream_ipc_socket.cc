@@ -8,7 +8,7 @@
  * @copyright Copyright (c) 2024
  *
  */
-#include "ara/com/socket/stream_ipc_socket.h"
+#include "bindings/common/socket/stream_ipc_socket.h"
 
 #include <sys/stat.h>
 #include <unistd.h>
@@ -116,7 +116,7 @@ void StreamIpcSocket::Loop(std::stop_token stoken) {
         if (buffer.size() > 0) {
           auto res = this->callback_(
               std::vector<uint8_t>{buffer.begin(), buffer.begin() + bytes_rec});
-          write(client_socket, res.data(), res.size());
+          std::ignore = write(client_socket, res.data(), res.size());
         }
       }
     }

@@ -11,6 +11,7 @@
 #include "ara/diag/diag_error_domain.h"
 
 #include <unordered_map>
+#include <string>
 
 #include "ara/core/string_view.h"
 
@@ -65,12 +66,12 @@ const DiagErrorDomain domain_;
 
 DiagErrorDomain::DiagErrorDomain() noexcept
     : ara::core::ErrorDomain{0x8000000000000403} {}
-const char* DiagErrorDomain::Name() const noexcept {
-  return ara::core::StringView{"CoreErrorDomain"}.c_str();
+const std::string DiagErrorDomain::Name() const noexcept {
+  return std::string{"CoreErrorDomain"};
 }
-const char* DiagErrorDomain::Message(
+const std::string DiagErrorDomain::Message(
     ara::core::ErrorDomain::CodeType errorCode) const noexcept {
-  return kKeyList[errorCode].c_str();
+  return kKeyList[errorCode];
 }
 
 ara::core::ErrorCode MakeErrorCode(

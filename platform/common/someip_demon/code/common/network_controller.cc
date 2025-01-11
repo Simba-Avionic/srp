@@ -17,7 +17,7 @@
 
 #include "ara/com/someip/someip_frame.h"
 #include "ara/log/logging_menager.h"
-namespace simba {
+namespace srp {
 namespace someip_demon {
 namespace common {
 
@@ -61,4 +61,4 @@ void NetworkController::ProcessRawFrame(
 }
 }  // namespace common
 }  // namespace someip_demon
-}  // namespace simba
+}  // namespace srp

@@ -13,8 +13,8 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <gtest/gtest.h>
-#include "ara/com/shm/shm_skeleton.h"
-namespace simba {
+#include "bindings/common/shm/shm_skeleton.h"
+namespace srp {
 
 class ShmSkeletonTest : public ::testing::Test {
  protected:
@@ -81,5 +81,5 @@ TEST_F(ShmSkeletonTest, DifferentDataTypesTest) {
     auto structResult = structSkeleton.Send(testData);
     ASSERT_TRUE(structResult.HasValue());
 }
-}  // namespace simba
+}  // namespace srp
 

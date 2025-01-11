@@ -2,7 +2,7 @@
     "include": [
         "deployment/system_definition/someip/prim_service/service.json"
     ],
-    "package": "simba.apps",
+    "package": "srp.apps",
     "adaptive_application": {
         "PrimerService": {
             "app": {

@@ -14,7 +14,7 @@
 
 #include "ara/com/someip/HeaderStructure.h"
 #include "ara/com/someip/message_code.h"
-#include "ara/com/type_converter.h"
+#include "data/type_converter.h"
 #include "ara/core/result.h"
 namespace ara {
 namespace com {
@@ -31,7 +31,7 @@ class SomeipFrame {
 
   template <typename T>
   ara::core::Result<T> GetPayload() const {
-    return ara::com::Convert<T>::Conv(payload_);
+    return srp::data::Convert<T>::Conv(payload_);
   }
   const std::vector<uint8_t>& Payload() const { return payload_; }
   std::vector<uint8_t> GetRaw() const;

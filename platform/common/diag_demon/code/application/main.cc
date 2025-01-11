@@ -13,5 +13,5 @@
 
 int main(int argc, char const *argv[]) {
   return ara::exec::RunAdaptiveLifecycle<
-      simba::platform::diag_demon::DiagDemon>(argc, argv);
+      srp::platform::diag_demon::DiagDemon>(argc, argv);
 }

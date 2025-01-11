@@ -19,7 +19,7 @@
 
 #include "communication-core/sockets/socket_config.h"
 #include "core/common/error_code.h"
-namespace simba {
+namespace srp {
 namespace com {
 namespace soc {
 using RXCallbackStream = std::function<std::vector<uint8_t>(
@@ -33,7 +33,7 @@ class ISocketStream {
    * @param config Config file
    * @return core::ErrorCode initialiaze status
    */
-  virtual simba::core::ErrorCode Init(const SocketConfig& config) = 0;
+  virtual srp::core::ErrorCode Init(const SocketConfig& config) = 0;
   /**
    * @brief Setter for rx callback
    *
@@ -62,6 +62,6 @@ class ISocketStream {
 
 }  // namespace soc
 }  // namespace com
-}  // namespace simba
+}  // namespace srp
 
 #endif  // COMMUNICATION_CORE_SOCKETS_ISOCKET_STREAM_H_

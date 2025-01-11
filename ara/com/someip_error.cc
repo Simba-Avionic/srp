@@ -51,12 +51,12 @@ const SomeIpErrorDomain domain_;
 
 SomeIpErrorDomain::SomeIpErrorDomain() noexcept
     : ara::core::ErrorDomain{0x8900000000001267} {}
-const char* SomeIpErrorDomain::Name() const noexcept {
-  return ara::core::StringView{"SomeIpErrorDomain"}.c_str();
+const std::string SomeIpErrorDomain::Name() const noexcept {
+  return ara::core::StringView{"SomeIpErrorDomain"};
 }
-const char* SomeIpErrorDomain::Message(
+const std::string SomeIpErrorDomain::Message(
     ara::core::ErrorDomain::CodeType errorCode) const noexcept {
-  return kKeyList[errorCode].c_str();
+  return kKeyList[errorCode];
 }
 
 ara::core::ErrorCode MakeErrorCode(

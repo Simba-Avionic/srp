@@ -17,7 +17,7 @@
 
 #include "platform/common/someip_demon/code/common/i_controller.h"
 
-namespace simba {
+namespace srp {
 namespace someip_demon {
 namespace common {
 class INetworkController {
@@ -38,6 +38,6 @@ class INetworkController {
 
 }  // namespace common
 }  // namespace someip_demon
-}  // namespace simba
+}  // namespace srp
 
 #endif  // PLATFORM_COMMON_SOMEIP_DEMON_CODE_COMMON_I_NETWORK_CONTROLLER_H_

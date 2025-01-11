@@ -26,10 +26,10 @@ namespace sink {
 class RemoteLogSink : public LogSink {
  private:
   uint8_t drop_number{0};
-  simba::com::soc::IpcSocket ipc_soc{};
+  srp::com::soc::IpcSocket ipc_soc{};
   std::unique_ptr<std::jthread> thread;
   void Loop(std::stop_token token);
-  simba::core::WaitQueue<std::vector<uint8_t>, 400> q{};
+  srp::core::WaitQueue<std::vector<uint8_t>, 400> q{};
   uint32_t last{0};
 
  public:

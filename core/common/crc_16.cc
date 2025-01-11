@@ -11,7 +11,7 @@
 #include "core/common/crc_16.h"
 
 #include <cstdint>
-namespace simba {
+namespace srp {
 namespace core {
 namespace {
 static constexpr std::uint16_t lookup[] = {
@@ -95,4 +95,4 @@ const std::uint16_t CRC16::calculate(const int64_t& data) {
 }
 
 }  // namespace core
-}  // namespace simba
+}  // namespace srp

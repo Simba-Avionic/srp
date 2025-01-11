@@ -122,7 +122,7 @@ def ara_someip_lib(name, model_src, visibility = []):
 
     native.cc_library(
         name = name,
-        deps = ["//ara/com:com_error_domain", "//ara/core:Result", "//ara/com/someip:someip_lib"],
+        deps = ["//ara/com:com_error_domain", "//ara/core:Result", "//ara/com/someip:someip_lib","//data:data_conv_lib"],
         srcs = [":someip_src"],
         includes = ["./someip_lib.h"],
         visibility = visibility,

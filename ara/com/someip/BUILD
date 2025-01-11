@@ -22,6 +22,7 @@ cc_library(
         "//ara/core:Result",
         "//ara/core:instance_specifier",
         "//ara/core:model_db_lib",
+        "//data:data_conv_lib",
     ],
 )
 
@@ -48,6 +49,7 @@ cc_library(
         "//ara/com/someip:someip_enums",
         "//ara/core:Result",
         "//ara/core:instance_specifier",
+        "//data:data_conv_lib",
     ],
 )
 

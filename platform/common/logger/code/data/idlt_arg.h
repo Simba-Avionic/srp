@@ -13,7 +13,7 @@
 #include <cstdint>
 #include <vector>
 
-namespace simba {
+namespace srp {
 namespace dlt {
 namespace data {
 class IDLTArg {
@@ -24,5 +24,5 @@ class IDLTArg {
 };
 }  // namespace data
 }  // namespace dlt
-}  // namespace simba
+}  // namespace srp
 #endif  // PLATFORM_COMMON_LOGGER_CODE_DATA_IDLT_ARG_H_

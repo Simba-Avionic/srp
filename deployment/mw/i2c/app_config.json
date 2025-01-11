@@ -1,7 +1,7 @@
 {
     "include": [
     ],
-    "package": "simba.mw",
+    "package": "srp.mw",
     "adaptive_application": {
         "i2cMWService": {
             "app": {

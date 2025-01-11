@@ -2,7 +2,7 @@
     "include": [
         "deployment/system_definition/diag/jobs/gpio_mw/gpio_pin_did.json"
     ],
-    "package": "simba.mw",
+    "package": "srp.mw",
     "adaptive_application": {
         "gpio_service": {
             "app": {

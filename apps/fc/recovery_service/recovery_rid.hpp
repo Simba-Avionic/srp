@@ -18,7 +18,7 @@
 #include "ara/com/com_error_domain.h"
 #include "ara/core/instance_specifier.h"
 #include "apps/fc/recovery_service/parachute_controller.hpp"
-namespace simba {
+namespace srp {
 namespace apps {
 enum STATE_T:uint8_t {
   NON_OPERATE = 0,
@@ -73,6 +73,6 @@ class RecoveryGenericRoutine : public ara::diag::GenericRoutine {
 };
 
 }  // namespace apps
-}  // namespace simba
+}  // namespace srp
 
 #endif  // APPS_FC_RECOVERY_SERVICE_RECOVERY_RID_HPP_

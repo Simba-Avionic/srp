@@ -12,7 +12,7 @@
 
 #include "ara/log/log.h"
 
-namespace simba {
+namespace srp {
 namespace em {
 namespace service {
 namespace json {
@@ -95,4 +95,4 @@ std::optional<data::AppConfig> JsonParser::GetAppConfig(
 }  // namespace json
 }  // namespace service
 }  // namespace em
-}  // namespace simba
+}  // namespace srp

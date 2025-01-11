@@ -21,7 +21,7 @@
 #include "platform/common/logger/code/data/dlt_frame.h"
 #include "platform/common/logger/code/data/dlt_log_type.h"
 #include "platform/common/logger/code/data/dlt_string.h"
-namespace simba {
+namespace srp {
 namespace dlt {
 
 int DltService::Run(const std::stop_token &token) {
@@ -42,9 +42,9 @@ int DltService::Run(const std::stop_token &token) {
 int DltService::Initialize(
     const std::map<ara::core::StringView, ara::core::StringView> parms) {
   auto obj_r = core::json::JsonParser::Parser(
-      std::string{"/srp/opt/cpu_simba/logger_config.json"});
+      std::string{"/srp/opt/cpu_srp/logger_config.json"});
   if (!obj_r.has_value()) {
-    ara::log::LogError() << "File not found: /opt/cpu_simba/logger_config.json";
+    ara::log::LogError() << "File not found: /opt/cpu_srp/logger_config.json";
     return -1;
   }
   auto json_obj = obj_r.value();
@@ -88,33 +88,33 @@ DltService::~DltService() {
 }
 
 void DltService::InitIPC() noexcept {
-  if (ipc_soc.Init(com::soc::SocketConfig{"SIMBA.ARA.DLT", 0, 0}) ==
+  if (ipc_soc.Init(com::soc::SocketConfig{"SRP.ARA.DLT", 0, 0}) ==
       core::ErrorCode::kOk) {
     ipc_soc.SetRXCallback([this](const std::string &ip,
                                  const std::uint16_t &port,
                                  std::vector<std::uint8_t> payload) {
       if (payload.size() > 13) {
         const uint8_t mode = payload.at(0);
-        simba::dlt::data::DLTLogType types =
-            simba::dlt::data::DLTLogType::kDLTDebug;
+        srp::dlt::data::DLTLogType types =
+            srp::dlt::data::DLTLogType::kDLTDebug;
         switch (mode) {
           case 0:
-            types = simba::dlt::data::DLTLogType::kDLTVerbose;
+            types = srp::dlt::data::DLTLogType::kDLTVerbose;
             break;
           case 1:
-            types = simba::dlt::data::DLTLogType::kDLTDebug;
+            types = srp::dlt::data::DLTLogType::kDLTDebug;
             break;
           case 2:
-            types = simba::dlt::data::DLTLogType::kDLTInfo;
+            types = srp::dlt::data::DLTLogType::kDLTInfo;
             break;
           case 3:
-            types = simba::dlt::data::DLTLogType::kDLTWarning;
+            types = srp::dlt::data::DLTLogType::kDLTWarning;
             break;
           case 4:
-            types = simba::dlt::data::DLTLogType::kDLTError;
+            types = srp::dlt::data::DLTLogType::kDLTError;
             break;
           case 5:
-            types = simba::dlt::data::DLTLogType::kDLTFatal;
+            types = srp::dlt::data::DLTLogType::kDLTFatal;
             break;
           default:
             break;
@@ -125,9 +125,9 @@ void DltService::InitIPC() noexcept {
         const std::string ctx_id{payload.begin() + 9, payload.begin() + 13};
         const std::string log_content{payload.begin() + 13, payload.end()};
         auto r = std::make_shared<
-            simba::dlt::data::DltFrame<simba::dlt::data::DltString>>(
+            srp::dlt::data::DltFrame<srp::dlt::data::DltString>>(
             timestamp, this->ec_name, app_id, ctx_id, types,
-            simba::dlt::data::DltString{log_content});
+            srp::dlt::data::DltString{log_content});
         if (!this->logs.push(std::move(r))) {
           ara::log::LogError() << "DLT msg dropped in TX queue!!";
         }
@@ -146,4 +146,4 @@ void DltService::InitUDP() noexcept {
 }
 
 }  // namespace dlt
-}  // namespace simba
+}  // namespace srp

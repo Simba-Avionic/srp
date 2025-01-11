@@ -15,7 +15,7 @@
 
 #include "ara/exec/adaptive_application.h"
 
-namespace simba {
+namespace srp {
 namespace example {
 class ExampleApp : public ara::exec::AdaptiveApplication {
  private:
@@ -38,5 +38,5 @@ class ExampleApp : public ara::exec::AdaptiveApplication {
   ~ExampleApp();
 };
 }  // namespace example
-}  // namespace simba
+}  // namespace srp
 #endif  // EXAMPLE_ADAPTIVE_EXAMPLEAPP_CODE_APPLICATION_EXAMPLEAPP_H_

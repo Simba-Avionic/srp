@@ -24,7 +24,7 @@
 #include "platform/common/someip_demon/code/connector/service_connector.h"
 #include "platform/common/someip_demon/code/db/database.h"
 
-namespace simba {
+namespace srp {
 namespace someip_demon {
 class SomeIpApplication final : public ara::exec::AdaptiveApplication {
  private:
@@ -52,6 +52,6 @@ class SomeIpApplication final : public ara::exec::AdaptiveApplication {
 };
 
 }  // namespace someip_demon
-}  // namespace simba
+}  // namespace srp
 
 #endif  // PLATFORM_COMMON_SOMEIP_DEMON_CODE_APPLICATION_SOMEIP_DEMON_H_

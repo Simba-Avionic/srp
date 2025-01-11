@@ -52,8 +52,8 @@ class ErrorDomain {
 
   IdType Id() const noexcept;
 
-  virtual const char* Name() const noexcept = 0;
-  virtual const char* Message(CodeType error_code) const noexcept = 0;
+  virtual const std::string Name() const noexcept = 0;
+  virtual const std::string Message(CodeType error_code) const noexcept = 0;
 };
 }  // namespace core
 }  // namespace ara

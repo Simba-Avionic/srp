@@ -13,7 +13,7 @@
 #include "core/logger/Logger.h"
 #include "communication-core/sockets/ipc_socket.h"
 #include "diag/exec/data/exec_header.hpp"
-namespace simba {
+namespace srp {
 namespace diag {
 namespace exec {
 
@@ -28,7 +28,7 @@ void ExecController::Init(uint16_t service_id) {
             std::unique_lock<std::mutex> lock(this->mtx_status_);
             hdr.SetFlags((this->flags_.to_ulong() << 3) | this->status_);
         }
-        sock_.Transmit("SIMBA.EXE", 0, hdr.GetBuffor());
+        sock_.Transmit("SRP.EXE", 0, hdr.GetBuffor());
         AppLogger::Debug("id: "+ std::to_string(hdr.GetServiceID())
                     +" timestamp:"+std::to_string(hdr.GetTimestamp()));
         hdr.IncrementTimeStamp();
@@ -54,4 +54,4 @@ void ExecController::ForceStop() {
 
 }  // namespace exec
 }  // namespace diag
-}  // namespace simba
+}  // namespace srp

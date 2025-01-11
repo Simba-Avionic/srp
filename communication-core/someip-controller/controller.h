@@ -27,7 +27,7 @@
 #include "communication-core/someip/factory/Isomeip_header_factory.h"
 #include "communication-core/someip/factory/Isomeip_message_factory.h"
 #include "core/common/wait_queue.h"
-namespace simba {
+namespace srp {
 namespace com {
 namespace someip {
 class Controller {
@@ -43,7 +43,7 @@ class Controller {
   std::unique_ptr<factory::ISomeIpMessageFactory> msg_factory;
   std::mutex transfer_mutex{};
   std::vector<std::pair<uint16_t, ResultCallback>> transfer_list{};
-  simba::core::WaitQueue<
+  srp::core::WaitQueue<
       std::pair<const objects::Endpoint, std::vector<uint8_t>>>
       event_queue{};
   std::unique_ptr<std::thread> event_thread;
@@ -99,6 +99,6 @@ class Controller {
 
 }  // namespace someip
 }  // namespace com
-}  // namespace simba
+}  // namespace srp
 
 #endif  // COMMUNICATION_CORE_SOMEIP_CONTROLLER_CONTROLLER_H_

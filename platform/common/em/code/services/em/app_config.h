@@ -14,7 +14,7 @@
 #include <cstdint>
 #include <string>
 #include <vector>
-namespace simba {
+namespace srp {
 namespace em {
 namespace service {
 namespace data {
@@ -48,6 +48,6 @@ class AppConfig {
 }  // namespace data
 }  // namespace service
 }  // namespace em
-}  // namespace simba
+}  // namespace srp
 
 #endif  // PLATFORM_COMMON_EM_CODE_SERVICES_EM_APP_CONFIG_H_

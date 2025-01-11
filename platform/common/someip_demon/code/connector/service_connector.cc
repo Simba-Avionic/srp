@@ -23,7 +23,7 @@
 #include "platform/common/someip_demon/code/connector/sd_connector.h"
 #include "platform/common/someip_demon/code/connector/skeleton_connector.h"
 
-namespace simba {
+namespace srp {
 namespace someip_demon {
 
 namespace {
@@ -75,12 +75,12 @@ void ServiceConnector::Init() noexcept {
   logger_.LogInfo() << "Service controler: " << ip_ << ":" << port_
                     << " starting";
   if (udp_sock_ == nullptr) {
-    udp_sock_ = std::make_shared<simba::common::soc::UdpSocket>();
+    udp_sock_ = std::make_shared<srp::common::soc::UdpSocket>();
     udp_sock_->SetRXCallback(
         std::bind(&ServiceConnector::UdpRxCallback, this, std::placeholders::_1,
                   std::placeholders::_2, ::std::placeholders::_3));
     const auto res = udp_sock_->Init(ip_, port_);
-    if (res == simba::core::ErrorCode::kOk) {
+    if (res == srp::core::ErrorCode::kOk) {
       udp_sock_->StartRXThread();
       logger_.LogInfo() << "Service controler - UDP soc Started";
     } else {
@@ -179,4 +179,4 @@ void ServiceConnector::IpcRxCallback(const uint32_t pid,
 ServiceConnector::~ServiceConnector() {}
 
 }  // namespace someip_demon
-}  // namespace simba
+}  // namespace srp

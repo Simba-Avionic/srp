@@ -11,6 +11,8 @@
 #ifndef ARA_DIAG_DIAG_ERROR_DOMAIN_H_
 #define ARA_DIAG_DIAG_ERROR_DOMAIN_H_
 
+#include <string>
+
 #include "ara/core/error_code.h"
 #include "ara/core/error_domain.h"
 
@@ -41,14 +43,13 @@ enum class DiagOfferErrc : ara::core::ErrorDomain::CodeType {
   kDebouncingConfigurationInconsistent = 103
 };
 
-
 class DiagErrorDomain final : public ara::core::ErrorDomain {
  public:
   using Errc = DiagErrc;
 
   DiagErrorDomain() noexcept;
-  const char* Name() const noexcept override;
-  const char* Message(
+  const std::string Name() const noexcept override;
+  const std::string Message(
       ara::core::ErrorDomain::CodeType errorCode) const noexcept override;
 };
 

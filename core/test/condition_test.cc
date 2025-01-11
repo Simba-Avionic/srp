@@ -14,7 +14,7 @@
 #include <thread>  // NOLINT
 #include <chrono>  // NOLINT
 
-using namespace simba::core::condition;  // NOLINT
+using namespace srp::core::condition;  // NOLINT
 
 TEST(ConditionTest, WaitForCompletesWithoutStopRequest) {
     std::stop_source stop_source;

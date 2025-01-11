@@ -17,7 +17,7 @@ cc_library(
     deps = [
         "//ara/com:com_error_domain",
         "//ara/com:com_log",
-        "//ara/com/shm:shm_buffor_lib",
+        "//bindings/common/shm:shm_buffor_lib",
         "//ara/com/someip:someip_data",
         "//ara/com/someip/bindings:binding_interface",
         "//ara/com/someip/controller",

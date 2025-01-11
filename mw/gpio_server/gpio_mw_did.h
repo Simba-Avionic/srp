@@ -19,7 +19,7 @@
 #include "ara/log/log.h"
 #include "diag/jobs/skeleton/did_job.h"
 #include "core/gpio/Igpio_driver.hpp"
-namespace simba {
+namespace srp {
 namespace mw {
 
 struct GpioConf{
@@ -78,6 +78,6 @@ diag::DiagResponse Write(const std::vector<uint8_t>& payload) {
 };
 
 }  // namespace mw
-}  // namespace simba
+}  // namespace srp
 
 #endif  // MW_GPIO_SERVER_GPIO_MW_DID_H_

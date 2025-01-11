@@ -18,7 +18,7 @@
 #include "ara/log/logger.h"
 #include "platform/common/someip_demon/code/common/i_controller.h"
 #include "platform/common/someip_demon/code/common/i_network_controller.h"
-namespace simba {
+namespace srp {
 namespace someip_demon {
 namespace common {
 class NetworkController : public INetworkController {
@@ -37,6 +37,6 @@ class NetworkController : public INetworkController {
 
 }  // namespace common
 }  // namespace someip_demon
-}  // namespace simba
+}  // namespace srp
 
 #endif  // PLATFORM_COMMON_SOMEIP_DEMON_CODE_COMMON_NETWORK_CONTROLLER_H_

@@ -19,7 +19,7 @@
 #include <unordered_map>
 #include <vector>
 
-#include "ara/com/socket/proccess_socket.h"
+#include "bindings/common/socket/proccess_socket.h"
 #include "ara/com/someip/ServiceEntry.h"
 #include "ara/com/someip/someip_frame.h"
 #include "ara/log/logger.h"
@@ -27,7 +27,7 @@
 #include "platform/common/someip_demon/code/connector/i_connector.h"
 #include "platform/common/someip_demon/code/db/database.h"
 
-namespace simba {
+namespace srp {
 namespace someip_demon {
 class ServiceConnector {
  private:
@@ -35,7 +35,7 @@ class ServiceConnector {
   uint32_t local_ip_{0U};
   const std::uint16_t port_;
   const ara::log::Logger& logger_;
-  std::shared_ptr<simba::common::soc::UdpSocket> udp_sock_;
+  std::shared_ptr<srp::common::soc::UdpSocket> udp_sock_;
   std::shared_ptr<ara::com::ProccessSocket> ipc_soc_;
 
   std::shared_ptr<connectors::IConnector> sd_connector_;
@@ -55,6 +55,6 @@ class ServiceConnector {
   ~ServiceConnector();
 };
 }  // namespace someip_demon
-}  // namespace simba
+}  // namespace srp
 
 #endif  // PLATFORM_COMMON_SOMEIP_DEMON_CODE_CONNECTOR_SERVICE_CONNECTOR_H_

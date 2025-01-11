@@ -26,12 +26,12 @@ TEST(HEADERTEST, Conv_Test) {
   sut.interface_version = 0x14;
   sut.message_type = 0x15;
   const auto vec =
-      ara::com::Convert2Vector<ara::com::someip::HeaderStructure>::Conv(sut);
+      srp::data::Convert2Vector<ara::com::someip::HeaderStructure>::Conv(sut);
   EXPECT_EQ(vec.at(1), 0x02);
   EXPECT_EQ(vec.at(0), 0x01);
   EXPECT_EQ(vec.size(), 4 * 4);
   const auto new_sut_r =
-      ara::com::Convert<ara::com::someip::HeaderStructure>::Conv(vec);
+      srp::data::Convert<ara::com::someip::HeaderStructure>::Conv(vec);
   ASSERT_TRUE(new_sut_r.HasValue());
   const auto new_sut = new_sut_r.Value();
   EXPECT_EQ(sut.service_id, new_sut.service_id);

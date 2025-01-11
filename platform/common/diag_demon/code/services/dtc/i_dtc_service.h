@@ -11,7 +11,7 @@
 #ifndef PLATFORM_COMMON_DIAG_DEMON_CODE_SERVICES_DTC_I_DTC_SERVICE_H_
 #define PLATFORM_COMMON_DIAG_DEMON_CODE_SERVICES_DTC_I_DTC_SERVICE_H_
 
-namespace simba {
+namespace srp {
 namespace platform {
 namespace diag_demon {
 namespace dtc {
@@ -24,6 +24,6 @@ class IDtcService {
 }  // namespace dtc
 }  // namespace diag_demon
 }  // namespace platform
-}  // namespace simba
+}  // namespace srp
 
 #endif  // PLATFORM_COMMON_DIAG_DEMON_CODE_SERVICES_DTC_I_DTC_SERVICE_H_

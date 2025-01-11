@@ -20,16 +20,16 @@ namespace {
     static const std::string FILE_PREFIX = "mw/gpio_server/tests/test_data/";
 }
 
-class TestWrapper : public simba::mw::GPIOMWService {
+class TestWrapper : public srp::mw::GPIOMWService {
  public:
   int TestInit(std::unique_ptr<MockStreamSocket> socket,
     std::unique_ptr<MockGPIO> gpio) {
       return this->Init(std::move(socket), std::move(gpio));
   }
-  std::optional<std::unordered_map<uint8_t, simba::mw::GpioConf>> TestReadConfig(std::string path) {
+  std::optional<std::unordered_map<uint8_t, srp::mw::GpioConf>> TestReadConfig(std::string path) {
     return this->ReadConfig(path);
   }
-  void SetConfig(const std::unordered_map<uint8_t, simba::mw::GpioConf>& config) {
+  void SetConfig(const std::unordered_map<uint8_t, srp::mw::GpioConf>& config) {
     this->config = config;
   }
   int TestInitPins() {
@@ -41,10 +41,10 @@ class TestWrapper : public simba::mw::GPIOMWService {
 };
 
 class ReadConfigTest : public ::testing::TestWithParam<
-  std::tuple<std::string, std::optional<std::unordered_map<uint8_t, simba::mw::GpioConf>>>> {
+  std::tuple<std::string, std::optional<std::unordered_map<uint8_t, srp::mw::GpioConf>>>> {
  protected:
   std::string path;
-  std::optional<std::unordered_map<uint8_t, simba::mw::GpioConf>> db_opt;
+  std::optional<std::unordered_map<uint8_t, srp::mw::GpioConf>> db_opt;
 
   void SetUp() override {
     path = std::get<0>(GetParam());
@@ -72,14 +72,14 @@ TEST_P(ReadConfigTest, TEST_READ_CONFIG) {
 
 INSTANTIATE_TEST_SUITE_P(ReadConfigTestParameters, ReadConfigTest,
   ::testing::Values(
-    std::make_tuple("t1.json", std::unordered_map<uint8_t, simba::mw::GpioConf>
-        {{{1, {21, simba::core::gpio::direction_t::OUT}}}}),
+    std::make_tuple("t1.json", std::unordered_map<uint8_t, srp::mw::GpioConf>
+        {{{1, {21, srp::core::gpio::direction_t::OUT}}}}),
     std::make_tuple("t2.json", std::nullopt),
-    std::make_tuple("t3.json", std::optional<std::unordered_map<uint8_t, simba::mw::GpioConf>>{std::in_place}),
-    std::make_tuple("t4.json", std::optional<std::unordered_map<uint8_t, simba::mw::GpioConf>>{std::in_place}),
-    std::make_tuple("t5.json", std::optional<std::unordered_map<uint8_t, simba::mw::GpioConf>>{std::in_place}),
-    std::make_tuple("t6.json", std::unordered_map<uint8_t, simba::mw::GpioConf>
-                                                        {{{1, {21, simba::core::gpio::direction_t::OUT}}}})));
+    std::make_tuple("t3.json", std::optional<std::unordered_map<uint8_t, srp::mw::GpioConf>>{std::in_place}),
+    std::make_tuple("t4.json", std::optional<std::unordered_map<uint8_t, srp::mw::GpioConf>>{std::in_place}),
+    std::make_tuple("t5.json", std::optional<std::unordered_map<uint8_t, srp::mw::GpioConf>>{std::in_place}),
+    std::make_tuple("t6.json", std::unordered_map<uint8_t, srp::mw::GpioConf>
+                                                        {{{1, {21, srp::core::gpio::direction_t::OUT}}}})));
 
 
 
@@ -89,38 +89,38 @@ TEST(GPIO_SERVICE, TEST_INIT_PINS) {
     auto mock_gpio_driver = std::make_unique<MockGPIO>();
 
     EXPECT_CALL(*mock_gpio_driver, initializePin(::testing::_, ::testing::_))
-        .WillOnce(::testing::Return(simba::core::ErrorCode::kOk));
+        .WillOnce(::testing::Return(srp::core::ErrorCode::kOk));
 
-    std::unordered_map<uint8_t, simba::mw::GpioConf> conf{
-        {1, {21, simba::core::gpio::direction_t::OUT}}
+    std::unordered_map<uint8_t, srp::mw::GpioConf> conf{
+        {1, {21, srp::core::gpio::direction_t::OUT}}
     };
 
     wrapper.SetConfig(conf);
     wrapper.TestInit(std::move(mock_socket), std::move(mock_gpio_driver));
 
-    EXPECT_EQ(wrapper.TestInitPins(), simba::core::ErrorCode::kOk);
+    EXPECT_EQ(wrapper.TestInitPins(), srp::core::ErrorCode::kOk);
 }
 
 class RXCallbackTest : public ::testing::TestWithParam<
-std::tuple<uint16_t,  uint8_t, simba::gpio::ACTION, std::unordered_map<uint8_t,
-    simba::mw::GpioConf>, std::vector<uint8_t>>> {
+std::tuple<uint16_t,  uint8_t, srp::gpio::ACTION, std::unordered_map<uint8_t,
+    srp::mw::GpioConf>, std::vector<uint8_t>>> {
 };
 
 INSTANTIATE_TEST_SUITE_P(RXCallbackTestParameters, RXCallbackTest,
  ::testing::Values(
-  std::make_tuple(1, 0, simba::gpio::ACTION::SET, std::unordered_map<uint8_t, simba::mw::GpioConf>
-      {{1, {21, simba::core::gpio::direction_t::OUT}}}, std::vector<uint8_t>{1}),
+  std::make_tuple(1, 0, srp::gpio::ACTION::SET, std::unordered_map<uint8_t, srp::mw::GpioConf>
+      {{1, {21, srp::core::gpio::direction_t::OUT}}}, std::vector<uint8_t>{1}),
 
-  std::make_tuple(1, 0, simba::gpio::ACTION::SET, std::unordered_map<uint8_t, simba::mw::GpioConf>
-      {{1, {21, simba::core::gpio::direction_t::IN}}}, std::vector<uint8_t>{0}),
+  std::make_tuple(1, 0, srp::gpio::ACTION::SET, std::unordered_map<uint8_t, srp::mw::GpioConf>
+      {{1, {21, srp::core::gpio::direction_t::IN}}}, std::vector<uint8_t>{0}),
 
-  std::make_tuple(1, 0, simba::gpio::ACTION::GET, std::unordered_map<uint8_t, simba::mw::GpioConf>
-      {{1, {21, simba::core::gpio::direction_t::OUT}}}, std::vector<uint8_t>{0}),
+  std::make_tuple(1, 0, srp::gpio::ACTION::GET, std::unordered_map<uint8_t, srp::mw::GpioConf>
+      {{1, {21, srp::core::gpio::direction_t::OUT}}}, std::vector<uint8_t>{0}),
 
-  std::make_tuple(1, 0, simba::gpio::ACTION::RES, std::unordered_map<uint8_t, simba::mw::GpioConf>
-      {{1, {21, simba::core::gpio::direction_t::OUT}}}, std::vector<uint8_t>{}),
+  std::make_tuple(1, 0, srp::gpio::ACTION::RES, std::unordered_map<uint8_t, srp::mw::GpioConf>
+      {{1, {21, srp::core::gpio::direction_t::OUT}}}, std::vector<uint8_t>{}),
 
-  std::make_tuple(1, 0, simba::gpio::ACTION::RES, std::unordered_map<uint8_t, simba::mw::GpioConf>
+  std::make_tuple(1, 0, srp::gpio::ACTION::RES, std::unordered_map<uint8_t, srp::mw::GpioConf>
       {}, std::vector<uint8_t>{0})
 ));
 
@@ -132,19 +132,19 @@ TEST_P(RXCallbackTest, RXCALLBACK_TEST) {
 
     const uint8_t actuatorID = std::get<0>(params);
     const uint8_t value = std::get<1>(params);
-    const simba::gpio::ACTION action = std::get<2>(params);
+    const srp::gpio::ACTION action = std::get<2>(params);
     auto config = std::get<3>(params);
     std::vector<uint8_t> result = std::get<4>(params);
 
-    simba::gpio::Header hdr{actuatorID, value, action};
+    srp::gpio::Header hdr{actuatorID, value, action};
     auto data = hdr.GetBuffor();
 
     if (config.find(actuatorID) != config.end()) {
-      if (action == simba::gpio::ACTION::SET &&
-             config[actuatorID].direction == simba::core::gpio::direction_t::OUT) {
+      if (action == srp::gpio::ACTION::SET &&
+             config[actuatorID].direction == srp::core::gpio::direction_t::OUT) {
         EXPECT_CALL(*mock_gpio_driver, setValue(::testing::_, ::testing::_))
-          .WillOnce(::testing::Return(simba::core::ErrorCode::kOk))
-          .WillOnce(::testing::Return(simba::core::ErrorCode::kError));
+          .WillOnce(::testing::Return(srp::core::ErrorCode::kOk))
+          .WillOnce(::testing::Return(srp::core::ErrorCode::kError));
 
         wrapper.TestInit(std::move(mock_socket), std::move(mock_gpio_driver));
         wrapper.SetConfig(config);
@@ -152,7 +152,7 @@ TEST_P(RXCallbackTest, RXCALLBACK_TEST) {
         EXPECT_EQ(wrapper.TestRxCallback(data), result);
         EXPECT_EQ(wrapper.TestRxCallback(data)[0], 0);
       }
-      if (action == simba::gpio::ACTION::GET) {
+      if (action == srp::gpio::ACTION::GET) {
         EXPECT_CALL(*mock_gpio_driver, getValue(::testing::_))
           .WillOnce(::testing::Return(0))
           .WillOnce(::testing::Return(1))
@@ -164,14 +164,14 @@ TEST_P(RXCallbackTest, RXCALLBACK_TEST) {
 
         for (const auto& response : responses) {
           auto Callback = wrapper.TestRxCallback(data);
-          simba::gpio::Header hdr2(0, 0, simba::gpio::ACTION::GET);
+          srp::gpio::Header hdr2(0, 0, srp::gpio::ACTION::GET);
           hdr2.SetBuffor(Callback);
-          EXPECT_EQ(hdr2.GetAction(), simba::gpio::ACTION::RES);
+          EXPECT_EQ(hdr2.GetAction(), srp::gpio::ACTION::RES);
           EXPECT_EQ(hdr2.GetActuatorID(), actuatorID);
           EXPECT_EQ(hdr2.GetValue(), response);
         }
       }
-      if (action == simba::gpio::ACTION::RES) {
+      if (action == srp::gpio::ACTION::RES) {
         wrapper.TestInit(std::move(mock_socket), std::move(mock_gpio_driver));
         wrapper.SetConfig(config);
         EXPECT_EQ(wrapper.TestRxCallback(data), result);

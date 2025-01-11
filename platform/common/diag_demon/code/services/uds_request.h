@@ -16,7 +16,7 @@
 #include <utility>
 #include <vector>
 
-namespace simba {
+namespace srp {
 namespace platform {
 namespace diag_demon {
 namespace uds {
@@ -59,6 +59,6 @@ class UdsRequestFactory {
 }  // namespace uds
 }  // namespace diag_demon
 }  // namespace platform
-}  // namespace simba
+}  // namespace srp
 
 #endif  // PLATFORM_COMMON_DIAG_DEMON_CODE_SERVICES_UDS_REQUEST_H_

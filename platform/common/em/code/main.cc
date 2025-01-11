@@ -15,5 +15,5 @@ int main(int argc, char const *argv[]) {
   /* code */
 
   return ara::exec::RunAdaptiveLifecycleWithoutControl<
-      simba::em::EmApplication>(argc, argv);
+      srp::em::EmApplication>(argc, argv);
 }

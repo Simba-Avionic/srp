@@ -22,7 +22,7 @@
 #include "platform/common/diag_demon/code/services/uds_request.h"
 #include "platform/common/diag_demon/code/services/validator_controller.h"
 
-namespace simba {
+namespace srp {
 namespace platform {
 namespace diag_demon {
 namespace uds {
@@ -117,7 +117,7 @@ void UdsServer::ReceiveFromLibrary(uint16_t address, unsigned char* data,
         const auto payload =
             uds::UdsRequestFactory::ParseRequestToLocalMSG(req.value());
         doip_logger.LogDebug() << "[DoIP server]: Sending to: " << adress;
-        const auto res = soc_->Transmit("SIMBA.DIAG." + adress, 0x00, payload);
+        const auto res = soc_->Transmit("SRP.DIAG." + adress, 0x00, payload);
 
         if (res.has_value()) {
           /// TODO: Remove this log and add in doip lib
@@ -265,4 +265,4 @@ void UdsServer::Stop() {
 }  // namespace uds
 }  // namespace diag_demon
 }  // namespace platform
-}  // namespace simba
+}  // namespace srp

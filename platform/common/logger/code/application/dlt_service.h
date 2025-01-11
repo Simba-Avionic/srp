@@ -20,18 +20,18 @@
 #include "core/common/wait_queue.h"
 #include "platform/common/logger/code/data/idlt_frame.h"
 
-namespace simba {
+namespace srp {
 
 namespace dlt {
 class DltService final : public ara::exec::AdaptiveApplication {
  private:
-  simba::common::soc::UdpMulticastSocket soc{};
+  srp::common::soc::UdpMulticastSocket soc{};
   com::soc::IpcSocket ipc_soc{};
   std::string ip_;
   uint16_t tx_port;
   std::string ec_name;
 
-  core::WaitQueue<std::shared_ptr<simba::dlt::data::IDLTFrame>, 1000> logs{};
+  core::WaitQueue<std::shared_ptr<srp::dlt::data::IDLTFrame>, 1000> logs{};
   /**
    * @brief This function is called to initialiaze the application
    *
@@ -53,5 +53,5 @@ class DltService final : public ara::exec::AdaptiveApplication {
   ~DltService();
 };
 }  // namespace dlt
-}  // namespace simba
+}  // namespace srp
 #endif  // PLATFORM_COMMON_LOGGER_CODE_APPLICATION_DLT_SERVICE_H_

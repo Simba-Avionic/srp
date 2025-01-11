@@ -21,7 +21,7 @@
 #include "apps/ec/ServoService/servo_service_did.h"
 #include "apps/ec/ServoService/servo_did.h"
 #include "apps/ec/ServoService/service.hpp"
-namespace simba {
+namespace srp {
 namespace service {
 class ServoService final : public ara::exec::AdaptiveApplication {
  private:
@@ -52,5 +52,5 @@ class ServoService final : public ara::exec::AdaptiveApplication {
 };
 
 }  // namespace service
-}  // namespace simba
+}  // namespace srp
 #endif  // APPS_EC_SERVOSERVICE_SERVOSERVICE_HPP_

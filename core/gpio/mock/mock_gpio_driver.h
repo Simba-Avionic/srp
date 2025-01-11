@@ -18,15 +18,15 @@
 
 #include "core/gpio/Igpio_driver.hpp"
 
-class MockGPIO : public simba::core::gpio::IGpioDriver {
+class MockGPIO : public srp::core::gpio::IGpioDriver {
  public:
-  MOCK_METHOD((simba::core::ErrorCode), initializePin,
-                      (const uint16_t&, const simba::core::gpio::direction_t&), (override));
+  MOCK_METHOD((srp::core::ErrorCode), initializePin,
+                      (const uint16_t&, const srp::core::gpio::direction_t&), (override));
   MOCK_METHOD((uint8_t), getValue, (const uint16_t&), (override));
-  MOCK_METHOD((simba::core::gpio::direction_t), getDirection, (const uint16_t&), (override));
-  MOCK_METHOD((simba::core::ErrorCode), setValue, (const uint16_t&, const uint8_t&), (override));
-  MOCK_METHOD((simba::core::ErrorCode), setDirection,
-                          (const uint16_t&, const simba::core::gpio::direction_t&), (override));
+  MOCK_METHOD((srp::core::gpio::direction_t), getDirection, (const uint16_t&), (override));
+  MOCK_METHOD((srp::core::ErrorCode), setValue, (const uint16_t&, const uint8_t&), (override));
+  MOCK_METHOD((srp::core::ErrorCode), setDirection,
+                          (const uint16_t&, const srp::core::gpio::direction_t&), (override));
   virtual ~MockGPIO() = default;
 };
 

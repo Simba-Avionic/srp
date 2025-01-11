@@ -22,7 +22,7 @@
 #include "core/json/json_parser.h"
 #include "platform/common/em/code/services/em/i_app_db.h"
 
-namespace simba {
+namespace srp {
 namespace em {
 namespace service {
 class EmService {
@@ -32,7 +32,7 @@ class EmService {
   const std::function<void(const uint16_t&)> update_callback_;
   bool IsSrpApp(const std::string& path) noexcept;
 
-  pid_t StartApp(const simba::em::service::data::AppConfig& app);
+  pid_t StartApp(const srp::em::service::data::AppConfig& app);
 
  public:
   void LoadApps() noexcept;
@@ -44,5 +44,5 @@ class EmService {
 
 }  // namespace service
 }  // namespace em
-}  // namespace simba
+}  // namespace srp
 #endif  // PLATFORM_COMMON_EM_CODE_SERVICES_EM_EM_SERVICE_H_

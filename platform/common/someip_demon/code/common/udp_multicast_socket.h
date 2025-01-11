@@ -24,7 +24,7 @@
 
 #include "core/common/error_code.h"
 
-namespace simba {
+namespace srp {
 namespace common {
 namespace soc {
 class UdpMulticastSocket {
@@ -71,7 +71,7 @@ class UdpMulticastSocket {
    * @param config Config file
    * @return core::ErrorCode initialiaze status
    */
-  simba::core::ErrorCode Init(const std::string& local_ip,
+  srp::core::ErrorCode Init(const std::string& local_ip,
                               const std::string& multicast_ip,
                               const std::uint16_t port_id);
   /**
@@ -98,6 +98,6 @@ class UdpMulticastSocket {
 };
 }  // namespace soc
 }  // namespace common
-}  // namespace simba
+}  // namespace srp
 
 #endif  // PLATFORM_COMMON_SOMEIP_DEMON_CODE_COMMON_UDP_MULTICAST_SOCKET_H_

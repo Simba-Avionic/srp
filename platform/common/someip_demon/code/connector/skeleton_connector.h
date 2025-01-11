@@ -15,13 +15,13 @@
 #include <unordered_map>
 #include <string>
 
-#include "ara/com/socket/proccess_socket.h"
+#include "bindings/common/socket/proccess_socket.h"
 #include "ara/com/someip/someip_frame.h"
 #include "platform/common/someip_demon/code/common/udp_socket.h"
 #include "platform/common/someip_demon/code/connector/common_connector.h"
 #include "platform/common/someip_demon/code/connector/i_db.h"
 
-namespace simba {
+namespace srp {
 namespace someip_demon {
 namespace connectors {
 class SkeletonConnector : public CommonConnector {
@@ -50,5 +50,5 @@ class SkeletonConnector : public CommonConnector {
 };
 }  // namespace connectors
 }  // namespace someip_demon
-}  // namespace simba
+}  // namespace srp
 #endif  // PLATFORM_COMMON_SOMEIP_DEMON_CODE_CONNECTOR_SKELETON_CONNECTOR_H_

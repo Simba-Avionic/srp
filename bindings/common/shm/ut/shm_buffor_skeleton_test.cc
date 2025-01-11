@@ -11,7 +11,7 @@
 #include <gtest/gtest.h>
 #include <thread>  // NOLINT
 #include <cstring>
-#include "ara/com/shm/shm_buffor_skeleton.h"
+#include "bindings/common/shm/shm_buffor_skeleton.h"
 
 class ShmBufforSkeletonTest : public ::testing::Test {
  protected:

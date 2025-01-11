@@ -10,6 +10,8 @@
  */
 #ifndef ARA_COM_SOMEIP_ERROR_H_
 #define ARA_COM_SOMEIP_ERROR_H_
+#include <string>
+
 #include "ara/com/someip/message_code.h"
 #include "ara/core/error_code.h"
 #include "ara/core/error_domain.h"
@@ -21,8 +23,8 @@ class SomeIpErrorDomain final : public ara::core::ErrorDomain {
   using Errc = someip::MessageCode;
 
   SomeIpErrorDomain() noexcept;
-  const char* Name() const noexcept override;
-  const char* Message(
+  const std::string Name() const noexcept override;
+  const std::string Message(
       ara::core::ErrorDomain::CodeType errorCode) const noexcept override;
 };
 

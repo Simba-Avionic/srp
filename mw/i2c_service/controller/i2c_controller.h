@@ -20,7 +20,7 @@
 #include "mw/i2c_service/controller/Ii2c_controller.h"
 
 
-namespace simba {
+namespace srp {
 namespace i2c {
 class I2CController: public II2CController{
  private:
@@ -55,6 +55,6 @@ class I2CController: public II2CController{
                                                         const uint8_t WriteData, const uint8_t ReadSize = 1) override;
 };
 }  // namespace i2c
-}  // namespace simba
+}  // namespace srp
 
 #endif  // MW_I2C_SERVICE_CONTROLLER_I2C_CONTROLLER_H_

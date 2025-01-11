@@ -21,7 +21,7 @@
 #include <iostream>
 #include <vector>
 
-namespace simba {
+namespace srp {
 namespace com {
 namespace soc {
 bool IpcSocket::SocketExist(const std::string path) {
@@ -29,11 +29,11 @@ bool IpcSocket::SocketExist(const std::string path) {
   return (stat(path.c_str(), &buffer) == 0);
 }
 
-simba::core::ErrorCode IpcSocket::Init(const SocketConfig& config) {
+srp::core::ErrorCode IpcSocket::Init(const SocketConfig& config) {
   memset(&server_sockaddr, 0, sizeof(struct sockaddr_un));
   server_sock = socket(AF_UNIX, SOCK_DGRAM, 0);
   if (server_sock == -1) {
-    return simba::core::ErrorCode::kInitializeError;
+    return srp::core::ErrorCode::kInitializeError;
   }
   umask(0);
   server_sockaddr.sun_family = AF_UNIX;
@@ -44,14 +44,14 @@ simba::core::ErrorCode IpcSocket::Init(const SocketConfig& config) {
          ("/run/" + config.GetIp()).c_str());  // NOLINT
   len = sizeof(server_sockaddr);
   unlink(("/run/" + config.GetIp()).c_str());
-  return simba::core::ErrorCode::kOk;
+  return srp::core::ErrorCode::kOk;
 }
 
 void IpcSocket::SetRXCallback(RXCallback callback) {
   this->callback_ = callback;
 }
 
-simba::core::ErrorCode IpcSocket::Transmit(const std::string& ip,
+srp::core::ErrorCode IpcSocket::Transmit(const std::string& ip,
                                            const std::uint16_t port,
                                            std::vector<std::uint8_t> payload) {
   int client_socket, rc;
@@ -59,7 +59,7 @@ simba::core::ErrorCode IpcSocket::Transmit(const std::string& ip,
   memset(&remote, 0, sizeof(struct sockaddr_un));
   client_socket = socket(AF_UNIX, SOCK_DGRAM, 0);
   if (client_socket == -1) {
-    return simba::core::ErrorCode::kError;
+    return srp::core::ErrorCode::kError;
   }
 
   remote.sun_family = AF_UNIX;
@@ -73,10 +73,10 @@ simba::core::ErrorCode IpcSocket::Transmit(const std::string& ip,
   delete[] buffor;
   close(client_socket);
   if (rc == -1) {
-    return simba::core::ErrorCode::kError;
+    return srp::core::ErrorCode::kError;
   }
 
-  return simba::core::ErrorCode::kOk;
+  return srp::core::ErrorCode::kOk;
 }
 
 void IpcSocket::StartRXThread() {
@@ -125,4 +125,4 @@ IpcSocket::~IpcSocket() {
 }
 }  // namespace soc
 }  // namespace com
-}  // namespace simba
+}  // namespace srp

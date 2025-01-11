@@ -17,7 +17,7 @@
 #include <optional>
 #include "core/common/error_code.h"
 
-namespace simba {
+namespace srp {
 namespace core {
 namespace time {
 
@@ -54,6 +54,6 @@ class TimeChanger {
 };
 }  // namespace  time
 }  // namespace  core
-}  // namespace  simba
+}  // namespace  srp
 
 #endif  // CORE_TIME_SYS_TIME_HPP_

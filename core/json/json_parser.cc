@@ -11,7 +11,7 @@
 #include "core/json/json_parser.h"
 
 #include <fstream>
-namespace simba {
+namespace srp {
 namespace core {
 namespace json {
 
@@ -80,4 +80,4 @@ JsonParser::~JsonParser() {}
 
 }  // namespace json
 }  // namespace core
-}  // namespace simba
+}  // namespace srp

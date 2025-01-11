@@ -17,7 +17,7 @@
 #include "apps/ec/logger_service/service/logger_builder.hpp"
 
 
-namespace simba {
+namespace srp {
 namespace logger {
 
 namespace {
@@ -26,10 +26,10 @@ namespace {
   constexpr std::string kCsv_filename_prefix = "/home/root/";
   constexpr uint16_t kSave_interval = 100;
   constexpr auto k_save_interval_fix = 1;
-  constexpr auto kEnv_service_path_name = "simba/apps/FileLoggerApp/EnvApp";
-  constexpr auto kUdp_service_path_name = "simba/apps/FileLoggerApp/logService_udp";
-  constexpr auto kIpc_service_path_name = "simba/apps/FileLoggerApp/logService_ipc";
-  constexpr auto kFile_did_path_name = "/simba/apps/FileLoggerApp/logger_did";
+  constexpr auto kEnv_service_path_name = "srp/apps/FileLoggerApp/EnvApp";
+  constexpr auto kUdp_service_path_name = "srp/apps/FileLoggerApp/logService_udp";
+  constexpr auto kIpc_service_path_name = "srp/apps/FileLoggerApp/logService_ipc";
+  constexpr auto kFile_did_path_name = "/srp/apps/FileLoggerApp/logger_did";
 }  // namespace
 
 
@@ -149,5 +149,5 @@ void LoggerService::SomeIpInit() {
 }
 
 }  // namespace logger
-}  // namespace simba
+}  // namespace srp
 

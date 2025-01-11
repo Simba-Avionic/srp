@@ -24,7 +24,7 @@
 #include "nlohmann/json.hpp"
 #include "mw/gpio_server/gpio_mw_did.h"
 
-namespace simba {
+namespace srp {
 namespace mw {
 
 class GPIOMWService : public ara::exec::AdaptiveApplication {
@@ -50,7 +50,7 @@ class GPIOMWService : public ara::exec::AdaptiveApplication {
 };
 
 }  // namespace mw
-}  // namespace simba
+}  // namespace srp
 
 
 

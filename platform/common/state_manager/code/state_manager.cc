@@ -17,15 +17,15 @@
 #include "core/common/condition.h"
 #include "core/json/json_parser.h"
 #include "platform/common/state_manager/code/com_wrapper.h"
-#include "simba/platform/sm/StateManager/StateManagerHandler.h"
+#include "srp/platform/sm/StateManager/StateManagerHandler.h"
 
-namespace simba {
+namespace srp {
 namespace sm {
 namespace {
 static constexpr std::string_view kConfigPath{
-    "/srp/opt/cpu_simba/machine_states.json"};
+    "/srp/opt/cpu_srp/machine_states.json"};
 static const ara::core::InstanceSpecifier did_instance_{
-    "/simba/platform/state_manager/CurrentMachineStatePPort"};
+    "/srp/platform/state_manager/CurrentMachineStatePPort"};
 }  // namespace
 
 StateManager::StateManager(/* args */) {}
@@ -35,7 +35,7 @@ StateManager::~StateManager() {}
 int StateManager::Initialize(
     const std::map<ara::core::StringView, ara::core::StringView> parms) {
   const auto& file =
-      simba::core::json::JsonParser::Parser(std::string{kConfigPath});
+      srp::core::json::JsonParser::Parser(std::string{kConfigPath});
   if (!file.has_value()) {
     ara::log::LogError() << "Missing config file!";
     return -1;
@@ -51,10 +51,10 @@ int StateManager::Initialize(
 }
 
 int StateManager::Run(const std::stop_token& token) {
-  simba::platform::sm::StateManagerProxy sm_proxy{ara::core::InstanceSpecifier{
-      "simba/platform/state_manager/SmServiceRPort"}};
+  srp::platform::sm::StateManagerProxy sm_proxy{ara::core::InstanceSpecifier{
+      "srp/platform/state_manager/SmServiceRPort"}};
   sm_proxy.StartFindService(
-      [this](simba::platform::sm::StateManagerProxy::handler_t handler) {
+      [this](srp::platform::sm::StateManagerProxy::handler_t handler) {
         ara::log::LogDebug() << "Service Founded";
 
         handler->CurrentState.Subscribe(1, [this, handler](const auto) {
@@ -75,7 +75,7 @@ int StateManager::Run(const std::stop_token& token) {
         this->did_->Offer();
       });
   ara::log::LogInfo() << "App Started";
-  simba::core::condition::wait(token);
+  srp::core::condition::wait(token);
   sm_proxy.StopFindService();
   if (did_) {
     did_->StopOffer();
@@ -85,4 +85,4 @@ int StateManager::Run(const std::stop_token& token) {
 }
 
 }  // namespace sm
-}  // namespace simba
+}  // namespace srp

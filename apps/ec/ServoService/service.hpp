@@ -12,10 +12,10 @@
 #define APPS_EC_SERVOSERVICE_SERVICE_HPP_
 #include <memory>
 
-#include "simba/apps/ServoServiceSkeleton.h"
+#include "srp/apps/ServoServiceSkeleton.h"
 #include "mw/i2c_service/controller/pca9685/controller.hpp"
 
-namespace simba {
+namespace srp {
 namespace apps {
 
 class MyServoService : public ServoServiceSkeleton {
@@ -68,6 +68,6 @@ class MyServoService : public ServoServiceSkeleton {
 };
 
 }  // namespace apps
-}  // namespace simba
+}  // namespace srp
 
 #endif  // APPS_EC_SERVOSERVICE_SERVICE_HPP_

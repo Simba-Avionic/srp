@@ -14,12 +14,12 @@
 #include <functional>
 #include <utility>
 
-#include "simba/platform/sm/StateManagerSkeleton.h"
+#include "srp/platform/sm/StateManagerSkeleton.h"
 
-namespace simba {
+namespace srp {
 namespace em {
 namespace service {
-class SmService : public simba::platform::sm::StateManagerSkeleton {
+class SmService : public srp::platform::sm::StateManagerSkeleton {
   const std::function<int8_t(uint16_t)> set_state_callback_;
 
  private:
@@ -32,12 +32,12 @@ class SmService : public simba::platform::sm::StateManagerSkeleton {
  public:
   SmService(const ara::core::InstanceSpecifier& instance,
             const std::function<int8_t(uint16_t)>&& set_state_callback)
-      : simba::platform::sm::StateManagerSkeleton{instance},
+      : srp::platform::sm::StateManagerSkeleton{instance},
         set_state_callback_{std::move(set_state_callback)} {}
   ~SmService() {}
 };
 
 }  // namespace service
 }  // namespace em
-}  // namespace simba
+}  // namespace srp
 #endif  // PLATFORM_COMMON_EM_CODE_SERVICES_SM_SERVICE_H_

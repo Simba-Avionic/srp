@@ -3,7 +3,7 @@
         "deployment/system_definition/platform/sm_service/sm_service.json",
         "deployment/system_definition/platform/sm_service/sm_did.json"
     ],
-    "package": "simba.platform",
+    "package": "srp.platform",
     "adaptive_application": {
         "state_manager": {
             "app": {
@@ -30,7 +30,7 @@
             ],
             "require": [
                 {
-                    "name": "simba.platform.sm.StateManager as SmServiceRPort",
+                    "name": "srp.platform.sm.StateManager as SmServiceRPort",
                     "on": "ipc",
                     "instance": 1
                 }

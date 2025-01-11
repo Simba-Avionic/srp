@@ -10,7 +10,7 @@
  */
 #include "platform/common/diag_demon/code/services/validator_controller.h"
 
-namespace simba {
+namespace srp {
 namespace platform {
 namespace diag_demon {
 namespace uds {
@@ -26,4 +26,4 @@ ValidatorController::~ValidatorController() {}
 }  // namespace uds
 }  // namespace diag_demon
 }  // namespace platform
-}  // namespace simba
+}  // namespace srp

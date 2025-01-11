@@ -19,11 +19,11 @@
 #include "core/json/json_parser.h"
 #include "platform/common/em/code/services/em/app_db.h"
 
-namespace simba {
+namespace srp {
 namespace em {
 namespace {
 static const ara::core::InstanceSpecifier kSmServiceInstance{
-    "simba/platform/em/SmServicePPort"};
+    "srp/platform/em/SmServicePPort"};
 }  // namespace
 
 EmApplication::EmApplication(/* args */)
@@ -59,12 +59,12 @@ int EmApplication::Initialize(
         this->sm_service_.CurrentState.Update(new_id);
       });
 
-  const auto json_opt = simba::core::json::JsonParser::Parser(
+  const auto json_opt = srp::core::json::JsonParser::Parser(
       std::string{"/srp/platform/etc/state_config.json"});
   if (!json_opt.has_value()) {
     return -1;
   }
-  const simba::core::json::JsonParser json = json_opt.value();
+  const srp::core::json::JsonParser json = json_opt.value();
 
   const auto states_opt = json.GetArray<nlohmann::json>("states");
   if (!states_opt.has_value()) {
@@ -73,8 +73,8 @@ int EmApplication::Initialize(
   }
   const auto states = states_opt.value();
   for (const auto& item : states) {
-    simba::core::json::JsonParser state =
-        simba::core::json::JsonParser::Parser(item).value();
+    srp::core::json::JsonParser state =
+        srp::core::json::JsonParser::Parser(item).value();
     std::string name = state.GetString("name").value();
     uint16_t id = state.GetNumber<uint16_t>("id").value();
     ara::log::LogInfo() << "New state: " << name << "[" << id << "]";
@@ -85,4 +85,4 @@ int EmApplication::Initialize(
 }
 
 }  // namespace em
-}  // namespace simba
+}  // namespace srp

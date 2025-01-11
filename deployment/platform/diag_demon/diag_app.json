@@ -2,7 +2,7 @@
     "include": [
         "deployment/system_definition/diag/jobs/read_vin.json"
     ],
-    "package": "simba.platform",
+    "package": "srp.platform",
     "adaptive_application": {
         "diag_demon": {
             "app": {

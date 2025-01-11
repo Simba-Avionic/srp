@@ -19,7 +19,7 @@
 #include "ara/log/logger.h"
 #include "platform/common/someip_demon/code/common/com/i_multicast_controller.h"
 #include "platform/common/someip_demon/code/common/udp_multicast_socket.h"
-namespace simba {
+namespace srp {
 namespace someip_demon {
 namespace common {
 namespace com {
@@ -29,7 +29,7 @@ class MulticastController : public IMulticastController {
   const std::string multicast_ip_;
   const uint16_t multicast_port_;
   const ara::log::Logger logger_;
-  std::unique_ptr<simba::common::soc::UdpMulticastSocket> sock_;
+  std::unique_ptr<srp::common::soc::UdpMulticastSocket> sock_;
   std::shared_ptr<INetworkController> controller_;
   void RxCallback(const std::string& ip, const std::uint16_t& port,
                   const std::vector<std::uint8_t>& data);
@@ -50,6 +50,6 @@ class MulticastController : public IMulticastController {
 }  // namespace com
 }  // namespace common
 }  // namespace someip_demon
-}  // namespace simba
+}  // namespace srp
 
 #endif  // PLATFORM_COMMON_SOMEIP_DEMON_CODE_COMMON_COM_IMPL_MULTICAST_CONTROLLER_H_

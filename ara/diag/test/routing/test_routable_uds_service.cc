@@ -13,7 +13,7 @@
 
 #include <memory>
 
-#include "ara/com/socket/mock/socket_stream_mock.h"
+#include "bindings/common/socket/mock/socket_stream_mock.h"
 #include "ara/core/model_db.h"
 #include "ara/diag/routing/routable_uds_service.h"
 #include "ara/diag/uds_error_domain.h"
@@ -31,10 +31,10 @@ class RoutableUdsServiceFixture : public ::testing::Test {
     {
       const auto res = ara::core::model::ModelUds::CreatItem(
           34U, 4384U, "2232608", ara::core::model::ModelUds::Direction::kOut);
-      std::ignore = db_.AddNewItem("/simba/test/example", {res.Value()});
+      std::ignore = db_.AddNewItem("/srp/test/example", {res.Value()});
       const auto res2 =
           db_.ResolveInstanceSpecifier<ara::core::model::ModelUds>(
-              ara::core::InstanceSpecifier{"/simba/test/example"});
+              ara::core::InstanceSpecifier{"/srp/test/example"});
       EXPECT_TRUE(res2.HasValue());
     }
   }
@@ -59,7 +59,7 @@ class TestRoutableUdsService : public routing::RoutableUdsService {
 TEST_F(RoutableUdsServiceFixture,
        GivenInvalidModelPathWhenOfferExpectNoCallAndError) {
   auto sut = TestRoutableUdsService(
-      ara::core::InstanceSpecifier{"/simba/test/other"},
+      ara::core::InstanceSpecifier{"/srp/test/other"},
       std::make_unique<ara::com::soc::FacadeSocketStream>(socket_mock_));
 
   EXPECT_CALL(*socket_mock_, Init(::testing::_)).Times(0);
@@ -75,7 +75,7 @@ TEST_F(RoutableUdsServiceFixture,
 TEST_F(RoutableUdsServiceFixture,
        GivenInvalidModelPathWhenStopOfferExpectNoCall) {
   auto sut = TestRoutableUdsService(
-      ara::core::InstanceSpecifier{"/simba/test/other"},
+      ara::core::InstanceSpecifier{"/srp/test/other"},
       std::make_unique<ara::com::soc::FacadeSocketStream>(socket_mock_));
 
   EXPECT_CALL(*socket_mock_, Init(::testing::_)).Times(0);
@@ -94,7 +94,7 @@ TEST_F(RoutableUdsServiceFixture,
 }
 
 TEST_F(RoutableUdsServiceFixture, GivenValidModelPathWhenOfferExpectOnceCall) {
-  const auto instance = ara::core::InstanceSpecifier{"/simba/test/example"};
+  const auto instance = ara::core::InstanceSpecifier{"/srp/test/example"};
   auto sut = TestRoutableUdsService(
       instance,
       std::make_unique<ara::com::soc::FacadeSocketStream>(socket_mock_));
@@ -112,7 +112,7 @@ TEST_F(RoutableUdsServiceFixture, GivenValidModelPathWhenOfferExpectOnceCall) {
 
 TEST_F(RoutableUdsServiceFixture,
        GivenValidModelPathWhenMultipleOfferExpectOnceCall) {
-  const auto instance = ara::core::InstanceSpecifier{"/simba/test/example"};
+  const auto instance = ara::core::InstanceSpecifier{"/srp/test/example"};
   auto sut = TestRoutableUdsService(
       instance,
       std::make_unique<ara::com::soc::FacadeSocketStream>(socket_mock_));
@@ -138,7 +138,7 @@ TEST_F(RoutableUdsServiceFixture,
 
 TEST_F(RoutableUdsServiceFixture,
        GivenValidModelPathWhenStopOfferExpectOnceCall) {
-  const auto instance = ara::core::InstanceSpecifier{"/simba/test/example"};
+  const auto instance = ara::core::InstanceSpecifier{"/srp/test/example"};
   auto sut = TestRoutableUdsService(
       instance,
       std::make_unique<ara::com::soc::FacadeSocketStream>(socket_mock_));
@@ -160,7 +160,7 @@ TEST_F(RoutableUdsServiceFixture,
 
 TEST_F(RoutableUdsServiceFixture,
        GivenValidModelPathWhenRequestReceivedExpectPositiveResponse) {
-  const auto instance = ara::core::InstanceSpecifier{"/simba/test/example"};
+  const auto instance = ara::core::InstanceSpecifier{"/srp/test/example"};
   auto sut = TestRoutableUdsService(
       instance,
       std::make_unique<ara::com::soc::FacadeSocketStream>(socket_mock_));
@@ -187,7 +187,7 @@ TEST_F(RoutableUdsServiceFixture,
 
 TEST_F(RoutableUdsServiceFixture,
        GivenValidModelPathWhenRequestReceivedExpectNegativeResponse) {
-  const auto instance = ara::core::InstanceSpecifier{"/simba/test/example"};
+  const auto instance = ara::core::InstanceSpecifier{"/srp/test/example"};
   auto sut = TestRoutableUdsService(
       instance,
       std::make_unique<ara::com::soc::FacadeSocketStream>(socket_mock_));

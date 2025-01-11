@@ -13,7 +13,7 @@
 #include "communication-core/network-data/network_data_structure.h"
 #include "communication-core/network-data/network_data_type.h"
 
-namespace simba {
+namespace srp {
 namespace com {
 namespace someip {
 class SomeIpHeader : public core::network::NetworkDataStructure {
@@ -60,5 +60,5 @@ class SomeIpHeader : public core::network::NetworkDataStructure {
 
 }  // namespace someip
 }  // namespace com
-}  // namespace simba
+}  // namespace srp
 #endif  // COMMUNICATION_CORE_SOMEIP_SOMEIP_HEADER_H_

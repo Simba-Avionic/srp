@@ -8,8 +8,8 @@
  * @copyright Copyright (c) 2024
  *
  */
-#ifndef ARA_COM_SOCKET_ISOCKET_STREAM_H_
-#define ARA_COM_SOCKET_ISOCKET_STREAM_H_
+#ifndef BINDINGS_COMMON_SOCKET_ISOCKET_STREAM_H_
+#define BINDINGS_COMMON_SOCKET_ISOCKET_STREAM_H_
 
 #include <cstdint>
 #include <functional>
@@ -48,4 +48,4 @@ class ISocketStream {
 }  // namespace com
 }  // namespace ara
 
-#endif  // ARA_COM_SOCKET_ISOCKET_STREAM_H_
+#endif  // BINDINGS_COMMON_SOCKET_ISOCKET_STREAM_H_

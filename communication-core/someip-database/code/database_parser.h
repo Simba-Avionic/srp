@@ -20,70 +20,70 @@
 #include "core/common/error_code.h"
 #include "nlohmann/json.hpp"
 
-namespace simba {
+namespace srp {
 namespace com {
 namespace someip {
 namespace json {
 class DataBaseParser {
  public:
-  static simba::core::ErrorCode ParseJsonObject(std::shared_ptr<objects::DataBase> db,
+  static srp::core::ErrorCode ParseJsonObject(std::shared_ptr<objects::DataBase> db,
                                          const nlohmann::json& obj) noexcept {
-    simba::core::ErrorCode flag = simba::core::ErrorCode::kOk;
-    if (DataBaseParser::ValidateDb(obj) != simba::core::ErrorCode::kOk) {
-      return simba::core::ErrorCode::kError;
+    srp::core::ErrorCode flag = srp::core::ErrorCode::kOk;
+    if (DataBaseParser::ValidateDb(obj) != srp::core::ErrorCode::kOk) {
+      return srp::core::ErrorCode::kError;
     }
     auto list = obj.at("db");
     for (auto& [key, val] : list.items()) {
-      if (DataBaseParser::ValidateItem(val) == simba::core::ErrorCode::kOk) {
+      if (DataBaseParser::ValidateItem(val) == srp::core::ErrorCode::kOk) {
         std::string ip = val.at("ip");
         uint16_t port = static_cast<uint16_t>(val.at("port"));
         if (db->InsertService(static_cast<uint16_t>(std::stoi(key)),
                               objects::Interface{ip, port}) !=
-            simba::core::ErrorCode::kOk) {
-          flag = simba::core::ErrorCode::kError;
+            srp::core::ErrorCode::kOk) {
+          flag = srp::core::ErrorCode::kError;
         }
       } else {
-        flag = simba::core::ErrorCode::kError;
+        flag = srp::core::ErrorCode::kError;
       }
     }
-    if (flag == simba::core::ErrorCode::kOk) {
+    if (flag == srp::core::ErrorCode::kOk) {
       flag = ParseEventClients(db, obj);
     }
-    if (flag == simba::core::ErrorCode::kOk) {
+    if (flag == srp::core::ErrorCode::kOk) {
       flag = ParseConfig(std::move(db), obj);
     }
     return flag;
   }
 
  private:
-  static simba::core::ErrorCode ValidateDb(const nlohmann::json& obj) noexcept {
+  static srp::core::ErrorCode ValidateDb(const nlohmann::json& obj) noexcept {
     if (!obj.contains("interface")) {
-      return simba::core::ErrorCode::kError;
+      return srp::core::ErrorCode::kError;
     }
     if (!obj.contains("service_id")) {
-      return simba::core::ErrorCode::kError;
+      return srp::core::ErrorCode::kError;
     }
     if (!obj.contains("db")) {
-      return simba::core::ErrorCode::kError;
+      return srp::core::ErrorCode::kError;
     }
-    return simba::core::ErrorCode::kOk;
+    return srp::core::ErrorCode::kOk;
   }
-  static simba::core::ErrorCode ValidateItem(const nlohmann::json& obj) noexcept {
+  static srp::core::ErrorCode ValidateItem(const nlohmann::json& obj) noexcept {
     if (!obj.contains("ip")) {
-      return simba::core::ErrorCode::kError;
+      return srp::core::ErrorCode::kError;
     }
     if (!obj.contains("port")) {
-      return simba::core::ErrorCode::kError;
+      return srp::core::ErrorCode::kError;
     }
     if (!obj.at("ip").is_string()) {
-      return simba::core::ErrorCode::kError;
+      return srp::core::ErrorCode::kError;
     }
     if (!obj.at("port").is_number_unsigned()) {
-      return simba::core::ErrorCode::kError;
+      return srp::core::ErrorCode::kError;
     }
-    return simba::core::ErrorCode::kOk;
+    return srp::core::ErrorCode::kOk;
   }
-  static simba::core::ErrorCode ParseEventClients(
+  static srp::core::ErrorCode ParseEventClients(
       std::shared_ptr<objects::DataBase> db, const nlohmann::json& obj) {
     auto list = obj["pub_event"];
     for (auto& [key, val] : list.items()) {
@@ -93,9 +93,9 @@ class DataBaseParser {
         db->InstertEvent(event_id, val);
       }
     }
-    return simba::core::ErrorCode::kOk;
+    return srp::core::ErrorCode::kOk;
   }
-  static simba::core::ErrorCode ParseConfig(std::shared_ptr<objects::DataBase> db,
+  static srp::core::ErrorCode ParseConfig(std::shared_ptr<objects::DataBase> db,
                                      const nlohmann::json& obj) {
     const uint16_t id = obj.at("service_id");
     db->SetServiceId(id);
@@ -105,12 +105,12 @@ class DataBaseParser {
       const uint16_t port = obj.value()["port"];
       db->InsertInterface(ip, port);
     }
-    return simba::core::ErrorCode::kOk;
+    return srp::core::ErrorCode::kOk;
   }
 };
 
 }  // namespace json
 }  // namespace someip
 }  // namespace com
-}  // namespace simba
+}  // namespace srp
 #endif  // COMMUNICATION_CORE_SOMEIP_DATABASE_CODE_DATABASE_PARSER_H_

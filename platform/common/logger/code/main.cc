@@ -12,5 +12,5 @@
 #include "platform/common/logger/code/application/dlt_service.h"
 
 int main(int argc, char const *argv[]) {
-  return ara::exec::RunAdaptiveLifecycle<simba::dlt::DltService>(argc, argv);
+  return ara::exec::RunAdaptiveLifecycle<srp::dlt::DltService>(argc, argv);
 }

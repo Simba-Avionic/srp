@@ -122,14 +122,14 @@ ara::core::Result<void> SomeipController::RegisterProxy(
 void SomeipController::SdHandler(const SomeipFrame& frame) noexcept {
   const auto raw =
       std::vector<uint8_t>(frame.Payload().begin() + 4, frame.Payload().end());
-  auto count = (ara::com::Convert<uint32_t>::Conv(raw).value_or(0U));
+  auto count = (srp::data::Convert<uint32_t>::Conv(raw).value_or(0U));
   if constexpr (std::endian::native != std::endian::big) {
-    count = ara::com::EndianConvert<std::uint32_t>::Conv(count) / 16;
+    count = srp::data::EndianConvert<std::uint32_t>::Conv(count) / 16;
   }
   ara::com::LogInfo() << "[Someip] count: " << count;
   for (auto i = 0; i < count; i++) {
     if (*(raw.begin() + 4 + (16 * i)) == 0x01) {
-      const auto t = ara::com::Convert<ara::com::someip::ServiceEntry>::Conv(
+      const auto t = srp::data::Convert<ara::com::someip::ServiceEntry>::Conv(
           std::vector<uint8_t>{raw.begin() + 4 + (16 * i), raw.end()});
       if (t.HasValue()) {
         const auto& iter = this->proxy_list_.find(t.Value().service_id);

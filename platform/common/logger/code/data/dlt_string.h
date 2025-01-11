@@ -16,7 +16,7 @@
 #include <vector>
 
 #include "platform/common/logger/code/data/idlt_arg.h"
-namespace simba {
+namespace srp {
 namespace dlt {
 namespace data {
 class DltString : IDLTArg {
@@ -25,10 +25,10 @@ class DltString : IDLTArg {
 
  public:
   DltString() = default;
-  explicit DltString(const simba::dlt::data::DltString& other) {
+  explicit DltString(const srp::dlt::data::DltString& other) {
     log = other.log;
   }
-  DltString operator=(const simba::dlt::data::DltString& other) {
+  DltString operator=(const srp::dlt::data::DltString& other) {
     return DltString{other.log};
   }
   explicit DltString(const std::string& log_) { this->log = log_; }
@@ -48,6 +48,6 @@ class DltString : IDLTArg {
 };
 }  // namespace data
 }  // namespace dlt
-}  // namespace simba
+}  // namespace srp
 
 #endif  // PLATFORM_COMMON_LOGGER_CODE_DATA_DLT_STRING_H_

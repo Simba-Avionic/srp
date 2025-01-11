@@ -8,8 +8,8 @@
  * @copyright Copyright (c) 2024
  *
  */
-#ifndef ARA_COM_SOCKET_STREAM_IPC_SOCKET_H_
-#define ARA_COM_SOCKET_STREAM_IPC_SOCKET_H_
+#ifndef BINDINGS_COMMON_SOCKET_STREAM_IPC_SOCKET_H_
+#define BINDINGS_COMMON_SOCKET_STREAM_IPC_SOCKET_H_
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -23,7 +23,7 @@
 #include <thread>  // NOLINT
 #include <vector>
 
-#include "ara/com/socket/Isocket_stream.h"
+#include "bindings/common/socket/Isocket_stream.h"
 namespace ara {
 namespace com {
 namespace soc {
@@ -44,7 +44,7 @@ class StreamIpcSocket : public ISocketStream {
    * @brief Socket init function
    *
    * @param config Config file
-   * @return simba::core::ErrorCode initialiaze status
+   * @return srp::core::ErrorCode initialiaze status
    */
   ara::core::Result<void> Init(const std::string& socket_path) override;
   /**
@@ -75,4 +75,4 @@ class StreamIpcSocket : public ISocketStream {
 }  // namespace com
 }  // namespace ara
 
-#endif  // ARA_COM_SOCKET_STREAM_IPC_SOCKET_H_
+#endif  // BINDINGS_COMMON_SOCKET_STREAM_IPC_SOCKET_H_

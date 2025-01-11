@@ -5,7 +5,7 @@
         "deployment/system_definition/diag/dtc/example_dtc_hex.json",
         "deployment/system_definition/diag/dtc/example_dtc.json"
     ],
-    "package": "simba.example",
+    "package": "srp.example",
     "adaptive_application": {
         "ExampleApp2": {
             "app": {

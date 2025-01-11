@@ -12,7 +12,7 @@
 #define PLATFORM_COMMON_SOMEIP_DEMON_CODE_DB_SERVICE_ITEM_H_
 #include <cstdint>
 
-namespace simba {
+namespace srp {
 namespace someip_demon {
 namespace db {
 class ServiceItem {
@@ -38,6 +38,6 @@ class ServiceItem {
 };
 }  // namespace db
 }  // namespace someip_demon
-}  // namespace simba
+}  // namespace srp
 
 #endif  // PLATFORM_COMMON_SOMEIP_DEMON_CODE_DB_SERVICE_ITEM_H_

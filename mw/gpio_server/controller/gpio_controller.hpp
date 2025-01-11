@@ -23,7 +23,7 @@
 #include "mw/gpio_server/data/header.hpp"
 #include "mw/gpio_server/controller/Igpio_controller.h"
 
-namespace simba {
+namespace srp {
 namespace gpio {
 
 
@@ -38,7 +38,7 @@ class GPIOController : public IGPIOController{
 };
 
 }  // namespace gpio
-}  // namespace simba
+}  // namespace srp
 
 
 #endif  // MW_GPIO_SERVER_CONTROLLER_GPIO_CONTROLLER_HPP_

@@ -4,7 +4,7 @@
         "deployment/system_definition/someip/env_service/service.json",
         "deployment/system_definition/diag/jobs/file_logger/file_logger_did.json"
     ],
-    "package": "simba.apps",
+    "package": "srp.apps",
     "adaptive_application": {
         "FileLoggerApp": {
             "app": {
@@ -58,7 +58,7 @@
             ],
             "require": [
                 {
-                    "name": "simba.env.EnvApp as EnvApp",
+                    "name": "srp.env.EnvApp as EnvApp",
                     "on": "ipc",
                     "instance": 2
                 }

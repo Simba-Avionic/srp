@@ -8,8 +8,9 @@
  * @copyright Copyright (c) 2024
  *
  */
-#ifndef ARA_COM_TYPE_CONVERTER_H_
-#define ARA_COM_TYPE_CONVERTER_H_
+#ifndef DATA_TYPE_CONVERTER_H_
+#define DATA_TYPE_CONVERTER_H_
+
 #include <algorithm>
 #include <array>
 #include <bit>  // NOLINT
@@ -18,10 +19,8 @@
 #include <optional>
 #include <vector>
 
-#include "ara/com/com_error_domain.h"
-#include "ara/core/result.h"
-namespace ara {
-namespace com {
+namespace srp {
+namespace data {
 template <typename T_OUT>
 struct Convert {
   static std::optional<T_OUT> Conv(const std::vector<std::uint8_t>& in) {
@@ -245,7 +244,6 @@ struct EndianConvert {
   }
 };
 
-}  // namespace com
-}  // namespace ara
-
-#endif  // ARA_COM_TYPE_CONVERTER_H_
+}  // namespace data
+}  // namespace srp
+#endif  // DATA_TYPE_CONVERTER_H_

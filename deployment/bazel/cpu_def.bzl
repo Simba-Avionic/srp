@@ -51,8 +51,8 @@ def _startup_script(ctx):
 #
 echo "Simab SRP start up script"
 
-/srp/opt/cpu_simba/network_interface.sh
-/srp/opt/cpu_simba/component_start_up.sh &
+/srp/opt/cpu_srp/network_interface.sh
+/srp/opt/cpu_srp/component_start_up.sh &
 
 echo "Simab SRP start up script [DONE]"
 
@@ -100,7 +100,7 @@ def cpu_def(name, srp_components, config, etcs = [], platform_etcs = []):
     )
     pkg_tar(
         name = "config_pkg",
-        package_dir = "opt/cpu_simba",
+        package_dir = "opt/cpu_srp",
         srcs = [":cpu"] + etcs,
         visibility = ["//visibility:private"],
     )

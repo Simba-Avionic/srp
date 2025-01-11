@@ -11,14 +11,14 @@
 #include "platform/common/diag_demon/code/services/dtc/dtc_service.h"
 
 #include "ara/log/logging_menager.h"
-#include "simba/platform/diag/DtcComDataStructure.h"
+#include "srp/platform/diag/DtcComDataStructure.h"
 
-namespace simba {
+namespace srp {
 namespace platform {
 namespace diag_demon {
 namespace dtc {
 DtcService::DtcService(/* args */)
-    : sock_{std::make_unique<ara::com::ProccessSocket>("SIMBA.ARA.DTC")},
+    : sock_{std::make_unique<ara::com::ProccessSocket>("SRP.ARA.DTC")},
       logger_{ara::log::LoggingMenager::GetInstance()->CreateLogger(
           "dtcs", "", ara::log::LogLevel::kDebug)} {}
 
@@ -35,7 +35,7 @@ void DtcService::Stop() noexcept {
 void DtcService::RXCallback(const uint32_t peerid,
                             const std::vector<uint8_t>& pyload) {
   const auto val_o =
-      ara::com::Convert<simba::platform::diag::DtcComDataStructure>::Conv(
+      srp::data::Convert<srp::platform::diag::DtcComDataStructure>::Conv(
           std::vector<uint8_t>{pyload.begin() + 1, pyload.end()});
   if (val_o.has_value()) {
     const auto& val = val_o.value();
@@ -49,4 +49,4 @@ void DtcService::RXCallback(const uint32_t peerid,
 }  // namespace dtc
 }  // namespace diag_demon
 }  // namespace platform
-}  // namespace simba
+}  // namespace srp

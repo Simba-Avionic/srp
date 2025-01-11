@@ -11,7 +11,7 @@
 #ifndef PLATFORM_COMMON_DIAG_DEMON_CODE_SERVICES_UDS_NRC_CODES_H_
 #define PLATFORM_COMMON_DIAG_DEMON_CODE_SERVICES_UDS_NRC_CODES_H_
 #include <cstdint>
-namespace simba {
+namespace srp {
 namespace platform {
 namespace diag_demon {
 namespace uds {
@@ -43,5 +43,5 @@ enum UdsNrcCodes : uint8_t {
 }  // namespace uds
 }  // namespace diag_demon
 }  // namespace platform
-}  // namespace simba
+}  // namespace srp
 #endif  // PLATFORM_COMMON_DIAG_DEMON_CODE_SERVICES_UDS_NRC_CODES_H_

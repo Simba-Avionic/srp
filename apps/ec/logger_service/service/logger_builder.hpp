@@ -17,7 +17,7 @@
 #include "apps/ec/logger_service/service/service.hpp"
 #include "apps/ec/logger_service/service/logger_did.hpp"
 
-namespace simba {
+namespace srp {
 namespace logger {
 
 class Builder {
@@ -55,6 +55,6 @@ class Builder {
 };
 
 }  // namespace logger
-}  // namespace simba
+}  // namespace srp
 
 #endif  // APPS_EC_LOGGER_SERVICE_SERVICE_LOGGER_BUILDER_HPP_

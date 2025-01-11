@@ -16,12 +16,12 @@
 #include <utility>
 #include "ara/log/log.h"
 #include "core/common/condition.h"
-namespace simba {
+namespace srp {
 namespace service {
 namespace {
-  constexpr auto kService_ipc_name = "simba/apps/RecoveryService/RecoveryService_ipc";
-  constexpr auto kService_udp_name = "simba/apps/RecoveryService/RecoveryService_udp";
-  constexpr auto KRec_did_name = "/simba/apps/RecoveryService/REC_RID";
+  constexpr auto kService_ipc_name = "srp/apps/RecoveryService/RecoveryService_ipc";
+  constexpr auto kService_udp_name = "srp/apps/RecoveryService/RecoveryService_udp";
+  constexpr auto KRec_did_name = "/srp/apps/RecoveryService/REC_RID";
 }
 RecoveryService::RecoveryService(): rec_did_specifier(KRec_did_name) {
 }
@@ -53,4 +53,4 @@ int RecoveryService::Initialize(
 }
 
 }  // namespace service
-}  // namespace simba
+}  // namespace srp

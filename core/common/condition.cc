@@ -10,7 +10,7 @@
  */
 #include "core/common/condition.h"
 
-namespace simba {
+namespace srp {
 namespace core {
 namespace condition {
 
@@ -24,4 +24,4 @@ void wait(const std::stop_token& stoken) {
 
 }  // namespace condition
 }  // namespace core
-}  // namespace simba
+}  // namespace srp

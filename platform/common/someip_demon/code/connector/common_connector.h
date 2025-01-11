@@ -12,12 +12,12 @@
 #define PLATFORM_COMMON_SOMEIP_DEMON_CODE_CONNECTOR_COMMON_CONNECTOR_H_
 #include <memory>
 
-#include "ara/com/socket/proccess_socket.h"
+#include "bindings/common/socket/proccess_socket.h"
 #include "ara/com/someip/someip_frame.h"
 #include "platform/common/someip_demon/code/common/udp_socket.h"
 #include "platform/common/someip_demon/code/connector/i_connector.h"
 
-namespace simba {
+namespace srp {
 namespace someip_demon {
 namespace connectors {
 class CommonConnector : public IConnector {
@@ -33,5 +33,5 @@ class CommonConnector : public IConnector {
 };
 }  // namespace connectors
 }  // namespace someip_demon
-}  // namespace simba
+}  // namespace srp
 #endif  // PLATFORM_COMMON_SOMEIP_DEMON_CODE_CONNECTOR_COMMON_CONNECTOR_H_

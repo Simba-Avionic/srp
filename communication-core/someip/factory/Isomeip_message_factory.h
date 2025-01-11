@@ -16,7 +16,7 @@
 #include <vector>
 
 #include "communication-core/someip/someip_header.h"
-namespace simba {
+namespace srp {
 namespace com {
 namespace someip {
 namespace factory {
@@ -53,5 +53,5 @@ class ISomeIpMessageFactory {
 }  // namespace factory
 }  // namespace someip
 }  // namespace com
-}  // namespace simba
+}  // namespace srp
 #endif  // COMMUNICATION_CORE_SOMEIP_FACTORY_ISOMEIP_MESSAGE_FACTORY_H_

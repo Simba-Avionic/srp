@@ -15,7 +15,7 @@
 class SUBSCRIBE_HEADER : public ::testing::TestWithParam<uint16_t> {
  protected:
   uint16_t id;
-  simba::mw::temp::SubscribeHeader hdr;
+  srp::mw::temp::SubscribeHeader hdr;
 
   void SetUp() override {
     id = GetParam();
@@ -27,6 +27,6 @@ INSTANTIATE_TEST_SUITE_P(SUBSCRIBE_HEADER_PARAMS,
                          ::testing::Values(0x0010));
 
 TEST_P(SUBSCRIBE_HEADER, CONSTRUCTOR_CHECK) {
-    hdr = simba::mw::temp::SubscribeHeader{id};
+    hdr = srp::mw::temp::SubscribeHeader{id};
     EXPECT_EQ(id, hdr.GetServiceID());
 }

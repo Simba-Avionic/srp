@@ -2,7 +2,7 @@
     "include": [
         "deployment/system_definition/platform/sm_service/sm_service.json"
     ],
-    "package": "simba.platform",
+    "package": "srp.platform",
     "adaptive_application": {
         "em": {
             "app": {
@@ -39,7 +39,7 @@
             },
             "provide": [
                 {
-                    "name": "simba.platform.sm.StateManager as SmServicePPort",
+                    "name": "srp.platform.sm.StateManager as SmServicePPort",
                     "on": "ipc",
                     "instance": 1
                 }

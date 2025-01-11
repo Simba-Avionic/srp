@@ -16,7 +16,7 @@
 #include <queue>
 #include <stop_token>  // NOLINT
 #include <utility>
-namespace simba {
+namespace srp {
 namespace core {
 template <typename T, uint16_t maxsize = 0>
 class WaitQueue final {
@@ -101,5 +101,5 @@ class WaitQueue final {
   }
 };
 }  // namespace core
-}  // namespace simba
+}  // namespace srp
 #endif  // CORE_COMMON_WAIT_QUEUE_H_"

@@ -15,8 +15,8 @@
 #include <string>
 #include <vector>
 
-#include "ara/com/socket/Isocket_stream.h"
-#include "ara/com/socket/stream_ipc_socket.h"
+#include "bindings/common/socket/Isocket_stream.h"
+#include "bindings/common/socket/stream_ipc_socket.h"
 #include "ara/core/instance_specifier.h"
 #include "ara/core/result.h"
 #include "ara/log/logger.h"

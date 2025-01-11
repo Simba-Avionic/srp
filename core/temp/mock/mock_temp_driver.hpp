@@ -15,10 +15,10 @@
 #include <string>
 #include "core/temp/Itemp_driver.hpp"
 
-namespace simba {
+namespace srp {
 namespace mock {
 
-class MockTempDriver : public simba::core::temp::ITempDriver {
+class MockTempDriver : public srp::core::temp::ITempDriver {
  public:
   MOCK_METHOD(ara::core::Result<double>, ReadTemp, (const std::string& sensorPhysicalID), (override));
   MOCK_METHOD(ara::core::Result<bool>, SetResolution,
@@ -29,6 +29,6 @@ class MockTempDriver : public simba::core::temp::ITempDriver {
 };
 
 }  // namespace mock
-}  // namespace simba
+}  // namespace srp
 
 #endif  // CORE_TEMP_MOCK_MOCK_TEMP_DRIVER_HPP_

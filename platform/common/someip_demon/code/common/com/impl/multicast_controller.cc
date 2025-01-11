@@ -16,7 +16,7 @@
 
 #include "ara/log/logging_menager.h"
 
-namespace simba {
+namespace srp {
 namespace someip_demon {
 namespace common {
 namespace com {
@@ -45,7 +45,7 @@ void MulticastController::RxCallback(const std::string& ip,
 MulticastController::~MulticastController() {}
 
 ara::core::Result<void> MulticastController::Start() noexcept {
-  sock_ = std::make_unique<simba::common::soc::UdpMulticastSocket>();
+  sock_ = std::make_unique<srp::common::soc::UdpMulticastSocket>();
   if (sock_->Init(interface_ip_, multicast_ip_, multicast_port_) ==
       core::ErrorCode::kOk) {
     sock_->SetRXCallback(std::bind(&MulticastController::RxCallback, this,
@@ -76,4 +76,4 @@ void MulticastController::SetController(
 }  // namespace com
 }  // namespace common
 }  // namespace someip_demon
-}  // namespace simba
+}  // namespace srp

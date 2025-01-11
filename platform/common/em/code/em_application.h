@@ -24,7 +24,7 @@
 #include "platform/common/em/code/services/sm_service.h"
 #include "core/common/wait_queue.h"
 
-namespace simba {
+namespace srp {
 namespace em {
 class EmApplication final : public ara::exec::AdaptiveApplication {
  private:
@@ -51,6 +51,6 @@ class EmApplication final : public ara::exec::AdaptiveApplication {
 };
 
 }  // namespace em
-}  // namespace simba
+}  // namespace srp
 
 #endif  // PLATFORM_COMMON_EM_CODE_EM_APPLICATION_H_

@@ -11,14 +11,14 @@
 #ifndef PLATFORM_COMMON_STATE_MANAGER_CODE_COM_WRAPPER_H_
 #define PLATFORM_COMMON_STATE_MANAGER_CODE_COM_WRAPPER_H_
 #include "ara/exec/sm/i_sm_com_wrapper.h"
-#include "simba/platform/sm/StateManager/StateManagerHandler.h"
+#include "srp/platform/sm/StateManager/StateManagerHandler.h"
 
-namespace simba {
+namespace srp {
 namespace sm {
 
 class ComWrapper : public ara::exec::sm::ISmComWrapper {
  private:
-  const simba::platform::sm::StateManagerProxy::handler_t handler_;
+  const srp::platform::sm::StateManagerProxy::handler_t handler_;
 
  public:
   /**
@@ -41,10 +41,10 @@ class ComWrapper : public ara::exec::sm::ISmComWrapper {
    * @return int8_t  0-OK
    */
   int8_t SetDtcStatus(const bool& new_status) noexcept override { return 0; }
-  explicit ComWrapper(simba::platform::sm::StateManagerProxy::handler_t handler)
+  explicit ComWrapper(srp::platform::sm::StateManagerProxy::handler_t handler)
       : handler_{handler} {}
   ~ComWrapper() = default;
 };
 }  // namespace sm
-}  // namespace simba
+}  // namespace srp
 #endif  // PLATFORM_COMMON_STATE_MANAGER_CODE_COM_WRAPPER_H_

@@ -23,7 +23,7 @@ cc_library(
     visibility = ["//platform/common/diag_demon/code:__subpackages__"],
     deps = [
         "//ara/log",
-        "//diag/jobs/skeleton:did_job_lib",
+        "//ara/diag:uds_lib",
     ],
 )
 

@@ -26,7 +26,7 @@ class InitializeJsonParserTest: public testing::TestWithParam<std::tuple<nlohman
 };
 
 TEST_P(InitializeJsonParserTest, InitializeTest) {
-    auto parser = simba::core::json::JsonParser::Parser(this->data);
+    auto parser = srp::core::json::JsonParser::Parser(this->data);
     EXPECT_EQ(parser.has_value(), ans);
 }
 
@@ -49,7 +49,7 @@ class GetNumberTest: public testing::TestWithParam<std::tuple<std::string, int>>
 };
 
 TEST_P(GetNumberTest, GetNumberTest) {
-    auto parser = simba::core::json::JsonParser::Parser(nlohmann::json::parse(data));
+    auto parser = srp::core::json::JsonParser::Parser(nlohmann::json::parse(data));
     ASSERT_TRUE(parser.has_value());
     auto val = parser.value().GetNumber<int>("value");
     ASSERT_TRUE(val.has_value());

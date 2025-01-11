@@ -16,7 +16,7 @@
 #include "mw/i2c_service/data/header.h"
 #include "communication-core/sockets/stream_ipc_socket.h"
 
-namespace simba {
+namespace srp {
 namespace i2c {
 class II2CController{
  protected:
@@ -65,6 +65,6 @@ class II2CController{
   virtual ~II2CController() = default;
 };
 }  // namespace i2c
-}  // namespace simba
+}  // namespace srp
 
 #endif  // MW_I2C_SERVICE_CONTROLLER_II2C_CONTROLLER_H_

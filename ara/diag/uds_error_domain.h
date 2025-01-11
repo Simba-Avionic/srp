@@ -11,6 +11,8 @@
 #ifndef ARA_DIAG_UDS_ERROR_DOMAIN_H_
 #define ARA_DIAG_UDS_ERROR_DOMAIN_H_
 
+#include <string>
+
 #include "ara/core/error_code.h"
 #include "ara/core/error_domain.h"
 
@@ -39,8 +41,8 @@ class UdsErrorDomain final : public ara::core::ErrorDomain {
   using Errc = UdsDiagErrc;
 
   UdsErrorDomain() noexcept;
-  const char* Name() const noexcept override;
-  const char* Message(
+  const std::string Name() const noexcept override;
+  const std::string Message(
       ara::core::ErrorDomain::CodeType errorCode) const noexcept override;
 };
 

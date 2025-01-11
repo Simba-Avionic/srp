@@ -19,7 +19,7 @@
 #include "ara/log/log.h"
 #include "ara/com/com_error_domain.h"
 #include "diag/jobs/skeleton/did_job.h"
-namespace simba {
+namespace srp {
 namespace logger {
 
 using SaveThreadHandler =
@@ -52,6 +52,6 @@ diag::DiagResponse Write(const std::vector<uint8_t>& payload) {
 };
 
 }  // namespace logger
-}  // namespace simba
+}  // namespace srp
 
 #endif  // APPS_EC_LOGGER_SERVICE_SERVICE_LOGGER_DID_HPP_

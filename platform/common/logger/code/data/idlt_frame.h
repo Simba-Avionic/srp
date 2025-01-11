@@ -14,7 +14,7 @@
 #include <string>
 #include <vector>
 
-namespace simba {
+namespace srp {
 namespace dlt {
 namespace data {
 class IDLTFrame {
@@ -24,5 +24,5 @@ class IDLTFrame {
 };
 }  // namespace data
 }  // namespace dlt
-}  // namespace simba
+}  // namespace srp
 #endif  // PLATFORM_COMMON_LOGGER_CODE_DATA_IDLT_FRAME_H_

@@ -9,11 +9,11 @@
  *
  */
 #include "communication-core/someip-database/code/config_db.h"
-namespace simba {
+namespace srp {
 namespace com {
 namespace someip {
 namespace objects {
-simba::core::ErrorCode ConfigDb::InsertObject(const std::string& key,
+srp::core::ErrorCode ConfigDb::InsertObject(const std::string& key,
                                        const Endpoint& item) noexcept {
   if (this->item_list.find(key) != this->item_list.end()) {
     return core::ErrorCode::kError;
@@ -38,4 +38,4 @@ ConfigDb::~ConfigDb() {}
 }  // namespace objects
 }  // namespace someip
 }  // namespace com
-}  // namespace simba
+}  // namespace srp

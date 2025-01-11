@@ -8,8 +8,8 @@
  * @copyright Copyright (c) 2024
  *
  */
-#ifndef ARA_COM_SHM_SHM_BUFFOR_SKELETON_H_
-#define ARA_COM_SHM_SHM_BUFFOR_SKELETON_H_
+#ifndef BINDINGS_COMMON_SHM_SHM_BUFFOR_SKELETON_H_
+#define BINDINGS_COMMON_SHM_SHM_BUFFOR_SKELETON_H_
 
 #include <fcntl.h>
 #include <pthread.h>
@@ -78,4 +78,4 @@ class ShmBufforSkeleton final {
 }  // namespace shm
 }  // namespace com
 }  // namespace ara
-#endif  // ARA_COM_SHM_SHM_BUFFOR_SKELETON_H_
+#endif  // BINDINGS_COMMON_SHM_SHM_BUFFOR_SKELETON_H_

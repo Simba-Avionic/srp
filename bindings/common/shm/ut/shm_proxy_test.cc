@@ -10,7 +10,7 @@
  */
 #include <gtest/gtest.h>
 #include <pthread.h>
-#include "ara/com/shm/shm_proxy.h"
+#include "bindings/common/shm/shm_proxy.h"
 
 // Test struct for shared memory
 struct TestData {

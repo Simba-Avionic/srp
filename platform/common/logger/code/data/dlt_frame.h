@@ -17,7 +17,7 @@
 
 #include "platform/common/logger/code/data/dlt_log_type.h"
 #include "platform/common/logger/code/data/idlt_frame.h"
-namespace simba {
+namespace srp {
 namespace dlt {
 namespace data {
 template <typename T>
@@ -101,5 +101,5 @@ class DltFrame final : public IDLTFrame {
 };
 }  // namespace data
 }  // namespace dlt
-}  // namespace simba
+}  // namespace srp
 #endif  // PLATFORM_COMMON_LOGGER_CODE_DATA_DLT_FRAME_H_

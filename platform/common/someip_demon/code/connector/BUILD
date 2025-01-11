@@ -4,7 +4,7 @@ cc_library(
     hdrs = ["service_connector.h"],
     visibility = ["//platform/common/someip_demon/code:__subpackages__"],
     deps = [
-        "//ara/com/socket:ipc_socket",
+        "//bindings/common/socket:ipc_socket",
         "//ara/com/someip:someip_data",
         "//ara/log",
         "//core/common:condition_lib",
@@ -33,7 +33,7 @@ cc_library(
     ],
     visibility = ["//platform/common/someip_demon/code/connector:__pkg__"],
     deps = [
-        "//ara/com/socket:ipc_socket",
+        "//bindings/common/socket:ipc_socket",
         "//ara/com/someip:someip_data",
         "//ara/log",
         "//core/common:condition_lib",
