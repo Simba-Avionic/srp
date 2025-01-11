@@ -9,7 +9,10 @@
     "adaptive_application": {
         "ExampleApp": {
             "app": {
-                "bootMode": 0,
+                "functional_groups": [
+                    "Running",
+                    "SafetyMode"
+                ],
                 "parms": "-t -10- 100",
                 "logger": {
                     "app_id": "EXAA",

@@ -24,16 +24,16 @@ cc_library(
         ],
 )
 
-cc_binary(
-    name = "gpio_service",
-    deps = [
-        ":gpio_service_lib",
-        "//deployment/mw/gpio:ara",
-        ],
-    srcs = [
-        "main.cpp",
-        ],
-    visibility = [
-        "//deployment:__subpackages__",
-    ],
-)
+# cc_binary(
+#     name = "gpio_service",
+#     deps = [
+#         ":gpio_service_lib",
+#         "//deployment/mw/gpio:ara",
+#         ],
+#     srcs = [
+#         "main.cpp",
+#         ],
+#     visibility = [
+#         "//deployment:__subpackages__",
+#     ],
+# )

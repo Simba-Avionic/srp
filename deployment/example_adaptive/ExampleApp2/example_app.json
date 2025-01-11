@@ -9,7 +9,10 @@
     "adaptive_application": {
         "ExampleApp2": {
             "app": {
-                "bootMode": 0,
+                "functional_groups": [
+                    "Running",
+                    "SafetyMode"
+                ],
                 "parms": "-t -10- 100",
                 "logger": {
                     "app_id": "EXA2",
@@ -40,8 +43,7 @@
                     ]
                 }
             },
-            "provide": [
-            ],
+            "provide": [],
             "require": [
                 {
                     "name": "ExampleService as service_ipc_1",
