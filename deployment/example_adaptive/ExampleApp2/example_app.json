@@ -47,8 +47,9 @@
             "require": [
                 {
                     "name": "ExampleService as service_ipc_1",
-                    "on": "ipc",
-                    "instance": 2
+                    "on": "udp",
+                    "port": "10001",
+                    "instance": 1
                 },
                 {
                     "name": "ExampleService as service_ipc_2",

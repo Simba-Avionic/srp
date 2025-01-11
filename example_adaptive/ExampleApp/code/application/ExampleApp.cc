@@ -40,20 +40,18 @@ int ExampleApp::Run(const std::stop_token& token) {
       "/simba/example/ExampleApp/dtcMonitor1"};
   ara::diag::Monitor dtc_{dtc_instance, [](auto) {}};
   ExampleDiD did{diag_instance};
+  MyExampleService serv{
+      ara::core::InstanceSpecifier{"simba/example/ExampleApp/service2"}};
 
+  serv.StartOffer();
   did.Offer();
   dtc_.Offer();
 
   ara::log::LogInfo() << "App started";
-  while (!token.stop_requested()) {
-    dtc_.ReportMonitorAction(ara::diag::MonitorAction::kFailed);
-    core::condition::wait_for(std::chrono::seconds{1}, token);
-    dtc_.ReportMonitorAction(ara::diag::MonitorAction::kPassed);
-    core::condition::wait_for(std::chrono::seconds{1}, token);
-  }
-
+  core::condition::wait(token);
   ara::log::LogInfo() << "App Stop";
   did.StopOffer();
+  serv.StopOffer();
   return 0;
 }
 

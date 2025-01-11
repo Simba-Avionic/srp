@@ -23,6 +23,7 @@ cpu_def(
         "//deployment/platform/logger",
         "//deployment/platform/someip_demon",
         "//deployment/platform/state_manager",
+        "//deployment/example_adaptive/ExampleApp2",
     ],
 )
 
