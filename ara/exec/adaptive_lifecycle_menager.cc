@@ -71,8 +71,7 @@ AdaptiveLifecycleMenager::AdaptiveLifecycleMenager(
       exec_logger{
           ara::log::LoggingMenager::GetInstance()->CreateLogger("exec", "")} {
   const auto help_path = ara::core::StringView{argv[0]};
-  const auto app_path =
-      "/opt/" + help_path.substr(help_path.find_last_of("/") + 1) + "/";
+  const auto app_path = help_path.substr(0, help_path.find_last_of("/") - 3);
 
   exec_logger.LogDebug() << "App path: " << app_path;
 

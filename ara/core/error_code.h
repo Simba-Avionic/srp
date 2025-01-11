@@ -24,16 +24,16 @@ class ErrorCode final {
 
  public:
   template <typename EnumT>
-  constexpr ErrorCode(EnumT e, ErrorDomain::SupportDataType data =
+  ErrorCode(EnumT e, ErrorDomain::SupportDataType data =
                                    ErrorDomain::SupportDataType()) noexcept
       : value_{e}, data_{data}, domain_{ErrorDomain{e}} {}
 
-  constexpr ErrorCode(ErrorDomain::CodeType value, const ErrorDomain& domain,
+  ErrorCode(ErrorDomain::CodeType value, const ErrorDomain& domain,
                       ErrorDomain::SupportDataType data =
                           ErrorDomain::SupportDataType()) noexcept
       : value_{value}, data_{data}, domain_{domain} {}
 
-  constexpr ErrorDomain::CodeType Value() const noexcept { return value_; }
+  ErrorDomain::CodeType Value() const noexcept { return value_; }
 
   const ErrorDomain& Domain() const noexcept { return this->domain_; }
   ErrorDomain::SupportDataType SupportData() const noexcept {

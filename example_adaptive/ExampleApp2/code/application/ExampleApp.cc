@@ -36,48 +36,32 @@ int ExampleApp::Run(const std::stop_token& token) {
   std::shared_ptr<simba::example::ExampleServiceHandler> handler_{nullptr};
   simba::example::ExampleServiceProxy proxy{
       ara::core::InstanceSpecifier{"simba/example/ExampleApp2/service_ipc_1"}};
-        simba::example::ExampleServiceProxy proxy2{
-      ara::core::InstanceSpecifier{"simba/example/ExampleApp2/service_ipc_2"}};
-  proxy.StartFindService([&handler_](auto handler) {
-    handler_ = handler;
-    ara::log::LogInfo() << "Try Subscribe to service";
-    handler->Status.Subscribe(1, [&handler](const uint8_t& status) {
-      ara::log::LogInfo() << "New status for my event !!! (" << status << ")";
-      handler->Status.SetReceiveHandler([&handler]() {
-        const auto val = handler->Status.GetNewSamples();
-        if (val.HasValue()) {
-          ara::log::LogInfo()
-              << "New value for my event !!! (" << val.Value() << ")";
-        } else {
-          ara::log::LogError()
-              << "Error with getting new value: " << val.Error();
-        }
-      });
-    });
-  });
-  proxy2.StartFindService([&handler_](auto handler) {
-    ara::log::LogInfo() << "Try Subscribe to service";
-    handler->Status.Subscribe(1, [&handler](const uint8_t& status) {
-      ara::log::LogInfo() << "New status for my event !!! (" << status << ")";
-      handler->Status.SetReceiveHandler([&handler]() {
-        const auto val = handler->Status.GetNewSamples();
-        if (val.HasValue()) {
-          ara::log::LogInfo()
-              << "New value for my event !!! (" << val.Value() << ")";
-        } else {
-          ara::log::LogError()
-              << "Error with getting new value: " << val.Error();
-        }
-      });
-    });
-  });
+  proxy.StartFindService([&handler_](auto handler) { handler_ = handler; });
   while (!token.stop_requested()) {
     if (handler_ != nullptr) {
-      const auto& res = handler_->SetStatus3();
-      if (!res.HasValue()) {
-        ara::log::LogError() << "Callmethod Error! :" << res.Error();
-      } else {
-        ara::log::LogInfo() << "Call method Pass";
+      {
+        const auto& res = handler_->SetStatus3();
+        if (!res.HasValue()) {
+          ara::log::LogError() << "1) Call method Error! :" << res.Error();
+        } else {
+          ara::log::LogInfo() << "1) Call method Pass";
+        }
+      }
+      {
+        const auto& res = handler_->SetStatus4();
+        if (!res.HasValue()) {
+          ara::log::LogError() << "2) Call method Error! :" << res.Error();
+        } else {
+          ara::log::LogInfo() << "2) Call method Pass";
+        }
+      }
+      {
+        const auto& res = handler_->SetStatus5();
+        if (!res.HasValue()) {
+          ara::log::LogError() << "3) Call method Error! :" << res.Error();
+        } else {
+          ara::log::LogInfo() << "3) Call method Pass";
+        }
       }
     }
     core::condition::wait_for(std::chrono::seconds{5}, token);

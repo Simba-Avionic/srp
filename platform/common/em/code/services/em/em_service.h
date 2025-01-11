@@ -10,33 +10,35 @@
  */
 #ifndef PLATFORM_COMMON_EM_CODE_SERVICES_EM_EM_SERVICE_H_
 #define PLATFORM_COMMON_EM_CODE_SERVICES_EM_EM_SERVICE_H_
+#include <memory>
+#include <optional>
 #include <string>
 #include <unordered_map>
-#include <vector>
-#include <optional>
 #include <utility>
+#include <vector>
+#include <functional>
 
 #include "app_config.h"
+#include "core/json/json_parser.h"
+#include "platform/common/em/code/services/em/i_app_db.h"
 
 namespace simba {
 namespace em {
 namespace service {
 class EmService {
  private:
-  std::vector<std::uint8_t> app_level_list{};
-  std::vector<data::AppConfig> app_list{};
+  uint16_t active_state{0U};
+  const std::shared_ptr<data::IAppDb> db_;
+  const std::function<void(const uint16_t&)> update_callback_;
   bool IsSrpApp(const std::string& path) noexcept;
-  std::optional<data::AppConfig> GetAppConfig(const std::string& path) noexcept;
-  pid_t StartApp(const simba::em::service::data::AppConfig &app);
+
+  pid_t StartApp(const simba::em::service::data::AppConfig& app);
+
  public:
-  std::vector<service::data::AppConfig> GetAppList() {
-    return this->app_list;
-  }
   void LoadApps() noexcept;
-  void StartApps() noexcept;
-  void StartApps(const uint8_t level) noexcept;
+  void SetActiveState(const uint16_t& state_id_) noexcept;
   std::optional<pid_t> RestartApp(const uint16_t appID);
-  EmService(/* args */);
+  EmService(std::shared_ptr<data::IAppDb> db, const std::function<void(const uint16_t&)>&& update_callback);
   ~EmService();
 };
 

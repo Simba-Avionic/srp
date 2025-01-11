@@ -24,5 +24,6 @@ adaptive_application(
     bin = "//platform/common/logger/code:logger",
     etcs = ["config.json"],
     model_src = ["//deployment/platform/logger:instance"],
+    # tar_path = "platform/",
     visibility = ["//visibility:public"],
 )

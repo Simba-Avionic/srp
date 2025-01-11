@@ -13,8 +13,8 @@
 #define CORE_JSON_JSON_PARSER_H_
 
 #include <fstream>
-#include <string>
 #include <optional>
+#include <string>
 #include <vector>
 
 #include "nlohmann/json.hpp"
@@ -31,7 +31,7 @@ class JsonParser {
   explicit JsonParser(const std::string& data);
   explicit JsonParser(nlohmann::json json);
   static std::optional<JsonParser> Parser(nlohmann::json obj) noexcept;
-  std::optional<JsonParser> GetObject(const std::string &name) const;
+  std::optional<JsonParser> GetObject(const std::string& name) const;
   nlohmann::json GetObject() const;
   std::optional<std::string> GetString(const std::string& name) const noexcept;
   // std::optional<nlohmann::json> GetArray(const std::string& name);
@@ -41,10 +41,10 @@ class JsonParser {
       return std::nullopt;
     }
     if (!obj.at(name).is_array()) {
-    return std::nullopt;
+      return std::nullopt;
     }
     std::vector<T> res;
-    for (const T &value : obj.at(name)) {
+    for (const T& value : obj.at(name)) {
       res.push_back(value);
     }
     return res;

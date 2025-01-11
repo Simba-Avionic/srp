@@ -38,7 +38,7 @@ class RoutableUdsService {
  private:
   const uint8_t mSid;
   bool mOffered;
-  const ara::core::InstanceSpecifier &mSpecifier;
+  const ara::core::InstanceSpecifier mSpecifier;
   const ara::log::Logger &diag_logger_;
   std::string job_id_{""};
   const std::unique_ptr<ara::com::soc::ISocketStream> sock_;

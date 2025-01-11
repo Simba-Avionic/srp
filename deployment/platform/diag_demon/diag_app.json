@@ -6,7 +6,13 @@
     "adaptive_application": {
         "diag_demon": {
             "app": {
-                "bootMode": 10,
+                "functional_groups": [
+                    "Startup",
+                    "Startup2",
+                    "Platform",
+                    "Running",
+                    "SafetyMode"
+                ],
                 "parms": "",
                 "logger": {
                     "app_id": "DIAG",

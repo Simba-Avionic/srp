@@ -1,4 +1,7 @@
 from __future__ import annotations
+
+import hashlib
+
 from deployment.tools.ara.diag.diag_db import *
 from deployment.tools.ara.someip.lib.someip_db import *
 
@@ -87,9 +90,9 @@ class LogerConfig:
         return res
 
 class AdaptiveApplication:
-    def __init__(self,name:str,bootMode:str,logger:LogerConfig) -> None:
+    def __init__(self,name:str,logger:LogerConfig, functional_groups:list[str]) -> None:
         self.name = name
-        self.bootMode = bootMode
+        self.id = int(hashlib.shake_128(name.encode('utf-8')).hexdigest(2), 16)
         self.logger = logger
         self.parms = ""
         self.startup_delay = 0
@@ -97,6 +100,8 @@ class AdaptiveApplication:
         self.provide_uds: dict[str, UdsItem] = {}
         self.provide_dtc: dict[str, DtcItem] = {}
         self.require_someip: dict[str,SomeipItem] = {}
+        self.functional_groups = functional_groups
+
     def GetDtcList(self) -> dict[str,diag_dtc]:
         res = {}
         for key,val in self.provide_dtc.items():

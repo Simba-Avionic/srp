@@ -8,11 +8,13 @@
  * @copyright Copyright (c) 2024
  *
  */
+#include <thread>  // NOLINT
+
 #include "ara/exec/adaptive_lifecycle.h"
 #include "example_adaptive/ExampleApp/code/application/ExampleApp.h"
 
 int main(int argc, char const *argv[]) {
-  // setsid();
+  std::this_thread::sleep_for(std::chrono::seconds{2});
   return ara::exec::RunAdaptiveLifecycle<simba::example::ExampleApp>(argc,
                                                                      argv);
 }

@@ -61,7 +61,7 @@ int SomeIpApplication::Run(const std::stop_token& token) {
 int SomeIpApplication::Initialize(
     const std::map<ara::core::StringView, ara::core::StringView> parms) {
   const auto& json = core::json::JsonParser::Parser(
-      std::string{"/srp/opt/cpu_simba/platform_config.json"});
+      std::string{"/srp/platform/etc/platform_config.json"});
   if (!json.has_value()) {
     ara::log::LogError() << "Json file with network config not exist";
     return EXIT_FAILURE;

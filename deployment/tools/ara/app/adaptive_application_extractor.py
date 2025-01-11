@@ -12,8 +12,9 @@ class AdaptiveApplicationExtractor:
         return out_json
     def CreateSrpAppJson(app: AdaptiveApplication):
         out_json = {}
-        out_json["startup_prio"] = app.bootMode
+        out_json["app_name"] = app.name
+        out_json["app_id"] = app.id
+        out_json["bin_path"] = f"/srp/opt/{app.name.split(".")[-1]}/bin/{app.name.split(".")[-1]}"
         out_json["parms"] = app.parms
-        out_json["startup_after_delay"] = app.startup_delay
-        out_json["bin_path"] = f"/srp/opt/{app.name}/bin/{app.name}"
+        out_json["fg_list"] = app.functional_groups
         return out_json
