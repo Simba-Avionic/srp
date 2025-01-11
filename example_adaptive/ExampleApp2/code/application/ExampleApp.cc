@@ -15,10 +15,10 @@
 
 #include "ara/log/log.h"
 #include "core/common/condition.h"
-#include "simba/example/ExampleService/ExampleServiceHandler.h"
-// #include "simba/example/ExampleDataStructure.h"
-// #include "simba/example/ExampleServiceSkeleton.h"
-namespace simba {
+#include "srp/example/ExampleService/ExampleServiceHandler.h"
+// #include "srp/example/ExampleDataStructure.h"
+// #include "srp/example/ExampleServiceSkeleton.h"
+namespace srp {
 namespace example {
 ExampleApp::ExampleApp() {}
 ExampleApp::~ExampleApp() {}
@@ -33,9 +33,9 @@ int ExampleApp::Initialize(
 
 int ExampleApp::Run(const std::stop_token& token) {
   ara::log::LogInfo() << "App start";
-  std::shared_ptr<simba::example::ExampleServiceHandler> handler_{nullptr};
-  simba::example::ExampleServiceProxy proxy{
-      ara::core::InstanceSpecifier{"simba/example/ExampleApp2/service_ipc_1"}};
+  std::shared_ptr<srp::example::ExampleServiceHandler> handler_{nullptr};
+  srp::example::ExampleServiceProxy proxy{
+      ara::core::InstanceSpecifier{"srp/example/ExampleApp2/service_ipc_1"}};
   proxy.StartFindService([&handler_](auto handler) { handler_ = handler; });
   while (!token.stop_requested()) {
     if (handler_ != nullptr) {
@@ -72,4 +72,4 @@ int ExampleApp::Run(const std::stop_token& token) {
 }
 
 }  // namespace example
-}  // namespace simba
+}  // namespace srp

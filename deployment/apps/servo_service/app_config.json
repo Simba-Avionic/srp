@@ -5,7 +5,7 @@
         "deployment/system_definition/someip/servo_service/service.json",
         "deployment/system_definition/diag/jobs/servo_service/basic_did.json"
     ],
-    "package": "simba.apps",
+    "package": "srp.apps",
     "adaptive_application": {
         "servoService": {
             "app": {

@@ -8,8 +8,8 @@
  * @copyright Copyright (c) 2024
  *
  */
-#ifndef ARA_COM_SOCKET_MOCK_SOCKET_STREAM_MOCK_H_
-#define ARA_COM_SOCKET_MOCK_SOCKET_STREAM_MOCK_H_
+#ifndef BINDINGS_COMMON_SOCKET_MOCK_SOCKET_STREAM_MOCK_H_
+#define BINDINGS_COMMON_SOCKET_MOCK_SOCKET_STREAM_MOCK_H_
 
 #include <gmock/gmock.h>
 
@@ -21,8 +21,8 @@
 #include <utility>
 #include <vector>
 
-#include "ara/com/socket/Isocket_stream.h"
 #include "ara/core/result.h"
+#include "bindings/common/socket/Isocket_stream.h"
 namespace ara {
 namespace com {
 namespace soc {
@@ -65,4 +65,4 @@ class FacadeSocketStream : public ISocketStream {
 }  // namespace com
 }  // namespace ara
 
-#endif  // ARA_COM_SOCKET_MOCK_SOCKET_STREAM_MOCK_H_
+#endif  // BINDINGS_COMMON_SOCKET_MOCK_SOCKET_STREAM_MOCK_H_"

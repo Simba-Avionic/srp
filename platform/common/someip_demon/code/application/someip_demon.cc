@@ -25,7 +25,7 @@
 // #include "ara/com/someip/someip_frame.h"
 // #include "ara/com/someip/EndpointOption.h"
 
-namespace simba {
+namespace srp {
 namespace someip_demon {
 
 SomeIpApplication::SomeIpApplication(/* args */) : connector_list_{} {}
@@ -122,4 +122,4 @@ int SomeIpApplication::Initialize(
 }
 
 }  // namespace someip_demon
-}  // namespace simba
+}  // namespace srp

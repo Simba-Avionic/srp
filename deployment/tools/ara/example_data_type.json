@@ -1,5 +1,5 @@
 {
-    "package":"simba.example",
+    "package":"srp.example",
     "data_structure":{
         "ExampleDataStructure":{
             "name": "string",

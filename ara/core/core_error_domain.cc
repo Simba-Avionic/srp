@@ -10,6 +10,7 @@
  */
 #include "ara/core/core_error_domain.h"
 
+#include <string>
 #include <unordered_map>
 
 #include "ara/core/string_view.h"
@@ -27,12 +28,12 @@ const CoreErrorDomain domain_;
 }  // namespace
 
 CoreErrorDomain::CoreErrorDomain() noexcept : ErrorDomain{0x01} {}
-const char* CoreErrorDomain::Name() const noexcept {
-  return ara::core::StringView{"CoreErrorDomain"}.c_str();
+const std::string CoreErrorDomain::Name() const noexcept {
+  return std::string{"CoreErrorDomain"};
 }
-const char* CoreErrorDomain::Message(
+const std::string CoreErrorDomain::Message(
     ErrorDomain::CodeType errorCode) const noexcept {
-  return kKeyList[errorCode].c_str();
+  return kKeyList[errorCode];
 }
 ErrorCode MakeErrorCode(CoreErrc code,
                         ErrorDomain::SupportDataType data) noexcept {

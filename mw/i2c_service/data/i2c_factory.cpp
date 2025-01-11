@@ -11,7 +11,7 @@
 
 #include "mw/i2c_service/data/i2c_factory.h"
 
-namespace simba {
+namespace srp {
 namespace i2c {
 
 namespace {
@@ -44,4 +44,4 @@ std::optional<std::vector<uint8_t>> I2CFactory::GetPayload(const std::vector<uin
 }
 
 }  // namespace i2c
-}  // namespace simba
+}  // namespace srp

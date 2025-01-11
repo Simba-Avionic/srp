@@ -19,7 +19,7 @@
 
 #include "platform/common/someip_demon/code/db/find_service_item.h"
 #include "platform/common/someip_demon/code/db/service_item.h"
-namespace simba {
+namespace srp {
 namespace someip_demon {
 namespace db {
 class Database {
@@ -85,6 +85,6 @@ class Database {
 };
 }  // namespace db
 }  // namespace someip_demon
-}  // namespace simba
+}  // namespace srp
 
 #endif  // PLATFORM_COMMON_SOMEIP_DEMON_CODE_DB_DATABASE_H_

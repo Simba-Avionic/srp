@@ -18,7 +18,7 @@
 #include <memory>
 #include <string>
 
-namespace simba {
+namespace srp {
 namespace logger {
 
 class Data_t {
@@ -42,6 +42,6 @@ class Data_t {
 };
 
 }  // namespace logger
-}  // namespace simba
+}  // namespace srp
 
 #endif  // APPS_EC_LOGGER_SERVICE_DATA_TYPE_HPP_

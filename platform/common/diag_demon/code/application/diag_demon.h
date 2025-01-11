@@ -18,10 +18,9 @@
 #include <vector>
 
 #include "ara/exec/adaptive_application.h"
-#include "diag/jobs/job_common.h"
 #include "platform/common/diag_demon/code/services/uds_server.h"
 #include "platform/common/diag_demon/code/services/dtc/i_dtc_service.h"
-namespace simba {
+namespace srp {
 namespace platform {
 namespace diag_demon {
 
@@ -53,6 +52,6 @@ class DiagDemon : public ara::exec::AdaptiveApplication {
 
 }  // namespace diag_demon
 }  // namespace platform
-}  // namespace simba
+}  // namespace srp
 
 #endif  // PLATFORM_COMMON_DIAG_DEMON_CODE_APPLICATION_DIAG_DEMON_H_

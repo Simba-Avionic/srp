@@ -18,11 +18,11 @@
 #include "core/time/sys_time.hpp"
 #include "core/common/error_code.h"
 
-class MockTime : public simba::core::time::TimeChanger {
+class MockTime : public srp::core::time::TimeChanger {
  public:
   MOCK_METHOD(core::ErrorCode, ChangeSystemTime, (std::string time));
-  MOCK_METHOD(core::ErrorCode, ChangeSystemTime, (simba::core::time::Date_t date));
-  MOCK_METHOD(std::optional<simba::core::time::Date_t>, ReadSystemTime, ());
+  MOCK_METHOD(core::ErrorCode, ChangeSystemTime, (srp::core::time::Date_t date));
+  MOCK_METHOD(std::optional<srp::core::time::Date_t>, ReadSystemTime, ());
 };
 
 

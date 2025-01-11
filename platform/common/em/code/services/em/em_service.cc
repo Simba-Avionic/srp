@@ -28,7 +28,7 @@
 #include "ara/log/log.h"
 #include "platform/common/em/code/services/em/json_parser.h"
 
-namespace simba {
+namespace srp {
 namespace em {
 namespace service {
 
@@ -103,7 +103,7 @@ std::optional<pid_t> EmService::RestartApp(const uint16_t appID) {
   return std::nullopt;
 }
 
-pid_t EmService::StartApp(const simba::em::service::data::AppConfig& app) {
+pid_t EmService::StartApp(const srp::em::service::data::AppConfig& app) {
   pid_t pid{0};
   posix_spawnattr_t attr;
   posix_spawnattr_init(&attr);
@@ -120,4 +120,4 @@ pid_t EmService::StartApp(const simba::em::service::data::AppConfig& app) {
 
 }  // namespace service
 }  // namespace em
-}  // namespace simba
+}  // namespace srp

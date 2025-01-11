@@ -10,7 +10,7 @@
  */
 #include "core/csvdriver/csvdriver.h"
 #include <string>
-namespace simba {
+namespace srp {
 namespace csv {
 
 CSVDriver::CSVDriver(const char& separator): separator_(separator) {
@@ -34,4 +34,4 @@ int CSVDriver::WriteLine(const std::string& line) {
 }
 
 }  // namespace csv
-}  // namespace simba
+}  // namespace srp

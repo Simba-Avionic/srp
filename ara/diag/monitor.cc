@@ -73,7 +73,7 @@ ara::core::Result<void> Monitor::Offer() {
               .HasValue()) {
         break;
       }
-      simba::core::condition::wait_for(std::chrono::milliseconds{250}, token);
+      srp::core::condition::wait_for(std::chrono::milliseconds{250}, token);
     }
     this->init_monitor_callback_(ara::diag::InitMonitorReason::kRestart);
   });

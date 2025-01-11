@@ -19,7 +19,7 @@
 #include <cstdint>
 #include <optional>
 #include "core/uart/uart_driver.hpp"
-namespace simba {
+namespace srp {
 namespace core {
 namespace uart {
 
@@ -59,4 +59,4 @@ void UartDriver::Close() {
 
 }  // namespace uart
 }  // namespace core
-}  // namespace simba
+}  // namespace srp

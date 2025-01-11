@@ -18,7 +18,7 @@
 #include <unordered_set>
 
 #include "platform/common/em/code/services/em/app_config.h"
-namespace simba {
+namespace srp {
 namespace em {
 namespace service {
 namespace data {
@@ -73,5 +73,5 @@ class IAppDb {
 }  // namespace data
 }  // namespace service
 }  // namespace em
-}  // namespace simba
+}  // namespace srp
 #endif  // PLATFORM_COMMON_EM_CODE_SERVICES_EM_I_APP_DB_H_

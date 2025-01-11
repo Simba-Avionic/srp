@@ -13,10 +13,10 @@
 #include <memory>
 #include <vector>
 
-#include "ara/com/socket/proccess_socket.h"
+#include "bindings/common/socket/proccess_socket.h"
 #include "ara/log/logger.h"
 #include "platform/common/diag_demon/code/services/dtc/i_dtc_service.h"
-namespace simba {
+namespace srp {
 namespace platform {
 namespace diag_demon {
 namespace dtc {
@@ -37,6 +37,6 @@ class DtcService : public IDtcService {
 }  // namespace dtc
 }  // namespace diag_demon
 }  // namespace platform
-}  // namespace simba
+}  // namespace srp
 
 #endif  // PLATFORM_COMMON_DIAG_DEMON_CODE_SERVICES_DTC_DTC_SERVICE_H_

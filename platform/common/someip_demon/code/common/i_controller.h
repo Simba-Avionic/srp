@@ -18,7 +18,7 @@
 
 #include "ara/com/someip/someip_frame.h"
 #include "ara/core/result.h"
-namespace simba {
+namespace srp {
 namespace someip_demon {
 namespace common {
 class IController {
@@ -37,6 +37,6 @@ class IController {
 };
 }  // namespace common
 }  // namespace someip_demon
-}  // namespace simba
+}  // namespace srp
 
 #endif  // PLATFORM_COMMON_SOMEIP_DEMON_CODE_COMMON_I_CONTROLLER_H_

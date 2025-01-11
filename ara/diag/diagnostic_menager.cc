@@ -14,7 +14,7 @@
 #include <vector>
 
 #include "ara/diag/diag_error_domain.h"
-#include "simba/platform/diag/DtcComDataStructure.h"
+#include "srp/platform/diag/DtcComDataStructure.h"
 
 namespace ara {
 namespace diag {
@@ -29,10 +29,10 @@ void DiagnosticMenager::HandleNewMsg(
 
 ara::core::Result<void> DiagnosticMenager::SendDtcUpdate(
     const uint32_t& id, const uint8_t& new_status) noexcept {
-  simba::platform::diag::DtcComDataStructure msg{id, 0x01, new_status};
-  const auto raw_o = ara::com::Convert2Vector<
-      simba::platform::diag::DtcComDataStructure>::Conv(msg);
-  this->send_callback_to_("SIMBA.ARA.DTC", raw_o, com::IComClient::kDiag);
+  srp::platform::diag::DtcComDataStructure msg{id, 0x01, new_status};
+  const auto raw_o = srp::data::Convert2Vector<
+      srp::platform::diag::DtcComDataStructure>::Conv(msg);
+  this->send_callback_to_("SRP.ARA.DTC", raw_o, com::IComClient::kDiag);
 
   return {};
 }
@@ -47,21 +47,21 @@ std::shared_ptr<DiagnosticMenager> DiagnosticMenager::GetInstance() noexcept {
 ara::core::Result<void> DiagnosticMenager::RegisterDtcHandler(
     const uint32_t& id, DtcUpdateCallback&& callback_) {
   if (this->dtc_handler_list_.insert({id, std::move(callback_)}).second) {
-    simba::platform::diag::DtcComDataStructure msg{id, 0x00, 0x00};
+    srp::platform::diag::DtcComDataStructure msg{id, 0x00, 0x00};
 
-    const auto raw_o = ara::com::Convert2Vector<
-        simba::platform::diag::DtcComDataStructure>::Conv(msg);
+    const auto raw_o = srp::data::Convert2Vector<
+        srp::platform::diag::DtcComDataStructure>::Conv(msg);
 
-    if (this->send_callback_to_("SIMBA.ARA.DTC", raw_o,
+    if (this->send_callback_to_("SRP.ARA.DTC", raw_o,
                                 com::IComClient::kDiag)) {
       return {};
     }
 
   } else {
-    simba::platform::diag::DtcComDataStructure msg{id, 0x00, 0x00};
-    const auto raw_o = ara::com::Convert2Vector<
-        simba::platform::diag::DtcComDataStructure>::Conv(msg);
-    if (this->send_callback_to_("SIMBA.ARA.DTC", raw_o,
+    srp::platform::diag::DtcComDataStructure msg{id, 0x00, 0x00};
+    const auto raw_o = srp::data::Convert2Vector<
+        srp::platform::diag::DtcComDataStructure>::Conv(msg);
+    if (this->send_callback_to_("SRP.ARA.DTC", raw_o,
                                 com::IComClient::kDiag)) {
       return {};
     }

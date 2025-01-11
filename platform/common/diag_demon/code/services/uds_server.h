@@ -19,7 +19,7 @@
 #include "ara/log/logging_menager.h"
 #include "communication-core/sockets/Isocket_stream.h"
 #include "platform/common/diag_demon/code/services/i_validator.h"
-namespace simba {
+namespace srp {
 namespace platform {
 namespace diag_demon {
 namespace uds {
@@ -80,6 +80,6 @@ class UdsServer {
 }  // namespace uds
 }  // namespace diag_demon
 }  // namespace platform
-}  // namespace simba
+}  // namespace srp
 
 #endif  // PLATFORM_COMMON_DIAG_DEMON_CODE_SERVICES_UDS_SERVER_H_

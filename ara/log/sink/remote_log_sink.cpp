@@ -67,8 +67,8 @@ void RemoteLogSink::Loop(std::stop_token token) {
   while (!token.stop_requested()) {
     auto data = q.GetWithoutRemove(token);
     if (data.has_value()) {
-      if (ipc_soc.Transmit("SIMBA.ARA.DLT", 0, data.value()) ==
-          simba::core::ErrorCode::kOk) {
+      if (ipc_soc.Transmit("SRP.ARA.DLT", 0, data.value()) ==
+          srp::core::ErrorCode::kOk) {
         q.Remove();
         drop_number = 0;
       } else {

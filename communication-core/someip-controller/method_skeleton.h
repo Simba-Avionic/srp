@@ -27,7 +27,7 @@
 #include "communication-core/someip/message_type.h"
 #include "core/logger/Logger.h"
 
-namespace simba {
+namespace srp {
 namespace com {
 namespace someip {
 class MethodSkeleton : public ISkeleton {
@@ -79,5 +79,5 @@ class MethodSkeleton : public ISkeleton {
 };
 }  // namespace someip
 }  // namespace com
-}  // namespace simba
+}  // namespace srp
 #endif  // COMMUNICATION_CORE_SOMEIP_CONTROLLER_METHOD_SKELETON_H_

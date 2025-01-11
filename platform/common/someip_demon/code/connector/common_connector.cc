@@ -10,7 +10,7 @@
  */
 #include "platform/common/someip_demon/code/connector/common_connector.h"
 
-namespace simba {
+namespace srp {
 namespace someip_demon {
 namespace connectors {
 void CommonConnector::RegisterSockets(
@@ -22,4 +22,4 @@ void CommonConnector::RegisterSockets(
 
 }  // namespace connectors
 }  // namespace someip_demon
-}  // namespace simba
+}  // namespace srp

@@ -19,7 +19,7 @@
 
 #include "platform/common/em/code/services/em/app_config.h"
 #include "platform/common/em/code/services/em/i_app_db.h"
-namespace simba {
+namespace srp {
 namespace em {
 namespace service {
 namespace data {
@@ -57,5 +57,5 @@ class AppDb : public IAppDb {
 }  // namespace data
 }  // namespace service
 }  // namespace em
-}  // namespace simba
+}  // namespace srp
 #endif  // PLATFORM_COMMON_EM_CODE_SERVICES_EM_APP_DB_H_

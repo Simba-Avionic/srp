@@ -8,8 +8,8 @@
  * @copyright Copyright (c) 2024
  * 
  */
-#ifndef ARA_COM_FIFO_FIFO_PROXY_H_
-#define ARA_COM_FIFO_FIFO_PROXY_H_
+#ifndef BINDINGS_COMMON_FIFO_FIFO_PROXY_H_
+#define BINDINGS_COMMON_FIFO_FIFO_PROXY_H_
 
 #include <fcntl.h>
 #include <stdio.h>
@@ -22,7 +22,7 @@
 #include <array>
 
 #include "ara/com/com_error_domain.h"
-#include "ara/com/type_converter.h"
+#include "data/type_converter.h"
 #include "ara/core/instance_specifier.h"
 #include "ara/core/result.h"
 
@@ -50,11 +50,11 @@ class FifoProxy {
                                      "fifo not exist!");
     }
     std::array<uint8_t, 1025> buffor{};
-    // const auto data = ara::com::Convert2Vector<fifo_type>::Conv(value);
+    // const auto data = srp::data::Convert2Vector<fifo_type>::Conv(value);
     const auto res = read(fd, buffor.data(), 1025);
     close(fd);
     if (res > 0) {
-      const auto data = ara::com::Convert<fifo_type>::Conv(
+      const auto data = srp::data::Convert<fifo_type>::Conv(
           std::vector<uint8_t>{buffor.begin(), buffor.begin() + res});
       if (data.has_value()) {
         return data.value();
@@ -68,4 +68,4 @@ class FifoProxy {
 }  // namespace com
 }  // namespace ara
 
-#endif  // ARA_COM_FIFO_FIFO_PROXY_H_
+#endif  // BINDINGS_COMMON_FIFO_FIFO_PROXY_H_

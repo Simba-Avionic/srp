@@ -19,7 +19,7 @@
 #include "communication-core/someip-database/code/config_db.h"
 #include "communication-core/someip-database/code/config_db_parser.h"
 
-namespace simba {
+namespace srp {
 namespace com {
 namespace config {
 class ComConfig {
@@ -35,5 +35,5 @@ class ComConfig {
 };
 }  // namespace config
 }  // namespace com
-}  // namespace simba
+}  // namespace srp
 #endif  // COMMUNICATION_CORE_SOMEIP_DATABASE_CODE_COM_CONFIG_H_

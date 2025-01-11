@@ -19,7 +19,7 @@
 #include "communication-core/sockets/stream_ipc_socket.h"
 #include "core/i2c/i2c_driver.hpp"
 #include "mw/i2c_service/data/header.h"
-namespace simba {
+namespace srp {
 namespace mw {
 class I2CService final : public ara::exec::AdaptiveApplication {
  private:
@@ -36,7 +36,7 @@ class I2CService final : public ara::exec::AdaptiveApplication {
             const std::vector<uint8_t> &payload, std::shared_ptr<i2c::Header> headerPtr);
     std::optional<std::vector<uint8_t>> WriteRead(const std::vector<uint8_t> &payload,
                                                           std::shared_ptr<i2c::Header> headerPtr);
-    std::vector<uint8_t> ActionLogic(const std::shared_ptr<simba::i2c::Header> headerPtr,
+    std::vector<uint8_t> ActionLogic(const std::shared_ptr<srp::i2c::Header> headerPtr,
                                                    std::optional<std::vector<uint8_t>> payload);
 
  public:
@@ -46,6 +46,6 @@ class I2CService final : public ara::exec::AdaptiveApplication {
   I2CService();
 };
 }  // namespace mw
-}  // namespace simba
+}  // namespace srp
 
 #endif  // MW_I2C_SERVICE_SERVICE_I2C_SERVICE_H_

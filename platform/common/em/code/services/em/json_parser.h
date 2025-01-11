@@ -20,7 +20,7 @@
 #include "app_config.h"
 #include "core/json/json_parser.h"
 
-namespace simba {
+namespace srp {
 namespace em {
 namespace service {
 namespace json {
@@ -39,5 +39,5 @@ class JsonParser {
 }  // namespace json
 }  // namespace service
 }  // namespace em
-}  // namespace simba
+}  // namespace srp
 #endif  // PLATFORM_COMMON_EM_CODE_SERVICES_EM_JSON_PARSER_H_

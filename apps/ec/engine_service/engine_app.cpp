@@ -13,14 +13,14 @@
 #include "core/common/condition.h"
 #include "ara/log/log.h"
 
-namespace simba {
+namespace srp {
 namespace apps {
 
 namespace {
-  constexpr auto kPrimer_path_name = "simba/apps/EngineService/PrimerService";
-  constexpr auto kServo_path_name = "simba/apps/EngineService/ServoService";
-  constexpr auto kEngine_path_name = "simba/apps/EngineService/EngineService_ipc";
-  constexpr auto kEngine_udp_path_name = "simba/apps/EngineService/EngineService_udp";
+  constexpr auto kPrimer_path_name = "srp/apps/EngineService/PrimerService";
+  constexpr auto kServo_path_name = "srp/apps/EngineService/ServoService";
+  constexpr auto kEngine_path_name = "srp/apps/EngineService/EngineService_ipc";
+  constexpr auto kEngine_udp_path_name = "srp/apps/EngineService/EngineService_udp";
 }
 
 EngineApp::EngineApp():
@@ -61,4 +61,4 @@ int EngineApp::Initialize(const std::map<ara::core::StringView, ara::core::Strin
 }
 
 }  // namespace apps
-}  // namespace simba
+}  // namespace srp

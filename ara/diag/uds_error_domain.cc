@@ -10,6 +10,7 @@
  */
 #include "ara/diag/uds_error_domain.h"
 
+#include <string>
 #include <unordered_map>
 
 #include "ara/core/string_view.h"
@@ -43,12 +44,12 @@ const UdsErrorDomain domain_;
 
 UdsErrorDomain::UdsErrorDomain() noexcept
     : ara::core::ErrorDomain{0x8000000000000404} {}
-const char* UdsErrorDomain::Name() const noexcept {
-  return ara::core::StringView{"CoreErrorDomain"}.c_str();
+const std::string UdsErrorDomain::Name() const noexcept {
+  return std::string{"CoreErrorDomain"};
 }
-const char* UdsErrorDomain::Message(
+const std::string UdsErrorDomain::Message(
     ara::core::ErrorDomain::CodeType errorCode) const noexcept {
-  return kKeyList[errorCode].c_str();
+  return kKeyList[errorCode];
 }
 
 ara::core::ErrorCode MakeErrorCode(

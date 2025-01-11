@@ -22,7 +22,7 @@
 #include "communication-core/someip/message_code.h"
 #include "communication-core/someip/message_type.h"
 
-namespace simba {
+namespace srp {
 namespace com {
 namespace someip {
 
@@ -52,6 +52,6 @@ using FindCallback = std::function<void(
     const objects::Endpoint& endpoint, FindServiceCallbackResult res_callback)>;
 }  // namespace someip
 }  // namespace com
-}  // namespace simba
+}  // namespace srp
 
 #endif  // COMMUNICATION_CORE_SOMEIP_CONTROLLER_CALLBACKS_H_

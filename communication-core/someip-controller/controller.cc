@@ -17,7 +17,7 @@
 #include "core/common/error_code.h"
 #include "core/logger/Logger.h"
 
-namespace simba {
+namespace srp {
 namespace com {
 namespace someip {
 void Controller::DropTransferCallback(const uint16_t transfer_id) noexcept {
@@ -286,7 +286,7 @@ bool Controller::SendIpcMsg(const objects::Interface interface,
   if (this->ipc_soc_) {
     std::unique_lock lk{ipc_soc_mutex};
     return ipc_soc_->Transmit(interface.GetIp(), 0, std::move(payload)) ==
-           simba::core::ErrorCode::kOk;
+           srp::core::ErrorCode::kOk;
   }
   return false;
 }
@@ -296,7 +296,7 @@ bool Controller::SendUdpMsg(const objects::Interface interface,
     std::unique_lock lk{udp_soc_mutex};
     return udp_soc_->Transmit(interface.GetIp(), interface.GetPort(),
                               std::move(payload)) ==
-           simba::core::ErrorCode::kOk;
+           srp::core::ErrorCode::kOk;
   }
   return false;
 }
@@ -370,4 +370,4 @@ void Controller::Add(std::shared_ptr<IProxy> proxy) {
 
 }  // namespace someip
 }  // namespace com
-}  // namespace simba
+}  // namespace srp

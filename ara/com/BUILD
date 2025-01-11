@@ -7,7 +7,6 @@ cc_library(
     hdrs = [
         "com_error_domain.h",
         "someip_error.h",
-        "type_converter.h",
     ],
     visibility = ["//visibility:public"],
     deps = [
@@ -47,7 +46,13 @@ cc_library(
     deps = [
         "//ara/com:com_error_domain",
         "//ara/com:com_log",
-        "//ara/com/socket:ipc_socket",
+        "//bindings/common/socket:ipc_socket",
         "//ara/core:Result",
     ],
+)
+
+cc_library(
+    name = "types",
+    hdrs = ["types.h"],
+    visibility = ["//ara/com:__subpackages__"],
 )

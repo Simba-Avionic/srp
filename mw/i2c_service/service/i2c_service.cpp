@@ -15,11 +15,11 @@
 #include "mw/i2c_service/data/i2c_factory.h"
 #include "ara/log/log.h"
 #include "core/common/condition.h"
-namespace simba {
+namespace srp {
 namespace mw {
 
 namespace {
-    const constexpr char* I2C_IPC_ADDR = "SIMBA.I2C";
+    const constexpr char* I2C_IPC_ADDR = "SRP.I2C";
 }
 I2CService::I2CService():
     i2c_logger_(ara::log::LoggingMenager::GetInstance()->CreateLogger("i2c", "", ara::log::LogLevel::kInfo)) {}
@@ -63,7 +63,7 @@ std::optional<std::vector<uint8_t>> I2CService::WriteRead(const std::vector<uint
   return this->i2c_->Read(2);
 }
 
-std::vector<uint8_t> I2CService::ActionLogic(const std::shared_ptr<simba::i2c::Header> headerPtr,
+std::vector<uint8_t> I2CService::ActionLogic(const std::shared_ptr<srp::i2c::Header> headerPtr,
                                                       std::optional<std::vector<uint8_t>> payload) {
   if (headerPtr->GetAction() == i2c::ACTION::kWrite) {
       if (payload.value().size() == 1) {
@@ -141,4 +141,4 @@ int I2CService::Initialize(
 }
 
 }  // namespace mw
-}  // namespace simba
+}  // namespace srp

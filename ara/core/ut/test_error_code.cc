@@ -20,9 +20,9 @@ namespace core {
 class MockErrorDomain : public ara::core::ErrorDomain {
  public:
   MockErrorDomain() : ara::core::ErrorDomain(1) {}
-  MOCK_METHOD(const char*, Message, (CodeType), (const, override, noexcept));
-  const char* Name() const noexcept override {
-    return "MockErrorDomain";
+  MOCK_METHOD(const std::string, Message, (CodeType), (const, override, noexcept));
+  const std::string Name() const noexcept override {
+    return {"MockErrorDomain"};
   }
 };
 

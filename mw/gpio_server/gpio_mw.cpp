@@ -24,11 +24,11 @@
 #include "ara/log/log.h"
 using json = nlohmann::json;
 
-namespace simba {
+namespace srp {
 namespace mw {
 
 namespace {
-    constexpr auto SOCKET_PATH = "SIMBA.GPIO";
+    constexpr auto SOCKET_PATH = "SRP.GPIO";
 }
 
 int GPIOMWService::Init(std::unique_ptr<com::soc::ISocketStream> socket,
@@ -99,7 +99,7 @@ int GPIOMWService::Initialize(const std::map<ara::core::StringView,
     config = config_opt.value();
     this->InitPins();
     pin_did_ = std::make_unique<GpioMWDID>(
-                    ara::core::InstanceSpecifier("/simba/mw/gpio_service/gpio_pin_did"), this->gpio_driver_, config);
+                    ara::core::InstanceSpecifier("/srp/mw/gpio_service/gpio_pin_did"), this->gpio_driver_, config);
     pin_did_->StartOffer();
     this->sock_->StartRXThread();
     return 0;
@@ -149,4 +149,4 @@ int GPIOMWService::InitPins() {
 }
 
 }  // namespace mw
-}  // namespace simba
+}  // namespace srp

@@ -18,11 +18,11 @@
 #include <memory>
 
 #include "ara/exec/adaptive_application.h"
-#include "simba/apps/PrimerService/PrimerServiceHandler.h"
-#include "simba/apps/ServoService/ServoServiceHandler.h"
+#include "srp/apps/PrimerService/PrimerServiceHandler.h"
+#include "srp/apps/ServoService/ServoServiceHandler.h"
 #include "apps/ec/engine_service/service.hpp"
 
-namespace simba {
+namespace srp {
 namespace apps {
 using instace_t = ara::core::InstanceSpecifier;
 class EngineApp final : public ara::exec::AdaptiveApplication {
@@ -55,7 +55,7 @@ class EngineApp final : public ara::exec::AdaptiveApplication {
 };
 
 }  // namespace apps
-}  // namespace simba
+}  // namespace srp
 
 
 #endif  // APPS_EC_ENGINE_SERVICE_ENGINE_APP_HPP_

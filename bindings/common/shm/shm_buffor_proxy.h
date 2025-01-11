@@ -9,8 +9,8 @@
  *
  */
 
-#ifndef ARA_COM_SHM_SHM_BUFFOR_PROXY_H_
-#define ARA_COM_SHM_SHM_BUFFOR_PROXY_H_
+#ifndef BINDINGS_COMMON_SHM_SHM_BUFFOR_PROXY_H_
+#define BINDINGS_COMMON_SHM_SHM_BUFFOR_PROXY_H_
 
 #include <fcntl.h>
 #include <stdio.h>
@@ -66,4 +66,4 @@ class ShmBufforProxy final {
 }  // namespace com
 }  // namespace ara
 
-#endif  // ARA_COM_SHM_SHM_BUFFOR_PROXY_H_
+#endif  // BINDINGS_COMMON_SHM_SHM_BUFFOR_PROXY_H_

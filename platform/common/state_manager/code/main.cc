@@ -11,5 +11,5 @@
 #include "ara/exec/adaptive_lifecycle.h"
 #include "platform/common/state_manager/code/state_manager.h"
 int main(int argc, char const *argv[]) {
-  return ara::exec::RunAdaptiveLifecycle<simba::sm::StateManager>(argc, argv);
+  return ara::exec::RunAdaptiveLifecycle<srp::sm::StateManager>(argc, argv);
 }

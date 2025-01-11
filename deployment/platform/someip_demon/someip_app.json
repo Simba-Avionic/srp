@@ -1,6 +1,6 @@
 {
     "include": [],
-    "package": "simba.platform.com",
+    "package": "srp.platform.com",
     "adaptive_application": {
         "someip_demon": {
             "app": {

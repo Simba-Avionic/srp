@@ -12,7 +12,7 @@
 
 #include "apps/ec/engine_service/service.hpp"
 
-namespace simba {
+namespace srp {
 namespace apps {
 namespace service {
 
@@ -67,4 +67,4 @@ ara::core::Result<bool> MyEngineServiceSkeleton::SetMode(const std::uint8_t& in_
 
 }  // namespace service
 }  // namespace apps
-}  // namespace simba
+}  // namespace srp

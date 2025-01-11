@@ -4,7 +4,7 @@ cc_library(
     hdrs = ["routable_uds_service.h"],
     visibility = ["//ara/diag:__subpackages__"],
     deps = [
-        "//ara/com/socket:socket_ipc",
+        "//bindings/common/socket:socket_ipc",
         "//ara/core:Result",
         "//ara/core:instance_specifier",
         "//ara/core:model_db_lib",
@@ -21,7 +21,7 @@ cc_library(
     hdrs = ["routable_uds_service.h"],
     visibility = ["//ara/diag:__subpackages__"],
     deps = [
-        "//ara/com/socket:socket_ipc",
+        "//bindings/common/socket:socket_ipc",
         "//ara/core:Result",
         "//ara/core:instance_specifier",
         "//ara/core:model_db_lib",

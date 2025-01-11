@@ -15,11 +15,11 @@
 #include "ara/com/someip/EndpointOption.h"
 #include "ara/com/someip/HeaderStructure.h"
 #include "ara/com/someip/someip_frame.h"
-#include "ara/com/type_converter.h"
+#include "data/type_converter.h"
 #include "ara/log/logging_menager.h"
 #include "core/common/condition.h"
 
-namespace simba {
+namespace srp {
 namespace someip_demon {
 namespace someip {
 namespace sd {
@@ -27,14 +27,14 @@ namespace sd {
 std::vector<db::FindServiceItem> SdController::ParseServiceList(
     const std::vector<uint8_t>& raw) {
   std::vector<ara::com::someip::ServiceEntry> res{};
-  auto count = (ara::com::Convert<uint32_t>::Conv(raw).value_or(0U));
+  auto count = (srp::data::Convert<uint32_t>::Conv(raw).value_or(0U));
   if constexpr (std::endian::native != std::endian::big) {
-    count = ara::com::EndianConvert<std::uint32_t>::Conv(count) / 16;
+    count = srp::data::EndianConvert<std::uint32_t>::Conv(count) / 16;
   }
 
   for (auto i = 0; i < count; i++) {
     if (*(raw.begin() + 4 + (16 * i)) == 0x01) {
-      const auto t = ara::com::Convert<ara::com::someip::ServiceEntry>::Conv(
+      const auto t = srp::data::Convert<ara::com::someip::ServiceEntry>::Conv(
           std::vector<uint8_t>{raw.begin() + 4 + (16 * i), raw.end()});
       if (t.HasValue()) {
         res.push_back(t.Value());
@@ -47,13 +47,13 @@ std::vector<db::FindServiceItem> SdController::ParseServiceList(
   }
   std::vector<uint8_t> ip_raw{raw.begin() + 4 + 16 * count, raw.end()};
   std::vector<ara::com::someip::EndpointOption> ip_res{};
-  auto ip_count = (ara::com::Convert<uint32_t>::Conv(ip_raw).value_or(0U));
+  auto ip_count = (srp::data::Convert<uint32_t>::Conv(ip_raw).value_or(0U));
   if constexpr (std::endian::native != std::endian::big) {
-    ip_count = ara::com::EndianConvert<std::uint32_t>::Conv(ip_count) / 12;
+    ip_count = srp::data::EndianConvert<std::uint32_t>::Conv(ip_count) / 12;
   }
 
   for (auto i = 0; i < ip_count; i++) {
-    const auto t = ara::com::Convert<ara::com::someip::EndpointOption>::Conv(
+    const auto t = srp::data::Convert<ara::com::someip::EndpointOption>::Conv(
         std::vector<uint8_t>{ip_raw.begin() + 4 + (12 * i), ip_raw.end()});
     if (t.has_value()) {
       ip_res.push_back(t.value());
@@ -178,4 +178,4 @@ void SdController::FindService() noexcept {
 }  // namespace sd
 }  // namespace someip
 }  // namespace someip_demon
-}  // namespace simba
+}  // namespace srp

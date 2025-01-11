@@ -2,7 +2,7 @@
     "include": [
         "deployment/system_definition/someip/env_service/service.json"
     ],
-    "package": "simba.env",
+    "package": "srp.env",
     "adaptive_application": {
         "EnvApp": {
             "app": {

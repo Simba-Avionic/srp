@@ -112,18 +112,18 @@ SomeipFrame SomeipSdFrameBuilder::BuildFrame() noexcept {
   std::vector<uint8_t> payload{flag, res1, res2, res3};
 
   if constexpr (std::endian::native == std::endian::big) {
-    const auto res = ara::com::Convert2Vector<uint32_t>::Conv(entry_length);
+    const auto res = srp::data::Convert2Vector<uint32_t>::Conv(entry_length);
     payload.insert(payload.end(), res.begin(), res.end());
   } else {
     const auto temp_v =
-        ara::com::EndianConvert<std::uint32_t>::Conv(entry_length);
-    const auto res = ara::com::Convert2Vector<uint32_t>::Conv(temp_v);
+        srp::data::EndianConvert<std::uint32_t>::Conv(entry_length);
+    const auto res = srp::data::Convert2Vector<uint32_t>::Conv(temp_v);
     payload.insert(payload.end(), res.begin(), res.end());
   }
 
   for (const auto& item : this->entry_list_) {
     const auto t =
-        ara::com::Convert2Vector<ara::com::someip::ServiceEntry>::Conv(item);
+        srp::data::Convert2Vector<ara::com::someip::ServiceEntry>::Conv(item);
     payload.insert(payload.end(), t.begin(), t.end());
   }
   if (this->endpoint_list_.size() > 0) {
@@ -132,18 +132,18 @@ SomeipFrame SomeipSdFrameBuilder::BuildFrame() noexcept {
 
     if constexpr (std::endian::native == std::endian::big) {
       const auto res =
-          ara::com::Convert2Vector<uint32_t>::Conv(endpoint_length);
+          srp::data::Convert2Vector<uint32_t>::Conv(endpoint_length);
       payload.insert(payload.end(), res.begin(), res.end());
     } else {
       const auto temp_v =
-          ara::com::EndianConvert<std::uint32_t>::Conv(endpoint_length);
-      const auto res = ara::com::Convert2Vector<uint32_t>::Conv(temp_v);
+          srp::data::EndianConvert<std::uint32_t>::Conv(endpoint_length);
+      const auto res = srp::data::Convert2Vector<uint32_t>::Conv(temp_v);
       payload.insert(payload.end(), res.begin(), res.end());
     }
 
     for (const auto& item : this->endpoint_list_) {
       const auto t =
-          ara::com::Convert2Vector<ara::com::someip::EndpointOption>::Conv(
+          srp::data::Convert2Vector<ara::com::someip::EndpointOption>::Conv(
               item);
       payload.insert(payload.end(), t.begin(), t.end());
     }

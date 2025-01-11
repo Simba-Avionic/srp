@@ -18,14 +18,14 @@
 #include <utility>
 #include <vector>
 
-#include "ara/com/socket/proccess_socket.h"
+#include "bindings/common/socket/proccess_socket.h"
 #include "ara/com/someip/ServiceEntry.h"
 #include "ara/com/someip/someip_frame.h"
 #include "platform/common/someip_demon/code/common/udp_socket.h"
 #include "platform/common/someip_demon/code/connector/common_connector.h"
 #include "platform/common/someip_demon/code/connector/i_db.h"
 #include "platform/common/someip_demon/code/db/database.h"
-namespace simba {
+namespace srp {
 namespace someip_demon {
 namespace connectors {
 class SDConnector : public CommonConnector, public IDb {
@@ -73,5 +73,5 @@ class SDConnector : public CommonConnector, public IDb {
 };
 }  // namespace connectors
 }  // namespace someip_demon
-}  // namespace simba
+}  // namespace srp
 #endif  // PLATFORM_COMMON_SOMEIP_DEMON_CODE_CONNECTOR_SD_CONNECTOR_H_

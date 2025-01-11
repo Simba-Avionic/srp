@@ -31,8 +31,8 @@ void IPCSkeletonBindings::Start(std::stop_token token) {
   ara::com::LogInfo() << "IPCSkeletonBindings: " << "Started";
   buffor_.OfferService();
   cv_.Offer();
-  stream_sock_ = std::make_unique<simba::com::soc::StreamIpcSocket>();
-  stream_sock_->Init(simba::com::soc::SocketConfig{main_path_, 0, 0});
+  stream_sock_ = std::make_unique<srp::com::soc::StreamIpcSocket>();
+  stream_sock_->Init(srp::com::soc::SocketConfig{main_path_, 0, 0});
   stream_sock_->SetRXCallback(
       std::bind(&IPCSkeletonBindings::RXCallback, this, std::placeholders::_1,
                 std::placeholders::_2, std::placeholders::_3));
@@ -188,20 +188,20 @@ void IPCProxyBindings::Start(std::stop_token token) {
     if (buffor_.FindService().HasValue()) {
       break;
     } else {
-      simba::core::condition::wait_for(std::chrono::milliseconds{500}, token);
+      srp::core::condition::wait_for(std::chrono::milliseconds{500}, token);
     }
   }
   while (!token.stop_requested()) {
     if (cv_.Find().HasValue()) {
       break;
     } else {
-      simba::core::condition::wait_for(std::chrono::milliseconds{500}, token);
+      srp::core::condition::wait_for(std::chrono::milliseconds{500}, token);
     }
   }
   if (!token.stop_requested()) {
     shm_loop_thread_ = std::make_unique<std::jthread>(
         [this](std::stop_token token) { this->ShmLoop(token); });
-    stream_sock_ = std::make_unique<simba::com::soc::StreamIpcSocket>();
+    stream_sock_ = std::make_unique<srp::com::soc::StreamIpcSocket>();
   }
 }
 void IPCProxyBindings::Stop() {

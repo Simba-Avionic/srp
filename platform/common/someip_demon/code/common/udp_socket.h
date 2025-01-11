@@ -30,7 +30,7 @@
 
 #include "core/common/error_code.h"
 
-namespace simba {
+namespace srp {
 namespace common {
 namespace soc {
 class UdpSocket {
@@ -77,7 +77,7 @@ class UdpSocket {
    * @param config Config file
    * @return core::ErrorCode initialiaze status
    */
-  simba::core::ErrorCode Init(const std::string& local_ip,
+  srp::core::ErrorCode Init(const std::string& local_ip,
                               const std::uint16_t port_id);
   /**
    * @brief Setter for rx callback
@@ -107,6 +107,6 @@ class UdpSocket {
 };
 }  // namespace soc
 }  // namespace common
-}  // namespace simba
+}  // namespace srp
 
 #endif  // PLATFORM_COMMON_SOMEIP_DEMON_CODE_COMMON_UDP_SOCKET_H_

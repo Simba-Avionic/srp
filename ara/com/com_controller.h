@@ -17,7 +17,7 @@
 #include <vector>
 
 #include "ara/com/i_com_client.h"
-#include "ara/com/socket/proccess_socket.h"
+#include "bindings/common/socket/proccess_socket.h"
 #include "ara/core/result.h"
 
 namespace ara {

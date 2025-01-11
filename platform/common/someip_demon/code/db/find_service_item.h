@@ -15,7 +15,7 @@
 #include <functional>
 #include <vector>
 
-namespace simba {
+namespace srp {
 namespace someip_demon {
 namespace db {
 class FindServiceItem {
@@ -42,6 +42,6 @@ class FindServiceItem {
 };
 }  // namespace db
 }  // namespace someip_demon
-}  // namespace simba
+}  // namespace srp
 
 #endif  // PLATFORM_COMMON_SOMEIP_DEMON_CODE_DB_FIND_SERVICE_ITEM_H_

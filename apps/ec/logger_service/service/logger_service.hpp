@@ -19,14 +19,14 @@
 #include <mutex>  // NOLINT
 
 #include "ara/exec/adaptive_application.h"
-#include "simba/env/EnvApp/EnvAppHandler.h"
+#include "srp/env/EnvApp/EnvAppHandler.h"
 #include "core/timestamp/timestamp_driver.hpp"
 #include "core/csvdriver/csvdriver.h"
 #include "apps/ec/logger_service/data_type.hpp"
 #include "apps/ec/logger_service/service/service.hpp"
 #include "apps/ec/logger_service/service/logger_did.hpp"
 
-namespace simba {
+namespace srp {
 namespace logger {
 
 class LoggerService final : public ara::exec::AdaptiveApplication {
@@ -65,7 +65,7 @@ class LoggerService final : public ara::exec::AdaptiveApplication {
 };
 
 }  // namespace logger
-}  // namespace simba
+}  // namespace srp
 
 
 #endif  // APPS_EC_LOGGER_SERVICE_SERVICE_LOGGER_SERVICE_HPP_

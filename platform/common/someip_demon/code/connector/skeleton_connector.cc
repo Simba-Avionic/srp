@@ -16,7 +16,7 @@
 
 #include "core/common/condition.h"
 
-namespace simba {
+namespace srp {
 namespace someip_demon {
 namespace connectors {
 namespace {
@@ -91,4 +91,4 @@ void SkeletonConnector::TimeOutLoop(std::stop_token token) {
 }
 }  // namespace connectors
 }  // namespace someip_demon
-}  // namespace simba
+}  // namespace srp

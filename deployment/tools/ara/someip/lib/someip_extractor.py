@@ -29,7 +29,7 @@ class SomeipExtractor:
             file+="""#include "ara/core/instance_specifier.h"\n"""
             file+="""#include "ara/core/result.h"\n"""
             file+="""#include "ara/com/com_error_domain.h"\n"""
-            file+="""#include "ara/com/type_converter.h"\n"""
+            file+="""#include "data/type_converter.h"\n"""
             file+="""#include "ara/com/someip/method_proxy.h"\n\n"""
             temp = ""
             if method.in_parm.typ_str == "struct":
@@ -67,11 +67,11 @@ class SomeipExtractor:
             else:
                 if method.in_parm.typ_str == "struct":
                     file+="const "+method.in_parm.name.replace(".","::")+"& in_value) {\n"
-                    file+="    const auto in_vec = ara::com::Convert2Vector<"+method.in_parm.name.replace(".","::")+">::Conv(in_value);\n"
+                    file+="    const auto in_vec = srp::data::Convert2Vector<"+method.in_parm.name.replace(".","::")+">::Conv(in_value);\n"
                     file+="    const auto res_vec = this->HandleMethod(in_vec);\n"
                 else:
                     file+="const "+method.in_parm.typ_str.replace(".","::")+"& in_value) {\n"
-                    file+="    const auto in_vec = ara::com::Convert2Vector<"+method.in_parm.typ_str.replace(".","::")+">::Conv(in_value);\n"
+                    file+="    const auto in_vec = srp::data::Convert2Vector<"+method.in_parm.typ_str.replace(".","::")+">::Conv(in_value);\n"
                     file+="    const auto res_vec = this->HandleMethod(in_vec);\n"
             file+="    if(!res_vec.HasValue()){\n"
             file+="      return res_vec.Error();\n"
@@ -80,9 +80,9 @@ class SomeipExtractor:
                 file+="    return {};\n"
             else:
                 if method.out_parm.typ_str == "struct":
-                    file+="    const auto res = ara::com::Convert<"+method.out_parm.name.replace(".","::")+">::Conv(res_vec.Value());\n"
+                    file+="    const auto res = srp::data::Convert<"+method.out_parm.name.replace(".","::")+">::Conv(res_vec.Value());\n"
                 else:
-                    file+="    const auto res = ara::com::Convert<"+method.out_parm.typ_str.replace(".","::")+">::Conv(res_vec.Value());\n"
+                    file+="    const auto res = srp::data::Convert<"+method.out_parm.typ_str.replace(".","::")+">::Conv(res_vec.Value());\n"
                 file+="    if(res.has_value()) {\n"
                 file+="      return res.value();\n"
                 file+="    }\n"
@@ -178,7 +178,7 @@ class SomeipExtractor:
             file = """#ifndef """+(service_path+"/"+event.name).replace("/","_").upper()+"_PROXY_H_\n"
             file += """#define """+(service_path+"/"+event.name).replace("/","_").upper()+"_PROXY_H_\n"
             file+="""#include "ara/com/com_error_domain.h"\n"""
-            file+="""#include "ara/com/type_converter.h"\n"""
+            file+="""#include "data/type_converter.h"\n"""
             file+="""#include "ara/com/someip/event_proxy.h"\n"""
             if event.out_parm.typ_str == "struct":
                     temp = """#include \""""+event.out_parm.name.replace(".","/")+""".h\""""
@@ -203,9 +203,9 @@ class SomeipExtractor:
             file+="  "+event.name+"EventProxy(): ara::com::someip::EventProxy{"+hex(event.id)+"} {}\n"
             file+="  void HandleEvent(const std::vector<uint8_t>& payload) override {\n"
             if event.out_parm.typ_str == "struct":
-                file+="    const auto val = ara::com::Convert<"+event.out_parm.name.replace(".","::")+">::Conv(payload);\n"
+                file+="    const auto val = srp::data::Convert<"+event.out_parm.name.replace(".","::")+">::Conv(payload);\n"
             else:
-                file+="    const auto val = ara::com::Convert<"+event.out_parm.typ_str.replace(".","::")+">::Conv(payload);\n"
+                file+="    const auto val = srp::data::Convert<"+event.out_parm.typ_str.replace(".","::")+">::Conv(payload);\n"
             file+="    if(!val.has_value()) {\n"
             file+="      msg_recived = false;\n"
             file+="      return;\n"
@@ -242,7 +242,7 @@ class SomeipExtractor:
             file = """#ifndef """+(service_path+"/"+event.name).replace("/","_").upper()+"_SKELETON_H_\n"
             file += """#define """+(service_path+"/"+event.name).replace("/","_").upper()+"_SKELETON_H_\n"
             file+="""#include "ara/com/com_error_domain.h"\n"""
-            file+="""#include "ara/com/type_converter.h"\n"""
+            file+="""#include "data/type_converter.h"\n"""
             file+="""#include "ara/com/someip/event_skeleton.h"\n"""
             if event.out_parm.typ_str == "struct":
                     temp = """#include \""""+event.out_parm.name.replace(".","/")+""".h\""""
@@ -267,9 +267,9 @@ class SomeipExtractor:
                 file+=event.out_parm.typ_str
             file +="& new_value) const {\n"
             if event.out_parm.typ_str == "struct":
-                file+="    const auto vec = ara::com::Convert2Vector<"+event.out_parm.name.replace(".","::")+">::Conv(new_value);\n"
+                file+="    const auto vec = srp::data::Convert2Vector<"+event.out_parm.name.replace(".","::")+">::Conv(new_value);\n"
             else:
-                file+="    const auto vec = ara::com::Convert2Vector<"+event.out_parm.typ_str.replace(".","::")+">::Conv(new_value);\n"
+                file+="    const auto vec = srp::data::Convert2Vector<"+event.out_parm.typ_str.replace(".","::")+">::Conv(new_value);\n"
             file+="    if(send_callback_) {\n"
             file+="      send_callback_(event_id_, vec);\n"
             file+="    }\n"
@@ -353,7 +353,7 @@ class SomeipExtractor:
         if(m.in_parm.typ_str == "void"):
             method_call += "         const auto res = "+m.name+"();\n"
         else:
-            in_parm_convert +="         const auto in_p = ara::com::Convert<"
+            in_parm_convert +="         const auto in_p = srp::data::Convert<"
             if( m.in_parm.typ_str == "struct"):
                 in_parm_convert += m.in_parm.name.replace(".","::")
             else:
@@ -369,9 +369,9 @@ class SomeipExtractor:
         if(m.out_parm.typ_str == "void"):
             out_parm_convert+="         return std::vector<uint8_t>{};\n"
         elif(m.out_parm.typ_str == "struct"):
-            out_parm_convert+="         return ara::com::Convert2Vector<"+m.out_parm.name.replace(".","::")+">::Conv(res.Value());\n"
+            out_parm_convert+="         return srp::data::Convert2Vector<"+m.out_parm.name.replace(".","::")+">::Conv(res.Value());\n"
         else:
-            out_parm_convert+="         return ara::com::Convert2Vector<"+m.out_parm.typ_str+">::Conv(res.Value());\n"
+            out_parm_convert+="         return srp::data::Convert2Vector<"+m.out_parm.typ_str+">::Conv(res.Value());\n"
         return in_parm_convert+method_call+out_parm_convert+"       }"     
     def ExtractServiceSkeletonBindings(base_path:str, service:Service):
         with open(base_path+"/"+service.name.replace(".","/")+"SkeletonBindings.h","w") as out_file:
@@ -383,7 +383,7 @@ class SomeipExtractor:
             file+="""#include "ara/core/instance_specifier.h"\n"""
             file+="""#include "ara/core/result.h"\n"""
             file+="""#include "ara/com/com_error_domain.h"\n"""
-            file+="""#include "ara/com/type_converter.h"\n"""
+            file+="""#include "data/type_converter.h"\n"""
             file+="""#include "ara/com/someip/service_skeleton.h"\n\n"""
             file+="""#include "ara/com/someip/message_code.h"\n"""
             

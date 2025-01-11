@@ -14,7 +14,7 @@
 #include <vector>
 
 #include "communication-core/network-data/iframe.h"
-namespace simba {
+namespace srp {
 namespace com {
 namespace core {
 namespace network {
@@ -37,10 +37,10 @@ class NetworkDataStructure : public interface::IFrame {
    */
   std::vector<std::uint8_t> GetBuffor() const override;
 
-  simba::core::ErrorCode SetBuffor(std::vector<std::uint8_t> data) override;
+  srp::core::ErrorCode SetBuffor(std::vector<std::uint8_t> data) override;
 };
 }  // namespace network
 }  // namespace core
 }  // namespace com
-}  // namespace simba
+}  // namespace srp
 #endif  // COMMUNICATION_CORE_NETWORK_DATA_NETWORK_DATA_STRUCTURE_H_

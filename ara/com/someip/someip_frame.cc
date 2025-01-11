@@ -18,7 +18,7 @@ namespace someip {
 ara::core::Result<SomeipFrame> SomeipFrame::MakeFrame(
     const std::vector<uint8_t>& raw_frame) {
   const auto header =
-      ara::com::Convert<ara::com::someip::HeaderStructure>::Conv(raw_frame);
+      srp::data::Convert<ara::com::someip::HeaderStructure>::Conv(raw_frame);
   if (!header.HasValue()) {
     return header.Error();
   }
@@ -62,7 +62,7 @@ SomeipFrame::SomeipFrame(const HeaderStructure& header)
 
 std::vector<uint8_t> SomeipFrame::GetRaw() const {
   auto res_vec =
-      ara::com::Convert2Vector<ara::com::someip::HeaderStructure>::Conv(
+      srp::data::Convert2Vector<ara::com::someip::HeaderStructure>::Conv(
           header_);
   res_vec.insert(res_vec.end(), payload_.begin(), payload_.end());
   return res_vec;

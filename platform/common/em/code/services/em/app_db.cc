@@ -10,7 +10,7 @@
  */
 #include "platform/common/em/code/services/em/app_db.h"
 
-namespace simba {
+namespace srp {
 namespace em {
 namespace service {
 namespace data {
@@ -60,4 +60,4 @@ AppDb::GetFgAppList(const uint16_t& fg_id) noexcept {
 }  // namespace data
 }  // namespace service
 }  // namespace em
-}  // namespace simba
+}  // namespace srp

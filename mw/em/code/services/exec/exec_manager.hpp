@@ -28,7 +28,7 @@
 #include "diag/exec/data/exec_header.hpp"
 #include "core/logger/Logger.h"
 
-namespace simba {
+namespace srp {
 namespace mw {
 namespace exec {
 
@@ -96,16 +96,16 @@ class ExecManager{
   std::unordered_map<uint16_t, Service> db_;
   void RxCallback(const std::string& ip, const std::uint16_t& port,
                         std::vector<std::uint8_t> payload);
-  std::pair<simba::diag::exec::Status, std::bitset<5>> getStatusAndFlags(uint8_t data);
+  std::pair<srp::diag::exec::Status, std::bitset<5>> getStatusAndFlags(uint8_t data);
  public:
   std::queue<uint16_t> CheckAppCondition();
-  void SetApps(std::vector<simba::em::service::data::AppConfig> apps);
+  void SetApps(std::vector<srp::em::service::data::AppConfig> apps);
   void Init();
   void RestartedApp(uint16_t appID);
 };
 
 }  // namespace exec
 }  // namespace mw
-}  // namespace simba
+}  // namespace srp
 
 #endif  // MW_EM_CODE_SERVICES_EXEC_EXEC_MANAGER_HPP_

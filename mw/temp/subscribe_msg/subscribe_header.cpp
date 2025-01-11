@@ -11,7 +11,7 @@
 
 #include "subscribe_header.h"
 
-namespace simba {
+namespace srp {
 namespace mw {
 namespace temp {
 
@@ -36,4 +36,4 @@ void SubscribeHeader::SetData() {
 
 }  // namespace temp
 }  // namespace mw
-}  // namespace simba
+}  // namespace srp

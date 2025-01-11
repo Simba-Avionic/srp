@@ -8,8 +8,8 @@
  * @copyright Copyright (c) 2024
  * 
  */
-#ifndef ARA_COM_FIFO_FIFO_SKELETON_H_
-#define ARA_COM_FIFO_FIFO_SKELETON_H_
+#ifndef BINDINGS_COMMON_FIFO_FIFO_SKELETON_H_
+#define BINDINGS_COMMON_FIFO_FIFO_SKELETON_H_
 
 #include <fcntl.h>
 #include <stdio.h>
@@ -18,7 +18,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#include "ara/com/type_converter.h"
+#include "data/type_converter.h"
 #include "ara/core/instance_specifier.h"
 #include "ara/core/result.h"
 
@@ -43,7 +43,7 @@ class FifoSkeleton {
   }
   ara::core::Result<void> Send(const fifo_type& value) {
     int fd = open(("/tmp/" + instance_.ToString()).c_str(), O_WRONLY);
-    const auto data = ara::com::Convert2Vector<fifo_type>::Conv(value);
+    const auto data = srp::data::Convert2Vector<fifo_type>::Conv(value);
     write(fd, data.data(), data.size() + 1);
     close(fd);
     return {};
@@ -53,4 +53,4 @@ class FifoSkeleton {
 }  // namespace com
 }  // namespace ara
 
-#endif  // ARA_COM_FIFO_FIFO_SKELETON_H_
+#endif  // BINDINGS_COMMON_FIFO_FIFO_SKELETON_H_

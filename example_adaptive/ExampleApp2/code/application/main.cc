@@ -15,6 +15,6 @@
 
 int main(int argc, char const *argv[]) {
   std::this_thread::sleep_for(std::chrono::seconds{2});
-  return ara::exec::RunAdaptiveLifecycle<simba::example::ExampleApp>(argc,
+  return ara::exec::RunAdaptiveLifecycle<srp::example::ExampleApp>(argc,
                                                                      argv);
 }

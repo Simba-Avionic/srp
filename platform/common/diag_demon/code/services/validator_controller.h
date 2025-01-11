@@ -12,7 +12,7 @@
 #ifndef PLATFORM_COMMON_DIAG_DEMON_CODE_SERVICES_VALIDATOR_CONTROLLER_H_
 #define PLATFORM_COMMON_DIAG_DEMON_CODE_SERVICES_VALIDATOR_CONTROLLER_H_
 #include "platform/common/diag_demon/code/services/i_validator.h"
-namespace simba {
+namespace srp {
 namespace platform {
 namespace diag_demon {
 namespace uds {
@@ -28,6 +28,6 @@ class ValidatorController : public IValidator {
 }  // namespace uds
 }  // namespace diag_demon
 }  // namespace platform
-}  // namespace simba
+}  // namespace srp
 
 #endif  // PLATFORM_COMMON_DIAG_DEMON_CODE_SERVICES_VALIDATOR_CONTROLLER_H_

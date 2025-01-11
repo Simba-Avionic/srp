@@ -8,7 +8,7 @@
  * @copyright Copyright (c) 2024
  *
  */
-#include "ara/com/socket/proccess_socket.h"
+#include "bindings/common/socket/proccess_socket.h"
 
 #include <errno.h>
 #include <stdlib.h>
@@ -30,13 +30,13 @@
 namespace ara {
 namespace com {
 ProccessSocket::ProccessSocket(/* args */)
-    : local_pid_{getpid()},
+    : local_pid_{static_cast<uint32_t>(getpid())},
       local_soc_{"/run/p-" + std::to_string(local_pid_)} {}
 ProccessSocket::ProccessSocket(const uint32_t app_id)
     : local_pid_{app_id},
       local_soc_{"/run/p-" + std::to_string(local_pid_)} {}
 ProccessSocket::ProccessSocket(const std::string& sock_path_)
-    : local_pid_{getpid()}, local_soc_{"/run/" + sock_path_} {}
+    : local_pid_{static_cast<uint32_t>(getpid())}, local_soc_{"/run/" + sock_path_} {}
 
 ProccessSocket::~ProccessSocket() {}
 

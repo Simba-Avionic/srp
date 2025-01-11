@@ -15,7 +15,7 @@
 #include <iostream>
 #include <utility>
 #include <vector>
-namespace simba {
+namespace srp {
 namespace com {
 namespace core {
 namespace network {
@@ -34,10 +34,10 @@ std::vector<std::uint8_t> NetworkDataStructure::GetBuffor() const {
   return buffor;
 }
 
-simba::core::ErrorCode NetworkDataStructure::SetBuffor(
+srp::core::ErrorCode NetworkDataStructure::SetBuffor(
     std::vector<std::uint8_t> data) {
   uint16_t offset = 0;
-  simba::core::ErrorCode res = simba::core::ErrorCode::kOk;
+  srp::core::ErrorCode res = srp::core::ErrorCode::kOk;
   for (auto field : this->structure_) {
     if (data.begin() + offset + field->GetSize() <= data.end()) {
       std::vector<std::uint8_t> temp{};
@@ -46,7 +46,7 @@ simba::core::ErrorCode NetworkDataStructure::SetBuffor(
       field->SetBuffor(temp);
       offset += field->GetSize();
     } else {
-      res = simba::core::ErrorCode::kBadVariableSize;
+      res = srp::core::ErrorCode::kBadVariableSize;
       std::cerr << "error for field data size:" << data.size() << std::endl;
     }
   }
@@ -56,4 +56,4 @@ simba::core::ErrorCode NetworkDataStructure::SetBuffor(
 }  // namespace network
 }  // namespace core
 }  // namespace com
-}  // namespace simba
+}  // namespace srp

@@ -24,7 +24,7 @@
 #include "core/json/json_parser.h"
 #include "platform/common/diag_demon/code/services/dtc/dtc_service.h"
 #include "platform/common/diag_demon/code/services/example_did.h"
-namespace simba {
+namespace srp {
 namespace platform {
 namespace diag_demon {
 
@@ -66,9 +66,9 @@ int DiagDemon::Run(const std::stop_token& token) {
 int DiagDemon::Initialize(
     const std::map<ara::core::StringView, ara::core::StringView> parms) {
   auto obj_r = core::json::JsonParser::Parser(
-      std::string{"/srp/opt/cpu_simba/diag_config.json"});
+      std::string{"/srp/opt/cpu_srp/diag_config.json"});
   if (!obj_r.has_value()) {
-    ara::log::LogError() << "File not found: /srp/opt/cpu_simba/diag_config.json";
+    ara::log::LogError() << "File not found: /srp/opt/cpu_srp/diag_config.json";
     return core::kError;
   }
   auto json_obj = obj_r.value();
@@ -130,4 +130,4 @@ int DiagDemon::Initialize(
 }
 }  // namespace diag_demon
 }  // namespace platform
-}  // namespace simba
+}  // namespace srp

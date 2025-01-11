@@ -15,5 +15,5 @@ int main(int argc, char const *argv[]) {
   /* code */
 
   return ara::exec::RunAdaptiveLifecycle<
-      simba::someip_demon::SomeIpApplication>(argc, argv);
+      srp::someip_demon::SomeIpApplication>(argc, argv);
 }

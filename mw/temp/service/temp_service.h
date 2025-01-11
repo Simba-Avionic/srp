@@ -35,7 +35,7 @@
 
 using json = nlohmann::json;
 
-namespace simba {
+namespace srp {
 namespace mw {
 namespace temp {
 
@@ -84,6 +84,6 @@ class TempService final : public ara::exec::AdaptiveApplication {
 
 }  // namespace temp
 }  // namespace mw
-}  // namespace simba
+}  // namespace srp
 
 #endif  // MW_TEMP_SERVICE_TEMP_SERVICE_H_

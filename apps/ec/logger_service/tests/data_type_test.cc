@@ -13,7 +13,7 @@
 #include "apps/ec/logger_service/data_type.hpp"
 
 TEST(DataToStringTest, DataToStringTests) {
-    simba::logger::Data_t data_;
+    srp::logger::Data_t data_;
     data_.SetTemp1(1);
     data_.SetTemp2(1);
     data_.SetTemp3(1);

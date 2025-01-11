@@ -37,7 +37,7 @@ def data_structure_generator(name, model = [], visibility = []):
     native.cc_library(
         name = name,
         srcs = [":data_structure_src"],
-        deps = ["//ara/com:com_error_domain", "//ara/core:Result"],
+        deps = ["//ara/com:com_error_domain", "//ara/core:Result", "//data:data_conv_lib"],
         includes = ["./data_structure.h"],
         visibility = visibility,
     )

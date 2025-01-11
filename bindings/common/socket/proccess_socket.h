@@ -8,8 +8,8 @@
  * @copyright Copyright (c) 2024
  *
  */
-#ifndef ARA_COM_SOCKET_PROCCESS_SOCKET_H_
-#define ARA_COM_SOCKET_PROCCESS_SOCKET_H_
+#ifndef BINDINGS_COMMON_SOCKET_PROCCESS_SOCKET_H_
+#define BINDINGS_COMMON_SOCKET_PROCCESS_SOCKET_H_
 
 #include <sys/socket.h>
 #include <sys/un.h>
@@ -32,7 +32,7 @@ class ProccessSocket {
       std::function<void(const uint32_t, const std::vector<uint8_t>&)>;
 
  private:
-  const pid_t local_pid_;
+  const uint32_t local_pid_;
   const std::string local_soc_;
   int sfd_;
   sockaddr_un addr_;
@@ -58,4 +58,4 @@ class ProccessSocket {
 }  // namespace com
 }  // namespace ara
 
-#endif  // ARA_COM_SOCKET_PROCCESS_SOCKET_H_
+#endif  // BINDINGS_COMMON_SOCKET_PROCCESS_SOCKET_H_

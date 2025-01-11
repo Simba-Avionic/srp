@@ -24,7 +24,7 @@
 #include "platform/common/someip_demon/code/common/i_controller.h"
 #include "platform/common/someip_demon/code/db/database.h"
 #include "platform/common/someip_demon/code/db/find_service_item.h"
-namespace simba {
+namespace srp {
 namespace someip_demon {
 namespace someip {
 namespace sd {
@@ -57,6 +57,6 @@ class SdController : public common::IController {
 }  // namespace sd
 }  // namespace someip
 }  // namespace someip_demon
-}  // namespace simba
+}  // namespace srp
 
 #endif  // PLATFORM_COMMON_SOMEIP_DEMON_CODE_SD_SD_CONTROLLER_H_

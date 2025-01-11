@@ -21,7 +21,7 @@
 #include "ara/exec/sm/i_state_controller.h"
 #include "platform/common/state_manager/code/did_impl.h"
 
-namespace simba {
+namespace srp {
 namespace sm {
 class StateManager final : public ara::exec::AdaptiveApplication {
  private:
@@ -45,5 +45,5 @@ class StateManager final : public ara::exec::AdaptiveApplication {
   ~StateManager();
 };
 }  // namespace sm
-}  // namespace simba
+}  // namespace srp
 #endif  // PLATFORM_COMMON_STATE_MANAGER_CODE_STATE_MANAGER_H_

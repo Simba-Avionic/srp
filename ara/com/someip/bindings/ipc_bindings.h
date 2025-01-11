@@ -18,8 +18,8 @@
 #include <thread>  // NOLINT
 #include <vector>
 
-#include "ara/com/shm/shm_buffor_proxy.h"
-#include "ara/com/shm/shm_buffor_skeleton.h"
+#include "bindings/common/shm/shm_buffor_proxy.h"
+#include "bindings/common/shm/shm_buffor_skeleton.h"
 #include "ara/com/someip/bindings/common_bindings.h"
 #include "ara/com/someip/network_endpoint.h"
 #include "ara/com/someip/someip_frame.h"
@@ -38,7 +38,7 @@ class IPCSkeletonBindings : public CommonBindings {
   const ara::core::StringView main_path_;
   ara::com::shm::ShmBufforSkeleton<1024> buffor_;
   ara::core::ConditionVariableSkeleton cv_;
-  std::unique_ptr<simba::com::soc::StreamIpcSocket> stream_sock_;
+  std::unique_ptr<srp::com::soc::StreamIpcSocket> stream_sock_;
 
   std::vector<uint8_t> RXCallback(const std::string& ip,
                                   const std::uint16_t& port,
@@ -64,7 +64,7 @@ class IPCProxyBindings : public CommonBindings {
   ara::com::shm::ShmBufforProxy<1024> buffor_;
   ara::core::ConditionVariableProxy cv_;
   std::unique_ptr<std::jthread> shm_loop_thread_;
-  std::unique_ptr<simba::com::soc::StreamIpcSocket> stream_sock_;
+  std::unique_ptr<srp::com::soc::StreamIpcSocket> stream_sock_;
 
  public:
   explicit IPCProxyBindings(const ara::core::StringView path);

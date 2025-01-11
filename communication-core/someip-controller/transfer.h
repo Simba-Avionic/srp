@@ -20,7 +20,7 @@
 #include <vector>
 #include <optional>
 
-namespace simba {
+namespace srp {
 namespace com {
 namespace someip {
 namespace data {
@@ -66,6 +66,6 @@ class Transfer {
 }  // namespace data
 }  // namespace someip
 }  // namespace com
-}  // namespace simba
+}  // namespace srp
 
 #endif  // COMMUNICATION_CORE_SOMEIP_CONTROLLER_TRANSFER_H_

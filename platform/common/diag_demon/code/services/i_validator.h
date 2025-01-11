@@ -13,7 +13,7 @@
 
 #include "platform/common/diag_demon/code/services/uds_nrc_codes.h"
 #include "platform/common/diag_demon/code/services/uds_request.h"
-namespace simba {
+namespace srp {
 namespace platform {
 namespace diag_demon {
 namespace uds {
@@ -26,6 +26,6 @@ class IValidator {
 }  // namespace uds
 }  // namespace diag_demon
 }  // namespace platform
-}  // namespace simba
+}  // namespace srp
 
 #endif  // PLATFORM_COMMON_DIAG_DEMON_CODE_SERVICES_I_VALIDATOR_H_

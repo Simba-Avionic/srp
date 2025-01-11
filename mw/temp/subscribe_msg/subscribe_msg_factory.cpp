@@ -13,7 +13,7 @@
 
 
 #include <algorithm>
-namespace simba {
+namespace srp {
 namespace mw {
 namespace temp {
 
@@ -21,20 +21,20 @@ namespace {
   constexpr auto HDR_SIZE = 0x02;
 }
 
-std::vector<uint8_t> SubMsgFactory::GetBuffer(std::shared_ptr<simba::mw::temp::SubscribeHeader> header) {
+std::vector<uint8_t> SubMsgFactory::GetBuffer(std::shared_ptr<srp::mw::temp::SubscribeHeader> header) {
   return header->GetBuffor();
 }
 
-std::shared_ptr<simba::mw::temp::SubscribeHeader> SubMsgFactory::GetHeader(
+std::shared_ptr<srp::mw::temp::SubscribeHeader> SubMsgFactory::GetHeader(
     std::vector<uint8_t> raw_data) {
   if (raw_data.size() < HDR_SIZE) {
     return nullptr;
   }
-  auto header = std::make_shared<simba::mw::temp::SubscribeHeader>();
+  auto header = std::make_shared<srp::mw::temp::SubscribeHeader>();
   header->SetBuffor(raw_data);
   return header;
 }
 
 }  // namespace temp
 }  // namespace mw
-}  // namespace simba
+}  // namespace srp

@@ -18,7 +18,7 @@
 
 #include "platform/common/someip_demon/code/db/find_service_item.h"
 
-namespace simba {
+namespace srp {
 namespace someip_demon {
 namespace connectors {
 class IDb {
@@ -32,5 +32,5 @@ class IDb {
 };
 }  // namespace connectors
 }  // namespace someip_demon
-}  // namespace simba
+}  // namespace srp
 #endif  // PLATFORM_COMMON_SOMEIP_DEMON_CODE_CONNECTOR_I_DB_H_

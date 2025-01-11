@@ -14,7 +14,7 @@ class DataStructureExtractor:
                 file+="""#include <bit>\n"""
                 file+="""#include "ara/core/result.h"\n"""
                 file+="""#include "ara/com/com_error_domain.h"\n"""
-                file+="""#include "ara/com/type_converter.h"\n"""
+                file+="""#include "data/type_converter.h"\n"""
                 file+="""#include <optional>\n"""
                 
                 for key,var in struct.variable_list.items():
@@ -39,8 +39,8 @@ class DataStructureExtractor:
                 for i in range(len(namespace_list)-1):
                     file+="""}  // namespace """+namespace_list[i]+"""\n"""
                     
-                file+="namespace ara {\n"
-                file+="namespace com {\n"
+                file+="namespace srp {\n"
+                file+="namespace data {\n"
                 file+="""
 template <>
 struct Convert<"""+struct.name.replace(".","::")+"""> {
@@ -54,9 +54,9 @@ struct Convert<"""+struct.name.replace(".","::")+"""> {
                 for k,v in struct.variable_list.items():
                     file+="    {\n"
                     if v.typ_str == "struct":
-                        file+="      const auto tem_v = ara::com::Convert<"+v.name.replace(".","::")+">::Conv(std::vector<uint8_t>{in.begin()+"+str(index)+", in.begin()+"
+                        file+="      const auto tem_v = srp::data::Convert<"+v.name.replace(".","::")+">::Conv(std::vector<uint8_t>{in.begin()+"+str(index)+", in.begin()+"
                     else:
-                        file+="      const auto tem_v = ara::com::Convert<"+v.typ_str+">::Conv(std::vector<uint8_t>{in.begin()+"+str(index)+", in.begin()+"
+                        file+="      const auto tem_v = srp::data::Convert<"+v.typ_str+">::Conv(std::vector<uint8_t>{in.begin()+"+str(index)+", in.begin()+"
                     file+=str(index+v.GetSize())+"});\n"
                     file+="      if(!tem_v.has_value()) {\n"
                     file+="        return std::nullopt;\n"
@@ -66,9 +66,9 @@ struct Convert<"""+struct.name.replace(".","::")+"""> {
                         file+="        res."+k+" = tem_v.value();\n"
                         file+="      } else {\n"
                         if v.typ_str == "struct":
-                            file+="        res."+k+" = ara::com::EndianConvert<"+v.name.replace(".","::")+">::Conv(tem_v.value());\n"
+                            file+="        res."+k+" = srp::data::EndianConvert<"+v.name.replace(".","::")+">::Conv(tem_v.value());\n"
                         else:
-                            file+="        res."+k+" = ara::com::EndianConvert<"+v.typ_str+">::Conv(tem_v.value());\n"
+                            file+="        res."+k+" = srp::data::EndianConvert<"+v.typ_str+">::Conv(tem_v.value());\n"
                         file+="      }\n"
                     else:
                         file+="        res."+k+" =tem_v.value();\n"
@@ -87,33 +87,33 @@ struct Convert2Vector<"""+struct.name.replace(".","::")+"""> {
                     if var.typ_str not in ["std::uint8_t","std::int8_t","bool"]: 
                         file+="""      if constexpr (std::endian::native == std::endian::"""+struct.endian+""") {\n"""
                         if var.typ_str == "struct":
-                            file+="""        const auto temp_r_v = ara::com::Convert2Vector<"""+var.name.replace(".","::")+""">::Conv(in."""+key+""");\n"""
+                            file+="""        const auto temp_r_v = srp::data::Convert2Vector<"""+var.name.replace(".","::")+""">::Conv(in."""+key+""");\n"""
                         else:
-                            file+="""        const auto temp_r_v = ara::com::Convert2Vector<"""+var.typ_str+""">::Conv(in."""+key+""");\n"""
+                            file+="""        const auto temp_r_v = srp::data::Convert2Vector<"""+var.typ_str+""">::Conv(in."""+key+""");\n"""
                         file+="""        out.insert(out.end(), temp_r_v.begin(), temp_r_v.end());\n"""
                         file+="""      } else {\n"""
                         if var.typ_str == "struct":
-                            file+="          const auto temp_v = ara::com::EndianConvert<"+var.name.replace(".","::")+">::Conv(in."+key+");\n"
-                            file+="""        const auto temp_r_v = ara::com::Convert2Vector<"""+var.name.replace(".","::")+""">::Conv(temp_v);\n"""
+                            file+="          const auto temp_v = srp::data::EndianConvert<"+var.name.replace(".","::")+">::Conv(in."+key+");\n"
+                            file+="""        const auto temp_r_v = srp::data::Convert2Vector<"""+var.name.replace(".","::")+""">::Conv(temp_v);\n"""
                         else:
-                            file+="        const auto temp_v = ara::com::EndianConvert<"+var.typ_str+">::Conv(in."+key+");\n"
-                            file+="""        const auto temp_r_v = ara::com::Convert2Vector<"""+var.typ_str+""">::Conv(temp_v);\n"""
+                            file+="        const auto temp_v = srp::data::EndianConvert<"+var.typ_str+">::Conv(in."+key+");\n"
+                            file+="""        const auto temp_r_v = srp::data::Convert2Vector<"""+var.typ_str+""">::Conv(temp_v);\n"""
 
                         file+="""        out.insert(out.end(), temp_r_v.begin(), temp_r_v.end());\n"""
                         file+="""      }\n"""
                     else:
                         file+="""      {\n"""
                         if var.typ_str == "struct":
-                            file+="""        const auto temp_r_v = ara::com::Convert2Vector<"""+var.name.replace(".","::")+""">::Conv(in."""+key+""");\n"""
+                            file+="""        const auto temp_r_v = srp::data::Convert2Vector<"""+var.name.replace(".","::")+""">::Conv(in."""+key+""");\n"""
                         else:
-                            file+="""        const auto temp_r_v = ara::com::Convert2Vector<"""+var.typ_str+""">::Conv(in."""+key+""");\n"""
+                            file+="""        const auto temp_r_v = srp::data::Convert2Vector<"""+var.typ_str+""">::Conv(in."""+key+""");\n"""
                         file+="""        out.insert(out.end(), temp_r_v.begin(), temp_r_v.end());\n"""
                         file+="""      }\n"""
                 file+="""
     return out;
   }
 };\n"""
-                file+="}  // namespace com\n"
-                file+="}  // namespace ara\n"
+                file+="}  // namespace data\n"
+                file+="}  // namespace srp\n"
                 file += """\n#endif  // """+(struct.name.upper().replace(".","_"))+"_H_\n"
                 out_file.write(file)

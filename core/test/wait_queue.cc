@@ -14,7 +14,7 @@
 #include <thread>  // NOLINT
 #include <stop_token>  // NOLINT
 
-using namespace simba::core;  // NOLINT
+using namespace srp::core;  // NOLINT
 
 TEST(WaitQueueTest, GetNoWait) {
     auto queue = std::make_shared<WaitQueue<int, 10>>();

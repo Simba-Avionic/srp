@@ -15,8 +15,8 @@
 #include <vector>
 
 #include "ara/com/com_error_domain.h"
-#include "ara/com/type_converter.h"
 #include "ara/core/result.h"
+#include "data/type_converter.h"
 
 namespace ara {
 namespace com {
@@ -37,8 +37,8 @@ struct ServiceEntry {
 }  // namespace someip
 }  // namespace com
 }  // namespace ara
-namespace ara {
-namespace com {
+namespace srp {
+namespace data {
 
 template <>
 struct Convert<ara::com::someip::ServiceEntry> {
@@ -51,7 +51,7 @@ struct Convert<ara::com::someip::ServiceEntry> {
           "The given buffer is of inadequate size 1");
     }
     {
-      const auto tem_v = ara::com::Convert<std::uint8_t>::Conv(
+      const auto tem_v = srp::data::Convert<std::uint8_t>::Conv(
           std::vector<uint8_t>{in.begin() + 0, in.begin() + 1});
       if (!tem_v.has_value()) {
         return ara::com::MakeErrorCode(
@@ -61,7 +61,7 @@ struct Convert<ara::com::someip::ServiceEntry> {
       res.type = tem_v.value();
     }
     {
-      const auto tem_v = ara::com::Convert<std::uint8_t>::Conv(
+      const auto tem_v = srp::data::Convert<std::uint8_t>::Conv(
           std::vector<uint8_t>{in.begin() + 1, in.begin() + 2});
       if (!tem_v.has_value()) {
         return ara::com::MakeErrorCode(
@@ -71,7 +71,7 @@ struct Convert<ara::com::someip::ServiceEntry> {
       res.index_1 = tem_v.value();
     }
     {
-      const auto tem_v = ara::com::Convert<std::uint8_t>::Conv(
+      const auto tem_v = srp::data::Convert<std::uint8_t>::Conv(
           std::vector<uint8_t>{in.begin() + 2, in.begin() + 3});
       if (!tem_v.has_value()) {
         return ara::com::MakeErrorCode(
@@ -81,7 +81,7 @@ struct Convert<ara::com::someip::ServiceEntry> {
       res.index_2 = tem_v.value();
     }
     {
-      const auto tem_v = ara::com::Convert<std::uint8_t>::Conv(
+      const auto tem_v = srp::data::Convert<std::uint8_t>::Conv(
           std::vector<uint8_t>{in.begin() + 3, in.begin() + 4});
       if (!tem_v.has_value()) {
         return ara::com::MakeErrorCode(
@@ -91,7 +91,7 @@ struct Convert<ara::com::someip::ServiceEntry> {
       res.opt = tem_v.value();
     }
     {
-      const auto tem_v = ara::com::Convert<std::uint16_t>::Conv(
+      const auto tem_v = srp::data::Convert<std::uint16_t>::Conv(
           std::vector<uint8_t>{in.begin() + 4, in.begin() + 6});
       if (!tem_v.has_value()) {
         return ara::com::MakeErrorCode(
@@ -102,11 +102,11 @@ struct Convert<ara::com::someip::ServiceEntry> {
         res.service_id = tem_v.value();
       } else {
         res.service_id =
-            ara::com::EndianConvert<std::uint16_t>::Conv(tem_v.value());
+            srp::data::EndianConvert<std::uint16_t>::Conv(tem_v.value());
       }
     }
     {
-      const auto tem_v = ara::com::Convert<std::uint16_t>::Conv(
+      const auto tem_v = srp::data::Convert<std::uint16_t>::Conv(
           std::vector<uint8_t>{in.begin() + 6, in.begin() + 8});
       if (!tem_v.has_value()) {
         return ara::com::MakeErrorCode(
@@ -117,11 +117,11 @@ struct Convert<ara::com::someip::ServiceEntry> {
         res.instance_id = tem_v.value();
       } else {
         res.instance_id =
-            ara::com::EndianConvert<std::uint16_t>::Conv(tem_v.value());
+            srp::data::EndianConvert<std::uint16_t>::Conv(tem_v.value());
       }
     }
     {
-      const auto tem_v = ara::com::Convert<std::uint8_t>::Conv(
+      const auto tem_v = srp::data::Convert<std::uint8_t>::Conv(
           std::vector<uint8_t>{in.begin() + 8, in.begin() + 9});
       if (!tem_v.has_value()) {
         return ara::com::MakeErrorCode(
@@ -133,7 +133,7 @@ struct Convert<ara::com::someip::ServiceEntry> {
     {
       std::vector<uint8_t> tt{0x00};
       tt.insert(tt.end(), in.begin() + 9, in.begin() + 12);
-      const auto tem_v = ara::com::Convert<std::uint32_t>::Conv(tt);
+      const auto tem_v = srp::data::Convert<std::uint32_t>::Conv(tt);
       if (!tem_v.has_value()) {
         return ara::com::MakeErrorCode(
             ara::com::ComErrc::kFieldValueIsNotValid,
@@ -142,11 +142,11 @@ struct Convert<ara::com::someip::ServiceEntry> {
       if constexpr (std::endian::native == std::endian::big) {
         res.ttl = tem_v.value();
       } else {
-        res.ttl = ara::com::EndianConvert<std::uint32_t>::Conv(tem_v.value());
+        res.ttl = srp::data::EndianConvert<std::uint32_t>::Conv(tem_v.value());
       }
     }
     {
-      const auto tem_v = ara::com::Convert<std::uint32_t>::Conv(
+      const auto tem_v = srp::data::Convert<std::uint32_t>::Conv(
           std::vector<uint8_t>{in.begin() + 12, in.begin() + 16});
       if (!tem_v.has_value()) {
         return ara::com::MakeErrorCode(
@@ -157,7 +157,7 @@ struct Convert<ara::com::someip::ServiceEntry> {
         res.minor_version = tem_v.value();
       } else {
         res.minor_version =
-            ara::com::EndianConvert<std::uint32_t>::Conv(tem_v.value());
+            srp::data::EndianConvert<std::uint32_t>::Conv(tem_v.value());
       }
     }
 
@@ -170,77 +170,77 @@ struct Convert2Vector<ara::com::someip::ServiceEntry> {
     std::vector<uint8_t> out{};
     {
       const auto temp_r_v =
-          ara::com::Convert2Vector<std::uint8_t>::Conv(in.type);
+          srp::data::Convert2Vector<std::uint8_t>::Conv(in.type);
       out.insert(out.end(), temp_r_v.begin(), temp_r_v.end());
     }
     {
       const auto temp_r_v =
-          ara::com::Convert2Vector<std::uint8_t>::Conv(in.index_1);
+          srp::data::Convert2Vector<std::uint8_t>::Conv(in.index_1);
       out.insert(out.end(), temp_r_v.begin(), temp_r_v.end());
     }
     {
       const auto temp_r_v =
-          ara::com::Convert2Vector<std::uint8_t>::Conv(in.index_2);
+          srp::data::Convert2Vector<std::uint8_t>::Conv(in.index_2);
       out.insert(out.end(), temp_r_v.begin(), temp_r_v.end());
     }
     {
       const auto temp_r_v =
-          ara::com::Convert2Vector<std::uint8_t>::Conv(in.opt);
+          srp::data::Convert2Vector<std::uint8_t>::Conv(in.opt);
       out.insert(out.end(), temp_r_v.begin(), temp_r_v.end());
     }
     if constexpr (std::endian::native == std::endian::big) {
       const auto temp_r_v =
-          ara::com::Convert2Vector<std::uint16_t>::Conv(in.service_id);
+          srp::data::Convert2Vector<std::uint16_t>::Conv(in.service_id);
       out.insert(out.end(), temp_r_v.begin(), temp_r_v.end());
     } else {
       const auto temp_v =
-          ara::com::EndianConvert<std::uint16_t>::Conv(in.service_id);
+          srp::data::EndianConvert<std::uint16_t>::Conv(in.service_id);
       const auto temp_r_v =
-          ara::com::Convert2Vector<std::uint16_t>::Conv(temp_v);
+          srp::data::Convert2Vector<std::uint16_t>::Conv(temp_v);
       out.insert(out.end(), temp_r_v.begin(), temp_r_v.end());
     }
     if constexpr (std::endian::native == std::endian::big) {
       const auto temp_r_v =
-          ara::com::Convert2Vector<std::uint16_t>::Conv(in.instance_id);
+          srp::data::Convert2Vector<std::uint16_t>::Conv(in.instance_id);
       out.insert(out.end(), temp_r_v.begin(), temp_r_v.end());
     } else {
       const auto temp_v =
-          ara::com::EndianConvert<std::uint16_t>::Conv(in.instance_id);
+          srp::data::EndianConvert<std::uint16_t>::Conv(in.instance_id);
       const auto temp_r_v =
-          ara::com::Convert2Vector<std::uint16_t>::Conv(temp_v);
+          srp::data::Convert2Vector<std::uint16_t>::Conv(temp_v);
       out.insert(out.end(), temp_r_v.begin(), temp_r_v.end());
     }
     {
       const auto temp_r_v =
-          ara::com::Convert2Vector<std::uint8_t>::Conv(in.major_version);
+          srp::data::Convert2Vector<std::uint8_t>::Conv(in.major_version);
       out.insert(out.end(), temp_r_v.begin(), temp_r_v.end());
     }
     if constexpr (std::endian::native == std::endian::big) {
       const auto temp_r_v =
-          ara::com::Convert2Vector<std::uint32_t>::Conv(in.ttl);
+          srp::data::Convert2Vector<std::uint32_t>::Conv(in.ttl);
       out.insert(out.end(), temp_r_v.begin(), temp_r_v.end());
     } else {
-      const auto temp_v = ara::com::EndianConvert<std::uint32_t>::Conv(in.ttl);
+      const auto temp_v = srp::data::EndianConvert<std::uint32_t>::Conv(in.ttl);
       const auto temp_r_v =
-          ara::com::Convert2Vector<std::uint32_t>::Conv(temp_v);
+          srp::data::Convert2Vector<std::uint32_t>::Conv(temp_v);
       out.insert(out.end(), temp_r_v.begin() + 1, temp_r_v.end());
     }
     if constexpr (std::endian::native == std::endian::big) {
       const auto temp_r_v =
-          ara::com::Convert2Vector<std::uint32_t>::Conv(in.minor_version);
+          srp::data::Convert2Vector<std::uint32_t>::Conv(in.minor_version);
       out.insert(out.end(), temp_r_v.begin(), temp_r_v.end());
     } else {
       const auto temp_v =
-          ara::com::EndianConvert<std::uint32_t>::Conv(in.minor_version);
+          srp::data::EndianConvert<std::uint32_t>::Conv(in.minor_version);
       const auto temp_r_v =
-          ara::com::Convert2Vector<std::uint32_t>::Conv(temp_v);
+          srp::data::Convert2Vector<std::uint32_t>::Conv(temp_v);
       out.insert(out.end(), temp_r_v.begin(), temp_r_v.end());
     }
 
     return out;
   }
 };
-}  // namespace com
-}  // namespace ara
+}  // namespace data
+}  // namespace srp
 
 #endif  // ARA_COM_SOMEIP_SERVICEENTRY_H_

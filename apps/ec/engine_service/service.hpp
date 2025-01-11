@@ -14,11 +14,11 @@
 
 #include <memory>
 
-#include "simba/apps/EngineServiceSkeleton.h"
-#include "simba/apps/PrimerService/PrimerServiceHandler.h"
-#include "simba/apps/ServoService/ServoServiceHandler.h"
+#include "srp/apps/EngineServiceSkeleton.h"
+#include "srp/apps/PrimerService/PrimerServiceHandler.h"
+#include "srp/apps/ServoService/ServoServiceHandler.h"
 
-namespace simba {
+namespace srp {
 namespace apps {
 namespace service {
 
@@ -45,6 +45,6 @@ class MyEngineServiceSkeleton: public EngineServiceSkeleton {
 
 }  // namespace service
 }  // namespace apps
-}  // namespace simba
+}  // namespace srp
 
 #endif  // APPS_EC_ENGINE_SERVICE_SERVICE_HPP_

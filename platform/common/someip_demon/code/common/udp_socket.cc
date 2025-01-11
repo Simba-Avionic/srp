@@ -20,7 +20,7 @@
 
 #include "ara/log/log.h"
 #include "unistd.h"
-namespace simba {
+namespace srp {
 namespace common {
 namespace soc {
 
@@ -28,14 +28,14 @@ namespace {
 constexpr uint32_t kBufforSize{255 * 2};
 }  // namespace
 
-simba::core::ErrorCode UdpSocket::Init(const std::string &local_ip,
+srp::core::ErrorCode UdpSocket::Init(const std::string &local_ip,
                                        const std::uint16_t port_id) {
   local_ip_ = local_ip;
   port_id_ = port_id;
 
   sd = socket(AF_INET, SOCK_DGRAM, 0);
   if (sd < 0) {
-    return simba::core::ErrorCode::kError;
+    return srp::core::ErrorCode::kError;
   }
 
   srcaddr.sin_family = AF_INET;
@@ -45,14 +45,14 @@ simba::core::ErrorCode UdpSocket::Init(const std::string &local_ip,
   if (setsockopt(sd, IPPROTO_IP, IP_MULTICAST_IF,
                  (char *)&srcaddr,  // NOLINT
                  sizeof(srcaddr)) < 0) {
-    return simba::core::ErrorCode::kError;
+    return srp::core::ErrorCode::kError;
   }
   {
     int reuse = 1;
 
     if (setsockopt(sd, SOL_SOCKET, SO_REUSEADDR, (char *)&reuse,  // NOLINT
                    sizeof(reuse)) < 0) {
-      return simba::core::ErrorCode::kError;
+      return srp::core::ErrorCode::kError;
     }
   }
 
@@ -61,7 +61,7 @@ simba::core::ErrorCode UdpSocket::Init(const std::string &local_ip,
   timeout.tv_usec = 0;
 
   if (setsockopt(sd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof timeout) < 0) {
-    return simba::core::ErrorCode::kError;
+    return srp::core::ErrorCode::kError;
   }
 
   memset((char *)&localSock, 0, sizeof(localSock));  // NOLINT
@@ -71,10 +71,10 @@ simba::core::ErrorCode UdpSocket::Init(const std::string &local_ip,
 
   if (bind(sd, (struct sockaddr *)&localSock, sizeof(localSock))) {
     close(sd);
-    return simba::core::ErrorCode::kError;
+    return srp::core::ErrorCode::kError;
   }
 
-  return simba::core::ErrorCode::kOk;
+  return srp::core::ErrorCode::kOk;
 }
 
 void UdpSocket::SetRXCallback(RXCallback callback) {
@@ -96,10 +96,10 @@ void UdpSocket::Transmit(const uint32_t &ip, const uint16_t port,
   if (sendto(sd, buffor, payload.size(), 0, (struct sockaddr *)&remote,
              sizeof(remote)) < 0) {
     // delete[] buffor;
-    // return simba::core::ErrorCode::kError;
+    // return srp::core::ErrorCode::kError;
   }
   delete[] buffor;
-  // return simba::core::ErrorCode::kOk;
+  // return srp::core::ErrorCode::kOk;
 }
 
 void UdpSocket::Transmit(const std::string &ip, const uint16_t port,
@@ -141,4 +141,4 @@ void UdpSocket::Loop(std::stop_token stoken) {
 }
 }  //  namespace soc
 }  // namespace common
-}  //  namespace simba
+}  //  namespace srp

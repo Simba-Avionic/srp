@@ -12,7 +12,7 @@
 #ifndef PLATFORM_COMMON_LOGGER_CODE_DATA_DLT_LOG_TYPE_H_
 #define PLATFORM_COMMON_LOGGER_CODE_DATA_DLT_LOG_TYPE_H_
 #include <cstdint>
-namespace simba {
+namespace srp {
 namespace dlt {
 namespace data {
 enum DLTLogType : uint8_t {
@@ -25,5 +25,5 @@ enum DLTLogType : uint8_t {
 };
 }  // namespace data
 }  // namespace dlt
-}  // namespace simba
+}  // namespace srp
 #endif  // PLATFORM_COMMON_LOGGER_CODE_DATA_DLT_LOG_TYPE_H_

@@ -17,11 +17,11 @@
 #include "core/common/condition.h"
 #include "example_adaptive/ExampleApp/code/application/example_did.h"
 #include "example_adaptive/ExampleApp/code/application/example_service.h"
-#include "simba/example/ExampleDataStructure.h"
-#include "simba/example/ExampleService/ExampleServiceHandler.h"
-#include "simba/example/ExampleServiceSkeleton.h"
+#include "srp/example/ExampleDataStructure.h"
+#include "srp/example/ExampleService/ExampleServiceHandler.h"
+#include "srp/example/ExampleServiceSkeleton.h"
 
-namespace simba {
+namespace srp {
 namespace example {
 ExampleApp::ExampleApp() {}
 ExampleApp::~ExampleApp() {}
@@ -35,13 +35,13 @@ int ExampleApp::Initialize(
 int ExampleApp::Run(const std::stop_token& token) {
   ara::log::LogInfo() << "App start";
   const ara::core::InstanceSpecifier diag_instance{
-      "/simba/example/ExampleApp/UDSReadVin"};
+      "/srp/example/ExampleApp/UDSReadVin"};
   const ara::core::InstanceSpecifier dtc_instance{
-      "/simba/example/ExampleApp/dtcMonitor1"};
+      "/srp/example/ExampleApp/dtcMonitor1"};
   ara::diag::Monitor dtc_{dtc_instance, [](auto) {}};
   ExampleDiD did{diag_instance};
   MyExampleService serv{
-      ara::core::InstanceSpecifier{"simba/example/ExampleApp/service2"}};
+      ara::core::InstanceSpecifier{"srp/example/ExampleApp/service2"}};
 
   serv.StartOffer();
   did.Offer();
@@ -56,4 +56,4 @@ int ExampleApp::Run(const std::stop_token& token) {
 }
 
 }  // namespace example
-}  // namespace simba
+}  // namespace srp

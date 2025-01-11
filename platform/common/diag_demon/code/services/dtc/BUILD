@@ -13,7 +13,7 @@ cc_library(
     visibility = ["//platform/common/diag_demon/code:__subpackages__"],
     deps = [
         ":dtc_interface",
-        "//ara/com/socket:ipc_socket",
+        "//bindings/common/socket:ipc_socket",
         "//ara/log",
         ":dtc_com_data"
     ],

@@ -10,7 +10,7 @@
  */
 #include "communication-core/someip/someip_header.h"
 
-namespace simba {
+namespace srp {
 namespace com {
 namespace someip {
 SomeIpHeader::SomeIpHeader(/* args */) { this->SetData(); }
@@ -99,4 +99,4 @@ void SomeIpHeader::SetReturnCode(const uint8_t& value) {
 // GCOVR_EXCL_STOP
 }  // namespace someip
 }  // namespace com
-}  // namespace simba
+}  // namespace srp

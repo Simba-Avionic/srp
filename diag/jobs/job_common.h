@@ -21,7 +21,7 @@
 #include "communication-core/sockets/Isocket_stream.h"
 #include "diag/jobs/diag_request.h"
 #include "diag/jobs/diag_response.h"
-namespace simba {
+namespace srp {
 namespace diag {
 class JobCommon {
  private:
@@ -42,6 +42,6 @@ class JobCommon {
   virtual ~JobCommon() = default;
 };
 }  // namespace diag
-}  // namespace simba
+}  // namespace srp
 
 #endif  // DIAG_JOBS_JOB_COMMON_H_

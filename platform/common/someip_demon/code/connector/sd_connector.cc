@@ -15,7 +15,7 @@
 #include "ara/com/someip/someip_sd_frame_builder.h"
 #include "ara/log/log.h"
 
-namespace simba {
+namespace srp {
 namespace someip_demon {
 namespace connectors {
 
@@ -63,21 +63,21 @@ SDConnector::GetServiceIp(const uint16_t service_id,
 void SDConnector::SdMsgHandler(const uint32_t pid,
                                const ara::com::someip::SomeipFrame& frame) {
   const auto& raw = frame.payload_;
-  auto count = (ara::com::Convert<uint32_t>::Conv(
+  auto count = (srp::data::Convert<uint32_t>::Conv(
                     std::vector<uint8_t>{raw.begin() + 4, raw.end()})
                     .value_or(0U));
   if constexpr (std::endian::native != std::endian::big) {
-    count = ara::com::EndianConvert<std::uint32_t>::Conv(count) / 16;
+    count = srp::data::EndianConvert<std::uint32_t>::Conv(count) / 16;
   }
   for (auto i = 0; i < count; i++) {
     if (*(raw.begin() + 8 + (16 * i)) == 0x01) {
-      const auto t = ara::com::Convert<ara::com::someip::ServiceEntry>::Conv(
+      const auto t = srp::data::Convert<ara::com::someip::ServiceEntry>::Conv(
           std::vector<uint8_t>{raw.begin() + 8 + (16 * i), raw.end()});
       if (t.HasValue()) {
         this->AddNewOfferService(t.Value(), pid);
       }
     } else if (*(raw.begin() + 8 + (16 * i)) == 0x00) {
-      const auto t = ara::com::Convert<ara::com::someip::ServiceEntry>::Conv(
+      const auto t = srp::data::Convert<ara::com::someip::ServiceEntry>::Conv(
           std::vector<uint8_t>{raw.begin() + 8 + (16 * i), raw.end()});
       if (t.HasValue()) {
         this->AddNewFindService(t.Value(), pid);
@@ -185,4 +185,4 @@ void SDConnector::SendIPCSdOffer(
 
 }  // namespace connectors
 }  // namespace someip_demon
-}  // namespace simba
+}  // namespace srp

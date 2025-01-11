@@ -2,7 +2,7 @@ cc_library(
     name = "instance_specifier",
     srcs = ["instance_specifier.cc"],
     hdrs = ["instance_specifier.h"],
-    visibility = ["//ara:__subpackages__"],
+    visibility = ["//visibility:public"],
     deps = [
         "//ara/core:Result",
         "//ara/core:core_error_lib",
@@ -14,7 +14,7 @@ cc_library(
 cc_library(
     name = "Result",
     hdrs = [
-        "result.h"
+        "result.h",
     ],
     visibility = ["//visibility:public"],
     deps = ["//ara/core:error_lib"],
@@ -61,9 +61,9 @@ cc_library(
     ],
     visibility = ["//visibility:public"],
     deps = [
-        "//ara/com/shm:shm_lib",
         "//ara/core:core_error_lib",
         "//ara/core:instance_specifier",
+        "//bindings/common/shm:shm_lib",
     ],
 )
 

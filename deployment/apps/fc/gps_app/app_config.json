@@ -2,7 +2,7 @@
     "include": [
         "deployment/system_definition/someip/fc/gps_service/service.json"
     ],
-    "package": "simba.apps",
+    "package": "srp.apps",
     "adaptive_application": {
         "GPSApp": {
             "app": {

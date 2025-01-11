@@ -17,7 +17,7 @@
 #include <memory>
 #include <optional>
 #include "mw/i2c_service/data/header.h"
-namespace simba {
+namespace srp {
 namespace i2c {
 class I2CFactory {
  public:
@@ -26,5 +26,5 @@ class I2CFactory {
     static std::optional<std::vector<uint8_t>> GetPayload(const std::vector<uint8_t>& raw_data);
 };
 }  // namespace i2c
-}  // namespace simba
+}  // namespace srp
 #endif  // MW_I2C_SERVICE_DATA_I2C_FACTORY_H_
