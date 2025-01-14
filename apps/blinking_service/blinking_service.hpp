@@ -1,7 +1,8 @@
+/* Copyright © 2025 Karol Zwolak <karolzwolak@gmail.com> */
 #ifndef APPS_BLINKING_SERVICE_BLINKING_SERVICE_HPP_
 #define APPS_BLINKING_SERVICE_BLINKING_SERVICE_HPP_
 
-#include <chrono>
+#include <chrono>  // NOLINT
 #include <map>
 #include <memory>
 #include <string>

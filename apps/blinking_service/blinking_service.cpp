@@ -1,7 +1,8 @@
+/* Copyright © 2025 Karol Zwolak <karolzwolak@gmail.com> */
 #include "blinking_service.hpp"
 
 #include <algorithm>
-#include <chrono>
+#include <chrono>  // NOLINT
 #include <cstdint>
 #include <iostream>
 #include <map>
