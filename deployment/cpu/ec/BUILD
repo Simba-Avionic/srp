@@ -12,6 +12,7 @@ cpu_def(
         # "//deployment/mw/em",
         # "//deployment/apps/diag_ota/ec:diag_ota",
         # # "//deployment/mw/diag/dtc:dtc_service",
+		"//deployment/apps/blinking_service:blinking_service",
         "//deployment/platform/diag_demon",
         "//deployment/platform/em",
         "//deployment/platform/logger",
