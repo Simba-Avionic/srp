@@ -1,6 +1,5 @@
-
-#ifndef APPS_TEST_TEST_HPP_
-#define APPS_TEST_TEST_HPP_
+#ifndef APPS_BLINKING_SERVICE_BLINKING_SERVICE_HPP_
+#define APPS_BLINKING_SERVICE_BLINKING_SERVICE_HPP_
 
 #include <chrono>
 #include <map>
@@ -16,7 +15,7 @@ namespace simba {
 namespace envService {
 
 class BlinkingService final : public ara::exec::AdaptiveApplication {
-private:
+ private:
   std::vector<uint8_t> diode_pins;
   std::vector<std::chrono::milliseconds> diode_delays;
   std::vector<uint8_t> diode_states;
@@ -27,7 +26,7 @@ private:
   void setDiodeState(const uint8_t diode_pin_id, const uint8_t state);
   void blinkingLoop(const std::stop_token &token);
 
-protected:
+ protected:
   /**
    * @brief This function is called to launch the application
    *
@@ -42,12 +41,12 @@ protected:
   int Initialize(const std::map<ara::core::StringView, ara::core::StringView>
                      parms) override;
 
-public:
+ public:
   ~BlinkingService() = default;
   BlinkingService();
 };
 
-} // namespace envService
-} // namespace simba
+}  // namespace envService
+}  // namespace simba
 
-#endif
+#endif  // APPS_BLINKING_SERVICE_BLINKING_SERVICE_HPP_

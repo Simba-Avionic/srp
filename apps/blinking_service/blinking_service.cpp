@@ -1,7 +1,6 @@
 #include "blinking_service.hpp"
 
-#include "ara/log/log.h"
-#include "core/common/condition.h"
+#include <algorithm>
 #include <chrono>
 #include <cstdint>
 #include <iostream>
@@ -9,13 +8,16 @@
 #include <memory>
 #include <utility>
 
+#include "ara/log/log.h"
+#include "core/common/condition.h"
+
 namespace simba {
 namespace envService {
 
 void BlinkingService::setDiodeState(const uint8_t diode_pin_id,
                                     const uint8_t state) {
-  std::cout << "setting diode with pin #" << (int)diode_pin_id << " to state "
-            << (int)state << std::endl;
+  std::cout << "setting diode with pin #" << static_cast<int>(diode_pin_id)
+            << " to state " << static_cast<int>(state) << std::endl;
   _gpio.SetPinValue(diode_pin_id, state);
 }
 
@@ -37,8 +39,7 @@ void BlinkingService::blinkingLoop(const std::stop_token &token) {
               diode_next_toggle[i] - now);
       min_ms_to_next_toggle = min(min_ms_to_next_toggle, ms_next_toggle);
     }
-    if (min_ms_to_next_toggle < std::chrono::milliseconds(1))
-      continue;
+    if (min_ms_to_next_toggle < std::chrono::milliseconds(1)) continue;
     std::cout << "sleeping for " << min_ms_to_next_toggle << std::endl;
     core::condition::wait_for(min_ms_to_next_toggle, token);
   }
@@ -54,12 +55,13 @@ int BlinkingService::Run(const std::stop_token &token) {
   return 0;
 }
 BlinkingService::BlinkingService()
-    : diode_pins({1, 2}), diode_delays({std::chrono::milliseconds(100),
-                                        std::chrono::milliseconds(333)}),
+    : diode_pins({1, 2}),
+      diode_delays(
+          {std::chrono::milliseconds(100), std::chrono::milliseconds(333)}),
       diode_states(diode_pins.size(), 0),
       diode_next_toggle(diode_pins.size(),
                         std::chrono::high_resolution_clock::now()),
       _gpio(std::make_unique<com::soc::StreamIpcSocket>()) {}
 
-} // namespace envService
-} // namespace simba
+}  // namespace envService
+}  // namespace simba
