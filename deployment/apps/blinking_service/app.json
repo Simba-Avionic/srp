@@ -1,0 +1,18 @@
+{
+	"include": [],
+	"package": "simba.example",
+	"adaptive_application": {
+		"blinking_service": {
+			"app": {
+				"bootMode": 0,
+				"parms": "",
+				"logger": {
+					"app_id": "blin",
+					"app_des": "Blinking diodes service",
+					"log_level": "kInfo",
+					"log_mode": "kRemote"
+				}
+			}
+		}
+	}
+}
