@@ -3,11 +3,9 @@
 
 #include <algorithm>
 #include <chrono>  // NOLINT
-#include <cstdint>
 #include <iostream>
 #include <map>
 #include <memory>
-#include <utility>
 
 #include "ara/log/log.h"
 #include "core/common/condition.h"

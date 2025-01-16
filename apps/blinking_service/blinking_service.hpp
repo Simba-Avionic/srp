@@ -3,8 +3,8 @@
 #define APPS_BLINKING_SERVICE_BLINKING_SERVICE_HPP_
 
 #include <chrono>  // NOLINT
+#include <map>     // not actually used here, but required to pass cpplint
 #include <memory>
-#include <stop_token>
 #include <vector>
 
 #include "ara/exec/adaptive_application.h"

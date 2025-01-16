@@ -1,3 +1,4 @@
+/* Copyright © 2025 Karol Zwolak <karolzwolak@gmail.com> */
 #include "diode_did.hpp"
 
 #include "diode_controller.hpp"

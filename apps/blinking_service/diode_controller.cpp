@@ -3,6 +3,7 @@
 #include "diode_controller.hpp"
 
 #include <iostream>
+#include <memory>
 
 namespace simba {
 namespace blinkingService {

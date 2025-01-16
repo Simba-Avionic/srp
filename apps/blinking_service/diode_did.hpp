@@ -3,6 +3,7 @@
 #define APPS_BLINKING_SERVICE_DIODE_DID_HPP_
 
 #include <memory>
+#include <vector>
 
 #include "diag/jobs/skeleton/did_job.h"
 #include "diode_controller.hpp"
