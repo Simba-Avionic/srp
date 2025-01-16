@@ -11,6 +11,8 @@
 typedef uint8_t DiodePin;
 typedef uint8_t DiodeState;
 
+constexpr DiodePin DID_CONTROLLED_PIN = 3;
+
 namespace simba {
 namespace blinkingService {
 

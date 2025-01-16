@@ -56,7 +56,7 @@ BlinkingService::BlinkingService()
                         std::chrono::high_resolution_clock::now()),
       diode_controller(
           std::make_shared<simba::blinkingService::DiodeController>(
-              std::vector<DiodePin>({1, 2}))) {}
+              std::vector<DiodePin>({1, 2, DID_CONTROLLED_PIN}))) {}
 
 }  // namespace blinkingService
 }  // namespace simba
