@@ -13,7 +13,7 @@
 #include "mw/gpio_server/controller/gpio_controller.hpp"
 
 namespace simba {
-namespace envService {
+namespace blinkingService {
 
 class BlinkingService final : public ara::exec::AdaptiveApplication {
  private:
@@ -47,7 +47,7 @@ class BlinkingService final : public ara::exec::AdaptiveApplication {
   BlinkingService();
 };
 
-}  // namespace envService
+}  // namespace blinkingService
 }  // namespace simba
 
 #endif  // APPS_BLINKING_SERVICE_BLINKING_SERVICE_HPP_

@@ -3,6 +3,6 @@
 #include "blinking_service.hpp"
 
 int main(int argc, char const *argv[]) {
-  return ara::exec::RunAdaptiveLifecycle<simba::envService::BlinkingService>(
-      argc, argv);
+  return ara::exec::RunAdaptiveLifecycle<
+      simba::blinkingService::BlinkingService>(argc, argv);
 }

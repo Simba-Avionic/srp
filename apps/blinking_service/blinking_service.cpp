@@ -13,7 +13,7 @@
 #include "core/common/condition.h"
 
 namespace simba {
-namespace envService {
+namespace blinkingService {
 
 void BlinkingService::setDiodeState(const uint8_t diode_pin_id,
                                     const uint8_t state) {
@@ -64,5 +64,5 @@ BlinkingService::BlinkingService()
                         std::chrono::high_resolution_clock::now()),
       _gpio(std::make_unique<com::soc::StreamIpcSocket>()) {}
 
-}  // namespace envService
+}  // namespace blinkingService
 }  // namespace simba
