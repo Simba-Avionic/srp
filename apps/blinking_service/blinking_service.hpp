@@ -3,13 +3,12 @@
 #define APPS_BLINKING_SERVICE_BLINKING_SERVICE_HPP_
 
 #include <chrono>  // NOLINT
-#include <map>
 #include <memory>
-#include <string>
-#include <unordered_map>
+#include <stop_token>
 #include <vector>
 
 #include "ara/exec/adaptive_application.h"
+#include "diode_controller.hpp"
 #include "mw/gpio_server/controller/gpio_controller.hpp"
 
 namespace simba {
@@ -17,14 +16,11 @@ namespace blinkingService {
 
 class BlinkingService final : public ara::exec::AdaptiveApplication {
  private:
-  std::vector<uint8_t> diode_pins;
   std::vector<std::chrono::milliseconds> diode_delays;
-  std::vector<uint8_t> diode_states;
   std::vector<std::chrono::_V2::system_clock::time_point> diode_next_toggle;
 
-  gpio::GPIOController _gpio;
+  std::shared_ptr<simba::blinkingService::DiodeController> diode_controller;
 
-  void setDiodeState(const uint8_t diode_pin_id, const uint8_t state);
   void blinkingLoop(const std::stop_token &token);
 
  protected:

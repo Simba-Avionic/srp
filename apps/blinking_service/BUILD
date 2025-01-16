@@ -6,6 +6,6 @@ cc_binary(
         "//core/common:condition_lib",
         "//mw/gpio_server/controller:gpio_controller",
     ],
-    srcs = ["blinking_service.cpp", "main.cpp", "blinking_service.hpp"],
+    srcs = ["blinking_service.cpp", "main.cpp", "blinking_service.hpp", "diode_controller.hpp", "diode_controller.cpp"],
     visibility = ["//deployment/apps/blinking_service:__subpackages__"],
 )
