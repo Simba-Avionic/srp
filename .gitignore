@@ -2,3 +2,6 @@ bazel-*
 .vscode
 MODULE.bazel.lock
 coverage-report
+.editorconfig
+.clangd
+.clang-format
