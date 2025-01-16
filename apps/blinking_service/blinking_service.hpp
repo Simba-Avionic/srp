@@ -9,6 +9,7 @@
 
 #include "ara/exec/adaptive_application.h"
 #include "diode_controller.hpp"
+#include "diode_did.hpp"
 #include "mw/gpio_server/controller/gpio_controller.hpp"
 
 namespace simba {
@@ -20,6 +21,7 @@ class BlinkingService final : public ara::exec::AdaptiveApplication {
   std::vector<std::chrono::_V2::system_clock::time_point> diode_next_toggle;
 
   std::shared_ptr<simba::blinkingService::DiodeController> diode_controller;
+  std::unique_ptr<DiodeDiD> diode_did;
 
   void blinkingLoop(const std::stop_token &token);
 

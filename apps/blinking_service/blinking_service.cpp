@@ -46,7 +46,9 @@ int BlinkingService::Initialize(
 }
 
 int BlinkingService::Run(const std::stop_token &token) {
+  diode_did->StartOffer();
   blinkingLoop(token);
+  diode_did->StopOffer();
   return 0;
 }
 BlinkingService::BlinkingService()
@@ -56,7 +58,10 @@ BlinkingService::BlinkingService()
                         std::chrono::high_resolution_clock::now()),
       diode_controller(
           std::make_shared<simba::blinkingService::DiodeController>(
-              std::vector<DiodePin>({1, 2, DID_CONTROLLED_PIN}))) {}
+              std::vector<DiodePin>({1, 2, DID_CONTROLLED_PIN}))),
+      diode_did(std::make_unique<DiodeDiD>(
+          ara::core::InstanceSpecifier("/simba/apps/blinkingService/DiodeDiD"),
+          diode_controller, DID_CONTROLLED_PIN)) {}
 
 }  // namespace blinkingService
 }  // namespace simba

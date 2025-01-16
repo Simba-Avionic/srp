@@ -15,10 +15,9 @@ class DiodeDiD : public diag::DiDJob {
   std::shared_ptr<simba::blinkingService::DiodeController> diode_controller;
   DiodePin diode_pin;
 
-  diag::DiagResponse Read();
-  diag::DiagResponse Write(const std::vector<uint8_t>& payload);
-
  public:
+  diag::DiagResponse Write(const std::vector<uint8_t>& payload);
+  diag::DiagResponse Read();
   DiodeDiD(
       const ara::core::InstanceSpecifier& instance,
       std::shared_ptr<simba::blinkingService::DiodeController> diode_controller,
