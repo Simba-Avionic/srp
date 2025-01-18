@@ -1,9 +1,0 @@
-{
-    "package":"srp.example",
-    "data_structure":{
-        "ExampleDataStructure":{
-            "name": "string",
-            "status":"uint8"
-        }
-    }
-}

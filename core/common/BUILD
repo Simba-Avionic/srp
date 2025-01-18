@@ -35,15 +35,6 @@ cc_library(
 )
 
 cc_library(
-    name = "crc_lib",
-    srcs = ["crc_16.cc"],
-    hdrs = ["crc_16.h"],
-    visibility = [
-        "//core/test:__subpackages__",
-        ],
-)
-
-cc_library(
     name = "wait_queue",
     hdrs = ["wait_queue.h"],
     visibility = ["//visibility:public"],

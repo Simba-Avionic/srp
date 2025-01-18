@@ -15,7 +15,7 @@ gpio_drivers_deps = select({
 #     deps = [
 #         "//mw/gpio_server/data:gpio_hdr",
 #         "//core/json:simba_json",
-#         "//ara/exec:adaptive_application_lib",
+#         "@srp_platform//ara/exec:adaptive_application_lib",
 #         "//core/common:condition_lib",
 #         "//diag/jobs/skeleton:did_job_lib",
 #     ] + gpio_drivers_deps,

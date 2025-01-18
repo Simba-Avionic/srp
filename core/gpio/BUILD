@@ -17,7 +17,7 @@ cc_library(
     deps = [
         ":gpio_interface",
         "//core/common:common_types",
-        "//ara/log",
+        "@srp_platform//ara/log",
         "//core/file:file_lib",
     ],
 )
@@ -32,7 +32,7 @@ cc_library(
     deps = [
         ":gpio_interface",
         "//core/common:common_types",
-        "//ara/log",
+        "@srp_platform//ara/log",
         "//core/file:file_lib",
     ],
 )

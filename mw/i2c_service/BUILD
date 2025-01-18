@@ -1,4 +1,4 @@
-# load("//deployment/tools/ara:adaptive_application.bzl", "ara_runtime_lib", "adaptive_application")
+# load("@srp_platform//tools/model_generator/ara:adaptive_application.bzl", "ara_runtime_lib", "adaptive_application")
 
 # ara_runtime_lib(
 #     name = "ara",
@@ -9,7 +9,7 @@
 #     name = "i2cService",
 #     deps = [
 #         "//mw/i2c_service/service:i2c_lib",
-#         "//ara/exec:adaptive_application_lib",
+#         "@srp_platform//ara/exec:adaptive_application_lib",
 #         "//core/common:condition_lib",
 #         "//mw/i2c_service:ara",
 #         ],

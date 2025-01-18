@@ -1,4 +1,4 @@
-# load("//deployment/tools/ara:adaptive_application.bzl", "adaptive_application", "ara_runtime_lib", "ara_someip_lib")
+# load("@srp_platform//tools/model_generator/ara:adaptive_application.bzl", "adaptive_application", "ara_runtime_lib", "ara_someip_lib")
 
 # ara_runtime_lib(
 #     name = "ara",
@@ -23,9 +23,9 @@
 #         "//deployment/apps:__subpackages__"
 #         ],
 #     deps = [
-#         "//ara/exec:adaptive_application_lib",
+#         "@srp_platform//ara/exec:adaptive_application_lib",
 #         "//core/common:condition_lib",
-#         "//ara/diag:uds_lib",
+#         "@srp_platform//ara/diag:uds_lib",
 #         "//mw/temp/controller:temp_controller_mw",
 #         "//deployment/apps/env_service:ara",
 #         "//deployment/apps/env_service:someip_lib",

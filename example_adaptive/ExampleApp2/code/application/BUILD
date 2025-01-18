@@ -6,7 +6,7 @@ cc_binary(
         "main.cc",
     ],
     deps = [
-        "//ara/exec:adaptive_application_lib",
+        "@srp_platform//ara/exec:adaptive_application_lib",
         "//example_adaptive/ExampleApp2/code:ara",
         "//core/common:condition_lib",
         "//example_adaptive/ExampleApp2/code:someip_lib",

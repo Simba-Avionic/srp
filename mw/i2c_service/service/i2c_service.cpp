@@ -26,7 +26,7 @@ I2CService::I2CService():
 
 
 core::ErrorCode I2CService::Init(std::shared_ptr<core::i2c::II2CDriver> i2c,
-                              std::unique_ptr<com::soc::ISocketStream> socket) {
+                              std::unique_ptr<srp::bindings::com::soc::ISocketStream> socket) {
   if (!socket || !i2c) {
     return core::ErrorCode::kInitializeError;
   }

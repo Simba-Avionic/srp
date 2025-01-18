@@ -1,4 +1,4 @@
-# load("//deployment/tools/ara:adaptive_application.bzl", "ara_runtime_lib")
+# load("@srp_platform//tools/model_generator/ara:adaptive_application.bzl", "ara_runtime_lib")
 
 
 # cc_binary(
@@ -15,11 +15,11 @@
 #         "//deployment/apps/servo_service:__subpackages__"
 #         ],
 #     deps = [
-#         "//ara/exec:adaptive_application_lib",
+#         "@srp_platform//ara/exec:adaptive_application_lib",
 #         "//core/common:condition_lib",
 #         "//mw/i2c_service/controller/pca9685:pca9685_controller",
 #         "//diag/jobs/skeleton:did_job_lib",
-#         "//ara/diag:uds_lib",
+#         "@srp_platform//ara/diag:uds_lib",
 #         "//deployment/apps/servo_service:ara",
 #         "//deployment/apps/servo_service:someip_lib",
 #     ],

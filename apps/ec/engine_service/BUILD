@@ -12,7 +12,7 @@
 #         "//deployment/apps:__subpackages__"
 #         ],
 #     deps = [
-#         "//ara/exec:adaptive_application_lib",
+#         "@srp_platform//ara/exec:adaptive_application_lib",
 #         "//core/common:condition_lib",
 #         "//deployment/apps/engine_app:ara",
 #         "//deployment/apps/engine_app:someip_lib",

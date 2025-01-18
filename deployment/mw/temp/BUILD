@@ -1,4 +1,4 @@
-# load("//deployment/tools/ara:adaptive_application.bzl", "ara_runtime_lib", "adaptive_application")
+# load("@srp_platform//tools/model_generator/ara:adaptive_application.bzl", "ara_runtime_lib", "adaptive_application")
 
 # filegroup(
 #     name = "instance",

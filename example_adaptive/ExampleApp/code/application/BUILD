@@ -9,14 +9,14 @@ cc_binary(
     ],
     visibility = ["//deployment/example_adaptive/ExampleApp:__pkg__"],
     deps = [
-        "//ara/diag:uds_lib",
+        "@srp_platform//ara/diag:uds_lib",
         "//core/uart:uart_driver",
-        "//ara/exec:adaptive_application_lib",
-        "//ara/log",
+        "@srp_platform//ara/exec:adaptive_application_lib",
+        "@srp_platform//ara/log",
         "//core/common:condition_lib",
         "//example_adaptive/ExampleApp/code:ara",
         "//example_adaptive/ExampleApp/code:someip_lib",
-        "//ara/diag:monitor",
+        "@srp_platform//ara/diag:monitor",
         "//core/gps:gps_data_parser",
     ],
 )

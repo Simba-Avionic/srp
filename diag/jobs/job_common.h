@@ -27,7 +27,7 @@ class JobCommon {
  private:
   std::vector<uint8_t> rx_callback(const std::string&, const std::uint16_t&,
                                    std::vector<std::uint8_t> payload);
-  std::unique_ptr<com::soc::ISocketStream> soc_;
+  std::unique_ptr<srp::bindings::com::soc::ISocketStream> soc_;
   std::string job_id_{""};
 
  protected:

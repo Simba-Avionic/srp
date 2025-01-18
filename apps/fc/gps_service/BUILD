@@ -1,7 +1,7 @@
 # cc_library(
 #     name = "gps_app_lib",
 #     deps = [
-#         "//ara/exec:adaptive_application_lib",
+#         "@srp_platform//ara/exec:adaptive_application_lib",
 #         "//core/common:condition_lib",
 #         "//deployment/apps/fc/gps_app:someip_lib",
 #         "//deployment/apps/fc/gps_app:ara",

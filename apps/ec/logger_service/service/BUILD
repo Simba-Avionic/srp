@@ -10,7 +10,7 @@
 #     ],
 #     visibility = ["//deployment:__subpackages__"],
 #     deps = [
-#         "//ara/exec:adaptive_application_lib",
+#         "@srp_platform//ara/exec:adaptive_application_lib",
 #         "//core/common:condition_lib",
 #         "//diag/jobs/skeleton:did_job_lib",
 #         "//core/json:simba_json",

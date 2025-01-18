@@ -29,7 +29,7 @@
 #         "//core/json:simba_json",
 #         "//core/common:condition_lib",
 #         "//diag/jobs/skeleton:did_job_lib",
-#         "//ara/exec:adaptive_application_lib",
+#         "@srp_platform//ara/exec:adaptive_application_lib",
 #         "//deployment/mw/temp:ara",
 #     ] + temp_drivers_deps,
 #     srcs = [

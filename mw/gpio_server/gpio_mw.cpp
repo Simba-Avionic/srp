@@ -31,7 +31,7 @@ namespace {
     constexpr auto SOCKET_PATH = "SRP.GPIO";
 }
 
-int GPIOMWService::Init(std::unique_ptr<com::soc::ISocketStream> socket,
+int GPIOMWService::Init(std::unique_ptr<srp::bindings::com::soc::ISocketStream> socket,
                               std::shared_ptr<core::gpio::IGpioDriver> gpio) {
   if (!socket || !gpio) {
     return 1;

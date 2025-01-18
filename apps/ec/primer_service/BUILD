@@ -5,7 +5,7 @@
 #     ],
 #     visibility = ["//deployment:__subpackages__"],
 #     deps = [
-#         "//ara/exec:adaptive_application_lib",
+#         "@srp_platform//ara/exec:adaptive_application_lib",
 #         "//core/common:condition_lib",
 #         "//deployment/apps/prim_service:ara",
 
@@ -30,7 +30,7 @@
 #     name = "primer_app",
 #     deps = [
 #         "//apps/ec/primer_service",
-#         "//ara/exec:adaptive_application_lib",
+#         "@srp_platform//ara/exec:adaptive_application_lib",
 #         "//core/common:condition_lib",
 #     ],
 #     srcs = [

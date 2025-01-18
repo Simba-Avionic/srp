@@ -11,7 +11,7 @@ cc_library(
     deps = [
         "//communication-core/sockets:socket_ipc",
         "//mw/i2c_service/data:i2c_factory",
-        "//ara/exec:adaptive_application_lib",
+        "@srp_platform//ara/exec:adaptive_application_lib",
         "//core/common:condition_lib",
     ] + i2c_drivers_deps,
 )
