@@ -16,7 +16,7 @@
 using ::testing::_;
 using ::testing::Return;
 
-namespace simba {
+namespace srp {
 namespace i2c {
 
 class I2CControllerTest : public ::testing::Test {
@@ -124,4 +124,4 @@ TEST_F(I2CControllerTest, WriteReadFailure) {
 }
 
 }  // namespace i2c
-}  // namespace simba
+}  // namespace srp

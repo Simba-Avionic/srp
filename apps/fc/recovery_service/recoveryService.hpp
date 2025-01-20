@@ -21,7 +21,7 @@
 #include "mw/i2c_service/controller/pca9685/controller.hpp"
 #include "apps/fc/recovery_service/parachute_controller.hpp"
 #include "apps/fc/recovery_service/recovery_rid.hpp"
-namespace simba {
+namespace srp {
 namespace service {
 class RecoveryService final : public ara::exec::AdaptiveApplication {
  private:
@@ -52,5 +52,5 @@ class RecoveryService final : public ara::exec::AdaptiveApplication {
 };
 
 }  // namespace service
-}  // namespace simba
+}  // namespace srp
 #endif  // APPS_FC_RECOVERY_SERVICE_RECOVERYSERVICE_HPP_

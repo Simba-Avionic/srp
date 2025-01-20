@@ -25,7 +25,7 @@ cc_library(
     ],
     visibility = [
         "//apps:__subpackages__",
-        "//ara:__subpackages__",
+        "@srp_platform//ara:__subpackages__",
         "//communication-core:__subpackages__",
         "//core:__subpackages__",
         "//diag:__subpackages__",

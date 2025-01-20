@@ -11,6 +11,6 @@
 #include "apps/ec/engine_service/engine_app.hpp"
 #include "ara/exec/adaptive_lifecycle.h"
 int main(int argc, char const *argv[]) {
-  return ara::exec::RunAdaptiveLifecycle<simba::apps::EngineApp>(argc,
+  return ara::exec::RunAdaptiveLifecycle<srp::apps::EngineApp>(argc,
                                                                      argv);
 }

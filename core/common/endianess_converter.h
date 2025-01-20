@@ -17,7 +17,7 @@
 #include <cstdint>
 #include <cstring>
 
-namespace simba {
+namespace srp {
 namespace core {
 namespace converter {
 class EndianessConverter {
@@ -33,5 +33,5 @@ class EndianessConverter {
 };
 }  // namespace converter
 }  // namespace core
-}  // namespace simba
+}  // namespace srp
 #endif  // CORE_COMMON_ENDIANESS_CONVERTER_H_

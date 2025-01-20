@@ -11,7 +11,7 @@
 #ifndef COMMUNICATION_CORE_SOMEIP_MESSAGE_TYPE_H_
 #define COMMUNICATION_CORE_SOMEIP_MESSAGE_TYPE_H_
 #include <cstdint>
-namespace simba {
+namespace srp {
 namespace com {
 namespace data {
 enum MessageType : uint8_t {
@@ -28,5 +28,5 @@ enum MessageType : uint8_t {
 };
 }  // namespace data
 }  // namespace com
-}  // namespace simba
+}  // namespace srp
 #endif  // COMMUNICATION_CORE_SOMEIP_MESSAGE_TYPE_H_

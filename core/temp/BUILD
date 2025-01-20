@@ -6,7 +6,7 @@ cc_library(
     ],
     deps = [
         "//core/common:condition_lib",
-        "//ara/com:com_error_domain",
+        "@srp_platform//ara/com:com_error_domain",
     ],
     visibility = ["//core:__subpackages__"],
 )
@@ -21,7 +21,7 @@ cc_library(
     deps = [
         "//core/temp:temp_interface",
         "//core/common:common_types",
-        "//ara/log",
+        "@srp_platform//ara/log",
     ],
 )
 
@@ -35,6 +35,6 @@ cc_library(
     deps = [
         "//core/temp:temp_interface",
         "//core/common:common_types",
-        "//ara/log",
+        "@srp_platform//ara/log",
     ],
 )

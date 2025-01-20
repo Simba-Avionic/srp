@@ -18,7 +18,7 @@
 #include "mw/i2c_service/controller/pca9685/controller.hpp"
 #include "core/json/json_parser.h"
 #include "core/common/error_code.h"
-namespace simba {
+namespace srp {
 namespace i2c {
 
 namespace {
@@ -259,5 +259,5 @@ std::optional<std::unordered_map<uint8_t, Servo>> PCA9685::ReadConfig(std::strin
 }
 
 }  // namespace i2c
-}  // namespace simba
+}  // namespace srp
 

@@ -11,12 +11,12 @@
 #ifndef APPS_EC_LOGGER_SERVICE_SERVICE_SERVICE_HPP_
 #define APPS_EC_LOGGER_SERVICE_SERVICE_SERVICE_HPP_
 
-#include "simba/apps/FileLoggerAppSkeleton.h"
+#include "srp/apps/FileLoggerAppSkeleton.h"
 
 using SaveThreadHandler =
       std::function<void(const std::uint8_t status)>;
 
-namespace simba {
+namespace srp {
 namespace apps {
 
 class MyFileLoggerAppSkeleton: public FileLoggerAppSkeleton {
@@ -42,6 +42,6 @@ class MyFileLoggerAppSkeleton: public FileLoggerAppSkeleton {
   }
 };
 }  // namespace apps
-}  // namespace simba
+}  // namespace srp
 
 #endif  // APPS_EC_LOGGER_SERVICE_SERVICE_SERVICE_HPP_

@@ -17,7 +17,7 @@
 
 #include "communication-core/sockets/socket_config.h"
 #include "core/common/error_code.h"
-namespace simba {
+namespace srp {
 namespace com {
 namespace soc {
 using RXCallback =
@@ -31,7 +31,7 @@ class ISocket {
    * @param config Config file
    * @return core::ErrorCode initialiaze status
    */
-  virtual simba::core::ErrorCode Init(const SocketConfig& config) = 0;
+  virtual srp::core::ErrorCode Init(const SocketConfig& config) = 0;
   /**
    * @brief Setter for rx callback
    *
@@ -46,7 +46,7 @@ class ISocket {
    * @param payload payload to send
    * @return core::ErrorCode status
    */
-  virtual simba::core::ErrorCode Transmit(const std::string& ip,
+  virtual srp::core::ErrorCode Transmit(const std::string& ip,
                                    const std::uint16_t port,
                                    std::vector<std::uint8_t> payload) = 0;
   /**
@@ -60,6 +60,6 @@ class ISocket {
 
 }  // namespace soc
 }  // namespace com
-}  // namespace simba
+}  // namespace srp
 
 #endif  // COMMUNICATION_CORE_SOCKETS_ISOCKET_H_

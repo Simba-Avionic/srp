@@ -18,7 +18,7 @@
 #include <cstdint>
 #include <iomanip>
 #include <optional>
-namespace simba {
+namespace srp {
 namespace core {
 
 struct GPS_DATA_T {
@@ -49,6 +49,6 @@ class Nmea {
 };
 
 }  // namespace core
-}  // namespace simba
+}  // namespace srp
 
 #endif  // CORE_GPS_NMEA_HPP_

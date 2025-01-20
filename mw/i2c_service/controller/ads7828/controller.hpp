@@ -21,7 +21,7 @@
 #include "mw/i2c_service/controller/ads7828/Iads7828.h"
 #include "mw/i2c_service/controller/i2c_controller.h"
 #include "core/json/json_parser.h"
-namespace simba {
+namespace srp {
 namespace i2c {
 
 class ADS7828 : public IADS7828 {
@@ -50,6 +50,6 @@ class ADS7828 : public IADS7828 {
 };
 
 }  // namespace i2c
-}  // namespace simba
+}  // namespace srp
 
 #endif  // MW_I2C_SERVICE_CONTROLLER_ADS7828_CONTROLLER_HPP_

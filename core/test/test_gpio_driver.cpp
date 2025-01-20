@@ -18,7 +18,7 @@ class GpioTest : public ::testing::TestWithParam<std::tuple<int, std::string, st
 TEST_P(GpioTest, TestGetPath) {
     int pin = std::get<0>(GetParam());
     std::string suffix = std::get<1>(GetParam());
-    auto val = simba::core::gpio::GpioDriver::getEndpointPath(pin, suffix);
+    auto val = srp::core::gpio::GpioDriver::getEndpointPath(pin, suffix);
     std::string expectedPath = "/sys/class/gpio/gpio" + std::to_string(pin) + "/" + suffix;
     EXPECT_EQ(val, expectedPath);
 }
@@ -41,11 +41,11 @@ TEST(FileHandlerTest, OpenFileTest) {
     MockFileHandler mock_file;
 
     // Określamy, jak ma się zachować mock przy wywołaniu metody 'open'
-    EXPECT_CALL(mock_file, open("/some/path", simba::core::File_mode_t::WRITE))
+    EXPECT_CALL(mock_file, open("/some/path", srp::core::File_mode_t::WRITE))
         .WillOnce(::testing::Return(true));  // Zwracamy 'true' przy otwarciu pliku
 
     // Wywołanie testowanej metody
-    bool result = mock_file.open("/some/path", simba::core::File_mode_t::WRITE);
+    bool result = mock_file.open("/some/path", srp::core::File_mode_t::WRITE);
 
     // Sprawdzamy wynik
     EXPECT_TRUE(result);

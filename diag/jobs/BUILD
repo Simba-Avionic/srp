@@ -6,11 +6,14 @@ cc_library(
         "diag_response.h",
         "job_common.h",
     ],
-    deprecation = "Please use: //ara/diag:uds_lib",
-    visibility = ["//diag/jobs:__subpackages__"],
+    deprecation = "Please use: @srp_platform//ara/diag:uds_lib",
+    visibility = [
+        "//diag/jobs:__subpackages__",
+        "//diag/jobs/skeleton:__subpackages__"
+    ],
     deps = [
-        "//ara/core:model_db_lib",
-        "//ara/log",
+        "@srp_platform//ara/core:model_db_lib",
+        "@srp_platform//ara/log",
         "//communication-core/sockets:socket_ipc",
     ],
 )

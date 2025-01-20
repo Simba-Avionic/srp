@@ -19,7 +19,7 @@
 #include "core/common/condition.h"
 #include "core/json/json_parser.h"
 
-namespace simba {
+namespace srp {
 namespace mw {
 namespace temp {
 
@@ -29,16 +29,16 @@ using TempReading = std::pair<uint8_t, double>;
 
 namespace {
     static constexpr char const*
-        kTempServiceName = "SIMBA.TEMP.SERVICE";
+        kTempServiceName = "SRP.TEMP.SERVICE";
     static constexpr char const*
-        kSubscriberPrefix = "SIMBA.TEMP.";
+        kSubscriberPrefix = "SRP.TEMP.";
     constexpr uint8_t kSensor_resolution = 10;
     constexpr auto kSensor_Delay = 500;
     constexpr uint16_t kDefault_Response_Time = 125;
 }
 
-using temp_sub_factory = simba::mw::temp::SubMsgFactory;
-using temp_read_factory = simba::mw::temp::TempReadingMsgFactory;
+using temp_sub_factory = srp::mw::temp::SubMsgFactory;
+using temp_read_factory = srp::mw::temp::TempReadingMsgFactory;
 
 
 TempService::TempService() {
@@ -51,15 +51,15 @@ int TempService::Run(const std::stop_token& token) {
     std::vector<TempReading> readings;
     while (!token.stop_requested()) {
         readings = RetrieveTempReadings();
-        for (const auto& read : readings) {
-            this->temp_did_->UpdateTemp(read.first, read.second);
-        }
+        // for (const auto& read : readings) {
+        //     this->temp_did_->UpdateTemp(read.first, read.second);
+        // }
         SendTempReadings(readings);
         readings.clear();
         std::this_thread::sleep_for(std::chrono::milliseconds(kSensor_Delay-kDefault_Response_Time));
     }
     this->sub_sock_->StopRXThread();
-    this->temp_did_->StopOffer();
+    // this->temp_did_->StopOffer();
     return 0;
 }
 
@@ -74,17 +74,17 @@ int TempService::Initialize(const std::map<ara::core::StringView, ara::core::Str
     }
 
     this->sub_sock_->SetRXCallback(
-        std::bind(&simba::mw::temp::TempService::SubCallback, this,
+        std::bind(&srp::mw::temp::TempService::SubCallback, this,
             std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
     this->sub_sock_->StartRXThread();
     std::vector<uint8_t> sensors_id;
     for (const auto& id : sensorPathsToIds) {
         sensors_id.push_back(id.second);
     }
-    this->temp_did_ = std::make_unique<TempMWDID>(
-                ara::core::InstanceSpecifier("/simba/mw/temp_service/temp_status_did"), sensors_id);
-    this->temp_did_->StartOffer();
-    return simba::core::ErrorCode::kOk;
+    // this->temp_did_ = std::make_unique<TempMWDID>(
+    //             ara::core::InstanceSpecifier("/srp/mw/temp_service/temp_status_did"), sensors_id);
+    // this->temp_did_->StartOffer();
+    return srp::core::ErrorCode::kOk;
 }
 
 int TempService::ConfigSensors() {
@@ -100,7 +100,7 @@ int TempService::ConfigSensors() {
         this->delay_time = res.ValueOr(kDefault_Response_Time);
         break;
     }
-    return simba::core::ErrorCode::kOk;
+    return srp::core::ErrorCode::kOk;
 }
 
 void TempService::SubCallback(const std::string& ip, const std::uint16_t& port,
@@ -144,7 +144,7 @@ int TempService::LoadConfig(
         }
         sensorPathsToIds[physical_id.value()] = sensor_id.value();
     }
-    return simba::core::ErrorCode::kOk;
+    return srp::core::ErrorCode::kOk;
 }
 
 std::vector<TempReading> TempService::RetrieveTempReadings() const {
@@ -185,4 +185,4 @@ void TempService::SendTempReadings(
 
 }  // namespace temp
 }  // namespace mw
-}  // namespace simba
+}  // namespace srp

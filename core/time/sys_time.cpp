@@ -14,7 +14,7 @@
 #include <array>
 #include "core/time/sys_time.hpp"
 
-namespace simba {
+namespace srp {
 namespace core {
 namespace time {
 
@@ -106,4 +106,4 @@ std::optional<std::string> TimeChanger::ReadSystemTimeAsString() {
 }
 }  // namespace  time
 }  // namespace  core
-}  // namespace  simba
+}  // namespace  srp

@@ -21,7 +21,7 @@
 #include "core/json/json_parser.h"
 #include "apps/ec/primer_service/controller/primer_controller.hpp"
 
-namespace simba {
+namespace srp {
 namespace primer {
 
 namespace {
@@ -77,5 +77,5 @@ bool PrimerController::ReadConfig(std::string path) {
 }
 
 }  // namespace primer
-}  // namespace simba
+}  // namespace srp
 

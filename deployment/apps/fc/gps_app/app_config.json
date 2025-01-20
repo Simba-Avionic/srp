@@ -2,11 +2,14 @@
     "include": [
         "deployment/system_definition/someip/fc/gps_service/service.json"
     ],
-    "package": "simba.apps",
+    "package": "srp.apps",
     "adaptive_application": {
         "GPSApp": {
             "app": {
-                "bootMode": 6,
+                "functional_groups":[
+                    "Running",
+                    "SafetyMode"
+                ],
                 "parms": "",
                 "logger": {
                     "app_id": "GPS-",

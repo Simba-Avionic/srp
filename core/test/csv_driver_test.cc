@@ -13,7 +13,7 @@
 #include <string>
 #include "core/csvdriver/csvdriver.h"
 
-using namespace simba::csv;  // NOLINT
+using namespace srp::csv;  // NOLINT
 
 class CSVDriverTest : public ::testing::Test {
  protected:

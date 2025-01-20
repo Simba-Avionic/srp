@@ -13,6 +13,6 @@
 #include "core/application/application_factory.h"
 
 int main(int argc, char const *argv[]) {
-  simba::core::ApplicationFactory<simba::em::EmApplication>::Start(argc, argv);
+  srp::core::ApplicationFactory<srp::em::EmApplication>::Start(argc, argv);
   return 0;
 }

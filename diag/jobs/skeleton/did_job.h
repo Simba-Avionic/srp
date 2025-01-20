@@ -15,7 +15,7 @@
 #include <vector>
 
 #include "diag/jobs/job_common.h"
-namespace simba {
+namespace srp {
 namespace diag {
 class DiDJob : public JobCommon {
  private:
@@ -41,6 +41,6 @@ class DiDJob : public JobCommon {
   virtual ~DiDJob() = default;
 };
 }  // namespace diag
-}  // namespace simba
+}  // namespace srp
 
 #endif  // DIAG_JOBS_SKELETON_DID_JOB_H_

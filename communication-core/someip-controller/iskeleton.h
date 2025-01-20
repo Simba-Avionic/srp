@@ -18,7 +18,7 @@
 
 #include "communication-core/someip-controller/callbacks.h"
 #include "communication-core/someip-database/code/endpoint.h"
-namespace simba {
+namespace srp {
 namespace com {
 namespace someip {
 class ISkeleton {
@@ -32,5 +32,5 @@ class ISkeleton {
 };
 }  // namespace someip
 }  // namespace com
-}  // namespace simba
+}  // namespace srp
 #endif  // COMMUNICATION_CORE_SOMEIP_CONTROLLER_ISKELETON_H_

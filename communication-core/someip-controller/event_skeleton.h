@@ -30,7 +30,7 @@
 #include "communication-core/someip/message_type.h"
 #include "core/logger/Logger.h"
 
-namespace simba {
+namespace srp {
 namespace com {
 namespace someip {
 class EventSkeleton : public ISkeleton {
@@ -100,5 +100,5 @@ class EventSkeleton : public ISkeleton {
 };
 }  // namespace someip
 }  // namespace com
-}  // namespace simba
+}  // namespace srp
 #endif  // COMMUNICATION_CORE_SOMEIP_CONTROLLER_EVENT_SKELETON_H_

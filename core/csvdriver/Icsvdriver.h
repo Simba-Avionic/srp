@@ -11,7 +11,7 @@
 #ifndef CORE_CSVDRIVER_ICSVDRIVER_H_
 #define CORE_CSVDRIVER_ICSVDRIVER_H_
 #include <string>
-namespace simba {
+namespace srp {
 namespace csv {
 
 class ICSVDriver {
@@ -21,5 +21,5 @@ class ICSVDriver {
   virtual void Close() = 0;
 };
 }  // namespace csv
-}  // namespace simba
+}  // namespace srp
 #endif  // CORE_CSVDRIVER_ICSVDRIVER_H_

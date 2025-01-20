@@ -18,7 +18,7 @@
 #include <bitset>
 #include "ara/log/log.h"
 #include "diag/jobs/skeleton/did_job.h"
-namespace simba {
+namespace srp {
 namespace mw {
 
 static std::vector<uint8_t> floatToVector(float value) {
@@ -68,6 +68,6 @@ diag::DiagResponse Write(const std::vector<uint8_t>& payload) {
 };
 
 }  // namespace mw
-}  // namespace simba
+}  // namespace srp
 
 #endif  // MW_TEMP_SERVICE_TEMP_MW_DID_H_

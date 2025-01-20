@@ -13,26 +13,26 @@
 #include <map>
 
 #include "ara/log/log.h"
-#include "simba/example/ExampleServiceSkeleton.h"
+#include "srp/example/ExampleServiceSkeleton.h"
 
-namespace simba {
+namespace srp {
 namespace example {
-class MyExampleService : public simba::example::ExampleServiceSkeleton {
+class MyExampleService : public srp::example::ExampleServiceSkeleton {
  public:
   explicit MyExampleService(const ara::core::InstanceSpecifier& instance)
-      : simba::example::ExampleServiceSkeleton{instance} {}
+      : srp::example::ExampleServiceSkeleton{instance} {}
   ~MyExampleService() = default;
 
  protected:
   ara::core::Result<bool> SetStatus3() override { return true; }
-  ara::core::Result<simba::example::ExampleDataStructure> SetStatus4()
+  ara::core::Result<srp::example::ExampleDataStructure> SetStatus4()
       override {
     ara::log::LogInfo() << "Działa !!";
-    simba::example::ExampleDataStructure res{1, 1};
+    srp::example::ExampleDataStructure res{1, 1};
     return res;
   }
   ara::core::Result<void> SetStatus5() override { return {}; }
 };
 }  // namespace example
-}  // namespace simba
+}  // namespace srp
 #endif  // EXAMPLE_ADAPTIVE_EXAMPLEAPP_CODE_APPLICATION_EXAMPLE_SERVICE_H_

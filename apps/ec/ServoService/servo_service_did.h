@@ -16,7 +16,7 @@
 #include <memory>
 #include "ara/log/log.h"
 #include "ara/diag/generic_data_identifier.h"
-namespace simba {
+namespace srp {
 namespace service {
 
 class ServoServiceDiD : public ara::diag::GenericDiD {
@@ -53,6 +53,6 @@ class ServoServiceDiD : public ara::diag::GenericDiD {
 };
 
 }  // namespace service
-}  // namespace simba
+}  // namespace srp
 
 #endif  // APPS_EC_SERVOSERVICE_SERVO_SERVICE_DID_H_

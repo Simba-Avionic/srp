@@ -18,7 +18,7 @@
 #include "communication-core/network-data/network_data_structure.h"
 #include "communication-core/network-data/network_data_type.h"
 
-namespace simba {
+namespace srp {
 namespace mw {
 namespace temp {
 
@@ -35,6 +35,6 @@ class SubscribeHeader : public com::core::network::NetworkDataStructure {
 
 }  // namespace temp
 }  // namespace mw
-}  // namespace simba
+}  // namespace srp
 
 #endif  // MW_TEMP_SUBSCRIBE_MSG_SUBSCRIBE_HEADER_H_

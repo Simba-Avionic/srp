@@ -13,7 +13,7 @@
 #include <utility>
 #include "gpio_driver.hpp"
 
-namespace simba {
+namespace srp {
 namespace core {
 namespace gpio {
 
@@ -110,4 +110,4 @@ direction_t GpioDriver::getDirection(const uint16_t& pinNumber) {
 
 }  // namespace gpio
 }  // namespace core
-}  // namespace simba
+}  // namespace srp

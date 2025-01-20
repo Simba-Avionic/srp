@@ -21,7 +21,7 @@
 #include "core/common/condition.h"
 #include "core/json/json_parser.h"
 
-namespace simba {
+namespace srp {
 namespace primer {
 
 class PrimerController {
@@ -43,6 +43,6 @@ class PrimerController {
 };
 
 }  // namespace primer
-}  // namespace simba
+}  // namespace srp
 
 #endif  // APPS_EC_PRIMER_SERVICE_CONTROLLER_PRIMER_CONTROLLER_HPP_

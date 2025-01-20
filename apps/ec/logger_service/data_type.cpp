@@ -12,7 +12,7 @@
 
 #include "apps/ec/logger_service/data_type.hpp"
 #include <sstream>
-namespace simba {
+namespace srp {
 namespace logger {
 
 std::string Data_t::to_string(const std::string& timestamp) {
@@ -48,5 +48,5 @@ void Data_t::SetTankDPress(const dPressType& press) {
 }
 
 }  // namespace logger
-}  // namespace simba
+}  // namespace srp
 

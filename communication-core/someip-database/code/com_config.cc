@@ -14,7 +14,7 @@
 
 #include "core/logger/Logger.h"
 
-namespace simba {
+namespace srp {
 namespace com {
 namespace config {
 
@@ -42,4 +42,4 @@ void ComConfig::InitConfigDb(const std::string& path) {
 }
 }  // namespace config
 }  // namespace com
-}  // namespace simba
+}  // namespace srp

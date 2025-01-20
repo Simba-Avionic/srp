@@ -12,7 +12,7 @@
 
 #include <utility>
 
-namespace simba {
+namespace srp {
 namespace diag {
 
 DiagResponse DiDJob::Method(const DiagRequest request) {
@@ -45,4 +45,4 @@ DiagResponse DiDJob::Write(const std::vector<uint8_t>& payload) {
 }
 DiDJob::DiDJob(const ara::core::InstanceSpecifier& instance) : JobCommon(instance) {}
 }  // namespace diag
-}  // namespace simba
+}  // namespace srp

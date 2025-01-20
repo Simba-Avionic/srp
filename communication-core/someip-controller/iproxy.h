@@ -20,7 +20,7 @@
 #include "communication-core/someip-database/code/endpoint.h"
 #include "communication-core/someip-database/code/interface.h"
 
-namespace simba {
+namespace srp {
 namespace com {
 namespace someip {
 class IProxy {
@@ -34,5 +34,5 @@ class IProxy {
 };
 }  // namespace someip
 }  // namespace com
-}  // namespace simba
+}  // namespace srp
 #endif  // COMMUNICATION_CORE_SOMEIP_CONTROLLER_IPROXY_H_

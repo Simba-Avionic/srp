@@ -12,6 +12,6 @@
 #include "ara/exec/adaptive_lifecycle.h"
 int main(int argc, char const *argv[]) {
   // setsid();
-  return ara::exec::RunAdaptiveLifecycle<simba::logger::LoggerService>(argc,
+  return ara::exec::RunAdaptiveLifecycle<srp::logger::LoggerService>(argc,
                                                                      argv);
 }

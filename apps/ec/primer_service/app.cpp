@@ -17,7 +17,7 @@
 #include "core/common/condition.h"
 #include "ara/log/log.h"
 
-namespace simba {
+namespace srp {
 namespace primer {
 
 int PrimerService::Run(const std::stop_token& token) {
@@ -29,8 +29,8 @@ int PrimerService::Run(const std::stop_token& token) {
 
 PrimerService::PrimerService() :
   controller(std::make_shared<PrimerController>()),
-  service_ipc{ara::core::InstanceSpecifier{"simba/apps/PrimerService/PrimService_ipc"}, this->controller},
-  service_udp{ara::core::InstanceSpecifier{"simba/apps/PrimerService/PrimService_udp"}, this->controller} {}
+  service_ipc{ara::core::InstanceSpecifier{"srp/apps/PrimerService/PrimService_ipc"}, this->controller},
+  service_udp{ara::core::InstanceSpecifier{"srp/apps/PrimerService/PrimService_udp"}, this->controller} {}
 
   int PrimerService::Initialize(const std::map<ara::core::StringView, ara::core::StringView>
                       parms) {
@@ -41,4 +41,4 @@ PrimerService::PrimerService() :
 }
 
 }  // namespace primer
-}  // namespace simba
+}  // namespace srp

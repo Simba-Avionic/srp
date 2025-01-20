@@ -13,7 +13,7 @@
 #include "communication-core/someip/message_code.h"
 #include "communication-core/someip/message_type.h"
 
-namespace simba {
+namespace srp {
 namespace com {
 namespace someip {
 namespace factory {
@@ -37,13 +37,13 @@ std::shared_ptr<SomeIpHeader> SomeIpHeaderFactory::CreateRequestNoReturn(
 
 std::shared_ptr<SomeIpHeader> SomeIpHeaderFactory::CreateResponse(
     const std::uint16_t service_id, const std::uint16_t methode_id,
-    const simba::com::data::MessageCode res_flag) {
+    const srp::com::data::MessageCode res_flag) {
   return std::make_shared<SomeIpHeader>(service_id, methode_id, 0x00, 0x00,
                                         0x00, 0x1, data::kResponse, res_flag);
 }
 std::shared_ptr<SomeIpHeader> SomeIpHeaderFactory::CreateErrorResponse(
     const std::uint16_t service_id, const std::uint16_t methode_id,
-    const simba::com::data::MessageCode res_flag) {
+    const srp::com::data::MessageCode res_flag) {
   return std::make_shared<SomeIpHeader>(service_id, methode_id, 0x00, 0x00,
                                         0x00, 0x1, data::kError, res_flag);
 }
@@ -57,4 +57,4 @@ std::shared_ptr<SomeIpHeader> SomeIpHeaderFactory::CreateRequestACK(
 }  // namespace factory
 }  // namespace someip
 }  // namespace com
-}  // namespace simba
+}  // namespace srp

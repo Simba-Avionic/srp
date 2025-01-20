@@ -18,14 +18,14 @@
 #include "ara/log/log.h"
 #include "gpio_controller.hpp"
 
-namespace simba {
+namespace srp {
 namespace gpio {
 
 namespace {
-    constexpr auto PATH = "SIMBA.GPIO";
+    constexpr auto PATH = "SRP.GPIO";
 }
 
-GPIOController::GPIOController(std::unique_ptr<com::soc::ISocketStream> socket)
+GPIOController::GPIOController(std::unique_ptr<srp::com::soc::ISocketStream> socket)
                                                     : sock_(std::move(socket)) {
 }
 
@@ -61,4 +61,4 @@ std::optional<int8_t> GPIOController::GetPinValue(uint8_t actuatorID) {
 
 
 }  // namespace gpio
-}  // namespace simba
+}  // namespace srp

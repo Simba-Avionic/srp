@@ -1,4 +1,4 @@
-load("//deployment/tools/ara:adaptive_application.bzl", "ara_runtime_lib", "ara_someip_lib")
+load("@srp_platform//tools/model_generator/ara:adaptive_application.bzl", "ara_runtime_lib", "ara_someip_lib")
 
 ara_runtime_lib(
     name = "ara",

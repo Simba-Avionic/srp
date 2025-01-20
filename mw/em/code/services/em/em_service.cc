@@ -40,7 +40,7 @@ void run_cmd(char* cmd) {
 }
 // #include "boost/process.hpp"
 #include "core/json/json_parser.h"
-namespace simba {
+namespace srp {
 namespace em {
 namespace service {
 
@@ -175,7 +175,7 @@ std::optional<pid_t> EmService::RestartApp(const uint16_t appID) {
   }
 }
 
-pid_t EmService::StartApp(const simba::em::service::data::AppConfig &app) {
+pid_t EmService::StartApp(const srp::em::service::data::AppConfig &app) {
     pid_t pid{0};
     char* app_args = new char[app.GetBinPath().size()];
     sprintf(app_args, "%s", app.GetBinPath().c_str());  // NOLINT
@@ -187,4 +187,4 @@ pid_t EmService::StartApp(const simba::em::service::data::AppConfig &app) {
 
 }  // namespace service
 }  // namespace em
-}  // namespace simba
+}  // namespace srp

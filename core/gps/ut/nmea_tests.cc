@@ -16,7 +16,7 @@ class SplitStringParamTest : public ::testing::TestWithParam<std::tuple<std::str
 
 TEST_P(SplitStringParamTest, SplitStringTest) {
     auto [input, expected] = GetParam();
-    auto result = simba::core::Nmea::splitString(input);
+    auto result = srp::core::Nmea::splitString(input);
     EXPECT_EQ(result, expected);
 }
 
@@ -38,7 +38,7 @@ INSTANTIATE_TEST_SUITE_P(
 
 TEST(NMEAParser, BasicTest) {
     std::string val = "$GNGGA,182658.40,5421.08022,N,01835.23691,E,1,08,2.00,120.5,M,32.8,M,,*49";
-    auto res_opt = simba::core::Nmea::Parse(val);
+    auto res_opt = srp::core::Nmea::Parse(val);
     ASSERT_TRUE(res_opt.has_value());
     auto res = res_opt.value();
     EXPECT_EQ(res.timestamp, 182658.40);
@@ -51,7 +51,7 @@ TEST(NMEAParser, BasicTest) {
     EXPECT_EQ(res.height, 120.5);
 }
 TEST(NMEAParser, ToStringTest) {
-  simba::core::GPS_DATA_T data;
+  srp::core::GPS_DATA_T data;
     data.timestamp = 12.2;
     data.latitude = 12.2;
     data.latitude_dir = 'R';

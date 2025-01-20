@@ -13,7 +13,7 @@
 
 #include "gmock/gmock.h"
 #include "mw/gpio_server/controller/Igpio_controller.h"
-namespace simba {
+namespace srp {
 namespace mock {
 class MOCKGPIOController : public gpio::IGPIOController {
  public:
@@ -21,5 +21,5 @@ class MOCKGPIOController : public gpio::IGPIOController {
   MOCK_METHOD(std::optional<int8_t>, GetPinValue, (uint8_t actuatorID), (override));
 };
 }  // namespace mock
-}  // namespace simba
+}  // namespace srp
 #endif  // MW_GPIO_SERVER_CONTROLLER_MOCK_MOCK_GPIO_CONTROLLER_H_

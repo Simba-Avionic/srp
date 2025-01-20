@@ -11,7 +11,7 @@
 
 #include "mw/i2c_service/data/header.h"
 
-namespace simba {
+namespace srp {
 namespace i2c {
 
 Header::Header(ACTION action, uint8_t address) {
@@ -28,4 +28,4 @@ void Header::SetData() {
 }
 
 }  // namespace i2c
-}  // namespace simba
+}  // namespace srp

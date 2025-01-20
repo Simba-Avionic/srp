@@ -1,6 +1,6 @@
 {
     "include":[],
-    "package":"simba.example",
+    "package":"srp.example",
     "data_structure":{
         "ExampleDataStructure2":{
             "name": "int16",

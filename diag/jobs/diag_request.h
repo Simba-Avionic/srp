@@ -13,7 +13,7 @@
 #include <cstdint>
 #include <utility>
 #include <vector>
-namespace simba {
+namespace srp {
 namespace diag {
 class DiagRequest {
  private:
@@ -43,6 +43,6 @@ class DiagRequest {
   virtual ~DiagRequest() = default;
 };
 }  // namespace diag
-}  // namespace simba
+}  // namespace srp
 
 #endif  // DIAG_JOBS_DIAG_REQUEST_H_

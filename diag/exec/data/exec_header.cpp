@@ -10,7 +10,7 @@
  */
 #include "diag/exec/data/exec_header.hpp"
 
-namespace simba {
+namespace srp {
 namespace diag {
 namespace exec {
 
@@ -39,4 +39,4 @@ void ExecHeader::SetFlags(uint8_t flags) {
 
 }  // namespace exec
 }  // namespace diag
-}  // namespace simba
+}  // namespace srp

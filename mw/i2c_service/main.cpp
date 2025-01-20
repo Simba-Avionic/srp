@@ -13,6 +13,6 @@
 
 int main(int argc, char const *argv[]) {
   // setsid();
-  return ara::exec::RunAdaptiveLifecycle<simba::mw::I2CService>(argc,
+  return ara::exec::RunAdaptiveLifecycle<srp::mw::I2CService>(argc,
                                                                      argv);
 }

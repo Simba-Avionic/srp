@@ -1,4 +1,4 @@
-load("//deployment/bazel:flash_ecu.bzl", "flash_ecu")
+load("@srp_platform//tools/common:flash_ecu.bzl", "flash_ecu")
 
 flash_ecu(
     name = "flash_ec",

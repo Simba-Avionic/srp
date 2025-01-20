@@ -21,7 +21,7 @@
 #include "core/common/condition.h"
 #include "ara/com/com_error_domain.h"
 
-namespace simba {
+namespace srp {
 namespace core {
 namespace temp {
 
@@ -59,4 +59,4 @@ ara::core::Result<uint16_t> TempDriver::GetResponseTime(const std::string& senso
 
 }  // namespace temp
 }  // namespace core
-}  // namespace simba
+}  // namespace srp

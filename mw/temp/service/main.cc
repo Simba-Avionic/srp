@@ -13,6 +13,6 @@
 #include "ara/exec/adaptive_lifecycle.h"
 
 int main(int argc, char const *argv[]) {
-  return ara::exec::RunAdaptiveLifecycle<simba::mw::temp::TempService>(argc,
+  return ara::exec::RunAdaptiveLifecycle<srp::mw::temp::TempService>(argc,
                                                                      argv);
 }

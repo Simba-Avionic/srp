@@ -19,19 +19,19 @@
 #include "communication-core/sockets/Isocket.h"
 #include "communication-core/sockets/Isocket_stream.h"
 
-class MockSocket : public simba::com::soc::ISocket {
+class MockSocket : public srp::com::soc::ISocket {
  public:
-  MOCK_METHOD(void, SetRXCallback, (simba::com::soc::RXCallback), (override));
-  MOCK_METHOD(simba::core::ErrorCode, Init, (const simba::com::soc::SocketConfig&), (override));
-  MOCK_METHOD(simba::core::ErrorCode, Transmit, (const std::string&, const std::uint16_t,
+  MOCK_METHOD(void, SetRXCallback, (srp::com::soc::RXCallback), (override));
+  MOCK_METHOD(srp::core::ErrorCode, Init, (const srp::com::soc::SocketConfig&), (override));
+  MOCK_METHOD(srp::core::ErrorCode, Transmit, (const std::string&, const std::uint16_t,
                                    std::vector<std::uint8_t>), (override));
   MOCK_METHOD(void, StartRXThread, (), (override));
 };
 
-class MockStreamSocket : public simba::com::soc::ISocketStream {
+class MockStreamSocket : public srp::com::soc::ISocketStream {
  public:
-  MOCK_METHOD(simba::core::ErrorCode, Init, (const simba::com::soc::SocketConfig& config), (override));
-  MOCK_METHOD(void, SetRXCallback, (simba::com::soc::RXCallbackStream callback), (override));
+  MOCK_METHOD(srp::core::ErrorCode, Init, (const srp::com::soc::SocketConfig& config), (override));
+  MOCK_METHOD(void, SetRXCallback, (srp::com::soc::RXCallbackStream callback), (override));
   MOCK_METHOD(std::optional<std::vector<uint8_t>>, Transmit,
               (const std::string& ip, const std::uint16_t port,
                std::vector<std::uint8_t> payload),

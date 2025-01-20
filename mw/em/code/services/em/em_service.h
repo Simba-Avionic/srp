@@ -18,7 +18,7 @@
 
 #include "app_config.h"
 
-namespace simba {
+namespace srp {
 namespace em {
 namespace service {
 class EmService {
@@ -27,7 +27,7 @@ class EmService {
   std::vector<data::AppConfig> app_list{};
   bool IsSrpApp(const std::string& path) noexcept;
   std::optional<data::AppConfig> GetAppConfig(const std::string& path) noexcept;
-  pid_t StartApp(const simba::em::service::data::AppConfig &app);
+  pid_t StartApp(const srp::em::service::data::AppConfig &app);
  public:
   std::vector<service::data::AppConfig> GetAppList() {
     return this->app_list;
@@ -42,5 +42,5 @@ class EmService {
 
 }  // namespace service
 }  // namespace em
-}  // namespace simba
+}  // namespace srp
 #endif  // MW_EM_CODE_SERVICES_EM_EM_SERVICE_H_

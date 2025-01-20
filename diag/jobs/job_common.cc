@@ -16,7 +16,7 @@
 #include "ara/core/model_db.h"
 #include "ara/log/logging_menager.h"
 #include "communication-core/sockets/stream_ipc_socket.h"
-namespace simba {
+namespace srp {
 namespace diag {
 std::vector<uint8_t> JobCommon::rx_callback(const std::string&,
                                             const std::uint16_t&,
@@ -44,7 +44,7 @@ void JobCommon::StartOffer() {
   this->soc_->SetRXCallback(
       std::bind(&JobCommon::rx_callback, this, std::placeholders::_1,
                 std::placeholders::_2, std::placeholders::_3));
-  if (this->soc_->Init(com::soc::SocketConfig{"SIMBA.DIAG." + this->job_id_, 0,
+  if (this->soc_->Init(com::soc::SocketConfig{"SRP.DIAG." + this->job_id_, 0,
                                               0}) == core::ErrorCode::kOk) {
     this->soc_->StartRXThread();
     diag_logger.LogInfo() << "[" << instance_ << "]: Socket started";
@@ -70,4 +70,4 @@ JobCommon::JobCommon(const ara::core::InstanceSpecifier& instance)
   }
 }
 }  // namespace diag
-}  // namespace simba
+}  // namespace srp

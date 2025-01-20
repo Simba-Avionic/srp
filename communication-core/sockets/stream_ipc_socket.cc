@@ -18,7 +18,7 @@
 #include <cstdio>
 #include <fstream>
 #include <vector>
-namespace simba {
+namespace srp {
 namespace com {
 namespace soc {
 bool StreamIpcSocket::SocketExist(const std::string path) {
@@ -26,11 +26,11 @@ bool StreamIpcSocket::SocketExist(const std::string path) {
   return (stat(path.c_str(), &buffer) == 0);
 }
 
-simba::core::ErrorCode StreamIpcSocket::Init(const SocketConfig& config) {
+srp::core::ErrorCode StreamIpcSocket::Init(const SocketConfig& config) {
   memset(&server_sockaddr, 0, sizeof(struct sockaddr_un));
   server_sock = socket(AF_UNIX, SOCK_STREAM, 0);
   if (server_sock == -1) {
-    return simba::core::ErrorCode::kInitializeError;
+    return srp::core::ErrorCode::kInitializeError;
   }
   umask(0);
   server_sockaddr.sun_family = AF_UNIX;
@@ -41,7 +41,7 @@ simba::core::ErrorCode StreamIpcSocket::Init(const SocketConfig& config) {
          ("/run/" + config.GetIp()).c_str());  // NOLINT
   len = sizeof(server_sockaddr);
   unlink(("/run/" + config.GetIp()).c_str());
-  return simba::core::ErrorCode::kOk;
+  return srp::core::ErrorCode::kOk;
 }
 
 void StreamIpcSocket::SetRXCallback(RXCallbackStream callback) {
@@ -113,7 +113,7 @@ void StreamIpcSocket::Loop(std::stop_token stoken) {
           auto res = this->callback_(
               "IPC", 0,
               std::vector<uint8_t>{buffer.begin(), buffer.begin() + bytes_rec});
-          write(client_socket, res.data(), res.size());
+          std::ignore = write(client_socket, res.data(), res.size());
         }
       }
     }
@@ -130,4 +130,4 @@ void StreamIpcSocket::StopRXThread() {
 }
 }  // namespace soc
 }  // namespace com
-}  // namespace simba
+}  // namespace srp

@@ -20,7 +20,7 @@
 #include "core/application/application_mw.h"
 #include "mw/em/code/services/em/em_service.h"
 #include "mw/em/code/services/exec/exec_manager.hpp"
-namespace simba {
+namespace srp {
 namespace em {
 class EmApplication final : public core::ApplicationMW {
  private:
@@ -47,5 +47,5 @@ class EmApplication final : public core::ApplicationMW {
 };
 
 }  // namespace em
-}  // namespace simba
+}  // namespace srp
 #endif  // MW_EM_CODE_EM_APPLICATION_H_

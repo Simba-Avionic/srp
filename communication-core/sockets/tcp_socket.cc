@@ -22,14 +22,14 @@
 #include <cstdio>
 #include <fstream>
 #include <vector>
-namespace simba {
+namespace srp {
 namespace com {
 namespace soc {
 
-simba::core::ErrorCode StreamTCPSocket::Init(const SocketConfig& config) {
+srp::core::ErrorCode StreamTCPSocket::Init(const SocketConfig& config) {
     server_sock = socket(AF_INET, SOCK_STREAM, 0);
     if (server_sock == -1) {
-        return simba::core::ErrorCode::kInitializeError;
+        return srp::core::ErrorCode::kInitializeError;
     }
 
     memset(&server_addr, 0, sizeof(server_addr));
@@ -39,14 +39,14 @@ simba::core::ErrorCode StreamTCPSocket::Init(const SocketConfig& config) {
 
     int opt = 1;
     if (setsockopt(server_sock, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &opt, sizeof(opt))) {
-        return simba::core::ErrorCode::kInitializeError;
+        return srp::core::ErrorCode::kInitializeError;
     }
 
     if (bind(server_sock, (struct sockaddr*)&server_addr, sizeof(server_addr)) < 0) {
-        return simba::core::ErrorCode::kInitializeError;
+        return srp::core::ErrorCode::kInitializeError;
     }
 
-    return simba::core::ErrorCode::kOk;
+    return srp::core::ErrorCode::kOk;
 }
 
 void StreamTCPSocket::SetRXCallback(RXCallbackStream callback) {
@@ -145,4 +145,4 @@ void StreamTCPSocket::Loop(std::stop_token stoken) {
 
 }  // namespace soc
 }  // namespace com
-}  // namespace simba
+}  // namespace srp

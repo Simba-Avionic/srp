@@ -19,7 +19,7 @@
 #include <cstring>
 
 #include "communication-core/sockets/Isocket_stream.h"
-namespace simba {
+namespace srp {
 namespace com {
 namespace soc {
 class StreamTCPSocket : public ISocketStream {
@@ -35,7 +35,7 @@ class StreamTCPSocket : public ISocketStream {
  public:
   StreamTCPSocket() = default;
 
-  simba::core::ErrorCode Init(const SocketConfig& config) override;
+  srp::core::ErrorCode Init(const SocketConfig& config) override;
   std::optional<std::vector<uint8_t>> Transmit(const std::string& ip,
                                     const std::uint16_t port,
                                     std::vector<std::uint8_t> payload) override;
@@ -45,6 +45,6 @@ class StreamTCPSocket : public ISocketStream {
 
 }  // namespace soc
 }  // namespace com
-}  // namespace simba
+}  // namespace srp
 
 #endif  // COMMUNICATION_CORE_SOCKETS_TCP_SOCKET_H_

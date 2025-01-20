@@ -18,15 +18,15 @@
 #include "iostream"
 #include "unistd.h"
 
-namespace simba {
+namespace srp {
 namespace com {
 namespace soc {
 
-simba::core::ErrorCode UdpSocket::Init(const SocketConfig& config) {
+srp::core::ErrorCode UdpSocket::Init(const SocketConfig& config) {
   memset(&server_sockaddr, 0, sizeof(server_sockaddr));
   server_sock = socket(AF_INET, SOCK_DGRAM, 0);
   if (server_sock == -1) {
-    return simba::core::ErrorCode::kInitializeError;
+    return srp::core::ErrorCode::kInitializeError;
   }
   server_sockaddr.sin_family = AF_INET;
   server_sockaddr.sin_addr.s_addr = inet_addr(config.GetIp().c_str());
@@ -35,16 +35,16 @@ simba::core::ErrorCode UdpSocket::Init(const SocketConfig& config) {
   unlink(config.GetIp().c_str());
   int rc = bind(server_sock, (struct sockaddr*)&server_sockaddr, len);
   if (rc == -1) {
-    return simba::core::ErrorCode::kInitializeError;
+    return srp::core::ErrorCode::kInitializeError;
   }
-  return simba::core::ErrorCode::kOk;
+  return srp::core::ErrorCode::kOk;
 }
 
 void UdpSocket::SetRXCallback(RXCallback callback) {
   this->callback_ = callback;
 }
 
-simba::core::ErrorCode UdpSocket::Transmit(const std::string& ip,
+srp::core::ErrorCode UdpSocket::Transmit(const std::string& ip,
                                            const std::uint16_t port,
                                            std::vector<std::uint8_t> payload) {
   int client_socket, rc;
@@ -52,7 +52,7 @@ simba::core::ErrorCode UdpSocket::Transmit(const std::string& ip,
   memset(&remote, 0, sizeof(struct sockaddr_in));
   client_socket = socket(AF_INET, SOCK_DGRAM, 0);
   if (client_socket == -1) {
-    return simba::core::ErrorCode::kError;
+    return srp::core::ErrorCode::kError;
   }
   remote.sin_family = AF_INET;
   remote.sin_addr.s_addr = inet_addr(ip.c_str());
@@ -64,9 +64,9 @@ simba::core::ErrorCode UdpSocket::Transmit(const std::string& ip,
   delete[] buffor;
   close(client_socket);
   if (rc == -1) {
-    return simba::core::ErrorCode::kError;
+    return srp::core::ErrorCode::kError;
   }
-  return simba::core::ErrorCode::kOk;
+  return srp::core::ErrorCode::kOk;
 }
 
 void UdpSocket::StartRXThread() {
@@ -101,4 +101,4 @@ void UdpSocket::Loop(std::stop_token stoken) {
 }
 }  //  namespace soc
 }  //  namespace com
-}  //  namespace simba
+}  //  namespace srp

@@ -15,7 +15,7 @@
 #include <vector>
 
 #include "diag/jobs/job_common.h"
-namespace simba {
+namespace srp {
 namespace diag {
 class RoutineControlJob : public JobCommon {
  private:
@@ -49,6 +49,6 @@ virtual DiagResponse GetResponse(const std::vector<uint8_t>& payload);
   virtual ~RoutineControlJob() = default;
 };
 }  // namespace diag
-}  // namespace simba
+}  // namespace srp
 
 #endif  // DIAG_JOBS_SKELETON_ROUTINE_CONTROL_JOB_H_

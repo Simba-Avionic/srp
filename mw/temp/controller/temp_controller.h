@@ -31,7 +31,7 @@
 
 #include "mw/temp/service/temp_service.h"
 
-namespace simba {
+namespace srp {
 namespace mw {
 namespace temp {
 
@@ -43,13 +43,13 @@ class TempController {
  private:
   uint16_t service_id;
   std::unique_ptr<com::soc::ISocket> sub_sock_{};
-  simba::com::soc::RXCallback callback_;
+  srp::com::soc::RXCallback callback_;
 
  protected:
   void SetTempRXCallback();
-  simba::core::ErrorCode Subscribe();
-  simba::core::ErrorCode Init(uint16_t service_id, std::unique_ptr<com::soc::ISocket> sock);
-  simba::core::ErrorCode SetUp(simba::com::soc::RXCallback callback);
+  srp::core::ErrorCode Subscribe();
+  srp::core::ErrorCode Init(uint16_t service_id, std::unique_ptr<com::soc::ISocket> sock);
+  srp::core::ErrorCode SetUp(srp::com::soc::RXCallback callback);
  public:
  /**
   * @brief Initialize function for temp receive
@@ -57,14 +57,14 @@ class TempController {
   * @param service_id 
   * @param callback 
   * @param sock 
-  * @return simba::core::ErrorCode 
+  * @return srp::core::ErrorCode 
   */
-  simba::core::ErrorCode Initialize(uint16_t service_id,
-                simba::com::soc::RXCallback callback, std::unique_ptr<com::soc::ISocket> sock);
+  srp::core::ErrorCode Initialize(uint16_t service_id,
+                srp::com::soc::RXCallback callback, std::unique_ptr<com::soc::ISocket> sock);
 };
 
 }  // namespace temp
 }  // namespace mw
-}  // namespace simba
+}  // namespace srp
 
 #endif  // MW_TEMP_CONTROLLER_TEMP_CONTROLLER_H_

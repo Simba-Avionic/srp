@@ -21,7 +21,7 @@
 #include <functional>
 #include "core/uart/Iuart_driver.hpp"
 
-namespace simba {
+namespace srp {
 namespace core {
 namespace uart {
 
@@ -37,6 +37,6 @@ class UartDriver: public IUartDriver {
 
 }  // namespace uart
 }  // namespace core
-}  // namespace simba
+}  // namespace srp
 
 #endif  // CORE_UART_UART_DRIVER_HPP_

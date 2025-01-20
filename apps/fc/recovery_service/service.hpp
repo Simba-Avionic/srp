@@ -12,12 +12,12 @@
 #ifndef APPS_FC_RECOVERY_SERVICE_SERVICE_HPP_
 #define APPS_FC_RECOVERY_SERVICE_SERVICE_HPP_
 #include <memory>
-#include "simba/apps/RecoveryServiceSkeleton.h"
+#include "srp/apps/RecoveryServiceSkeleton.h"
 #include "mw/gpio_server/controller/gpio_controller.hpp"
 #include "mw/i2c_service/controller/pca9685/controller.hpp"
 #include "apps/fc/recovery_service/parachute_controller.hpp"
 
-namespace simba {
+namespace srp {
 namespace apps {
 class MyRecoveryServiceSkeleton: public RecoveryServiceSkeleton {
  private:
@@ -29,7 +29,7 @@ class MyRecoveryServiceSkeleton: public RecoveryServiceSkeleton {
                   RecoveryServiceSkeleton{instance}, controller(contr) {}
   virtual ~MyRecoveryServiceSkeleton() = default;
 
-  simba::apps::RecoveryService::NewParachuteStatusEventEventSkeleton NewParachuteStatusEvent{};
+  srp::apps::RecoveryService::NewParachuteStatusEventEventSkeleton NewParachuteStatusEvent{};
 
  protected:
   ara::core::Result<bool> OpenReefedParachute() override {
@@ -40,6 +40,6 @@ class MyRecoveryServiceSkeleton: public RecoveryServiceSkeleton {
   }
 };
 }  // namespace apps
-}  // namespace simba
+}  // namespace srp
 
 #endif  // APPS_FC_RECOVERY_SERVICE_SERVICE_HPP_

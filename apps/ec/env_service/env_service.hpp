@@ -19,9 +19,10 @@
 
 #include "mw/temp/controller/temp_controller.h"
 #include "ara/exec/adaptive_application.h"
-#include "simba/env/EnvAppSkeleton.h"
+#include "srp/env/EnvAppSkeleton.h"
+#include "communication-core/sockets/ipc_socket.h"
 
-namespace simba {
+namespace srp {
 namespace envService {
 
 class EnvService final : public ara::exec::AdaptiveApplication {
@@ -54,7 +55,7 @@ class EnvService final : public ara::exec::AdaptiveApplication {
 };
 
 }  // namespace envService
-}  // namespace simba
+}  // namespace srp
 
 
 #endif  // APPS_EC_ENV_SERVICE_ENV_SERVICE_HPP_

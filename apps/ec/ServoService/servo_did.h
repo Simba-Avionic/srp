@@ -18,7 +18,7 @@
 #include "ara/diag/generic_data_identifier.h"
 #include "mw/i2c_service/controller/pca9685/controller.hpp"
 #include "ara/com/com_error_domain.h"
-namespace simba {
+namespace srp {
 namespace service {
 
 
@@ -59,6 +59,6 @@ class ServoSecondDid : public ara::diag::GenericDiD {
 };
 
 }  // namespace service
-}  // namespace simba
+}  // namespace srp
 
 #endif  // APPS_EC_SERVOSERVICE_SERVO_DID_H_

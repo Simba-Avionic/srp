@@ -27,30 +27,30 @@ namespace {
   constexpr uint8_t PCA9685_ADDRESS = 0x70;
   static const std::string FILE_PREFIX = "mw/i2c_service/tests/pca_files/";
 }
-class TestWrapper : public simba::i2c::PCA9685 {
+class TestWrapper : public srp::i2c::PCA9685 {
  public:
   std::vector<uint8_t> GetData(const uint8_t &channel, const uint16_t &pos) {
     return this->GenerateData(channel, pos);
   }
-  std::optional<std::unordered_map<uint8_t, simba::i2c::Servo>> read_config(std::string file_path) {
+  std::optional<std::unordered_map<uint8_t, srp::i2c::Servo>> read_config(std::string file_path) {
     return this->ReadConfig(file_path);
   }
-  void SetDB(std::unordered_map<uint8_t, simba::i2c::Servo> db) {
+  void SetDB(std::unordered_map<uint8_t, srp::i2c::Servo> db) {
     this->db_ = db;
   }
   std::optional<uint8_t> read_pos(const uint8_t &actuator_id) {
     return this->ReadServoPosition(actuator_id);
   }
-  simba::core::ErrorCode TestSetGpio(std::unique_ptr<simba::gpio::IGPIOController> gpio) {
+  srp::core::ErrorCode TestSetGpio(std::unique_ptr<srp::gpio::IGPIOController> gpio) {
     return this->setGPIO(std::move(gpio));
   }
-  simba::core::ErrorCode TestSetI2C(std::unique_ptr<simba::i2c::II2CController> i2c) {
+  srp::core::ErrorCode TestSetI2C(std::unique_ptr<srp::i2c::II2CController> i2c) {
     return this->setI2C(std::move(i2c));
   }
   void TestMosfetFunc(const uint8_t &mosfet_id, const uint8_t &mosfet_time) {
     this->MosfetFunc(mosfet_id, mosfet_time);
   }
-  simba::core::ErrorCode TestSetServo(uint8_t channel, uint16_t pos) {
+  srp::core::ErrorCode TestSetServo(uint8_t channel, uint16_t pos) {
     return this->SetServo(channel, pos);
   }
 };
@@ -120,12 +120,12 @@ INSTANTIATE_TEST_CASE_P(
 TEST_P(PCA9685ConfigTests, READ_DATA_TEST) {
   TestWrapper pca9685_;
   std::string path = std::get<1>(GetParam());
-  std::optional<std::unordered_map<uint8_t, simba::i2c::Servo>> result = pca9685_.read_config(FILE_PREFIX + path);
+  std::optional<std::unordered_map<uint8_t, srp::i2c::Servo>> result = pca9685_.read_config(FILE_PREFIX + path);
   EXPECT_TRUE(result.has_value());
   EXPECT_EQ(result.value().size(), 1);
   auto servo_map = result.value();
   EXPECT_TRUE(servo_map.find(std::get<0>(GetParam())) != servo_map.end());
-  const simba::i2c::Servo& servo = servo_map.at(std::get<0>(GetParam()));
+  const srp::i2c::Servo& servo = servo_map.at(std::get<0>(GetParam()));
   EXPECT_EQ(servo.on_pos, std::get<2>(GetParam()));
   EXPECT_EQ(servo.off_pos, std::get<3>(GetParam()));
   EXPECT_EQ(servo.channel, std::get<4>(GetParam()));
@@ -141,7 +141,7 @@ TEST_P(PCA9685ConfigTests, READ_DATA_TEST) {
 
 TEST(TestPCAController, MosfetFuncTest) {
     TestWrapper wrapper{};
-    auto mock_gpio = std::make_unique<simba::mock::MOCKGPIOController>();
+    auto mock_gpio = std::make_unique<srp::mock::MOCKGPIOController>();
     const uint8_t mosfet_id = 1;
     const uint8_t mosfet_time = 1;
     EXPECT_CALL(*mock_gpio, SetPinValue(mosfet_id, ::testing::_))
@@ -152,40 +152,40 @@ TEST(TestPCAController, MosfetFuncTest) {
 
 TEST(TestPCAController, SetServoTest) {
     TestWrapper wrapper{};
-    auto mock_i2c = std::make_unique<simba::mock::MockI2CController>();
+    auto mock_i2c = std::make_unique<srp::mock::MockI2CController>();
     constexpr uint8_t channel = 1;
     constexpr uint16_t pos = 1;
     EXPECT_CALL(*mock_i2c, Write(PCA9685_ADDRESS, ::testing::_))
-      .WillOnce(::testing::Return(simba::core::ErrorCode::kOk))
-      .WillOnce(::testing::Return(simba::core::ErrorCode::kConnectionError));
+      .WillOnce(::testing::Return(srp::core::ErrorCode::kOk))
+      .WillOnce(::testing::Return(srp::core::ErrorCode::kConnectionError));
     wrapper.TestSetI2C(std::move(mock_i2c));
-    EXPECT_EQ(wrapper.TestSetServo(channel, pos), simba::core::ErrorCode::kOk);
-    EXPECT_EQ(wrapper.TestSetServo(channel, pos), simba::core::ErrorCode::kConnectionError);
+    EXPECT_EQ(wrapper.TestSetServo(channel, pos), srp::core::ErrorCode::kOk);
+    EXPECT_EQ(wrapper.TestSetServo(channel, pos), srp::core::ErrorCode::kConnectionError);
 }
 
 TEST(TestPCAController, AutoSetServoPosTest) {
     TestWrapper wrapper{};
     auto data = wrapper.read_config(FILE_PREFIX+"basic.json");
     wrapper.SetDB(data.value());
-    auto mock_gpio = std::make_unique<simba::mock::MOCKGPIOController>();
-    auto mock_i2c = std::make_unique<simba::mock::MockI2CController>();
+    auto mock_gpio = std::make_unique<srp::mock::MOCKGPIOController>();
+    auto mock_i2c = std::make_unique<srp::mock::MockI2CController>();
     EXPECT_CALL(*mock_gpio, SetPinValue(::testing::_, ::testing::_))
       .Times(2);
     EXPECT_CALL(*mock_i2c, Write(PCA9685_ADDRESS, ::testing::_))
       .Times(2);
     wrapper.TestSetGpio(std::move(mock_gpio));
     wrapper.TestSetI2C(std::move(mock_i2c));
-    EXPECT_EQ(wrapper.AutoSetServoPosition(0, 0), simba::core::ErrorCode::kNotDefine);
-    EXPECT_EQ(wrapper.AutoSetServoPosition(1, 0), simba::core::ErrorCode::kError);
-    EXPECT_EQ(wrapper.AutoSetServoPosition(1, 1), simba::core::ErrorCode::kOk);
+    EXPECT_EQ(wrapper.AutoSetServoPosition(0, 0), srp::core::ErrorCode::kNotDefine);
+    EXPECT_EQ(wrapper.AutoSetServoPosition(1, 0), srp::core::ErrorCode::kError);
+    EXPECT_EQ(wrapper.AutoSetServoPosition(1, 1), srp::core::ErrorCode::kOk);
 }
 
 TEST(TestPCAController, SetPtrsTest) {
     TestWrapper wrapper{};
-    auto gpio = std::make_unique<simba::gpio::GPIOController>();
-    auto i2c = std::make_unique<simba::i2c::I2CController>();
-    EXPECT_EQ(wrapper.TestSetGpio(nullptr), simba::core::ErrorCode::kInitializeError);
-    EXPECT_EQ(wrapper.TestSetGpio(std::move(gpio)), simba::core::ErrorCode::kOk);
-    EXPECT_EQ(wrapper.TestSetI2C(nullptr), simba::core::ErrorCode::kInitializeError);
-    EXPECT_EQ(wrapper.TestSetI2C(std::move(i2c)), simba::core::ErrorCode::kOk);
+    auto gpio = std::make_unique<srp::gpio::GPIOController>();
+    auto i2c = std::make_unique<srp::i2c::I2CController>();
+    EXPECT_EQ(wrapper.TestSetGpio(nullptr), srp::core::ErrorCode::kInitializeError);
+    EXPECT_EQ(wrapper.TestSetGpio(std::move(gpio)), srp::core::ErrorCode::kOk);
+    EXPECT_EQ(wrapper.TestSetI2C(nullptr), srp::core::ErrorCode::kInitializeError);
+    EXPECT_EQ(wrapper.TestSetI2C(std::move(i2c)), srp::core::ErrorCode::kOk);
 }

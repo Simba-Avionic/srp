@@ -20,7 +20,7 @@
 #include "ara/exec/adaptive_application.h"
 #include "apps/ec/primer_service/service.hpp"
 #include "apps/ec/primer_service/controller/primer_controller.hpp"
-namespace simba {
+namespace srp {
 namespace primer {
 
 class PrimerService final :  public ara::exec::AdaptiveApplication {
@@ -50,5 +50,5 @@ class PrimerService final :  public ara::exec::AdaptiveApplication {
 };
 
 }  // namespace primer
-}  // namespace simba
+}  // namespace srp
 #endif  // APPS_EC_PRIMER_SERVICE_APP_HPP_

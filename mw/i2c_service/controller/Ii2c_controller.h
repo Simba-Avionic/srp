@@ -16,7 +16,7 @@
 #include "mw/i2c_service/data/header.h"
 #include "communication-core/sockets/stream_ipc_socket.h"
 
-namespace simba {
+namespace srp {
 namespace i2c {
 class II2CController{
  protected:
@@ -24,7 +24,7 @@ class II2CController{
                         uint8_t address, const std::vector<uint8_t>& payload) = 0;
 
  public:
-  virtual core::ErrorCode Init(std::unique_ptr<com::soc::ISocketStream> socket) = 0;
+  virtual core::ErrorCode Init(std::unique_ptr<srp::com::soc::ISocketStream> socket) = 0;
   /**
    * @brief  write data to adress, data format is {reg1, data1, reg2, data2 , ...}
    * 
@@ -65,6 +65,6 @@ class II2CController{
   virtual ~II2CController() = default;
 };
 }  // namespace i2c
-}  // namespace simba
+}  // namespace srp
 
 #endif  // MW_I2C_SERVICE_CONTROLLER_II2C_CONTROLLER_H_

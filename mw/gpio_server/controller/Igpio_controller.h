@@ -13,7 +13,7 @@
 #include <optional>
 #include "core/common/error_code.h"
 
-namespace simba {
+namespace srp {
 namespace gpio {
 
 /**
@@ -48,5 +48,5 @@ class IGPIOController {
     virtual ~IGPIOController() = default;
 };
 }  // namespace gpio
-}  // namespace simba
+}  // namespace srp
 #endif  // MW_GPIO_SERVER_CONTROLLER_IGPIO_CONTROLLER_H_

@@ -20,7 +20,7 @@
 #include "Igpio_driver.hpp"
 #include "core/file/file.hpp"
 
-namespace simba {
+namespace srp {
 namespace core {
 namespace gpio {
 
@@ -78,6 +78,6 @@ class GpioDriver: public IGpioDriver{
 };
 }  // namespace gpio
 }  // namespace core
-}  // namespace simba
+}  // namespace srp
 
 #endif  // CORE_GPIO_GPIO_DRIVER_HPP_

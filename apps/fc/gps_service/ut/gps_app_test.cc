@@ -17,7 +17,7 @@ using ::testing::Return;
 
 TEST(GPSAPPTEST, InitializeTestNoUart) {
   const std::map<ara::core::StringView, ara::core::StringView> map;
-  simba::apps::GPSApp app;
+  srp::apps::GPSApp app;
   EXPECT_EQ(app.Initialize(map), 1);
 }
 
@@ -28,14 +28,14 @@ TEST(GPSAPPTEST, InitializeTestNoUart) {
 //       .Times(1)
 //       .WillOnce(::testing::Return(true));
 //   const std::map<ara::core::StringView, ara::core::StringView> map;
-//   simba::apps::GPSApp app;
-//   auto uart_ = std::unique_ptr<simba::core::uart::IUartDriver>(uart_mock_.get());
+//   srp::apps::GPSApp app;
+//   auto uart_ = std::unique_ptr<srp::core::uart::IUartDriver>(uart_mock_.get());
 //   app.Init(std::move(uart_));
 //   EXPECT_EQ(app.Initialize(map), 0);
 // }
 
 struct GPSDataTestParams {
-    simba::core::GPS_DATA_T input_data;
+    srp::core::GPS_DATA_T input_data;
     float expected_latitude;
     float expected_longitude;
 };
@@ -44,7 +44,7 @@ class GPSGetSomeIPDataTest : public ::testing::TestWithParam<GPSDataTestParams> 
 
 TEST_P(GPSGetSomeIPDataTest, ValidateGPSData) {
     auto params = GetParam();
-    auto res = simba::apps::GPSApp::GetSomeIPData(params.input_data);
+    auto res = srp::apps::GPSApp::GetSomeIPData(params.input_data);
     EXPECT_FLOAT_EQ(res.lattitude, params.expected_latitude);
     EXPECT_FLOAT_EQ(res.longitude, params.expected_longitude);
 }
@@ -55,15 +55,15 @@ INSTANTIATE_TEST_SUITE_P(
     GPSGetSomeIPDataTest,
     ::testing::Values(
         GPSDataTestParams{
-            simba::core::GPS_DATA_T{12.2, 12.2, 'N', 11.1, 'E', 12, 11.2f, 13.2f},
+            srp::core::GPS_DATA_T{12.2, 12.2, 'N', 11.1, 'E', 12, 11.2f, 13.2f},
             12.2f, 11.1f
         },
         GPSDataTestParams{
-            simba::core::GPS_DATA_T{12.2, 12.2, 'S', 11.1, 'W', 12, 11.2f, 13.2f},
+            srp::core::GPS_DATA_T{12.2, 12.2, 'S', 11.1, 'W', 12, 11.2f, 13.2f},
             -12.2f, -11.1f
         },
         GPSDataTestParams{
-            simba::core::GPS_DATA_T{0, 0, 'S', 0, 'W', 12, 11.2f, 13.2f},
+            srp::core::GPS_DATA_T{0, 0, 'S', 0, 'W', 12, 11.2f, 13.2f},
             -0, -0
         }
     )

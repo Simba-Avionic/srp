@@ -13,7 +13,7 @@
 #include "core/i2c/i2c_driver.hpp"
 #include "ara/log/log.h"
 
-namespace simba {
+namespace srp {
 namespace core {
 namespace i2c {
 
@@ -61,4 +61,4 @@ std::optional<std::vector<uint8_t>> I2CDriver::ReadWrite(const uint8_t& reg, con
 }
 }  // namespace i2c
 }  // namespace core
-}  // namespace simba
+}  // namespace srp

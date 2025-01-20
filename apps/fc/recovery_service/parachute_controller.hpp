@@ -13,7 +13,7 @@
 #include <memory>
 #include "mw/i2c_service/controller/pca9685/controller.hpp"
 #include "mw/gpio_server/controller/gpio_controller.hpp"
-namespace simba {
+namespace srp {
 namespace apps {
 namespace recovery {
 
@@ -32,6 +32,6 @@ class ParachuteController {
 
 }  // namespace recovery
 }  // namespace apps
-}  // namespace simba
+}  // namespace srp
 
 #endif  // APPS_FC_RECOVERY_SERVICE_PARACHUTE_CONTROLLER_HPP_

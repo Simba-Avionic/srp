@@ -14,7 +14,7 @@
 #include <condition_variable>  // NOLINT
 #include <stop_token>          // NOLINT
 
-namespace simba {
+namespace srp {
 namespace core {
 namespace condition {
 template <typename _Rep, typename _Period>
@@ -31,6 +31,6 @@ void wait(const std::stop_token& stoken);
 
 }  // namespace condition
 }  // namespace core
-}  // namespace simba
+}  // namespace srp
 
 #endif  // CORE_COMMON_CONDITION_H_

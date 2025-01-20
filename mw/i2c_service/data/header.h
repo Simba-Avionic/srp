@@ -18,7 +18,7 @@
 #include "communication-core/network-data/network_data_type.h"
 
 
-namespace simba {
+namespace srp {
 namespace i2c {
 enum ACTION:uint8_t {
     kRead = 0x01,
@@ -46,7 +46,7 @@ class Header : public com::core::network::NetworkDataStructure {
 };
 
 }  // namespace i2c
-}  // namespace simba
+}  // namespace srp
 
 
 

@@ -24,7 +24,7 @@
 #include <vector>
 
 #include "communication-core/sockets/Isocket.h"
-namespace simba {
+namespace srp {
 namespace com {
 namespace soc {
 class IpcSocket : public ISocket {
@@ -44,9 +44,9 @@ class IpcSocket : public ISocket {
    * @brief Socket init function
    *
    * @param config Config file
-   * @return simba::core::ErrorCode initialiaze status
+   * @return srp::core::ErrorCode initialiaze status
    */
-  simba::core::ErrorCode Init(const SocketConfig& config) override;
+  srp::core::ErrorCode Init(const SocketConfig& config) override;
   /**
    * @brief Setter for rx callback
    *
@@ -59,9 +59,9 @@ class IpcSocket : public ISocket {
    * @param ip target ip or path
    * @param port target port or 0 for ipcs
    * @param payload payload to send
-   * @return simba::core::ErrorCode status
+   * @return srp::core::ErrorCode status
    */
-  simba::core::ErrorCode Transmit(const std::string& ip,
+  srp::core::ErrorCode Transmit(const std::string& ip,
                                   const std::uint16_t port,
                                   std::vector<std::uint8_t> payload) override;
   /**
@@ -74,6 +74,6 @@ class IpcSocket : public ISocket {
 };
 }  // namespace soc
 }  // namespace com
-}  // namespace simba
+}  // namespace srp
 
 #endif  // COMMUNICATION_CORE_SOCKETS_IPC_SOCKET_H_

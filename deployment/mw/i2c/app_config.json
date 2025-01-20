@@ -1,11 +1,15 @@
 {
     "include": [
     ],
-    "package": "simba.mw",
+    "package": "srp.mw",
     "adaptive_application": {
         "i2cMWService": {
             "app": {
-                "bootMode": 9,
+                "functional_groups":[
+                    "Platform",
+                    "Running",
+                    "SafetyMode"
+                ],
                 "parms": "",
                 "logger": {
                     "app_id": "I2C-",

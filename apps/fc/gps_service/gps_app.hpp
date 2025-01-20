@@ -19,12 +19,12 @@
 #include <mutex>  // NOLINT
 
 #include "ara/exec/adaptive_application.h"
-#include "simba/apps/GPSServiceSkeleton.h"
+#include "srp/apps/GPSServiceSkeleton.h"
 
 #include "core/uart/uart_driver.hpp"
 #include "core/gps/nmea.hpp"
 
-namespace simba {
+namespace srp {
 namespace apps {
 
 class GPSApp final : public ara::exec::AdaptiveApplication {
@@ -59,7 +59,7 @@ class GPSApp final : public ara::exec::AdaptiveApplication {
 };
 
 }  // namespace apps
-}  // namespace simba
+}  // namespace srp
 
 
 #endif  // APPS_FC_GPS_SERVICE_GPS_APP_HPP_

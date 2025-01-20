@@ -11,7 +11,7 @@
 #include "core/file/file.hpp"
 #include "ara/log/log.h"
 
-namespace simba {
+namespace srp {
 namespace core {
 
 FileHandler::FileHandler() {
@@ -96,4 +96,4 @@ std::optional<std::string> FileHandler::read() {
     }
 }
 }  // namespace core
-}  // namespace simba
+}  // namespace srp

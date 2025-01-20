@@ -12,7 +12,7 @@
 #include "header.hpp"
 #include <cstdint>
 
-namespace simba {
+namespace srp {
 namespace gpio {
 
 Header::Header(uint8_t actuator_id, uint8_t value, ACTION action) {
@@ -39,4 +39,4 @@ void Header::SetData() {
 }
 
 }  // namespace gpio
-}  // namespace simba
+}  // namespace srp

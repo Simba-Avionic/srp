@@ -13,7 +13,7 @@
 #include <cstdint>
 #include <string>
 
-namespace simba {
+namespace srp {
 namespace com {
 namespace soc {
 class SocketConfig {
@@ -28,7 +28,7 @@ class SocketConfig {
       : ip_{ip}, rx_port_{rx_port}, tx_port_{tx_port} {}
   SocketConfig(const SocketConfig& other)
       : ip_{other.ip_}, rx_port_{other.rx_port_}, tx_port_{other.tx_port_} {}
-  SocketConfig operator=(const simba::com::soc::SocketConfig& other) {
+  SocketConfig operator=(const srp::com::soc::SocketConfig& other) {
     return SocketConfig{other};
   }
   const std::string GetIp() const { return this->ip_; }
@@ -36,5 +36,5 @@ class SocketConfig {
 };
 }  // namespace soc
 }  // namespace com
-}  // namespace simba
+}  // namespace srp
 #endif  // COMMUNICATION_CORE_SOCKETS_SOCKET_CONFIG_H_

@@ -10,7 +10,7 @@
  */
 #ifndef COMMUNICATION_CORE_SOMEIP_MESSAGE_CODE_H_
 #define COMMUNICATION_CORE_SOMEIP_MESSAGE_CODE_H_
-namespace simba {
+namespace srp {
 namespace com {
 namespace data {
 enum MessageCode: uint8_t {
@@ -27,5 +27,5 @@ enum MessageCode: uint8_t {
 };
 }  // namespace data
 }  // namespace com
-}  // namespace simba
+}  // namespace srp
 #endif  // COMMUNICATION_CORE_SOMEIP_MESSAGE_CODE_H_

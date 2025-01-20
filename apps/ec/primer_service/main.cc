@@ -12,6 +12,6 @@
 #include "ara/exec/adaptive_lifecycle.h"
 
 int main(int argc, char const *argv[]) {
-  return ara::exec::RunAdaptiveLifecycle<simba::primer::PrimerService>(argc,
+  return ara::exec::RunAdaptiveLifecycle<srp::primer::PrimerService>(argc,
                                                                      argv);
 }

@@ -16,7 +16,7 @@
 #include <utility>
 #include <vector>
 
-namespace simba {
+namespace srp {
 namespace diag {
 
 enum DiagResponseCodes : uint8_t {
@@ -69,6 +69,6 @@ class DiagResponse {
   virtual ~DiagResponse() = default;
 };
 }  // namespace diag
-}  // namespace simba
+}  // namespace srp
 
 #endif  // DIAG_JOBS_DIAG_RESPONSE_H_

@@ -13,9 +13,9 @@
 #include <string>
 #include "gmock/gmock.h"
 #include "core/file/file.hpp"
-class MockFileHandler : public simba::core::FileHandler {
+class MockFileHandler : public srp::core::FileHandler {
  public:
-    MOCK_METHOD(bool, open, (const std::string& path, const simba::core::File_mode_t& mode), ());
+    MOCK_METHOD(bool, open, (const std::string& path, const srp::core::File_mode_t& mode), ());
     MOCK_METHOD(void, close, (), ());
     MOCK_METHOD(bool, write, (const std::string& data), ());
     MOCK_METHOD(std::optional<std::string>, read, (), ());

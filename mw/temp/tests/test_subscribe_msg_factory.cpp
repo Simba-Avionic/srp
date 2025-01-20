@@ -37,10 +37,10 @@ INSTANTIATE_TEST_SUITE_P(SUBSCRIBE_MSG_FACTORIES_TEST,
 );
 
 TEST_P(SUBSCRIBE_MSG_FACTORIES, SUBSCRIBE_MSG_FACTORIES_TEST) {
-    simba::mw::temp::SubscribeHeader hdr{id};
-    const std::vector<uint8_t> data = simba::mw::temp::SubMsgFactory::GetBuffer(
-        std::make_shared<simba::mw::temp::SubscribeHeader>(hdr));
-    const auto hdr2 = simba::mw::temp::SubMsgFactory::GetHeader(data);
+    srp::mw::temp::SubscribeHeader hdr{id};
+    const std::vector<uint8_t> data = srp::mw::temp::SubMsgFactory::GetBuffer(
+        std::make_shared<srp::mw::temp::SubscribeHeader>(hdr));
+    const auto hdr2 = srp::mw::temp::SubMsgFactory::GetHeader(data);
 
     EXPECT_EQ(hdr2->GetServiceID(), id);
 }

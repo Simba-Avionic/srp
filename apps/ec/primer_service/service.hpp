@@ -14,10 +14,10 @@
 #include <memory>
 #include <utility>
 #include <vector>
-#include "simba/apps/PrimerServiceSkeleton.h"
+#include "srp/apps/PrimerServiceSkeleton.h"
 #include "apps/ec/primer_service/controller/primer_controller.hpp"
 
-namespace simba {
+namespace srp {
 namespace apps {
 
 class MyPrimerServiceSkeleton: public PrimerServiceSkeleton {
@@ -42,6 +42,6 @@ class MyPrimerServiceSkeleton: public PrimerServiceSkeleton {
   }
 };
 }  // namespace apps
-}  // namespace simba
+}  // namespace srp
 
 #endif  // APPS_EC_PRIMER_SERVICE_SERVICE_HPP_

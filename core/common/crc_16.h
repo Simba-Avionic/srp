@@ -12,7 +12,7 @@
 #define CORE_COMMON_CRC_16_H_
 #include <cstdint>
 #include <vector>
-namespace simba {
+namespace srp {
 namespace core {
 class CRC16 {
  public:
@@ -28,5 +28,5 @@ class CRC16 {
 };
 
 }  // namespace core
-}  // namespace simba
+}  // namespace srp
 #endif  // CORE_COMMON_CRC_16_H_

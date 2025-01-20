@@ -22,7 +22,7 @@
 #include "mw/i2c_service/controller/ads7828/Iads7828.h"
 #include "mw/i2c_service/controller/ads7828/controller.hpp"
 #include "core/json/json_parser.h"
-namespace simba {
+namespace srp {
 namespace i2c {
 
 struct SensorConfig {
@@ -83,6 +83,6 @@ class ADCSensorController {
 };
 
 }  // namespace i2c
-}  // namespace simba
+}  // namespace srp
 
 #endif  // MW_I2C_SERVICE_CONTROLLER_ADCSENSOR_CONTROLLER_HPP_

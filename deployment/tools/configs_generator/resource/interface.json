@@ -3,19 +3,19 @@
     {
       "name": "app1",
       "ip": "192.168.1.1",
-      "ipc": "SIMBA.DIAG.0x0101",
+      "ipc": "srp.DIAG.0x0101",
       "port": 1000
     },
     {
       "name": "app2",
       "ip": "192.168.11.22",
-      "ipc": "SIMBA.DIAG.0x0102",
+      "ipc": "srp.DIAG.0x0102",
       "port": 5055
     },
     {
       "name": "app3",
       "ip": "192.168.1.3",
-      "ipc": "SIMBA.DIAG.0x0103",
+      "ipc": "srp.DIAG.0x0103",
       "port": 1003
     },
     {

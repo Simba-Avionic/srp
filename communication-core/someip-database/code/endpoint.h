@@ -14,7 +14,7 @@
 #include <cstdint>
 #include <utility>
 #include <vector>
-namespace simba {
+namespace srp {
 namespace com {
 namespace someip {
 namespace objects {
@@ -46,5 +46,5 @@ class Endpoint {
 }  // namespace objects
 }  // namespace someip
 }  // namespace com
-}  // namespace simba
+}  // namespace srp
 #endif  // COMMUNICATION_CORE_SOMEIP_DATABASE_CODE_ENDPOINT_H_

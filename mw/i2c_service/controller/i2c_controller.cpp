@@ -13,14 +13,14 @@
 #include <utility>
 
 
-namespace simba {
+namespace srp {
 namespace i2c {
 
 namespace {
-    const constexpr char* I2C_IPC = "SIMBA.I2C";
+    const constexpr char* I2C_IPC = "SRP.I2C";
 }
 
-core::ErrorCode I2CController::Init(std::unique_ptr<com::soc::ISocketStream> socket) {
+core::ErrorCode I2CController::Init(std::unique_ptr<srp::com::soc::ISocketStream> socket) {
     this->sock_ = std::move(socket);
     return core::ErrorCode::kOk;
 }
@@ -61,4 +61,4 @@ std::optional<std::vector<uint8_t>> I2CController::SendData(
 
 
 }  // namespace i2c
-}  // namespace simba
+}  // namespace srp

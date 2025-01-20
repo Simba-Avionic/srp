@@ -17,7 +17,7 @@
 #include <string>
 #include "ara/core/result.h"
 
-namespace simba {
+namespace srp {
 namespace core {
 namespace temp {
 
@@ -33,6 +33,6 @@ class ITempDriver {
 
 }  // namespace temp
 }  // namespace core
-}  // namespace simba
+}  // namespace srp
 
 #endif  // CORE_TEMP_ITEMP_DRIVER_HPP_

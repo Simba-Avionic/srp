@@ -10,7 +10,7 @@
  */
 #include "apps/fc/recovery_service/parachute_controller.hpp"
 #include <utility>
-namespace simba {
+namespace srp {
 namespace apps {
 namespace recovery {
 namespace {
@@ -69,4 +69,4 @@ ParachuteController::ParachuteController(): parachute_unreefed(false), parachute
 
 }  // namespace recovery
 }  // namespace apps
-}  // namespace simba
+}  // namespace srp

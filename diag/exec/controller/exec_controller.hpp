@@ -21,7 +21,7 @@
 
 #include "status.hpp"
 
-namespace simba {
+namespace srp {
 namespace diag {
 namespace exec {
 
@@ -43,6 +43,6 @@ class ExecController {
 };
 }  // namespace exec
 }  // namespace diag
-}  // namespace simba
+}  // namespace srp
 
 #endif  // DIAG_EXEC_CONTROLLER_EXEC_CONTROLLER_HPP_

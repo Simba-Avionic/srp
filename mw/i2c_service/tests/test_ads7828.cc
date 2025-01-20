@@ -20,9 +20,9 @@ namespace {
     constexpr auto RES_SIZE = 2;
 }
 
-class TestWrapper : public simba::i2c::ADS7828 {
+class TestWrapper : public srp::i2c::ADS7828 {
  public:
-  simba::core::ErrorCode TestInit(std::unique_ptr<simba::mock::MockI2CController> i2c_) {
+  srp::core::ErrorCode TestInit(std::unique_ptr<srp::mock::MockI2CController> i2c_) {
     return this->Init(std::move(i2c_));
   }
   std::optional<uint8_t> TestGetConfigData(const uint8_t& channel) {
@@ -42,7 +42,7 @@ std::tuple<uint8_t, std::optional<uint8_t>>>{
 
 TEST(ADC7828INIT, DoubleInit) {
   TestWrapper wrapper{};
-  EXPECT_EQ(wrapper.TestInit(nullptr), simba::core::ErrorCode::kInitializeError);
+  EXPECT_EQ(wrapper.TestInit(nullptr), srp::core::ErrorCode::kInitializeError);
 }
 
 
@@ -94,7 +94,7 @@ INSTANTIATE_TEST_SUITE_P(GetAdcRawReadandVoltageTestParams, GetAdcRawReadandVolt
 
 TEST_P(GetAdcRawReadandVoltageTest, AdcRawReadVoltageTest) {
     TestWrapper wrapper{};
-    auto i2c_ = std::make_unique<simba::mock::MockI2CController>();
+    auto i2c_ = std::make_unique<srp::mock::MockI2CController>();
     auto params = GetParam();
     uint8_t channel = std::get<0>(params);
     auto WriteReadRes = std::get<1>(params);

@@ -18,7 +18,7 @@
 #include "mw/i2c_service/controller/ads7828/controller.hpp"
 #include "core/json/json_parser.h"
 #include "core/common/error_code.h"
-namespace simba {
+namespace srp {
 namespace i2c {
 
 namespace {
@@ -69,5 +69,5 @@ std::optional<float> ADS7828::GetAdcVoltage(const uint8_t& channel) const {
 }
 
 }  // namespace i2c
-}  // namespace simba
+}  // namespace srp
 

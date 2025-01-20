@@ -18,7 +18,7 @@
 #include "communication-core/network-data/network_data_type.h"
 
 
-namespace simba {
+namespace srp {
 namespace gpio {
 
 enum ACTION : uint8_t {
@@ -44,7 +44,7 @@ class Header : public com::core::network::NetworkDataStructure {
 };
 
 }  // namespace gpio
-}  // namespace simba
+}  // namespace srp
 
 
 

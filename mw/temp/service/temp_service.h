@@ -31,11 +31,11 @@
 #include "mw/temp/subscribe_msg/subscribe_msg_factory.h"
 #include "core/temp/temp_driver.hpp"
 #include "mw/temp/temp_reading_msg/temp_reading_msg_factory.h"
-#include "mw/temp/service/temp_mw_did.h"
+// #include "mw/temp/service/temp_mw_did.h"
 
 using json = nlohmann::json;
 
-namespace simba {
+namespace srp {
 namespace mw {
 namespace temp {
 
@@ -45,7 +45,7 @@ class TempService final : public ara::exec::AdaptiveApplication {
 
  private:
   std::unique_ptr<core::temp::ITempDriver> temp_driver_;
-  std::unique_ptr<TempMWDID> temp_did_;
+  // std::unique_ptr<TempMWDID> temp_did_;
   std::set<std::uint16_t> subscribers{};
   uint16_t delay_time;
   //                 physical ID, sensor ID
@@ -84,6 +84,6 @@ class TempService final : public ara::exec::AdaptiveApplication {
 
 }  // namespace temp
 }  // namespace mw
-}  // namespace simba
+}  // namespace srp
 
 #endif  // MW_TEMP_SERVICE_TEMP_SERVICE_H_

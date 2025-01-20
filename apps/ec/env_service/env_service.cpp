@@ -15,9 +15,9 @@
 #include "core/common/condition.h"
 #include "ara/log/log.h"
 #include "mw/temp/temp_reading_msg/temp_reading_msg_factory.h"
-#include "simba/env/EnvAppSkeleton.h"
+#include "srp/env/EnvAppSkeleton.h"
 
-namespace simba {
+namespace srp {
 namespace envService {
 
 
@@ -29,8 +29,8 @@ core::ErrorCode EnvService::Init(std::unique_ptr<mw::temp::TempController> temp)
     return core::ErrorCode::kOk;
 }
 
-EnvService::EnvService(): service_ipc{ara::core::InstanceSpecifier{"simba/env/EnvApp/envService_ipc"}},
-                        service_udp{ara::core::InstanceSpecifier{"simba/env/EnvApp/envService_udp"}} {
+EnvService::EnvService(): service_ipc{ara::core::InstanceSpecifier{"srp/env/EnvApp/envService_ipc"}},
+                        service_udp{ara::core::InstanceSpecifier{"srp/env/EnvApp/envService_udp"}} {
 }
 
 
@@ -93,4 +93,4 @@ void EnvService::TempRxCallback(const std::string& ip, const std::uint16_t& port
 
 
 }  // namespace envService
-}  // namespace simba
+}  // namespace srp

@@ -28,7 +28,7 @@
 #include "core/common/error_code.h"
 #include "core/i2c/Ii2c_driver.hpp"
 #include "ara/log/logging_menager.h"
-namespace simba {
+namespace srp {
 namespace core {
 namespace i2c {
 
@@ -55,6 +55,6 @@ class I2CDriver : public II2CDriver {
 };
 }  // namespace i2c
 }  // namespace core
-}  // namespace simba
+}  // namespace srp
 
 #endif  // CORE_I2C_I2C_DRIVER_HPP_

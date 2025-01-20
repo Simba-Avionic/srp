@@ -2,9 +2,9 @@
 cc_library(
     name = "uart_driver",
     deps = [
-        "//ara/core:Result",
-        "//ara/log",
-        "//ara/com:com_error_domain",
+        "@srp_platform//ara/core:Result",
+        "@srp_platform//ara/log",
+        "@srp_platform//ara/com:com_error_domain",
     ],
     hdrs = [
         "uart_driver.hpp",

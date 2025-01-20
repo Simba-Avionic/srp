@@ -13,7 +13,7 @@
 #include <string>
 #include "gmock/gmock.h"
 #include "core/csvdriver/Icsvdriver.h"
-namespace simba {
+namespace srp {
 namespace mock {
 class MOCKCSVDRIVER : public logger::ICSVDriver {
  public:
@@ -22,6 +22,6 @@ class MOCKCSVDRIVER : public logger::ICSVDriver {
   MOCK_METHOD(void, Close, (), (override));
 };
 }   // namespace mock
-}   // namespace simba
+}   // namespace srp
 
 #endif  // CORE_CSVDRIVER_MOCK_MOCK_CSVDRIVER_H_

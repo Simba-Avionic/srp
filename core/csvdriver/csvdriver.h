@@ -13,7 +13,7 @@
 #include <fstream>
 #include <string>
 #include "core/csvdriver/Icsvdriver.h"
-namespace simba {
+namespace srp {
 namespace csv {
 class CSVDriver : public ICSVDriver {
  private:
@@ -26,5 +26,5 @@ class CSVDriver : public ICSVDriver {
   int WriteLine(const std::string& line) override;
 };
 }  // namespace csv
-}  // namespace simba
+}  // namespace srp
 #endif  // CORE_CSVDRIVER_CSVDRIVER_H_

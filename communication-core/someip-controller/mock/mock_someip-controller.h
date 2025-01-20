@@ -21,16 +21,16 @@
 #include "communication-core/someip-controller/Isomeip_controller.h"
 
 
-class MockSomeIpController : public simba::com::someip::ISomeIpController{
+class MockSomeIpController : public srp::com::someip::ISomeIpController{
  public:
   MOCK_METHOD((std::optional<std::vector<uint8_t>>), Request,
           (const uint16_t, const uint16_t, const std::vector<uint8_t>), (override));
   MOCK_METHOD((bool), RequestNoResponse, (const uint16_t, const uint16_t,
                                           const std::vector<uint8_t>), (override));
-  MOCK_METHOD((simba::core::ErrorCode), AddMethod, (const uint16_t, simba::com::someip::SomeIPMethod), (override));
-  MOCK_METHOD((simba::core::ErrorCode), AddEventValue, (const uint16_t, const std::vector<uint8_t>), (override));
-  MOCK_METHOD((simba::core::ErrorCode), Init, (), (override));
-  MOCK_METHOD((simba::core::ErrorCode), LoadServiceList, (const std::string&), (override));
+  MOCK_METHOD((srp::core::ErrorCode), AddMethod, (const uint16_t, srp::com::someip::SomeIPMethod), (override));
+  MOCK_METHOD((srp::core::ErrorCode), AddEventValue, (const uint16_t, const std::vector<uint8_t>), (override));
+  MOCK_METHOD((srp::core::ErrorCode), Init, (), (override));
+  MOCK_METHOD((srp::core::ErrorCode), LoadServiceList, (const std::string&), (override));
 
   virtual ~MockSomeIpController() = default;
 };

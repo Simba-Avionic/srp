@@ -17,7 +17,7 @@
 #include <iostream>
 #include <optional>
 #include <algorithm>
-namespace simba {
+namespace srp {
 namespace core {
 std::vector<std::string> Nmea::splitString(const std::string& str, const char& delimiter) {
     std::vector<std::string> result;
@@ -63,5 +63,5 @@ std::optional<GPS_DATA_T> Nmea::Parse(const std::string& gps_data) {
 }
 
 }  // namespace core
-}  // namespace simba
+}  // namespace srp
 

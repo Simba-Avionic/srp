@@ -12,7 +12,7 @@
 #include "communication-core/someip-database/code/database.h"
 
 #include <algorithm>
-namespace simba {
+namespace srp {
 namespace com {
 namespace someip {
 namespace objects {
@@ -75,4 +75,4 @@ std::vector<objects::Interface> DataBase::GetInterfaces() const noexcept {
 }  // namespace objects
 }  // namespace someip
 }  // namespace com
-}  // namespace simba
+}  // namespace srp

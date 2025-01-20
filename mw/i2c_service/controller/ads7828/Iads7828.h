@@ -14,7 +14,7 @@
 #include <optional>
 #include <cstdint>
 
-namespace simba {
+namespace srp {
 namespace i2c {
 class IADS7828 {
  protected:
@@ -25,5 +25,5 @@ class IADS7828 {
   virtual ~IADS7828() = default;
 };
 }  // namespace i2c
-}  // namespace simba
+}  // namespace srp
 #endif  // MW_I2C_SERVICE_CONTROLLER_ADS7828_IADS7828_H_

@@ -1,6 +1,6 @@
 {
     "include":["deployment/example_adaptive/ExampleApp/example_data_type.json"],
-    "package":"simba.example",
+    "package":"srp.example",
     "someip":{
         "ExampleService":{
             "service_id":100,

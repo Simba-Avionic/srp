@@ -12,7 +12,7 @@
 #ifndef MW_EM_CODE_SERVICES_EXEC_STATUS_HPP_
 #define MW_EM_CODE_SERVICES_EXEC_STATUS_HPP_
 
-namespace simba {
+namespace srp {
 namespace diag {
 namespace exec {
 
@@ -29,6 +29,6 @@ enum Status {
 
 }  // namespace exec
 }  // namespace diag
-}  // namespace simba
+}  // namespace srp
 
 #endif  // MW_EM_CODE_SERVICES_EXEC_STATUS_HPP_
