@@ -7,7 +7,10 @@
     "adaptive_application": {
         "RecoveryService": {
             "app": {
-                "bootMode": 2,
+                "functional_groups":[
+                    "Running",
+                    "SafetyMode"
+                ],
                 "parms": "",
                 "logger": {
                     "app_id": "REC-",

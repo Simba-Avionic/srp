@@ -14,11 +14,13 @@
 #include <map>
 
 #include "ara/exec/adaptive_application.h"
+#include "mw/gpio_server/controller/gpio_controller.hpp"
 
 namespace srp {
 namespace example {
 class ExampleApp : public ara::exec::AdaptiveApplication {
  private:
+ srp::gpio::GPIOController gpio_;
   /**
    * @brief This function is called to initialiaze the application
    *

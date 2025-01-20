@@ -13,5 +13,6 @@ cc_library(
     visibility = [
         "//apps:__subpackages__",
         "//mw:__subpackages__",
+        "//example_adaptive/ExampleApp/code/application:__subpackages__",
         ],
 )

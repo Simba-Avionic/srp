@@ -15,6 +15,7 @@
 
 #include "mw/temp/controller/temp_controller.h"
 #include "communication-core/sockets/mock/mockSocket.h"
+#include "ara/log/log.h"
 
 class TestWrapper : public srp::mw::temp::TempController {
  public:

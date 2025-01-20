@@ -11,6 +11,14 @@ cc_library(
         "//core/common:wait_queue",
     ]
 )
+cc_library(
+    name = "crc_lib",
+    hdrs = ["crc_16.h"],
+    srcs = ["crc_16.cc"],
+    visibility = [
+        "//visibility:public",
+    ],
+)
 
 cc_library(
     name = "common_types",

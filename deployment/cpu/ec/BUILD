@@ -30,7 +30,7 @@ cpu_def(
         "//deployment/apps/servo_service:servoService",
         "//deployment/apps/engine_app:EngineService",
         "//deployment/apps/env_service:EnvApp",
-        # "//deployment/apps/logger_service:FileLoggerApp",
+        "//deployment/apps/logger_service:FileLoggerApp",
         "//deployment/apps/prim_service:PrimerService",
     ],
 )

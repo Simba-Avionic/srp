@@ -23,6 +23,7 @@
 #include "ara/exec/adaptive_application.h"
 #include "nlohmann/json.hpp"
 #include "mw/gpio_server/gpio_mw_did.h"
+#include "ara/log/log.h"
 
 namespace srp {
 namespace mw {

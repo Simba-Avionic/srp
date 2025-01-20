@@ -28,7 +28,7 @@ class MockSocket : public srp::com::soc::ISocket {
   MOCK_METHOD(void, StartRXThread, (), (override));
 };
 
-class MockStreamSocket : public srp::srp::com::soc::ISocketStream {
+class MockStreamSocket : public srp::com::soc::ISocketStream {
  public:
   MOCK_METHOD(srp::core::ErrorCode, Init, (const srp::com::soc::SocketConfig& config), (override));
   MOCK_METHOD(void, SetRXCallback, (srp::com::soc::RXCallbackStream callback), (override));

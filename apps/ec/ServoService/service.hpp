@@ -20,14 +20,11 @@ namespace apps {
 
 class MyServoService : public ServoServiceSkeleton {
  private:
-  std::shared_ptr<i2c::PCA9685> servo_;
+  const std::shared_ptr<i2c::PCA9685> servo_;
 
  public:
   MyServoService(const ara::core::InstanceSpecifier& instance, std::shared_ptr<i2c::PCA9685> servo_controller):
-      ServoServiceSkeleton{instance}, servo_(servo_controller) {ServoStatusEvent.SetCallback(
-      std::bind(&MyServoService::HandleEvent, this, std::placeholders::_1, std::placeholders::_2));
-      ServoVentStatusEvent.SetCallback(std::bind(&MyServoService::HandleEvent,
-      this, std::placeholders::_1, std::placeholders::_2));
+                                                        ServoServiceSkeleton{instance}, servo_(servo_controller) {
   }
 
  protected:

@@ -18,5 +18,6 @@ cc_binary(
         "//example_adaptive/ExampleApp/code:someip_lib",
         "@srp_platform//ara/diag:monitor",
         "//core/gps:gps_data_parser",
+        "//mw/gpio_server/controller:gpio_controller",
     ],
 )

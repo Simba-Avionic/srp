@@ -27,6 +27,7 @@ class MockGPIO : public srp::core::gpio::IGpioDriver {
   MOCK_METHOD((srp::core::ErrorCode), setValue, (const uint16_t&, const uint8_t&), (override));
   MOCK_METHOD((srp::core::ErrorCode), setDirection,
                           (const uint16_t&, const srp::core::gpio::direction_t&), (override));
+  MOCK_METHOD((srp::core::ErrorCode), unregisterPin, (const uint16_t& pinNumber), (override));
   virtual ~MockGPIO() = default;
 };
 
