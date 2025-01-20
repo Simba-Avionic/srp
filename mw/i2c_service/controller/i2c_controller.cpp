@@ -20,7 +20,7 @@ namespace {
     const constexpr char* I2C_IPC = "SRP.I2C";
 }
 
-core::ErrorCode I2CController::Init(std::unique_ptr<srp::bindings::com::soc::ISocketStream> socket) {
+core::ErrorCode I2CController::Init(std::unique_ptr<srp::com::soc::ISocketStream> socket) {
     this->sock_ = std::move(socket);
     return core::ErrorCode::kOk;
 }

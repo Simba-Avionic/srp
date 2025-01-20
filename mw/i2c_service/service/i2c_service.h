@@ -27,12 +27,12 @@ class I2CService final : public ara::exec::AdaptiveApplication {
   const ara::log::Logger& i2c_logger_;
   std::mutex i2c_mtx;
   std::shared_ptr<core::i2c::II2CDriver> i2c_;
-  std::unique_ptr<srp::bindings::com::soc::ISocketStream> sock_;
+  std::unique_ptr<srp::com::soc::ISocketStream> sock_;
 
  protected:
   core::ErrorCode Init(
       std::shared_ptr<core::i2c::II2CDriver> i2c,
-      std::unique_ptr<srp::bindings::com::soc::ISocketStream> socket);
+      std::unique_ptr<srp::com::soc::ISocketStream> socket);
   std::vector<uint8_t> RxCallback(const std::string& ip,
                                   const std::uint16_t& port,
                                   const std::vector<std::uint8_t> data);

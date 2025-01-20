@@ -16,6 +16,7 @@
 #include <string>
 #include "apps/ec/logger_service/service/service.hpp"
 #include "apps/ec/logger_service/service/logger_did.hpp"
+#include "ara/diag/generic_data_identifier.h"
 
 namespace srp {
 namespace logger {

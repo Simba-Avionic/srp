@@ -20,6 +20,7 @@
 #include "mw/temp/controller/temp_controller.h"
 #include "ara/exec/adaptive_application.h"
 #include "srp/env/EnvAppSkeleton.h"
+#include "communication-core/sockets/ipc_socket.h"
 
 namespace srp {
 namespace envService {

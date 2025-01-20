@@ -32,6 +32,10 @@ class ServoService final : public ara::exec::AdaptiveApplication {
   std::unique_ptr<apps::MyServoService> service_ipc;
   std::unique_ptr<apps::MyServoService> service_udp;
 
+  const ara::core::InstanceSpecifier diag_main_instance;
+  const ara::core::InstanceSpecifier diag_venv_instance;
+  const ara::core::InstanceSpecifier diag_serv_instance;
+
  protected:
   /**
    * @brief This function is called to initialiaze the application
@@ -49,6 +53,7 @@ class ServoService final : public ara::exec::AdaptiveApplication {
 
  public:
   ~ServoService() = default;
+  ServoService();
 };
 
 }  // namespace service

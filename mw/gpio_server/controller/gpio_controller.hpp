@@ -29,10 +29,10 @@ namespace gpio {
 
 class GPIOController : public IGPIOController{
  private:
-    std::unique_ptr<srp::bindings::com::soc::ISocketStream> sock_;
+    std::unique_ptr<srp::com::soc::ISocketStream> sock_;
  public:
     GPIOController(): sock_(std::make_unique<com::soc::StreamIpcSocket>()) {}
-    explicit GPIOController(std::unique_ptr<srp::bindings::com::soc::ISocketStream> socket);
+    explicit GPIOController(std::unique_ptr<srp::com::soc::ISocketStream> socket);
     core::ErrorCode SetPinValue(uint8_t actuatorID, int8_t value) override;
     std::optional<int8_t> GetPinValue(uint8_t actuatorID) override;
 };

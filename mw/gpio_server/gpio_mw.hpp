@@ -29,8 +29,8 @@ namespace mw {
 
 class GPIOMWService : public ara::exec::AdaptiveApplication {
  protected:
-    std::unique_ptr<GpioMWDID> pin_did_;
-    std::unique_ptr<srp::bindings::com::soc::ISocketStream> sock_;
+    // std::unique_ptr<GpioMWDID> pin_did_;
+    std::unique_ptr<srp::com::soc::ISocketStream> sock_;
     std::shared_ptr<core::gpio::IGpioDriver> gpio_driver_;
     std::unordered_map<uint8_t, GpioConf> config;
     std::vector<uint8_t> RxCallback(const std::string& ip, const std::uint16_t& port,
@@ -38,7 +38,7 @@ class GPIOMWService : public ara::exec::AdaptiveApplication {
     std::optional<std::unordered_map<uint8_t, GpioConf>> ReadConfig(
                               const std::string& path) const;
     int InitPins();
-    int Init(std::unique_ptr<srp::bindings::com::soc::ISocketStream> socket,
+    int Init(std::unique_ptr<srp::com::soc::ISocketStream> socket,
                               std::shared_ptr<core::gpio::IGpioDriver> gpio);
 
  public:

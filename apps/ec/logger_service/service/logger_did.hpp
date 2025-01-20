@@ -18,14 +18,14 @@
 #include <bitset>
 #include "ara/log/log.h"
 #include "ara/com/com_error_domain.h"
-#include "diag/jobs/skeleton/did_job.h"
+#include "ara/diag/generic_data_identifier.h"
 namespace srp {
 namespace logger {
 
 using SaveThreadHandler =
       std::function<void(const std::uint8_t status)>;
 
-class FileLoggerDID : public diag::DiDJob {
+class FileLoggerDID : public ara::diag::GenericDiD {
  private:
   SaveThreadHandler handler_;
   /**
@@ -33,21 +33,22 @@ class FileLoggerDID : public diag::DiDJob {
    *
    * @return DiagResponse
    */
-  diag::DiagResponse Read() {
-    return diag::DiagResponse(diag::DiagResponseCodes::kSubFunctionNotSupported);
+  ara::core::Result<ara::diag::OperationOutput> Read() noexcept override {
+    // return diag::DiagResponse(diag::DiagResponseCodes::kSubFunctionNotSupported);
   }
-diag::DiagResponse Write(const std::vector<uint8_t>& payload) {
-  ara::log::LogError() << "Receive write req";
+  ara::core::Result<void> Write(
+      const std::vector<uint8_t> &payload) noexcept override {
+   ara::log::LogError() << "Receive write req";
   if (payload.size() != 1) {
-    return diag::DiagResponse{diag::DiagResponseCodes::kInvalidMessageLengthFormat};
+    return {};
   }
   handler_(payload[0]);
-  return diag::DiagResponse{diag::DiagResponseCodes::kOk};
-}
+  return {};
+  }
 
  public:
   FileLoggerDID(const ara::core::InstanceSpecifier& instance, SaveThreadHandler handler)
-                        : diag::DiDJob(instance), handler_(handler) {
+                        : ara::diag::GenericDiD{instance}, handler_(handler) {
       }
 };
 

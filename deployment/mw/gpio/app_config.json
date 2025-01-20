@@ -6,7 +6,11 @@
     "adaptive_application": {
         "gpio_service": {
             "app": {
-                "bootMode": 9,
+                "functional_groups":[
+                    "Platform",
+                    "Running",
+                    "SafetyMode"
+                ],
                 "parms": "",
                 "logger": {
                     "app_id": "GPIO",

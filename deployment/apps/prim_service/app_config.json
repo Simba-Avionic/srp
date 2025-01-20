@@ -6,7 +6,10 @@
     "adaptive_application": {
         "PrimerService": {
             "app": {
-                "bootMode": 6,
+                "functional_groups":[
+                    "Running",
+                    "SafetyMode"
+                ],
                 "parms": "",
                 "logger": {
                     "app_id": "PRIM",

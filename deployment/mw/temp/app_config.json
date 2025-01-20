@@ -6,7 +6,11 @@
     "adaptive_application": {
         "temp_service": {
             "app": {
-                "bootMode": 7,
+                "functional_groups":[
+                    "Platform",
+                    "Running",
+                    "SafetyMode"
+                ],
                 "parms": "",
                 "logger": {
                     "app_id": "TEMP",

@@ -26,7 +26,7 @@ I2CService::I2CService():
 
 
 core::ErrorCode I2CService::Init(std::shared_ptr<core::i2c::II2CDriver> i2c,
-                              std::unique_ptr<srp::bindings::com::soc::ISocketStream> socket) {
+                              std::unique_ptr<srp::com::soc::ISocketStream> socket) {
   if (!socket || !i2c) {
     return core::ErrorCode::kInitializeError;
   }
@@ -54,7 +54,6 @@ std::optional<std::vector<uint8_t>> I2CService::WriteRead(const std::vector<uint
   if (payload.size() != 2) {
     return {};
   }
-  uint8_t readSize = payload[0];
   uint8_t dataToWrite = payload[1];
   auto res = this->i2c_->Write({dataToWrite});
   if (res != core::ErrorCode::kOk) {

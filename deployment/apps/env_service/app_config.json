@@ -6,7 +6,10 @@
     "adaptive_application": {
         "EnvApp": {
             "app": {
-                "bootMode": 4,
+                "functional_groups":[
+                    "Running",
+                    "SafetyMode"
+                ],
                 "parms": "",
                 "logger": {
                     "app_id": "ENVA",

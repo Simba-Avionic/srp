@@ -25,7 +25,7 @@ namespace {
     constexpr auto PATH = "SRP.GPIO";
 }
 
-GPIOController::GPIOController(std::unique_ptr<srp::bindings::com::soc::ISocketStream> socket)
+GPIOController::GPIOController(std::unique_ptr<srp::com::soc::ISocketStream> socket)
                                                     : sock_(std::move(socket)) {
 }
 

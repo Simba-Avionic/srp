@@ -8,7 +8,10 @@
     "adaptive_application": {
         "FileLoggerApp": {
             "app": {
-                "bootMode": 0,
+                "functional_groups":[
+                    "Running",
+                    "SafetyMode"
+                ],
                 "parms": "",
                 "logger": {
                     "app_id": "FLOG",

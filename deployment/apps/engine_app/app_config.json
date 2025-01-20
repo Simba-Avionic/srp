@@ -8,7 +8,10 @@
     "adaptive_application": {
         "EngineService": {
             "app": {
-                "bootMode": 2,
+                "functional_groups":[
+                    "Running",
+                    "SafetyMode"
+                ],
                 "parms": "",
                 "logger": {
                     "app_id": "ENG-",
