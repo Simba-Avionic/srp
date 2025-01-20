@@ -34,13 +34,13 @@ int ServoService::Run(const std::stop_token& token) {
     // update servo positions;
     auto val = this->servo_controller->ReadServoPosition(60);
     if (val.has_value()) {
-      // service_ipc->ServoStatusEvent.Update(val.value());
-      // service_udp->ServoStatusEvent.Update(val.value());
+      service_ipc->ServoStatusEvent.Update(val.value());
+      service_udp->ServoStatusEvent.Update(val.value());
     }
     auto val2 = this->servo_controller->ReadServoPosition(61);
     if (val2.has_value()) {
-      // service_ipc->ServoVentStatusEvent.Update(val2.value());
-      // service_udp->ServoVentStatusEvent.Update(val2.value());
+      service_ipc->ServoVentStatusEvent.Update(val2.value());
+      service_udp->ServoVentStatusEvent.Update(val2.value());
     }
     ara::log::LogDebug() << ("Send servo status event");
     core::condition::wait_for(std::chrono::milliseconds(500), token);
