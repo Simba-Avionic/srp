@@ -25,7 +25,7 @@
 #include "communication-core/someip/message_code.h"
 #include "communication-core/someip/message_type.h"
 #include "core/logger/Logger.h"
-namespace simba {
+namespace srp {
 namespace com {
 namespace someip {
 class MethodProxyBase : public IProxy {
@@ -45,7 +45,7 @@ class MethodProxyBase : public IProxy {
   DropTransferCallback d_callback_;
 
   void RxCallback(const std::vector<uint8_t> payload,
-                  simba::com::data::MessageCode code,
+                  srp::com::data::MessageCode code,
                   const uint16_t transfer_id) {
     if (transfer_id == transfer_id_) {
       is_response = true;
@@ -96,7 +96,7 @@ class MethodProxyBase : public IProxy {
     std::unique_lock lk(msg_mutex);
     transfer_id_ = callback_(
         std::move(data), object.value(), interface.value(),
-        simba::com::data::MessageType::kRequest,
+        srp::com::data::MessageType::kRequest,
         std::bind(&MethodProxyBase::RxCallback, this, std::placeholders::_1,
                   std::placeholders::_2, std::placeholders::_3));
     if (transfer_id_ == 0) {
@@ -145,5 +145,5 @@ class MethodProxyBase : public IProxy {
 };
 }  // namespace someip
 }  // namespace com
-}  // namespace simba
+}  // namespace srp
 #endif  // COMMUNICATION_CORE_SOMEIP_CONTROLLER_METHOD_PROXY_H_

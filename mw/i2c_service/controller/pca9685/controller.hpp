@@ -25,7 +25,7 @@
 #include "core/json/json_parser.h"
 #include "ara/log/logging_menager.h"
 
-namespace simba {
+namespace srp {
 namespace i2c {
 
 struct Servo {
@@ -85,6 +85,6 @@ class PCA9685 {
 };
 
 }  // namespace i2c
-}  // namespace simba
+}  // namespace srp
 
 #endif  // MW_I2C_SERVICE_CONTROLLER_PCA9685_CONTROLLER_HPP_

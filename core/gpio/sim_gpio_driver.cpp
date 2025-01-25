@@ -15,7 +15,7 @@
 #include "ara/log/log.h"
 #include "core/file/file.hpp"
 
-namespace simba {
+namespace srp {
 namespace core {
 namespace gpio {
 namespace {
@@ -73,4 +73,4 @@ direction_t GpioDriver::getDirection(const uint16_t& pinNumber) {
 
 }  // namespace gpio
 }  // namespace core
-}  // namespace simba
+}  // namespace srp

@@ -15,7 +15,7 @@
 #include <string>
 #include <optional>
 #include <fstream>
-namespace simba {
+namespace srp {
 namespace core {
 enum File_mode_t {
   READ,
@@ -33,7 +33,7 @@ class FileHandler {
     std::optional<std::string> read();
 };
 }  // namespace core
-}  // namespace simba
+}  // namespace srp
 
 #endif  // CORE_FILE_FILE_HPP_
 

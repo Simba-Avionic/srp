@@ -15,25 +15,25 @@ cc_library(
     deps = [
         "//mw/gpio_server/data:gpio_hdr",
         "//core/json:simba_json",
-        "//ara/exec:adaptive_application_lib",
+        "@srp_platform//ara/exec:adaptive_application_lib",
         "//core/common:condition_lib",
-        "//diag/jobs/skeleton:did_job_lib",
+        "//communication-core/sockets:socket_ipc",
     ] + gpio_drivers_deps,
     visibility = [
         "//mw/gpio_server/tests:__subpackages__",
         ],
 )
 
-# cc_binary(
-#     name = "gpio_service",
-#     deps = [
-#         ":gpio_service_lib",
-#         "//deployment/mw/gpio:ara",
-#         ],
-#     srcs = [
-#         "main.cpp",
-#         ],
-#     visibility = [
-#         "//deployment:__subpackages__",
-#     ],
-# )
+cc_binary(
+    name = "gpio_service",
+    deps = [
+        ":gpio_service_lib",
+        "//deployment/mw/gpio:ara",
+        ],
+    srcs = [
+        "main.cpp",
+        ],
+    visibility = [
+        "//deployment:__subpackages__",
+    ],
+)

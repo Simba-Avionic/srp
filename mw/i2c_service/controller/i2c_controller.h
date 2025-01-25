@@ -20,18 +20,18 @@
 #include "mw/i2c_service/controller/Ii2c_controller.h"
 
 
-namespace simba {
+namespace srp {
 namespace i2c {
 class I2CController: public II2CController{
  private:
-  std::unique_ptr<com::soc::ISocketStream> sock_;
+  std::unique_ptr<srp::com::soc::ISocketStream> sock_;
 
  protected:
   std::optional<std::vector<uint8_t>> SendData(ACTION action,
                         uint8_t address, const std::vector<uint8_t>& payload) override;
 
  public:
-  core::ErrorCode Init(std::unique_ptr<com::soc::ISocketStream> socket
+  core::ErrorCode Init(std::unique_ptr<srp::com::soc::ISocketStream> socket
                             = std::make_unique<com::soc::StreamIpcSocket>()) override;
   /**
    * @brief 
@@ -55,6 +55,6 @@ class I2CController: public II2CController{
                                                         const uint8_t WriteData, const uint8_t ReadSize = 1) override;
 };
 }  // namespace i2c
-}  // namespace simba
+}  // namespace srp
 
 #endif  // MW_I2C_SERVICE_CONTROLLER_I2C_CONTROLLER_H_

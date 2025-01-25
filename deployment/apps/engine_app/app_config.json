@@ -4,11 +4,14 @@
         "deployment/system_definition/someip/servo_service/service.json",
         "deployment/system_definition/someip/prim_service/service.json"
     ],
-    "package": "simba.apps",
+    "package": "srp.apps",
     "adaptive_application": {
         "EngineService": {
             "app": {
-                "bootMode": 2,
+                "functional_groups":[
+                    "Running",
+                    "SafetyMode"
+                ],
                 "parms": "",
                 "logger": {
                     "app_id": "ENG-",

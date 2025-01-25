@@ -5,7 +5,7 @@ cc_library(
         "//core/gpio:__subpackages__",
         ],
     deps = [
-        "//ara/log",
+        "@srp_platform//ara/log",
         "//core/file:file_interface",
     ],
 )

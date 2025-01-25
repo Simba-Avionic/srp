@@ -15,7 +15,7 @@
 #include <string>
 #include <utility>
 
-namespace simba {
+namespace srp {
 namespace com {
 namespace someip {
 namespace objects {
@@ -37,6 +37,6 @@ class Interface {
 }  // namespace objects
 }  // namespace someip
 }  // namespace com
-}  // namespace simba
+}  // namespace srp
 
 #endif  // COMMUNICATION_CORE_SOMEIP_DATABASE_CODE_INTERFACE_H_

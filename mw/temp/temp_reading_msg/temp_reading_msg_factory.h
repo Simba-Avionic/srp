@@ -16,7 +16,7 @@
 #include <memory>
 #include <utility>
 
-namespace simba {
+namespace srp {
 namespace mw {
 namespace temp {
 
@@ -45,6 +45,6 @@ class TempReadingMsgFactory {
 
 }  // namespace temp
 }  // namespace mw
-}  // namespace simba
+}  // namespace srp
 
 #endif  // MW_TEMP_TEMP_READING_MSG_TEMP_READING_MSG_FACTORY_H_

@@ -18,7 +18,7 @@
 #include "communication-core/someip-database/code/interface.h"
 #include "communication-core/someip-database/code/service.h"
 #include "core/common/error_code.h"
-namespace simba {
+namespace srp {
 namespace com {
 namespace someip {
 namespace objects {
@@ -32,14 +32,14 @@ class DataBase {
  public:
   uint16_t GetServiceId() const noexcept;
   std::vector<objects::Interface> GetInterfaces() const noexcept;
-  simba::core::ErrorCode InsertService(const uint16_t service_id,
+  srp::core::ErrorCode InsertService(const uint16_t service_id,
                                 const Interface& inf) noexcept;
   std::optional<Interface> FindService(
       const uint16_t service_id) const noexcept;
-  simba::core::ErrorCode InsertInterface(const std::string& ip,
+  srp::core::ErrorCode InsertInterface(const std::string& ip,
                                   const uint16_t port) noexcept;
-  simba::core::ErrorCode SetServiceId(const uint16_t id) noexcept;
-  simba::core::ErrorCode InstertEvent(const uint16_t event_id,
+  srp::core::ErrorCode SetServiceId(const uint16_t id) noexcept;
+  srp::core::ErrorCode InstertEvent(const uint16_t event_id,
                                const uint16_t client_id) noexcept;
   std::optional<std::vector<uint16_t>> FindEventClient(
       const uint16_t event_id) const noexcept;
@@ -48,6 +48,6 @@ class DataBase {
 }  // namespace objects
 }  // namespace someip
 }  // namespace com
-}  // namespace simba
+}  // namespace srp
 
 #endif  // COMMUNICATION_CORE_SOMEIP_DATABASE_CODE_DATABASE_H_

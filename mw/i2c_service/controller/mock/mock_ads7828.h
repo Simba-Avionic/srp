@@ -13,7 +13,7 @@
 #include "gmock/gmock.h"
 #include "mw/i2c_service/controller/ads7828/Iads7828.h"
 
-namespace simba {
+namespace srp {
 namespace mock {
 class MockADS7828 : public i2c::IADS7828 {
  public:
@@ -22,5 +22,5 @@ class MockADS7828 : public i2c::IADS7828 {
   MOCK_METHOD(std::optional<float>, GetAdcVoltage, (const uint8_t& channel), (const, override));
 };
 }  // namespace mock
-}  // namespace simba
+}  // namespace srp
 #endif  // MW_I2C_SERVICE_CONTROLLER_MOCK_MOCK_ADS7828_H_

@@ -19,7 +19,7 @@
 #include <vector>
 #include <cstdint>
 #include <optional>
-namespace simba {
+namespace srp {
 namespace core {
 namespace uart {
 
@@ -32,6 +32,6 @@ class IUartDriver {
 
 }  // namespace uart
 }  // namespace core
-}  // namespace simba
+}  // namespace srp
 
 #endif  // CORE_UART_IUART_DRIVER_HPP_

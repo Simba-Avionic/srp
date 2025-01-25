@@ -18,7 +18,7 @@
 
 #include "communication-core/someip/message_code.h"
 #include "communication-core/someip/someip_header.h"
-namespace simba {
+namespace srp {
 namespace com {
 namespace someip {
 namespace factory {
@@ -54,18 +54,18 @@ class ISomeIpHeaderFactory {
    */
   virtual std::shared_ptr<SomeIpHeader> CreateResponse(
       const std::uint16_t service_id, const std::uint16_t methode_id,
-      const simba::com::data::MessageCode res_flag) = 0;
+      const srp::com::data::MessageCode res_flag) = 0;
   virtual std::shared_ptr<SomeIpHeader> CreateRequestNoReturn(
       const std::uint16_t service_id, const std::uint16_t methode_id) = 0;
   virtual std::shared_ptr<SomeIpHeader> CreateRequestACK(
       const std::uint16_t service_id, const std::uint16_t methode_id) = 0;
   virtual std::shared_ptr<SomeIpHeader> CreateErrorResponse(
       const std::uint16_t service_id, const std::uint16_t methode_id,
-      const simba::com::data::MessageCode res_flag) = 0;
+      const srp::com::data::MessageCode res_flag) = 0;
   virtual ~ISomeIpHeaderFactory() = default;
 };
 }  // namespace factory
 }  // namespace someip
 }  // namespace com
-}  // namespace simba
+}  // namespace srp
 #endif  // COMMUNICATION_CORE_SOMEIP_FACTORY_ISOMEIP_HEADER_FACTORY_H_

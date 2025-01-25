@@ -14,7 +14,7 @@
 #include <vector>
 
 #include "communication-core/someip-database/code/interface.h"
-namespace simba {
+namespace srp {
 namespace com {
 namespace someip {
 namespace objects {
@@ -34,6 +34,6 @@ class Service {
 }  // namespace objects
 }  // namespace someip
 }  // namespace com
-}  // namespace simba
+}  // namespace srp
 
 #endif  // COMMUNICATION_CORE_SOMEIP_DATABASE_CODE_SERVICE_H_

@@ -19,7 +19,7 @@
 
 #include "core/common/error_code.h"
 
-namespace simba {
+namespace srp {
 namespace core {
 namespace i2c {
 
@@ -35,6 +35,6 @@ class II2CDriver {
 };
 }  // namespace i2c
 }  // namespace core
-}  // namespace simba
+}  // namespace srp
 
 #endif  // CORE_I2C_II2C_DRIVER_HPP_

@@ -1,9 +1,9 @@
-load("//deployment/bazel:cpu_def.bzl", "cpu_def")
-load("//deployment/tools/ara:adaptive.bzl", "ara_json2sm_config")
+load("@srp_platform//tools/common:cpu_def.bzl", "cpu_def")
+load("@srp_platform//tools/model_generator/ara:adaptive.bzl", "ara_json2sm_config")
 
 ara_json2sm_config(
     name = "sm_config",
-    src = "//deployment/system_definition/sm:example_config",
+    src = "@srp_platform//platform_definition/sm:example_config",
 )
 
 cpu_def(
@@ -18,12 +18,20 @@ cpu_def(
         "platform_config.json",
     ],
     srp_components = [
-        "//deployment/platform/diag_demon",
-        "//deployment/platform/em",
-        "//deployment/platform/logger",
-        "//deployment/platform/someip_demon",
-        "//deployment/platform/state_manager",
+        "@srp_platform//platform/common/diag_demon/model:diag_demon",
+        "@srp_platform//platform/common/em/model:em",
+        "@srp_platform//platform/common/logger/model:logger",
+        "@srp_platform//platform/common/someip_demon/model:someip_demon",
+        "@srp_platform//platform/common/state_manager/model:state_manager",
         "//deployment/example_adaptive/ExampleApp",
+        "//deployment/mw/i2c:i2cMWService",
+        "//deployment/mw/temp:temp_service",
+        "//deployment/mw/gpio:gpio_service",
+        "//deployment/apps/servo_service:servoService",
+        "//deployment/apps/engine_app:EngineService",
+        "//deployment/apps/env_service:EnvApp",
+        "//deployment/apps/logger_service:FileLoggerApp",
+        "//deployment/apps/prim_service:PrimerService",
     ],
 )
 

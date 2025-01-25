@@ -12,7 +12,7 @@
 
 #include <string>
 #include <unordered_map>
-namespace simba {
+namespace srp {
 namespace em {
 EmApplication::EmApplication(/* args */) {}
 
@@ -53,4 +53,4 @@ core::ErrorCode EmApplication::Initialize(
 }
 
 }  // namespace em
-}  // namespace simba
+}  // namespace srp

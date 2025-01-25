@@ -18,12 +18,12 @@ class DataStructureTest : public testing::TestWithParam<std::tuple<int, int, int
  protected:
   void SetUp() override {
     std::tie(service_id, timestamp, flags) = GetParam();
-    header = simba::diag::exec::ExecHeader(service_id, timestamp, flags);
+    header = srp::diag::exec::ExecHeader(service_id, timestamp, flags);
   }
   int service_id;
   int timestamp;
   int flags;
-  simba::diag::exec::ExecHeader header;
+  srp::diag::exec::ExecHeader header;
 };
 
 INSTANTIATE_TEST_SUITE_P(Default, DataStructureTest,

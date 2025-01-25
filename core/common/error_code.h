@@ -13,7 +13,7 @@
 
 #include <stdexcept>
 #include <string>
-namespace simba {
+namespace srp {
 namespace core {
 enum ErrorCode {
   kOk = 0,
@@ -25,29 +25,29 @@ enum ErrorCode {
 };
 
 }  // namespace core
-}  // namespace simba
+}  // namespace srp
 
 namespace std {
 namespace __cxx11 {
 
-inline string to_string(const simba::core::ErrorCode& code) {
+inline string to_string(const srp::core::ErrorCode& code) {
   switch (code) {
-    case simba::core::ErrorCode::kOk:
+    case srp::core::ErrorCode::kOk:
       return "kOK";
       break;
-    case simba::core::ErrorCode::kNotDefine:
+    case srp::core::ErrorCode::kNotDefine:
       return "kNotDefine";
       break;
-    case simba::core::ErrorCode::kError:
+    case srp::core::ErrorCode::kError:
       return "kError";
       break;
-    case simba::core::ErrorCode::kConnectionError:
+    case srp::core::ErrorCode::kConnectionError:
       return "kConnectionError";
       break;
-    case simba::core::ErrorCode::kInitializeError:
+    case srp::core::ErrorCode::kInitializeError:
       return "kInitializeError";
       break;
-    case simba::core::ErrorCode::kBadVariableSize:
+    case srp::core::ErrorCode::kBadVariableSize:
       return "kBadVariableSize";
     default:
       throw std::invalid_argument("Not support error code");

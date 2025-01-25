@@ -19,7 +19,7 @@
 
 #include "core/common/error_code.h"
 
-namespace simba {
+namespace srp {
 namespace com {
 namespace someip {
 namespace objects {
@@ -30,7 +30,7 @@ class ConfigDb {
 
 
  public:
-  simba::core::ErrorCode InsertObject(const std::string& key,
+  srp::core::ErrorCode InsertObject(const std::string& key,
                                const Endpoint& item) noexcept;
   std::optional<Endpoint> FindObject(const std::string& key) const noexcept;
 
@@ -41,6 +41,6 @@ class ConfigDb {
 }  // namespace objects
 }  // namespace someip
 }  // namespace com
-}  // namespace simba
+}  // namespace srp
 
 #endif  // COMMUNICATION_CORE_SOMEIP_DATABASE_CODE_CONFIG_DB_H_

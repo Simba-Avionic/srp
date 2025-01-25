@@ -24,7 +24,7 @@
 #include <vector>
 
 #include "communication-core/sockets/Isocket_stream.h"
-namespace simba {
+namespace srp {
 namespace com {
 namespace soc {
 class StreamIpcSocket : public ISocketStream {
@@ -45,9 +45,9 @@ class StreamIpcSocket : public ISocketStream {
    * @brief Socket init function
    *
    * @param config Config file
-   * @return simba::core::ErrorCode initialiaze status
+   * @return srp::core::ErrorCode initialiaze status
    */
-  simba::core::ErrorCode Init(const SocketConfig& config) override;
+  srp::core::ErrorCode Init(const SocketConfig& config) override;
   /**
    * @brief Setter for rx callback
    *
@@ -74,6 +74,6 @@ class StreamIpcSocket : public ISocketStream {
 };
 }  // namespace soc
 }  // namespace com
-}  // namespace simba
+}  // namespace srp
 
 #endif  // COMMUNICATION_CORE_SOCKETS_STREAM_IPC_SOCKET_H_

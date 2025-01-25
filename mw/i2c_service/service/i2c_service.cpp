@@ -15,18 +15,18 @@
 #include "mw/i2c_service/data/i2c_factory.h"
 #include "ara/log/log.h"
 #include "core/common/condition.h"
-namespace simba {
+namespace srp {
 namespace mw {
 
 namespace {
-    const constexpr char* I2C_IPC_ADDR = "SIMBA.I2C";
+    const constexpr char* I2C_IPC_ADDR = "SRP.I2C";
 }
 I2CService::I2CService():
     i2c_logger_(ara::log::LoggingMenager::GetInstance()->CreateLogger("i2c", "", ara::log::LogLevel::kInfo)) {}
 
 
 core::ErrorCode I2CService::Init(std::shared_ptr<core::i2c::II2CDriver> i2c,
-                              std::unique_ptr<com::soc::ISocketStream> socket) {
+                              std::unique_ptr<srp::com::soc::ISocketStream> socket) {
   if (!socket || !i2c) {
     return core::ErrorCode::kInitializeError;
   }
@@ -54,7 +54,6 @@ std::optional<std::vector<uint8_t>> I2CService::WriteRead(const std::vector<uint
   if (payload.size() != 2) {
     return {};
   }
-  uint8_t readSize = payload[0];
   uint8_t dataToWrite = payload[1];
   auto res = this->i2c_->Write({dataToWrite});
   if (res != core::ErrorCode::kOk) {
@@ -63,7 +62,7 @@ std::optional<std::vector<uint8_t>> I2CService::WriteRead(const std::vector<uint
   return this->i2c_->Read(2);
 }
 
-std::vector<uint8_t> I2CService::ActionLogic(const std::shared_ptr<simba::i2c::Header> headerPtr,
+std::vector<uint8_t> I2CService::ActionLogic(const std::shared_ptr<srp::i2c::Header> headerPtr,
                                                       std::optional<std::vector<uint8_t>> payload) {
   if (headerPtr->GetAction() == i2c::ACTION::kWrite) {
       if (payload.value().size() == 1) {
@@ -141,4 +140,4 @@ int I2CService::Initialize(
 }
 
 }  // namespace mw
-}  // namespace simba
+}  // namespace srp

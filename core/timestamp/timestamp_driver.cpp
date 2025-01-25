@@ -11,7 +11,7 @@
 
 #include "core/timestamp/timestamp_driver.hpp"
 
-namespace simba {
+namespace srp {
 namespace core {
 namespace timestamp {
 
@@ -26,4 +26,4 @@ uint64_t TimestampController::GetNewTimeStamp() {
 
 }  // namespace timestamp
 }  // namespace core
-}  // namespace simba
+}  // namespace srp

@@ -14,12 +14,12 @@
 
 #include "exec_manager.hpp"
 
-namespace simba {
+namespace srp {
 namespace mw {
 namespace exec {
 
-std::pair<simba::diag::exec::Status, std::bitset<5>> ExecManager::getStatusAndFlags(uint8_t data) {
-    simba::diag::exec::Status status_ = simba::diag::exec::Status(data & 0b00000111);
+std::pair<srp::diag::exec::Status, std::bitset<5>> ExecManager::getStatusAndFlags(uint8_t data) {
+    srp::diag::exec::Status status_ = srp::diag::exec::Status(data & 0b00000111);
     std::bitset<8> bits(data);
     std::bitset<5> flags(bits.to_string().substr(0, 5));
     return {status_, flags};
@@ -57,7 +57,7 @@ void ExecManager::RxCallback(const std::string& ip, const std::uint16_t& port,
     }
 }
 
-void ExecManager::SetApps(std::vector<simba::em::service::data::AppConfig> apps) {
+void ExecManager::SetApps(std::vector<srp::em::service::data::AppConfig> apps) {
     std::lock_guard<std::mutex> lock(mtx);
     for (auto app : apps) {
         this->db_.insert({app.GetAppID(), Service(0)});
@@ -84,7 +84,7 @@ std::queue<uint16_t> ExecManager::CheckAppCondition() {
 }
 
 void ExecManager::Init() {
-    if (this->sock_.Init(com::soc::SocketConfig{"SIMBA.EXE", 0, 0}) != core::ErrorCode::kOk) {
+    if (this->sock_.Init(com::soc::SocketConfig{"SRP.EXE", 0, 0}) != core::ErrorCode::kOk) {
         AppLogger::Error("failed to bind ipc");
     } else {
         AppLogger::Debug("ipc bind succesfully");
@@ -110,4 +110,4 @@ void ExecManager::RestartedApp(uint16_t appID) {
 
 }  // namespace exec
 }  // namespace mw
-}  // namespace simba
+}  // namespace srp

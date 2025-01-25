@@ -17,7 +17,7 @@
 #include "apps/ec/logger_service/service/logger_builder.hpp"
 
 
-namespace simba {
+namespace srp {
 namespace logger {
 
 namespace {
@@ -26,10 +26,10 @@ namespace {
   constexpr std::string kCsv_filename_prefix = "/home/root/";
   constexpr uint16_t kSave_interval = 100;
   constexpr auto k_save_interval_fix = 1;
-  constexpr auto kEnv_service_path_name = "simba/apps/FileLoggerApp/EnvApp";
-  constexpr auto kUdp_service_path_name = "simba/apps/FileLoggerApp/logService_udp";
-  constexpr auto kIpc_service_path_name = "simba/apps/FileLoggerApp/logService_ipc";
-  constexpr auto kFile_did_path_name = "/simba/apps/FileLoggerApp/logger_did";
+  constexpr auto kEnv_service_path_name = "srp/apps/FileLoggerApp/EnvApp";
+  constexpr auto kUdp_service_path_name = "srp/apps/FileLoggerApp/logService_udp";
+  constexpr auto kIpc_service_path_name = "srp/apps/FileLoggerApp/logService_ipc";
+  constexpr auto kFile_did_path_name = "/srp/apps/FileLoggerApp/logger_did";
 }  // namespace
 
 
@@ -55,9 +55,9 @@ void LoggerService::SaveLoop(const std::stop_token& token) {
 }
 
 int LoggerService::Run(const std::stop_token& token) {
-  logger_did_->StartOffer();
+  // logger_did_->StartOffer();
   core::condition::wait(token);
-  logger_did_->StopOffer();
+  // logger_did_->StopOffer();
   return 0;
 }
 
@@ -78,7 +78,7 @@ LoggerService::LoggerService():
                 .setLoggerUDP(kUdp_service_path_name)
                 .build();
 
-  this->logger_did_ = std::move(result.loggerDID);
+  // this->logger_did_ = std::move(result.loggerDID);
   this->service_ipc = std::move(result.serviceIPC);
   this->service_udp = std::move(result.serviceUDP);
 }
@@ -149,5 +149,5 @@ void LoggerService::SomeIpInit() {
 }
 
 }  // namespace logger
-}  // namespace simba
+}  // namespace srp
 

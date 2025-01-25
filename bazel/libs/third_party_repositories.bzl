@@ -50,4 +50,11 @@ def include_spdlog():
 )
 
 
+def include_srp_platform(ver):
+        http_archive(
+        name = "srp_platform",
+        strip_prefix = "srp_platform-"+ver,
+        urls = ["https://github.com/SRP-Platform/srp_platform/archive/refs/tags/"+ver+".zip"],
+        type = "zip",
+    )
     

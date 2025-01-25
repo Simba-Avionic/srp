@@ -13,11 +13,11 @@
 #include "ara/exec/adaptive_application.h"
 #include "core/common/condition.h"
 #include "ara/log/log.h"
-namespace simba {
+namespace srp {
 namespace apps {
 namespace {
-  constexpr auto kService_ipc_instance = "simba/apps/GPSApp/GPSService_ipc";
-  constexpr auto kService_udp_instance = "simba/apps/GPSApp/GPSService_udp";
+  constexpr auto kService_ipc_instance = "srp/apps/GPSApp/GPSService_ipc";
+  constexpr auto kService_udp_instance = "srp/apps/GPSApp/GPSService_udp";
   constexpr auto KGPS_UART_path = "/dev/ttyS1";
   constexpr auto KGPS_UART_baudrate = B230400;
 }
@@ -92,5 +92,5 @@ GPSApp::GPSApp(): service_ipc_instance(kService_ipc_instance),
 }
 
 }  // namespace apps
-}  // namespace simba
+}  // namespace srp
 

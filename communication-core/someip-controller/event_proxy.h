@@ -27,7 +27,7 @@
 #include "communication-core/someip/message_type.h"
 #include "core/logger/Logger.h"
 
-namespace simba {
+namespace srp {
 namespace com {
 namespace someip {
 
@@ -49,7 +49,7 @@ class EventProxyBase : public IProxy {
   EventCallback callback_;
   const bool is_event_callback;
   void RxCallback(const std::vector<uint8_t> payload,
-                  simba::com::data::MessageCode code, const uint16_t) {
+                  srp::com::data::MessageCode code, const uint16_t) {
     if (code == com::data::MessageCode::kEOk) {
       if (is_event_callback) {
         callback_(std::move(payload));
@@ -139,5 +139,5 @@ class EventProxyBase : public IProxy {
 };
 }  // namespace someip
 }  // namespace com
-}  // namespace simba
+}  // namespace srp
 #endif  // COMMUNICATION_CORE_SOMEIP_CONTROLLER_EVENT_PROXY_H_

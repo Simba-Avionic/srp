@@ -16,7 +16,7 @@
 #include "ara/diag/generic_data_identifier.h"
 #include "ara/log/log.h"
 
-namespace simba {
+namespace srp {
 namespace example {
 class ExampleDiD : public ara::diag::GenericDiD {
  private:
@@ -36,6 +36,6 @@ class ExampleDiD : public ara::diag::GenericDiD {
   ~ExampleDiD() = default;
 };
 }  // namespace example
-}  // namespace simba
+}  // namespace srp
 
 #endif  // EXAMPLE_ADAPTIVE_EXAMPLEAPP_CODE_APPLICATION_EXAMPLE_DID_H_

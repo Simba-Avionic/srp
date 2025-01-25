@@ -16,7 +16,7 @@
 #include <vector>
 #include <memory>
 
-namespace simba {
+namespace srp {
 namespace mw {
 namespace temp {
 
@@ -28,19 +28,19 @@ class SubMsgFactory {
    * @param header
    * @return std::vector<uint8_t>
    */
-  static std::vector<uint8_t> GetBuffer(std::shared_ptr<simba::mw::temp::SubscribeHeader> header);
+  static std::vector<uint8_t> GetBuffer(std::shared_ptr<srp::mw::temp::SubscribeHeader> header);
   /**
    * @brief Creat header object from raw data
    *
    * @param raw_data
    * @return std::shared_ptr<SubscribeHeader>
    */
-  static std::shared_ptr<simba::mw::temp::SubscribeHeader> GetHeader(
+  static std::shared_ptr<srp::mw::temp::SubscribeHeader> GetHeader(
     std::vector<uint8_t> raw_data);
 };
 
 }  // namespace temp
 }  // namespace mw
-}  // namespace simba
+}  // namespace srp
 
 #endif  // MW_TEMP_SUBSCRIBE_MSG_SUBSCRIBE_MSG_FACTORY_H_

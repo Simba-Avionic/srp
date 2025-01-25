@@ -15,18 +15,18 @@
 #include <netinet/in.h>  // NOLINT
 #include <utility>
 
-namespace simba {
+namespace srp {
 namespace mw {
 namespace temp {
 
-using temp_sub_factory = simba::mw::temp::SubMsgFactory;
+using temp_sub_factory = srp::mw::temp::SubMsgFactory;
 
 namespace {
-    constexpr auto kTempServiceName = "SIMBA.TEMP.SERVICE";
-    constexpr auto kSubscriberPrefix = "SIMBA.TEMP.";
+    constexpr auto kTempServiceName = "SRP.TEMP.SERVICE";
+    constexpr auto kSubscriberPrefix = "SRP.TEMP.";
 }
 
-simba::core::ErrorCode TempController::Init(uint16_t service_id, std::unique_ptr<com::soc::ISocket> sock) {
+srp::core::ErrorCode TempController::Init(uint16_t service_id, std::unique_ptr<com::soc::ISocket> sock) {
     if (!sock) {
         return core::ErrorCode::kInitializeError;
     }
@@ -35,7 +35,7 @@ simba::core::ErrorCode TempController::Init(uint16_t service_id, std::unique_ptr
     return core::ErrorCode::kOk;
 }
 
-simba::core::ErrorCode TempController::SetUp(simba::com::soc::RXCallback callback) {
+srp::core::ErrorCode TempController::SetUp(srp::com::soc::RXCallback callback) {
     auto res = core::ErrorCode::kOk;
     if ((res = this->sub_sock_->Init(
         com::soc::SocketConfig(
@@ -53,18 +53,18 @@ simba::core::ErrorCode TempController::SetUp(simba::com::soc::RXCallback callbac
     return res;
 }
 
-simba::core::ErrorCode TempController::Subscribe() {
+srp::core::ErrorCode TempController::Subscribe() {
     SubscribeHeader hdr{this->service_id};
     std::vector<uint8_t> data = temp_sub_factory::GetBuffer(std::make_shared<SubscribeHeader>(hdr));
     if (auto res = sub_sock_->Transmit(kTempServiceName, 0, data)) {
         ara::log::LogError() <<("Failed to subscribe to " + std::string(kTempServiceName)+":::"+std::to_string(res));
         return res;
     }
-    return simba::core::ErrorCode::kOk;
+    return srp::core::ErrorCode::kOk;
 }
 
 void TempController::SetTempRXCallback() {
-    simba::com::soc::RXCallback lambdaCallback = [this](
+    srp::com::soc::RXCallback lambdaCallback = [this](
         const std::string& ip, const std::uint16_t& port,
             const std::vector<std::uint8_t> data) {
         this->callback_(ip, port, data);
@@ -72,8 +72,8 @@ void TempController::SetTempRXCallback() {
     this->sub_sock_->SetRXCallback(lambdaCallback);
 }
 
-simba::core::ErrorCode TempController::Initialize(uint16_t service_id,
-                simba::com::soc::RXCallback callback, std::unique_ptr<com::soc::ISocket> sock) {
+srp::core::ErrorCode TempController::Initialize(uint16_t service_id,
+                srp::com::soc::RXCallback callback, std::unique_ptr<com::soc::ISocket> sock) {
     if (this->Init(service_id, std::move(sock)) != core::ErrorCode::kOk) {
         return core::ErrorCode::kInitializeError;
     }
@@ -81,4 +81,4 @@ simba::core::ErrorCode TempController::Initialize(uint16_t service_id,
 }
 }  // namespace temp
 }  // namespace mw
-}  // namespace simba
+}  // namespace srp

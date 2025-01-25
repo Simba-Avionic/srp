@@ -21,13 +21,13 @@
 #include "communication-core/sockets/Isocket_stream.h"
 #include "diag/jobs/diag_request.h"
 #include "diag/jobs/diag_response.h"
-namespace simba {
+namespace srp {
 namespace diag {
 class JobCommon {
  private:
   std::vector<uint8_t> rx_callback(const std::string&, const std::uint16_t&,
                                    std::vector<std::uint8_t> payload);
-  std::unique_ptr<com::soc::ISocketStream> soc_;
+  std::unique_ptr<srp::com::soc::ISocketStream> soc_;
   std::string job_id_{""};
 
  protected:
@@ -42,6 +42,6 @@ class JobCommon {
   virtual ~JobCommon() = default;
 };
 }  // namespace diag
-}  // namespace simba
+}  // namespace srp
 
 #endif  // DIAG_JOBS_JOB_COMMON_H_

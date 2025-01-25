@@ -15,7 +15,7 @@
 #include <utility>
 #include <array>
 #include <cstring>
-namespace simba {
+namespace srp {
 namespace mw {
 namespace temp {
 
@@ -59,4 +59,4 @@ std::vector<std::pair<uint8_t, double>>
 
 }  // namespace temp
 }  // namespace mw
-}  // namespace simba
+}  // namespace srp

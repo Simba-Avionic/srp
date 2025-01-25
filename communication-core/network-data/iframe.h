@@ -16,7 +16,7 @@
 
 #include "core/common/error_code.h"
 
-namespace simba {
+namespace srp {
 namespace com {
 namespace core {
 namespace interface {
@@ -30,12 +30,12 @@ class IFrame {
   virtual uint8_t GetSize() const { return this->size_; }
   explicit IFrame(const uint8_t& size) : size_(size) {}
   virtual std::vector<std::uint8_t> GetBuffor() const = 0;
-  virtual simba::core::ErrorCode SetBuffor(std::vector<std::uint8_t> data) = 0;
+  virtual srp::core::ErrorCode SetBuffor(std::vector<std::uint8_t> data) = 0;
   virtual ~IFrame() = default;
 };
 }  // namespace interface
 }  // namespace core
 }  // namespace com
-}  // namespace simba
+}  // namespace srp
 
 #endif  // COMMUNICATION_CORE_NETWORK_DATA_IFRAME_H_

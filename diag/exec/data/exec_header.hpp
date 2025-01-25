@@ -18,7 +18,7 @@
 #include "communication-core/network-data/network_data_structure.h"
 #include "communication-core/network-data/network_data_type.h"
 
-namespace simba {
+namespace srp {
 namespace diag {
 namespace exec {
 
@@ -49,6 +49,6 @@ class ExecHeader : public com::core::network::NetworkDataStructure {
 
 }  // namespace exec
 }  // namespace diag
-}  // namespace simba
+}  // namespace srp
 
 #endif  // DIAG_EXEC_DATA_EXEC_HEADER_HPP_

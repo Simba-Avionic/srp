@@ -24,14 +24,14 @@
 #include "ara/log/log.h"
 using json = nlohmann::json;
 
-namespace simba {
+namespace srp {
 namespace mw {
 
 namespace {
-    constexpr auto SOCKET_PATH = "SIMBA.GPIO";
+    constexpr auto SOCKET_PATH = "SRP.GPIO";
 }
 
-int GPIOMWService::Init(std::unique_ptr<com::soc::ISocketStream> socket,
+int GPIOMWService::Init(std::unique_ptr<srp::com::soc::ISocketStream> socket,
                               std::shared_ptr<core::gpio::IGpioDriver> gpio) {
   if (!socket || !gpio) {
     return 1;
@@ -77,7 +77,7 @@ GPIOMWService::~GPIOMWService() {
 int GPIOMWService::Run(const std::stop_token& token) {
     core::condition::wait(token);
     this->sock_->StopRXThread();
-    this->pin_did_->StopOffer();
+    // this->pin_did_->StopOffer();
     return core::ErrorCode::kOk;
 }
 
@@ -98,9 +98,9 @@ int GPIOMWService::Initialize(const std::map<ara::core::StringView,
     }
     config = config_opt.value();
     this->InitPins();
-    pin_did_ = std::make_unique<GpioMWDID>(
-                    ara::core::InstanceSpecifier("/simba/mw/gpio_service/gpio_pin_did"), this->gpio_driver_, config);
-    pin_did_->StartOffer();
+    // pin_did_ = std::make_unique<GpioMWDID>(
+    //                 ara::core::InstanceSpecifier("/srp/mw/gpio_service/gpio_pin_did"), this->gpio_driver_, config);
+    // pin_did_->StartOffer();
     this->sock_->StartRXThread();
     return 0;
 }
@@ -149,4 +149,4 @@ int GPIOMWService::InitPins() {
 }
 
 }  // namespace mw
-}  // namespace simba
+}  // namespace srp

@@ -1,5 +1,5 @@
 
-load("//deployment/bazel:config_gen.bzl", "bs_someip_gen")
+# load("//deployment/bazel:config_gen.bzl", "bs_someip_gen")
 
 
 # bs_someip_gen(

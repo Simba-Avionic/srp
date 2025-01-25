@@ -13,6 +13,6 @@
 
 int main(int argc, char const *argv[]) {
   // setsid();
-  return ara::exec::RunAdaptiveLifecycle<simba::service::RecoveryService>(argc,
+  return ara::exec::RunAdaptiveLifecycle<srp::service::RecoveryService>(argc,
                                                                      argv);
 }

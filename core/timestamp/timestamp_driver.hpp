@@ -14,7 +14,7 @@
 
 #include <chrono>  // NOLINT
 
-namespace simba {
+namespace srp {
 namespace core {
 namespace timestamp {
 
@@ -28,6 +28,6 @@ class TimestampController {
 
 }  // namespace timestamp
 }  // namespace core
-}  // namespace simba
+}  // namespace srp
 
 #endif  // CORE_TIMESTAMP_TIMESTAMP_DRIVER_HPP_

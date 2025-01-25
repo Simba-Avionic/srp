@@ -17,7 +17,7 @@
 #include "mw/i2c_service/controller/adcsensor/controller.hpp"
 #include "core/json/json_parser.h"
 #include "core/common/error_code.h"
-namespace simba {
+namespace srp {
 namespace i2c {
 
 float ADCSensorController::CalculateA(const float& R, const float& RES_MAX, const float& RES_MIN,
@@ -114,4 +114,4 @@ std::optional<float> ADCSensorController::GetValue(const uint8_t sensor_id) cons
 }
 
 }  // namespace i2c
-}  // namespace simba
+}  // namespace srp

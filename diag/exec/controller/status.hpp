@@ -12,7 +12,7 @@
 #ifndef DIAG_EXEC_CONTROLLER_STATUS_HPP_
 #define DIAG_EXEC_CONTROLLER_STATUS_HPP_
 
-namespace simba {
+namespace srp {
 namespace diag {
 namespace exec {
 
@@ -29,6 +29,6 @@ enum Status {
 
 }  // namespace exec
 }  // namespace diag
-}  // namespace simba
+}  // namespace srp
 
 #endif  // DIAG_EXEC_CONTROLLER_STATUS_HPP_

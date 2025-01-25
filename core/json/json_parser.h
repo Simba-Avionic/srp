@@ -19,7 +19,7 @@
 
 #include "nlohmann/json.hpp"
 
-namespace simba {
+namespace srp {
 namespace core {
 namespace json {
 class JsonParser {
@@ -70,6 +70,6 @@ class JsonParser {
 
 }  // namespace json
 }  // namespace core
-}  // namespace simba
+}  // namespace srp
 
 #endif  // CORE_JSON_JSON_PARSER_H_

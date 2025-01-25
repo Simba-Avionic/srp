@@ -16,8 +16,9 @@
 #include <string>
 #include "apps/ec/logger_service/service/service.hpp"
 #include "apps/ec/logger_service/service/logger_did.hpp"
+#include "ara/diag/generic_data_identifier.h"
 
-namespace simba {
+namespace srp {
 namespace logger {
 
 class Builder {
@@ -55,6 +56,6 @@ class Builder {
 };
 
 }  // namespace logger
-}  // namespace simba
+}  // namespace srp
 
 #endif  // APPS_EC_LOGGER_SERVICE_SERVICE_LOGGER_BUILDER_HPP_
