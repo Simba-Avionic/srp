@@ -38,7 +38,7 @@ class FileLoggerDID : public ara::diag::GenericDiD {
   }
   ara::core::Result<void> Write(
       const std::vector<uint8_t> &payload) noexcept override {
-   ara::log::LogError() << "Receive write req";
+  ara::log::LogError() << "Receive write req";
   if (payload.size() != 1) {
     return {};
   }

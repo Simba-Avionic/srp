@@ -55,9 +55,9 @@ void LoggerService::SaveLoop(const std::stop_token& token) {
 }
 
 int LoggerService::Run(const std::stop_token& token) {
-  //logger_did_->StartOffer();
+  // logger_did_->StartOffer();
   core::condition::wait(token);
-  //logger_did_->StopOffer();
+  // logger_did_->StopOffer();
   return 0;
 }
 
@@ -78,7 +78,7 @@ LoggerService::LoggerService():
                 .setLoggerUDP(kUdp_service_path_name)
                 .build();
 
-  //this->logger_did_ = std::move(result.loggerDID);
+  // this->logger_did_ = std::move(result.loggerDID);
   this->service_ipc = std::move(result.serviceIPC);
   this->service_udp = std::move(result.serviceUDP);
 }

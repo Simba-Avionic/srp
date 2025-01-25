@@ -20,7 +20,7 @@ namespace srp {
 namespace example {
 class ExampleApp : public ara::exec::AdaptiveApplication {
  private:
- srp::gpio::GPIOController gpio_;
+  srp::gpio::GPIOController gpio_;
   /**
    * @brief This function is called to initialiaze the application
    *

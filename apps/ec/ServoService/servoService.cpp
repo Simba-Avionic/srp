@@ -62,7 +62,8 @@ int ServoService::Initialize(
   // main_servo_service_did_ = std::make_unique<ServoServiceDiD>(diag_main_instance, servo_controller, 60);
   // vent_servo_service_did_ = std::make_unique<ServoServiceDiD>(diag_venv_instance, servo_controller, 61);
   // servo_did_ = std::make_unique<ServoSecondDid>(diag_serv_instance, this->servo_controller);
-  std::this_thread::sleep_for(std::chrono::seconds(5));  //TODO(matikrajek42@gmail.com) remove after fix someip timeout error
+  std::this_thread::sleep_for(std::chrono::seconds(5));
+  // TODO(matikrajek42@gmail.com) remove after fix someip timeout error
   service_ipc = std::make_unique<apps::MyServoService>(
                 ara::core::InstanceSpecifier("srp/apps/servoService/ServoService_ipc"), this->servo_controller);
   service_udp = std::make_unique<apps::MyServoService>(
