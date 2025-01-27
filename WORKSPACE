@@ -8,9 +8,11 @@ register_all_toolchains()
 load("//third_party:deps.bzl", "deps")
 deps()
 
-load("//bazel/libs:third_party_repositories.bzl", "include_spdlog", "include_srp_platform")
+load("//bazel/libs:third_party_repositories.bzl", "include_spdlog", "include_srp_platform", "include_srp_mavlink")
 include_spdlog()
 include_srp_platform("0.0.6.S")
+
+include_srp_mavlink("0.2")
 
 http_archive(
     name = "com_github_nelhage_rules_boost",
