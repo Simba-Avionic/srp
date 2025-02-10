@@ -37,18 +37,18 @@ GPSDataStructure GPSApp::GetSomeIPData(const core::GPS_DATA_T& data) {
 void GPSApp::Init(std::unique_ptr<core::uart::IUartDriver> uart) {
   this->uart_ = std::move(uart);
 }
-void GPSApp::ParseGPSData(const std::vector<char>& data) {
+std::optional<GPSDataStructure> GPSApp::ParseGPSData(const std::vector<char>& data) {
   std::string s(data.begin(), data.end());
   auto res = core::Nmea::Parse(s);
   if (!res.has_value()) {
-    return;
+    return std::nullopt;
   }
   auto someip_data = GetSomeIPData(res.value());
-  ara::log::LogInfo() << "GPS lattitude: " << someip_data.lattitude
-      << ", longtitude: " << someip_data.longitude << ",height(M):"
-      << res.value().height << "satelite_nr: " << res.value().satellite_nr;
-  service_ipc->GPSStatusEvent.Update(someip_data);
-  service_udp->GPSStatusEvent.Update(someip_data);
+  // TODO(matikrajek42@gmail.com)  uncoment afer basn advice
+  // ara::log::LogInfo() << "GPS lattitude: " << someip_data.lattitude
+  //     << ", longtitude: " << someip_data.longitude << ",height(M):"
+  //     << res.value().height << "satelite_nr: " << res.value().satellite_nr;
+  return someip_data;
 }
 
 int GPSApp::Run(const std::stop_token& token) {
@@ -58,7 +58,11 @@ int GPSApp::Run(const std::stop_token& token) {
       core::condition::wait_for(std::chrono::milliseconds(10), token);
       continue;
     }
-    ParseGPSData(data.value());
+    auto res = ParseGPSData(data.value());
+    if (res.has_value()) {
+      service_ipc->GPSStatusEvent.Update(res.value());
+      service_udp->GPSStatusEvent.Update(res.value());
+    }
   }
   core::condition::wait(token);
   service_ipc->StopOffer();

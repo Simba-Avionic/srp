@@ -68,3 +68,50 @@ INSTANTIATE_TEST_SUITE_P(
         }
     )
 );
+
+
+TEST(GPSAppTest, ParseGPSData_InvalidData_ReturnsNullopt) {
+    std::vector<char> invalidData{'$', 'G', 'P', 'I', 'N', 'V', ',', '1', '2', '3', ',', 'N'};
+
+    auto result = srp::apps::GPSApp::ParseGPSData(invalidData);
+
+    ASSERT_FALSE(result.has_value());
+}
+
+TEST(GPSAppTest, ParseGPSData_EmptyData_ReturnsNullopt) {
+    std::vector<char> emptyData;
+
+    auto result = srp::apps::GPSApp::ParseGPSData(emptyData);
+
+    ASSERT_FALSE(result.has_value());
+}
+
+TEST(GPSAppTest, ParseGPSData_IncompleteGNGGA_ReturnsNullopt) {
+    std::vector<char> incompleteData{
+        '$', 'G', 'N', 'G', 'G', 'A', ',', '1', '2', '3', '4', '5', '6', ',', '4'
+    };
+
+    auto result = srp::apps::GPSApp::ParseGPSData(incompleteData);
+
+    ASSERT_FALSE(result.has_value());
+}
+
+TEST(GPSAppTest, ParseGPSData_ZeroSatellites_ReturnsNullopt) {
+    std::vector<char> zeroSatellitesData{
+        '$', 'G', 'N', 'G', 'G', 'A', ',', '1', '2', '3', '4', '5', '6', ',', '4', '5', '6', '7', '.', '8', ',', 'N',
+        ',', '1', '2', '3', '4', '.', '9', ',', 'E', ',', '0', ',', '1', '.', '5', ',', '5', '0', '.', '1', ','
+    };
+
+    auto result = srp::apps::GPSApp::ParseGPSData(zeroSatellitesData);
+
+    ASSERT_FALSE(result.has_value());
+}
+
+TEST(GPSAppTest, ParseGPSData) {
+    std::string str = "$GNGGA,123519,4807.038,N,01131.000,E,1,08,0.9,545.4,M,46.9,M,,*47";
+    std::vector<char> vec(str.begin(), str.end());
+    auto res = srp::apps::GPSApp::ParseGPSData(vec);
+    EXPECT_TRUE(res.has_value());
+    EXPECT_NEAR(res.value().lattitude, 4807.038, 0.001);
+    EXPECT_NEAR(res.value().longitude, 1131.000, 0.001);
+}
