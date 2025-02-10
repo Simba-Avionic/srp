@@ -42,7 +42,7 @@ int RecoveryService::Initialize(
   auto pca = std::make_unique<i2c::PCA9685>();
   pca->Init("/srp/opt/RecoveryService/");
   // TODO(matikrajek42@gmail.com) change to parms.at("app_name") after BS fix adaptiveAplication
-  this->controller->Init(std::move(pca), std::make_unique<gpio::GPIOController>());
+  this->controller->Init(std::move(pca), std::make_unique<gpio::GPIOController>(), "/srp/opt/RecoveryService/");
   rec_did = std::make_unique<apps::RecoveryGenericRoutine>(rec_did_specifier, controller);
   service_ipc = std::make_unique<apps::MyRecoveryServiceSkeleton>(
                 ara::core::InstanceSpecifier(kService_ipc_name), controller);

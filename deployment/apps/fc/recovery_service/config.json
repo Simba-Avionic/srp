@@ -17,5 +17,14 @@
         "on_pos" : 3000,
         "off_pos" : 1000
         }
-]
+],
+    "parachute": {
+        "linecutter_pin_id" : 1,
+        "recovery_servo_id": 63,
+        "servo_move_time": 500,
+        "servo_seq_num": 3,
+        "linecutter_sequence_num" : 3,
+        "linecutter_active_time": 3000,
+        "linecutter_inactive_time": 1000
+    }
 }
