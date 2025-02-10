@@ -17,5 +17,12 @@
         "on_pos" : 3000,
         "off_pos" : 1000
         }
-]
+],
+    "parachute": {
+        "servo_mode_time": 500,
+        "servo_seq_num": 3,
+        "linecutter_sequence_num" : 3,
+        "linecutter_active_time": 3000,
+        "linecutter_inactive_time": 1000
+    }
 }

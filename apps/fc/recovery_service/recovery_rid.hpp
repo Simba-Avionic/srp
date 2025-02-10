@@ -50,13 +50,6 @@ class RecoveryGenericRoutine : public ara::diag::GenericRoutine {
         controller->UnreefParachute(true);
         state = STATE_T::NON_OPERATE;
         return ara::diag::OperationOutput{{1}};
-    } else if (requestData[0] == 2) {
-        state = STATE_T::PARACHUTE_OPENING_SEQ;
-        controller->OpenParachute(true);
-        state = STATE_T::PARACHUTE_UNREEF_SEQ;
-        controller->UnreefParachute(true);
-        state = STATE_T::NON_OPERATE;
-        return ara::diag::OperationOutput{{1}};
     }
     state = STATE_T::NON_OPERATE;
     return ara::diag::OperationOutput{};

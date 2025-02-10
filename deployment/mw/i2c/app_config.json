@@ -6,7 +6,6 @@
         "i2cMWService": {
             "app": {
                 "functional_groups":[
-                    "Platform",
                     "MW",
                     "Running",
                     "SafetyMode"
