@@ -24,6 +24,7 @@
 #include "core/csvdriver/csvdriver.h"
 #include "apps/ec/logger_service/data_type.hpp"
 #include "apps/ec/logger_service/service/service.hpp"
+#include "apps/ec/logger_service/service/logger_did.hpp"
 
 namespace srp {
 namespace logger {
@@ -32,8 +33,10 @@ class LoggerService final : public ara::exec::AdaptiveApplication {
  private:
   std::shared_ptr<env::EnvAppHandler> env_service_handler;
   env::EnvAppProxy env_service_proxy;
+  core::timestamp::TimestampController timestamp_;
   Data_t data;
-  // std::unique_ptr<FileLoggerDID> logger_did_;
+  const ara::core::InstanceSpecifier did_instance_;
+  std::unique_ptr<FileLoggerDID> logger_did_;
 
   std::shared_ptr<std::jthread> save_thread_;
   void SaveLoop(const std::stop_token& token);

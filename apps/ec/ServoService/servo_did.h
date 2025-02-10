@@ -12,7 +12,8 @@
 #define APPS_EC_SERVOSERVICE_SERVO_DID_H_
 #include <string>
 #include <vector>
-#include <strstream>
+#include <sstream>
+
 #include <memory>
 #include "ara/log/log.h"
 #include "ara/diag/generic_data_identifier.h"

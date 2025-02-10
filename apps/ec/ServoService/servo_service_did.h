@@ -12,10 +12,11 @@
 #define APPS_EC_SERVOSERVICE_SERVO_SERVICE_DID_H_
 #include <string>
 #include <vector>
-#include <strstream>
+#include <sstream>
 #include <memory>
 #include "ara/log/log.h"
 #include "ara/diag/generic_data_identifier.h"
+#include "ara/com/com_error_domain.h"
 namespace srp {
 namespace service {
 
@@ -23,7 +24,6 @@ class ServoServiceDiD : public ara::diag::GenericDiD {
  private:
   std::shared_ptr<i2c::PCA9685>  servoController;
   const uint8_t actuator_id;
-  ara::core::InstanceSpecifier instance_;
   ara::core::Result<ara::diag::OperationOutput> Read() noexcept override {
     auto res = this->servoController->ReadServoPosition(actuator_id);
     if (!res.has_value()) {
@@ -39,7 +39,8 @@ class ServoServiceDiD : public ara::diag::GenericDiD {
     ara::log::LogInfo() <<  "Set position:" << payload[0] << ", to actuator ID:" <<this->actuator_id;
     auto res = this->servoController->AutoSetServoPosition(this->actuator_id, payload[0]);
     if (res != core::ErrorCode::kOk) {
-      ara::log::LogWarn() << "huj";
+      return ara::com::MakeErrorCode(
+        ara::com::ComErrc::kGrantEnforcementError, "driver return error");
     }
     return {};
   }
@@ -48,7 +49,7 @@ class ServoServiceDiD : public ara::diag::GenericDiD {
   ServoServiceDiD(const ara::core::InstanceSpecifier& instance,
       std::shared_ptr<i2c::PCA9685> servo_controller, uint8_t actuator_id):
       servoController(servo_controller), actuator_id(actuator_id),
-      instance_(instance), ara::diag::GenericDiD{instance_} {
+      ara::diag::GenericDiD{instance} {
       }
 };
 

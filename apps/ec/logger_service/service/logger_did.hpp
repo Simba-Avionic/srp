@@ -13,7 +13,8 @@
 #include <string>
 #include <vector>
 #include <memory>
-#include <strstream>
+#include <sstream>
+
 #include <unordered_map>
 #include <bitset>
 #include "ara/log/log.h"

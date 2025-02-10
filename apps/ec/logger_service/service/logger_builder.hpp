@@ -32,8 +32,8 @@ class Builder {
   explicit Builder(std::function<void(uint8_t)> callbackHandler):
     callback(callbackHandler) {}
 
-  Builder& setLoggerDID(const std::string& instance) {
-    logger_did_ = std::make_unique<FileLoggerDID>(ara::core::InstanceSpecifier{instance}, callback);
+  Builder& setLoggerDID(const ara::core::InstanceSpecifier& instance_) {
+    logger_did_ = std::make_unique<FileLoggerDID>(instance_, callback);
     return *this;
   }
   Builder& setLoggerIPC(const std::string& instance) {

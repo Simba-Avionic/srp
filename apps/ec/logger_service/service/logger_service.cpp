@@ -35,17 +35,17 @@ namespace {
 
 void LoggerService::SaveLoop(const std::stop_token& token) {
   csv::CSVDriver csv_;
-  core::timestamp::TimestampController timestamp_;
   auto prefix = core::time::TimeChanger::ReadSystemTimeAsString();
   if (!prefix.has_value()) {
     csv_.Open(kCsv_filename_prefix + kCsv_filename, kCsv_header);
   } else {
     csv_.Open(kCsv_filename_prefix + prefix.value() + kCsv_filename, kCsv_header);
   }
-  timestamp_.Start();
   while (!token.stop_requested()) {
     const auto start = std::chrono::high_resolution_clock::now();
-    csv_.WriteLine(this->data.to_string(std::to_string(timestamp_.GetNewTimeStamp())));
+    auto timestamp = timestamp_.GetNewTimeStamp();
+    if (!timestamp.has_value()) continue;
+    csv_.WriteLine(this->data.to_string(std::to_string(timestamp.value())));
     const auto now = std::chrono::high_resolution_clock::now();
     const auto elapsed = std::chrono::duration_cast<
                 std::chrono::milliseconds>(now - start).count() +  k_save_interval_fix;
@@ -55,30 +55,31 @@ void LoggerService::SaveLoop(const std::stop_token& token) {
 }
 
 int LoggerService::Run(const std::stop_token& token) {
-  // logger_did_->StartOffer();
   core::condition::wait(token);
-  // logger_did_->StopOffer();
+  logger_did_->StopOffer();
   return 0;
 }
 
 int LoggerService::Initialize(const std::map<ara::core::StringView, ara::core::StringView>
                     parms) {
   this->SomeIpInit();
+  timestamp_.Init();
+  logger_did_->Offer();
   return 0;
 }
 
 LoggerService::~LoggerService() {}
 
-LoggerService::LoggerService():
+LoggerService::LoggerService(): did_instance_(kFile_did_path_name),
     env_service_proxy{ara::core::InstanceSpecifier{kEnv_service_path_name}},
     env_service_handler{nullptr}, save_thread_{nullptr} {
   auto builder = Builder([this](uint8_t status) { this->start_func_handler(status); });
-  auto result = builder.setLoggerDID(kFile_did_path_name)
+  auto result = builder.setLoggerDID(did_instance_)
                 .setLoggerIPC(kIpc_service_path_name)
                 .setLoggerUDP(kUdp_service_path_name)
                 .build();
 
-  // this->logger_did_ = std::move(result.loggerDID);
+  this->logger_did_ = std::move(result.loggerDID);
   this->service_ipc = std::move(result.serviceIPC);
   this->service_udp = std::move(result.serviceUDP);
 }

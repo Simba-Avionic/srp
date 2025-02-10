@@ -26,7 +26,6 @@
 namespace srp {
 namespace gpio {
 
-
 class GPIOController : public IGPIOController{
  private:
     std::unique_ptr<srp::com::soc::ISocketStream> sock_;

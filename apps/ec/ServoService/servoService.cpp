@@ -19,15 +19,23 @@
 namespace srp {
 namespace service {
 
-// ServoService::ServoService(): diag_main_instance("/srp/apps/servoService/MainServoStatus"),
-//                 diag_venv_instance("/srp/apps/servoService/VentServoStatus"),
-//                 diag_serv_instance("/srp/apps/servoService/ServoDID") {
-// }
+namespace {
+  constexpr auto kDiag_main_instance_path = "/srp/apps/servoService/MainServoStatus";
+  constexpr auto kDiag_venv_instance_path = "/srp/apps/servoService/VentServoStatus";
+  constexpr auto kDiag_serv_instance_path = "/srp/apps/servoService/ServoDID";
+  constexpr auto kservice_ipc_path = "srp/apps/servoService/ServoService_ipc";
+  constexpr auto kservice_udp_path = "srp/apps/servoService/ServoService_udp";
+}
+
+ServoService::ServoService(): diag_main_instance(kDiag_main_instance_path),
+                diag_venv_instance(kDiag_venv_instance_path),
+                diag_serv_instance(kDiag_serv_instance_path) {
+}
 
 int ServoService::Run(const std::stop_token& token) {
-  // main_servo_service_did_->Offer();
-  // vent_servo_service_did_->Offer();
-  // servo_did_->Offer();
+  main_servo_service_did_->Offer();
+  vent_servo_service_did_->Offer();
+  servo_did_->Offer();
   service_ipc->StartOffer();
   service_udp->StartOffer();
   while (!token.stop_requested()) {
@@ -48,8 +56,8 @@ int ServoService::Run(const std::stop_token& token) {
   service_ipc->StopOffer();
   service_udp->StopOffer();
 
-  // main_servo_service_did_->StopOffer();
-  // vent_servo_service_did_->StopOffer();
+  main_servo_service_did_->StopOffer();
+  vent_servo_service_did_->StopOffer();
   return 0;
 }
 
@@ -59,15 +67,15 @@ int ServoService::Initialize(
   this->servo_controller->Init(parms.at("app_path"),
                               std::make_unique<srp::i2c::I2CController>(),
                               std::make_unique<gpio::GPIOController>());
-  // main_servo_service_did_ = std::make_unique<ServoServiceDiD>(diag_main_instance, servo_controller, 60);
-  // vent_servo_service_did_ = std::make_unique<ServoServiceDiD>(diag_venv_instance, servo_controller, 61);
-  // servo_did_ = std::make_unique<ServoSecondDid>(diag_serv_instance, this->servo_controller);
+  main_servo_service_did_ = std::make_unique<ServoServiceDiD>(diag_main_instance, servo_controller, 60);
+  vent_servo_service_did_ = std::make_unique<ServoServiceDiD>(diag_venv_instance, servo_controller, 61);
+  servo_did_ = std::make_unique<ServoSecondDid>(diag_serv_instance, this->servo_controller);
   std::this_thread::sleep_for(std::chrono::seconds(5));
   // TODO(matikrajek42@gmail.com) remove after fix someip timeout error
   service_ipc = std::make_unique<apps::MyServoService>(
-                ara::core::InstanceSpecifier("srp/apps/servoService/ServoService_ipc"), this->servo_controller);
+                ara::core::InstanceSpecifier(kservice_ipc_path), this->servo_controller);
   service_udp = std::make_unique<apps::MyServoService>(
-                ara::core::InstanceSpecifier("srp/apps/servoService/ServoService_udp"), this->servo_controller);
+                ara::core::InstanceSpecifier(kservice_udp_path), this->servo_controller);
   return 0;
 }
 

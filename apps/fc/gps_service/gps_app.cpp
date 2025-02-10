@@ -24,10 +24,10 @@ namespace {
 
 GPSDataStructure GPSApp::GetSomeIPData(const core::GPS_DATA_T& data) {
     GPSDataStructure someip_data;
-    someip_data.lattitude = data.latitude;
+    someip_data.latitude = data.latitude;
     someip_data.longitude = data.longitude;
     if (data.latitude_dir == 'S') {
-      someip_data.lattitude *= -1;
+      someip_data.latitude *= -1;
     }
     if (data.longitude_dir == 'W') {
       someip_data.longitude *= -1;
@@ -45,7 +45,7 @@ std::optional<GPSDataStructure> GPSApp::ParseGPSData(const std::vector<char>& da
   }
   auto someip_data = GetSomeIPData(res.value());
   // TODO(matikrajek42@gmail.com)  uncoment afer basn advice
-  // ara::log::LogInfo() << "GPS lattitude: " << someip_data.lattitude
+  // ara::log::LogInfo() << "GPS latitude: " << someip_data.latitude
   //     << ", longtitude: " << someip_data.longitude << ",height(M):"
   //     << res.value().height << "satelite_nr: " << res.value().satellite_nr;
   return someip_data;
