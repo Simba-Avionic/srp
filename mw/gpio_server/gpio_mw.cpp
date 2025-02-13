@@ -8,6 +8,7 @@
  * @copyright Copyright (c) 2024
  * 
  */
+#include <cstdint>
 #include <string>
 #include <vector>
 #include <map>
@@ -50,25 +51,83 @@ std::vector<uint8_t> GPIOMWService::RxCallback(const std::string& ip, const std:
         ara::log::LogWarn() << "Unknown pin with ID: " << std::to_string(hdr.GetActuatorID());
         return {0};
     }
-    if (hdr.GetAction() == gpio::ACTION::SET) {
-        if (it->second.direction != core::gpio::direction_t::OUT) {
-            ara::log::LogWarn() <<("Try to set IN pin value, ID: "+std::to_string(hdr.GetActuatorID()));
+    auto action = hdr.GetAction();
+    switch (action) {
+        case srp::gpio::ACTION::SET: {
+            if (it->second.direction != core::gpio::direction_t::OUT) {
+                ara::log::LogWarn() << ("Try to set IN pin value, ID: " + std::to_string(hdr.GetActuatorID()));
+                return {0};
+            }
+            if (this->gpio_driver_->setValue(it->second.pinNum, hdr.GetValue()) == core::ErrorCode::kOk) {
+                ara::log::LogDebug() << ("Change pin with ID:" + std::to_string(it->first) +
+                                         ", to value:" + std::to_string(hdr.GetValue()));
+                return {1};
+            }
             return {0};
         }
-        if (this->gpio_driver_->setValue(it->second.pinNum, hdr.GetValue()) == core::ErrorCode::kOk) {
-            ara::log::LogDebug() <<("Change pin with ID:" + std::to_string(it->first)
-                                                    + ", to value:" + std::to_string(hdr.GetValue()));
+
+        case srp::gpio::ACTION::GET:
+
+        {
+            auto val = this->gpio_driver_->getValue(it->second.pinNum);
+            gpio::Header resHeader(hdr.GetActuatorID(), val, gpio::ACTION::RES);
+            return resHeader.GetBuffor();
+        }
+
+        case srp::gpio::ACTION::SUBSCRIBE: {
+            auto contoller_id = hdr.GetValue();
+            auto pin_id = hdr.GetActuatorID();
+            if (config.find(pin_id) == config.end()) {
+                return {0};
+            }
+            if (subscribed_pins.find(pin_id) == subscribed_pins.end()) {
+                subscribed_pins.insert(pin_id);
+            }
+            callbacks[pin_id].push_back(contoller_id);
             return {1};
         }
-        return {0};
-    } else if (hdr.GetAction() == gpio::ACTION::GET) {
-        auto val = this->gpio_driver_->getValue(it->second.pinNum);
-        gpio::Header resHeader(hdr.GetActuatorID(), val, gpio::ACTION::RES);
-        return resHeader.GetBuffor();
-    } else {
-        return {};
+
+        case srp::gpio::ACTION::UNSUBSCRIBE: {
+            auto contoller_id = hdr.GetValue();
+            auto pin_id = hdr.GetActuatorID();
+            if (subscribed_pins.find(pin_id) == subscribed_pins.end() || callbacks.find(pin_id) == callbacks.end()) {
+                return {0};
+            }
+            auto pin_callbacks = callbacks[pin_id];
+            auto find = std::find(pin_callbacks.begin(), pin_callbacks.end(), contoller_id);
+            if (find != pin_callbacks.end()) {
+                pin_callbacks.erase(find);
+                if (pin_callbacks.empty()) {
+                    subscribed_pins.erase(pin_id);
+                }
+                return {0};
+            }
+            return {1};
+        }
+
+        default:
+            return {};
     }
 }
+
+void GPIOMWService::PollSubscribedPinsLoop(const std::stop_token& token) {
+    while (!token.stop_requested()) {
+        for (auto pin_id : subscribed_pins) {
+            // subscribed pins are checked for existence before being added to the set
+            auto val = this->gpio_driver_->getValue(config[pin_id].pinNum);
+            for (auto contoller_id : callbacks[pin_id]) {
+                gpio::Header hdr(pin_id, val, gpio::ACTION::CALLBACK);
+                auto res = this->sock_->Transmit(SOCKET_PATH, 0, hdr.GetBuffor());
+                if (!res.has_value()) {
+                    ara::log::LogWarn() << "Callback id: " << std::to_string(contoller_id) << " failed";
+                }
+            }
+        }
+        core::condition::wait_for(state_change_delay, token);
+    }
+
+}
+
 GPIOMWService::~GPIOMWService() {
     this->sock_->~ISocketStream();
 }

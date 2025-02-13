@@ -30,11 +30,19 @@ namespace gpio {
 class GPIOController : public IGPIOController{
  private:
     std::unique_ptr<srp::com::soc::ISocketStream> sock_;
+    std::optional<srp::com::soc::RXCallback> callback = std::nullopt;
+    std::unordered_set<uint8_t> subsbribed_pins;
+    void HandleCallback(const std::vector<std::uint8_t> data);
+    void ListenToCallbacks();
  public:
+    ~GPIOController();
     GPIOController(): sock_(std::make_unique<com::soc::StreamIpcSocket>()) {}
     explicit GPIOController(std::unique_ptr<srp::com::soc::ISocketStream> socket);
     core::ErrorCode SetPinValue(uint8_t actuatorID, int8_t value) override;
     std::optional<int8_t> GetPinValue(uint8_t actuatorID) override;
+
+    core::ErrorCode SetCallback(const srp::com::soc::RXCallback callback);
+    core::ErrorCode SubscribePin(const uint8_t pin_id, bool subscribe);
 };
 
 }  // namespace gpio

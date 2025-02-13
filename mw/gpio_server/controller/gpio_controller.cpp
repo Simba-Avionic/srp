@@ -27,11 +27,36 @@ namespace {
 
 GPIOController::GPIOController(std::unique_ptr<srp::com::soc::ISocketStream> socket)
                                                     : sock_(std::move(socket)) {
+    ListenToCallbacks();
+}
+
+GPIOController::~GPIOController() { this->sock_->StopRXThread(); }
+
+void GPIOController::ListenToCallbacks(){
+    if (this->sock_== nullptr) {
+        return;
+    }
+    this->sock_->SetRXCallback(std::bind(&GPIOController::HandleCallback, this, std::placeholders::_1));
+    this->sock_->StartRXThread();
+}
+
+void GPIOController::HandleCallback(const std::vector<std::uint8_t> data) {
+    if (this->sock_== nullptr) {
+        return;
+    }
+    gpio::Header hdr(0, 0, 0);
+    hdr.SetBuffor(data);
+    auto pin_id = hdr.getActuatorID();
+    if (!this->callback().has_value() && hdr.GetAction() != gpio::ACTION::CALLBACK ||
+        subsbribed_pins.find(pin_id) == subsbribed_pins.end()) {
+        return;
+    }
+    this->callback.value()(pin_id, hdr.getValue());
 }
 
 core::ErrorCode GPIOController::SetPinValue(uint8_t actuatorID, int8_t value) {
     if (this->sock_== nullptr) {
-        return core::ErrorCode::kInitializeError;
+        return;
     }
     gpio::Header hdr(actuatorID, value, ACTION::SET);
     auto res = this->sock_->Transmit(PATH, 0, hdr.GetBuffor());
@@ -58,6 +83,36 @@ std::optional<int8_t> GPIOController::GetPinValue(uint8_t actuatorID) {
     resHdr.SetBuffor(res.value());
     return resHdr.GetValue();
 }
+
+core::ErrorCode GPIOController::SubscribePin(const uint8_t pin_id, const bool subscribe) {
+    if (this->sock_ == nullptr) {
+        return core::ErrorCode::kInitializeError;
+    }
+    bool already_subscribed = subsbribed_pins.find(pin_id) != subsbribed_pins.end();
+    if (already_subscribed == subscribe) {
+        return core::ErrorCode::kOk;
+    }
+    if (subscribe){
+        subsbribed_pins.insert(pin_id);
+    }else{
+        subsbribed_pins.erase(pin_id);
+    }
+    auto action = subscribe ? gpio::ACTION::SUBSCRIBE_FOR_CHANGE : gpio::ACTION::UNSUBSCRIBE_FOR_CHANGE;
+    gpio::Header hdr(action, 0, pin_id);
+    auto res = this->sock_->Transmit(PATH, 0, hdr.GetBuffor());
+    if (res.has_value()) {
+        if (res.value()[0] == 1) {
+          return core::ErrorCode::kOk;
+        } else {
+          return core::ErrorCode::kError;
+        }
+    }
+    return core::ErrorCode::kConnectionError;
+}
+
+}  // namespace gpio
+}  // namespace srp
+
 
 
 }  // namespace gpio
