@@ -38,8 +38,8 @@ INSTANTIATE_TEST_SUITE_P(SetPinTestParameters, SetPinTest,
 TEST_P(SetPinTest, CONTROLLER_SET_PIN_VALUE_CHECK) {
   auto sock_ = std::make_unique<MockStreamSocket>();
   EXPECT_CALL(*sock_, Transmit(::testing::_, ::testing::_, ::testing::_))
-    .WillOnce(::testing::Return(std::vector<uint8_t>{1}))
-    .WillOnce(::testing::Return(std::vector<uint8_t>{0}));
+    .WillOnce(::testing::Return(std::vector<uint8_t>{srp::core::ErrorCode::kOk}))
+    .WillOnce(::testing::Return(std::vector<uint8_t>{srp::core::ErrorCode::kError}));
   auto params = GetParam();
   uint16_t actuatorID = std::get<0>(params);
   int8_t value = std::get<1>(params);
