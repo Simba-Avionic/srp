@@ -33,17 +33,15 @@ GPIOController::GPIOController(std::unique_ptr<srp::com::soc::ISocketStream> soc
 GPIOController::~GPIOController() { this->sock_->StopRXThread(); }
 
 void GPIOController::ListenToCallbacks(){
-    if (this->sock_== nullptr) {
+    if (this->sock_ == nullptr) {
         return;
     }
+    this->sock_->Init({PATH, 0, 0});
     this->sock_->SetRXCallback(std::bind(&GPIOController::HandleCallback, this, std::placeholders::_1));
     this->sock_->StartRXThread();
 }
 
 void GPIOController::HandleCallback(const std::vector<std::uint8_t> data) {
-    if (this->sock_== nullptr) {
-        return;
-    }
     gpio::Header hdr(0, 0, 0);
     hdr.SetBuffor(data);
     auto pin_id = hdr.getActuatorID();
@@ -108,6 +106,10 @@ core::ErrorCode GPIOController::SubscribePin(const uint8_t pin_id, const bool su
         }
     }
     return core::ErrorCode::kConnectionError;
+}
+
+void GPIOController::SetCallback(const std::optional<PinChangeCallback> callback) {
+    this->callback = callback;
 }
 
 }  // namespace gpio
