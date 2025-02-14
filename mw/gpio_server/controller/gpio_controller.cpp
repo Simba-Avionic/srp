@@ -30,7 +30,11 @@ GPIOController::GPIOController(std::unique_ptr<srp::com::soc::ISocketStream> soc
     ListenToCallbacks();
 }
 
-GPIOController::~GPIOController() { this->sock_->StopRXThread(); }
+GPIOController::~GPIOController() {
+    if (this->sock_ != nullptr) {
+        this->sock_->StopRXThread();
+    }
+}
 
 void GPIOController::ListenToCallbacks() {
     if (this->sock_ == nullptr) {
