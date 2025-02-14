@@ -32,12 +32,13 @@ GPIOController::GPIOController(std::unique_ptr<srp::com::soc::ISocketStream> soc
 
 GPIOController::~GPIOController() { this->sock_->StopRXThread(); }
 
-void GPIOController::ListenToCallbacks(){
+void GPIOController::ListenToCallbacks() {
     if (this->sock_ == nullptr) {
         return;
     }
     this->sock_->Init({PATH, 0, 0});
-    this->sock_->SetRXCallback(std::bind(&GPIOController::HandleCallback, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+    this->sock_->SetRXCallback(std::bind(&GPIOController::HandleCallback, this, std::placeholders::_1,
+                                         std::placeholders::_2, std::placeholders::_3));
     this->sock_->StartRXThread();
 }
 
@@ -92,9 +93,9 @@ core::ErrorCode GPIOController::SubscribePin(const uint8_t pin_id, const bool su
     if (already_subscribed == subscribe) {
         return core::ErrorCode::kOk;
     }
-    if (subscribe){
+    if (subscribe) {
         subsbribed_pins.insert(pin_id);
-    }else{
+    } else {
         subsbribed_pins.erase(pin_id);
     }
     auto action = subscribe ? gpio::ACTION::SUBSCRIBE: gpio::ACTION::UNSUBSCRIBE;

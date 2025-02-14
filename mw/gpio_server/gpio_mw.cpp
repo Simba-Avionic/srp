@@ -90,7 +90,8 @@ std::vector<uint8_t> GPIOMWService::RxCallback(const std::string& ip, const std:
         case srp::gpio::ACTION::UNSUBSCRIBE: {
             auto contoller_id = hdr.GetValue();
             auto pin_id = hdr.GetActuatorID();
-            if (subscribed_pins_states.find(pin_id) == subscribed_pins_states.end() || callbacks.find(pin_id) == callbacks.end()) {
+            if (subscribed_pins_states.find(pin_id) == subscribed_pins_states.end() ||
+                callbacks.find(pin_id) == callbacks.end()) {
                 return {0};
             }
             auto pin_callbacks = callbacks[pin_id];
@@ -132,7 +133,6 @@ void GPIOMWService::PollSubscribedPinsLoop(const std::stop_token& token) {
         }
         core::condition::wait_for(STATE_POLL_DELAY, token);
     }
-
 }
 
 GPIOMWService::~GPIOMWService() {
