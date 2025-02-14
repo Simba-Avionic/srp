@@ -27,7 +27,7 @@ enum ACTION : uint8_t {
   RES = 2,
   SUBSCRIBE = 3,
   UNSUBSCRIBE = 4,
-  CALLBACK = 4,
+  CALLBACK = 5,
 };
 
 class Header : public com::core::network::NetworkDataStructure {
