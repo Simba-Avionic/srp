@@ -32,16 +32,16 @@ typedef uint8_t PinId;
 
 namespace srp {
 namespace mw {
+    constexpr std::chrono::milliseconds STATE_POLL_DELAY = std::chrono::milliseconds(100);
 
 class GPIOMWService : public ara::exec::AdaptiveApplication {
  protected:
-    std::chrono::milliseconds state_change_delay = std::chrono::milliseconds(100);
     // std::unique_ptr<GpioMWDID> pin_did_;
     std::unique_ptr<srp::com::soc::ISocketStream> sock_;
     std::shared_ptr<core::gpio::IGpioDriver> gpio_driver_;
     std::unordered_map<uint8_t, GpioConf> config;
 
-    std::unordered_set<PinId> subscribed_pins;
+    std::unordered_map<PinId, uint8_t> subscribed_pins_states;
     std::unordered_map<PinId, std::vector<CallbackId>> callbacks;
 
     void PollSubscribedPinsLoop(const std::stop_token& token);

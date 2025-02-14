@@ -80,8 +80,8 @@ std::vector<uint8_t> GPIOMWService::RxCallback(const std::string& ip, const std:
             if (config.find(pin_id) == config.end()) {
                 return {0};
             }
-            if (subscribed_pins.find(pin_id) == subscribed_pins.end()) {
-                subscribed_pins.insert(pin_id);
+            if (subscribed_pins_states.find(pin_id) == subscribed_pins_states.end()) {
+                subscribed_pins_states[pin_id] = 0;
             }
             callbacks[pin_id].push_back(contoller_id);
             return {1};
@@ -90,7 +90,7 @@ std::vector<uint8_t> GPIOMWService::RxCallback(const std::string& ip, const std:
         case srp::gpio::ACTION::UNSUBSCRIBE: {
             auto contoller_id = hdr.GetValue();
             auto pin_id = hdr.GetActuatorID();
-            if (subscribed_pins.find(pin_id) == subscribed_pins.end() || callbacks.find(pin_id) == callbacks.end()) {
+            if (subscribed_pins_states.find(pin_id) == subscribed_pins_states.end() || callbacks.find(pin_id) == callbacks.end()) {
                 return {0};
             }
             auto pin_callbacks = callbacks[pin_id];
@@ -98,7 +98,7 @@ std::vector<uint8_t> GPIOMWService::RxCallback(const std::string& ip, const std:
             if (find != pin_callbacks.end()) {
                 pin_callbacks.erase(find);
                 if (pin_callbacks.empty()) {
-                    subscribed_pins.erase(pin_id);
+                    subscribed_pins_states.erase(pin_id);
                 }
                 return {0};
             }
@@ -111,19 +111,26 @@ std::vector<uint8_t> GPIOMWService::RxCallback(const std::string& ip, const std:
 }
 
 void GPIOMWService::PollSubscribedPinsLoop(const std::stop_token& token) {
+    for (auto pair : subscribed_pins_states) {
+        // subscribed pins are checked for existence before being added to the set
+        pair.second = this->gpio_driver_->getValue(config[pair.first].pinNum);
+    }
     while (!token.stop_requested()) {
-        for (auto pin_id : subscribed_pins) {
-            // subscribed pins are checked for existence before being added to the set
-            auto val = this->gpio_driver_->getValue(config[pin_id].pinNum);
-            for (auto contoller_id : callbacks[pin_id]) {
-                gpio::Header hdr(pin_id, val, gpio::ACTION::CALLBACK);
+        for (auto& pair : subscribed_pins_states) {
+            auto state = this->gpio_driver_->getValue(config[pair.first].pinNum);
+            if (state == pair.second) {
+                continue;
+            }
+            pair.second = state;
+            for (auto contoller_id : callbacks[pair.first]) {
+                gpio::Header hdr(pair.first, state, gpio::ACTION::CALLBACK);
                 auto res = this->sock_->Transmit(SOCKET_PATH, 0, hdr.GetBuffor());
                 if (!res.has_value()) {
                     ara::log::LogWarn() << "Callback id: " << std::to_string(contoller_id) << " failed";
                 }
             }
         }
-        core::condition::wait_for(state_change_delay, token);
+        core::condition::wait_for(STATE_POLL_DELAY, token);
     }
 
 }
