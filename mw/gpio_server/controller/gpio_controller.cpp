@@ -37,19 +37,21 @@ void GPIOController::ListenToCallbacks(){
         return;
     }
     this->sock_->Init({PATH, 0, 0});
-    this->sock_->SetRXCallback(std::bind(&GPIOController::HandleCallback, this, std::placeholders::_1));
+    this->sock_->SetRXCallback(std::bind(&GPIOController::HandleCallback, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
     this->sock_->StartRXThread();
 }
 
-void GPIOController::HandleCallback(const std::vector<std::uint8_t> data) {
-    gpio::Header hdr(0, 0, 0);
+std::vector<uint8_t> GPIOController::HandleCallback(const std::string& _ip, const std::uint16_t& _port,
+                                                    const std::vector<std::uint8_t> data) {
+    gpio::Header hdr(0, 0, gpio::ACTION::GET);
     hdr.SetBuffor(data);
-    auto pin_id = hdr.getActuatorID();
-    if (!this->callback().has_value() && hdr.GetAction() != gpio::ACTION::CALLBACK ||
-        subsbribed_pins.find(pin_id) == subsbribed_pins.end()) {
-        return;
+    auto pin_id = hdr.GetActuatorID();
+    if (hdr.GetAction() != gpio::ACTION::CALLBACK) return {0};
+    if (!this->callback.has_value() || subsbribed_pins.find(pin_id) == subsbribed_pins.end()) {
+        return {1};
     }
-    this->callback.value()(pin_id, hdr.getValue());
+    this->callback.value()(pin_id, hdr.GetValue());
+    return {1};
 }
 
 core::ErrorCode GPIOController::SetPinValue(uint8_t actuatorID, int8_t value) {
@@ -95,8 +97,8 @@ core::ErrorCode GPIOController::SubscribePin(const uint8_t pin_id, const bool su
     }else{
         subsbribed_pins.erase(pin_id);
     }
-    auto action = subscribe ? gpio::ACTION::SUBSCRIBE_FOR_CHANGE : gpio::ACTION::UNSUBSCRIBE_FOR_CHANGE;
-    gpio::Header hdr(action, 0, pin_id);
+    auto action = subscribe ? gpio::ACTION::SUBSCRIBE: gpio::ACTION::UNSUBSCRIBE;
+    gpio::Header hdr(pin_id, 0, action);
     auto res = this->sock_->Transmit(PATH, 0, hdr.GetBuffor());
     if (res.has_value()) {
         if (res.value()[0] == 1) {
@@ -111,11 +113,6 @@ core::ErrorCode GPIOController::SubscribePin(const uint8_t pin_id, const bool su
 void GPIOController::SetCallback(const std::optional<PinChangeCallback> callback) {
     this->callback = callback;
 }
-
-}  // namespace gpio
-}  // namespace srp
-
-
 
 }  // namespace gpio
 }  // namespace srp

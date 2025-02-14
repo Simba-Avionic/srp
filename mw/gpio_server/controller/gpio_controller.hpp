@@ -14,8 +14,8 @@
 
 #include <functional>
 #include <string>
+#include <unordered_set>
 #include <vector>
-#include <unordered_map>
 #include <optional>
 #include <memory>
 
@@ -34,7 +34,8 @@ class GPIOController : public IGPIOController{
     std::unique_ptr<srp::com::soc::ISocketStream> sock_;
     std::optional<PinChangeCallback> callback = std::nullopt;
     std::unordered_set<uint8_t> subsbribed_pins;
-    void HandleCallback(const std::vector<std::uint8_t> data);
+    std::vector<uint8_t> HandleCallback(const std::string& _ip, const std::uint16_t& _port,
+          const std::vector<std::uint8_t> data);
     void ListenToCallbacks();
  public:
     ~GPIOController();
