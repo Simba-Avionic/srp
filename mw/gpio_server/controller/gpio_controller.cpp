@@ -56,7 +56,7 @@ void GPIOController::HandleCallback(const std::vector<std::uint8_t> data) {
 
 core::ErrorCode GPIOController::SetPinValue(uint8_t actuatorID, int8_t value) {
     if (this->sock_== nullptr) {
-        return;
+        return core::ErrorCode::kInitializeError;
     }
     gpio::Header hdr(actuatorID, value, ACTION::SET);
     auto res = this->sock_->Transmit(PATH, 0, hdr.GetBuffor());
