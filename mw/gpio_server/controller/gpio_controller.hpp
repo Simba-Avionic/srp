@@ -46,7 +46,7 @@ class GPIOController : public IGPIOController{
 
     // optional for clearing callback
     void SetCallback(const std::optional<PinChangeCallback> callback);
-    core::ErrorCode SubscribePin(const uint8_t pin_id, bool subscribe = true);
+    core::ErrorCode ManagePinSubscription(const uint8_t pin_id, bool subscribe);
 };
 
 }  // namespace gpio

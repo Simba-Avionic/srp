@@ -85,7 +85,7 @@ std::optional<int8_t> GPIOController::GetPinValue(uint8_t actuatorID) {
     return resHdr.GetValue();
 }
 
-core::ErrorCode GPIOController::SubscribePin(const uint8_t pin_id, const bool subscribe) {
+core::ErrorCode GPIOController::ManagePinSubscription(const uint8_t pin_id, const bool subscribe) {
     if (this->sock_ == nullptr) {
         return core::ErrorCode::kInitializeError;
     }
