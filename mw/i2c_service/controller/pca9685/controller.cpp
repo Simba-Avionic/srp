@@ -25,15 +25,26 @@ namespace {
     constexpr uint8_t PCA9685_ADDRESS = 0x70;
     constexpr uint8_t MODE1_REG = 0x00;
     constexpr uint8_t PRESCALE_REG = 0xFE;
-    constexpr uint8_t LED0_ON_L = 0x06;
-    constexpr uint8_t LED0_ON_H = 0x07;
-    constexpr uint8_t LED0_OFF_L = 0x08;
-    constexpr uint8_t LED0_OFF_H = 0x09;
+    constexpr uint8_t PRESCALE_50_HZ_VALUE = 0x79;
+    constexpr uint8_t LED_ON_L_LOOKUP[16] = {
+        0x6, 0xa, 0xe, 0x12, 0x16, 0x1a, 0x1e, 0x22, 0x26, 0x2a, 0x2e, 0x32, 0x36, 0x3a, 0x3e, 0x42
+    };
+    constexpr uint8_t LED_ON_H_LOOKUP[16] = {
+        0x7, 0xb, 0xf, 0x13, 0x17, 0x1b, 0x1f, 0x23, 0x27, 0x2b, 0x2f, 0x33, 0x37, 0x3b, 0x3f, 0x43
+    };
+    constexpr uint8_t LED_OFF_L_LOOKUP[16] = {
+        0x8, 0xc, 0x10, 0x14, 0x18, 0x1c, 0x20, 0x24, 0x28, 0x2c, 0x30, 0x34, 0x38, 0x3c, 0x40, 0x44
+    };
+    constexpr uint8_t LED_OFF_H_LOOKUP[16] = {
+        0x9, 0xD, 0x11, 0x15, 0x19, 0x1D, 0x21, 0x25, 0x29, 0x2D, 0x31, 0x35, 0x39, 0x3D, 0x41, 0x45
+    };
 }
 namespace {
     constexpr uint8_t MOSFET_DEFAULT_ON_TIME = 250;
     constexpr uint8_t SERVO_DELAY_DEFAULT_TIME = 50;
     constexpr uint8_t LOSENING_DEFAULT_DELAY = 50;
+    constexpr uint8_t OPEN = 1;
+    constexpr uint8_t CLOSE = 0;
 }
 
 PCA9685::PCA9685(): pac_logger_{
@@ -46,6 +57,10 @@ core::ErrorCode PCA9685::Init(const std::string& parms,
     return core::ErrorCode::kInitializeError;
   }
   this->i2c_->Init(std::make_unique<com::soc::StreamIpcSocket>());
+  if (this->InitializePCA() != core::ErrorCode::kOk) {
+    pac_logger_.LogWarn() << ("Failed initialize PCA9685");
+    return core::ErrorCode::kInitializeError;
+  }
   std::string file_path = parms+"etc/config.json";
   auto db_opt = ReadConfig(file_path);
   if (!db_opt.has_value()) {
@@ -58,6 +73,21 @@ core::ErrorCode PCA9685::Init(const std::string& parms,
   }
   return core::ErrorCode::kOk;
 }
+core::ErrorCode PCA9685::InitializePCA() {
+    if (this->i2c_->Write(PCA9685_ADDRESS, {MODE1_REG, 0x11}) != core::ErrorCode::kOk) {
+        return core::ErrorCode::kInitializeError;
+    }
+    if (this->i2c_->Write(PCA9685_ADDRESS, {PRESCALE_REG, PRESCALE_50_HZ_VALUE}) != core::ErrorCode::kOk) {
+        return core::ErrorCode::kInitializeError;
+    }
+    if (this->i2c_->Write(PCA9685_ADDRESS, {MODE1_REG, 0x81}) != core::ErrorCode::kOk) {
+        return core::ErrorCode::kInitializeError;
+    }
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    return core::ErrorCode::kOk;
+}
+
+
 core::ErrorCode PCA9685::setI2C(std::unique_ptr<II2CController> i2c) {
   if (!i2c) {
     return core::ErrorCode::kInitializeError;
@@ -73,9 +103,9 @@ core::ErrorCode PCA9685::setGPIO(std::unique_ptr<gpio::IGPIOController> gpio) {
   return core::ErrorCode::kOk;
 }
 void PCA9685::MosfetFunc(const uint8_t &mosfet_id, const uint8_t &mosfet_time) {
-    this->gpio_->SetPinValue(mosfet_id, 1);
+    this->gpio_->SetPinValue(mosfet_id, OPEN);
     std::this_thread::sleep_for(std::chrono::milliseconds(mosfet_time));
-    this->gpio_->SetPinValue(mosfet_id, 0);
+    this->gpio_->SetPinValue(mosfet_id, CLOSE);
 }
 
 core::ErrorCode PCA9685::AutoSetServoPosition(const uint8_t &actuator_id, const uint8_t &state) {
@@ -90,7 +120,7 @@ core::ErrorCode PCA9685::AutoSetServoPosition(const uint8_t &actuator_id, const 
      * 
      */
     if (it->second.need_mosfet) {
-       if (this->gpio_->SetPinValue(it->second.mosfet_id, 1) != core::ErrorCode::kOk) {
+       if (this->gpio_->SetPinValue(it->second.mosfet_id, OPEN) != core::ErrorCode::kOk) {
             // TODO(matikrajek42@gmail.com) generate DTC error
        }
     }
@@ -104,7 +134,7 @@ core::ErrorCode PCA9685::AutoSetServoPosition(const uint8_t &actuator_id, const 
      * 
      */
     if (this->SetServo(it->second.channel,
-            (it->second.position == 1) ? it->second.on_pos : it->second.off_pos) != core::ErrorCode::kOk) {
+            (it->second.position == OPEN) ? it->second.on_pos : it->second.off_pos) != core::ErrorCode::kOk) {
         // TODO(matikrajek42@gmail.com) generate DTC error
     }
     /**
@@ -113,7 +143,7 @@ core::ErrorCode PCA9685::AutoSetServoPosition(const uint8_t &actuator_id, const 
      */
     if (it->second.need_loosening) {
         std::this_thread::sleep_for(std::chrono::milliseconds(LOSENING_DEFAULT_DELAY));
-        if (this->SetServo(it->second.channel, (it->second.position == 1) ?
+        if (this->SetServo(it->second.channel, (it->second.position == OPEN) ?
                 it->second.on_loosening : it->second.off_loosening)  != core::ErrorCode::kOk) {
             // TODO(matikrajek42@gmail.com) generate DTC error
         }
@@ -124,22 +154,22 @@ core::ErrorCode PCA9685::AutoSetServoPosition(const uint8_t &actuator_id, const 
      */
     if (it->second.need_mosfet) {
         std::this_thread::sleep_for(std::chrono::milliseconds(it->second.mosfet_time - it->second.servo_delay));
-        if (this->gpio_->SetPinValue(it->second.mosfet_id, 0) != core::ErrorCode::kOk) {
+        if (this->gpio_->SetPinValue(it->second.mosfet_id, CLOSE) != core::ErrorCode::kOk) {
             // TODO(matikrajek42@gmail.com) generate DTC error
         }
     }
     return core::ErrorCode::kOk;
 }
 
+
 std::vector<uint8_t> PCA9685::GenerateData(const uint8_t &channel, const uint16_t &pos) const {
     return {
-    MODE1_REG, 0x01,  // setup reset mode
-    PRESCALE_REG, 121,  // przeskalowanie dla 50 Hz
-    static_cast<uint8_t>(LED0_ON_L+4*channel), 0x0 & 0xFF,  // ON LOW REG Val
-    static_cast<uint8_t>(LED0_ON_H+4*channel), 0x0 >> 8,   // ON HIGH REG Val
-    static_cast<uint8_t>(LED0_OFF_L+4*channel), static_cast<uint8_t>(pos & 0x00FFU),  // OFF LOW REG Val
-    static_cast<uint8_t>(LED0_OFF_H+4*channel), static_cast<uint8_t>(pos >> 8)};   // OFF HIGH REG Val;
+    LED_ON_L_LOOKUP[channel], 0,  // ON LOW REG Val
+    LED_ON_H_LOOKUP[channel], 0,   // ON HIGH REG Val
+    LED_OFF_L_LOOKUP[channel], static_cast<uint8_t>(pos & 0x00FFU),  // OFF LOW REG Val
+    LED_OFF_H_LOOKUP[channel], static_cast<uint8_t>(pos >> 8)};   // OFF HIGH REG Val;
 }
+
 
 core::ErrorCode PCA9685::SetServo(uint8_t channel, uint16_t pos) {
   return this->i2c_->Write(PCA9685_ADDRESS, GenerateData(channel, pos));
@@ -163,7 +193,7 @@ bool PCA9685::ChangeConfigPosition(const uint8_t& actuator_id,
     servo->second.on_pos = new_open_val;
     servo->second.off_pos = new_close_val;
     auto res = this->SetServo(servo->second.channel,
-            (servo->second.position == 0) ? servo->second.on_pos : servo->second.off_pos);
+            (servo->second.position == CLOSE) ? servo->second.on_pos : servo->second.off_pos);
     if (res != core::ErrorCode::kOk) {
         return false;
     }
@@ -191,10 +221,10 @@ std::optional<uint8_t> PCA9685::ReadServoPosition(const uint8_t &actuator_id) {
     }
     auto pos = CalculatePosition(val_opt.value());
     if (servo->second.on_pos == pos) {
-        servo->second.position = 1;
+        servo->second.position = OPEN;
         return 1;
     } else {
-        servo->second.position = 0;
+        servo->second.position = CLOSE;
         return 0;
     }
 }

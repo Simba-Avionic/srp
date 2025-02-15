@@ -59,6 +59,7 @@ class PCA9685 {
   core::ErrorCode setGPIO(std::unique_ptr<gpio::IGPIOController> gpio);
   uint8_t CalculateFirstRegister(const uint8_t& channel);
   uint8_t CalculatePosition(const std::vector<uint8_t>& val);
+  core::ErrorCode InitializePCA();
 
  public:
   PCA9685();
