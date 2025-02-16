@@ -38,14 +38,14 @@ namespace {
     constexpr uint8_t LED_OFF_H_LOOKUP[16] = {
         0x9, 0xD, 0x11, 0x15, 0x19, 0x1D, 0x21, 0x25, 0x29, 0x2D, 0x31, 0x35, 0x39, 0x3D, 0x41, 0x45
     };
-}
+}  // namespace
 namespace {
     constexpr uint8_t MOSFET_DEFAULT_ON_TIME = 250;
     constexpr uint8_t SERVO_DELAY_DEFAULT_TIME = 50;
     constexpr uint8_t LOSENING_DEFAULT_DELAY = 50;
     constexpr uint8_t OPEN = 1;
     constexpr uint8_t CLOSE = 0;
-}
+}  // namespace
 
 PCA9685::PCA9685(): pac_logger_{
     ara::log::LoggingMenager::GetInstance()->CreateLogger("pca9", "", ara::log::LogLevel::kDebug)} {
