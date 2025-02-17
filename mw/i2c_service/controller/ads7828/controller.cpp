@@ -23,7 +23,7 @@ namespace i2c {
 
 namespace {
     constexpr uint8_t ADS7828_ADDRESS = 0x90;
-    constexpr float ADS7828_REF_VOLTAGE = 5.0f;
+    constexpr float ADS7828_REF_VOLTAGE = 3.3f;
     constexpr float ADC_RESOLUTION = 4096.0f;  // for 12 Bit
 }
 
@@ -44,7 +44,7 @@ std::optional<uint8_t> ADS7828::GetConfigData(const uint8_t& channel) const {
     const int channelMap[] = {0, 4, 1, 5, 2, 6, 3, 7};
     uint8_t res = 0;  // [0:1] unused
     res |= (channelMap[channel] << 4);
-    res |= (1 << 7);  // [7] Single-Ennded / Differencial Input
+    res |= (1 << 7);  // 1 Single-Ennded / 0 Differencial Input
     return res;
 }
 std::optional<uint16_t> ADS7828::GetAdcRawRead(const uint8_t& channel) const {

@@ -3,19 +3,19 @@
         {
         "actuator_id":60,
         "channel": 0,
-        "on_pos" : 3000,
-        "off_pos" : 3,
+        "on_pos" : 416,
+        "off_pos" : 209,
         "mosfet_id" : 1,
-        "on_losening_pos": 4000,
-        "off_losening_pos":200,
+        "on_losening_pos": 416,
+        "off_losening_pos":209,
         "servo_delay":100,
         "mosfet_delay":100
         },
         {
         "actuator_id":61,
         "channel": 1,
-        "on_pos" : 3000,
-        "off_pos" : 1000
+        "on_pos" : 416,
+        "off_pos" : 209
         }
 ]
 }
