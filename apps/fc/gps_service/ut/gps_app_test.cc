@@ -45,7 +45,7 @@ class GPSGetSomeIPDataTest : public ::testing::TestWithParam<GPSDataTestParams> 
 TEST_P(GPSGetSomeIPDataTest, ValidateGPSData) {
     auto params = GetParam();
     auto res = srp::apps::GPSApp::GetSomeIPData(params.input_data);
-    EXPECT_FLOAT_EQ(res.lattitude, params.expected_latitude);
+    EXPECT_FLOAT_EQ(res.latitude, params.expected_latitude);
     EXPECT_FLOAT_EQ(res.longitude, params.expected_longitude);
 }
 
