@@ -29,6 +29,7 @@ std::vector<std::string> Nmea::splitString(const std::string& str, const char& d
     return result;
 }
 std::optional<GPS_DATA_T> Nmea::Parse(const std::string& gps_data) {
+    try {
     const auto start_p = gps_data.find(',');
     if (start_p == std::string::npos) {
         return std::nullopt;
@@ -44,9 +45,7 @@ std::optional<GPS_DATA_T> Nmea::Parse(const std::string& gps_data) {
         if (res[5] == "0") {
             return std::nullopt;
         }
-        try {
         data.timestamp = std::stod(res[0]);
-
         data.latitude = std::stod(res[1]);
         data.latitude_dir = res[2][0];
         data.longitude = std::stod(res[3]);
@@ -55,11 +54,11 @@ std::optional<GPS_DATA_T> Nmea::Parse(const std::string& gps_data) {
         data.HDOP = std::stof(res[7]);
         data.height = std::stof(res[8]);
         return data;
-        } catch (const std::exception& e) {
-            return std::nullopt;
-        }
     }
     return std::nullopt;
+    } catch (const std::exception& e) {
+        return std::nullopt;
+    }
 }
 
 }  // namespace core
