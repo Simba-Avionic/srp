@@ -19,15 +19,16 @@
 namespace srp {
 namespace service {
 
-// ServoService::ServoService(): diag_main_instance("/srp/apps/servoService/MainServoStatus"),
-//                 diag_venv_instance("/srp/apps/servoService/VentServoStatus"),
-//                 diag_serv_instance("/srp/apps/servoService/ServoDID") {
-// }
+ServoService::ServoService():
+                diag_main_instance("/srp/apps/servoService/MainServoStatus"),
+                diag_venv_instance("/srp/apps/servoService/VentServoStatus"),
+                diag_serv_instance{"/srp/apps/servoService/ServoDID"} {
+}
 
 int ServoService::Run(const std::stop_token& token) {
-  // main_servo_service_did_->Offer();
-  // vent_servo_service_did_->Offer();
-  // servo_did_->Offer();
+  main_servo_service_did_->Offer();
+  vent_servo_service_did_->Offer();
+  servo_did_->Offer();
   service_ipc->StartOffer();
   service_udp->StartOffer();
   while (!token.stop_requested()) {
@@ -48,8 +49,9 @@ int ServoService::Run(const std::stop_token& token) {
   service_ipc->StopOffer();
   service_udp->StopOffer();
 
-  // main_servo_service_did_->StopOffer();
-  // vent_servo_service_did_->StopOffer();
+  main_servo_service_did_->StopOffer();
+  vent_servo_service_did_->StopOffer();
+  servo_did_->StopOffer();
   return 0;
 }
 
@@ -63,9 +65,9 @@ int ServoService::Initialize(
     ara::log::LogError() << "Cant initialize servo controller, shutdown app";
     return 1;
   }
-  // main_servo_service_did_ = std::make_unique<ServoServiceDiD>(diag_main_instance, servo_controller, 60);
-  // vent_servo_service_did_ = std::make_unique<ServoServiceDiD>(diag_venv_instance, servo_controller, 61);
-  // servo_did_ = std::make_unique<ServoSecondDid>(diag_serv_instance, this->servo_controller);
+  main_servo_service_did_ = std::make_unique<ServoServiceDiD>(diag_main_instance, servo_controller, 60);
+  vent_servo_service_did_ = std::make_unique<ServoServiceDiD>(diag_venv_instance, servo_controller, 61);
+  servo_did_ = std::make_unique<ServoSecondDid>(diag_serv_instance, this->servo_controller);
   std::this_thread::sleep_for(std::chrono::seconds(5));
   // TODO(matikrajek42@gmail.com) remove after fix someip timeout error
   service_ipc = std::make_unique<apps::MyServoService>(

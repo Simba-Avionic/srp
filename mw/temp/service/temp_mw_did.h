@@ -13,11 +13,13 @@
 #include <string>
 #include <vector>
 #include <memory>
-#include <strstream>
+#include <sstream>
+#include <cstring>
 #include <unordered_map>
 #include <bitset>
 #include "ara/log/log.h"
-#include "diag/jobs/skeleton/did_job.h"
+#include "ara/diag/generic_data_identifier.h"
+#include "ara/diag/uds_error_domain.h"
 namespace srp {
 namespace mw {
 
@@ -37,7 +39,7 @@ static std::vector<uint8_t> mapToVector(const std::unordered_map<uint8_t, float>
     return result;
 }
 
-class TempMWDID : public diag::DiDJob {
+class TempMWDID : public ara::diag::GenericDiD {
  private:
   std::unordered_map<uint8_t, float> data;
   /**
@@ -45,11 +47,13 @@ class TempMWDID : public diag::DiDJob {
    *
    * @return DiagResponse
    */
-  diag::DiagResponse Read() {
-    return diag::DiagResponse(diag::DiagResponseCodes::kOk, mapToVector(data));
+  ara::core::Result<ara::diag::OperationOutput> Read() noexcept override {
+    return ara::diag::OperationOutput{mapToVector(data)};
   }
-diag::DiagResponse Write(const std::vector<uint8_t>& payload) {
-  return diag::DiagResponse{diag::DiagResponseCodes::kOk};
+  ara::core::Result<void> Write(
+    const std::vector<uint8_t> &payload) noexcept override {
+    return ara::diag::MakeErrorCode(
+        ara::diag::UdsDiagErrc::kSubFunctionNotSupported);
 }
 
  public:
@@ -60,7 +64,8 @@ diag::DiagResponse Write(const std::vector<uint8_t>& payload) {
     }
     it->second = temp;
   }
-  TempMWDID(const ara::core::InstanceSpecifier& instance, std::vector<uint8_t> sensors): diag::DiDJob(instance) {
+  TempMWDID(const ara::core::InstanceSpecifier &specifier,
+          std::vector<uint8_t> sensors): ara::diag::GenericDiD{specifier} {
     for (const auto& sensor : sensors) {
       data[sensor] = 0.0;
     }
