@@ -56,9 +56,13 @@ int ServoService::Run(const std::stop_token& token) {
 int ServoService::Initialize(
     const std::map<ara::core::StringView, ara::core::StringView> parms) {
   this->servo_controller = std::make_shared<i2c::PCA9685>();
-  this->servo_controller->Init(parms.at("app_path"),
-                              std::make_unique<srp::i2c::I2CController>(),
-                              std::make_unique<gpio::GPIOController>());
+  auto err = this->servo_controller->Init(parms.at("app_path"),
+  std::make_unique<srp::i2c::I2CController>(),
+  std::make_unique<gpio::GPIOController>());
+  if (err != core::ErrorCode::kOk) {
+    ara::log::LogError() << "Cant initialize servo controller, shutdown app";
+    return 1;
+  }
   // main_servo_service_did_ = std::make_unique<ServoServiceDiD>(diag_main_instance, servo_controller, 60);
   // vent_servo_service_did_ = std::make_unique<ServoServiceDiD>(diag_venv_instance, servo_controller, 61);
   // servo_did_ = std::make_unique<ServoSecondDid>(diag_serv_instance, this->servo_controller);

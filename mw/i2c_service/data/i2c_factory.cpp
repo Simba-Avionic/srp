@@ -36,7 +36,7 @@ std::shared_ptr<Header> I2CFactory::GetHeader(const std::vector<uint8_t>& raw_da
 
 std::optional<std::vector<uint8_t>> I2CFactory::GetPayload(const std::vector<uint8_t>& raw_data) {
     if (raw_data.size() <= HDR_SIZE) {
-        return {};
+        return std::nullopt;
     }
     auto hdr = GetHeader(raw_data);
     std::vector<uint8_t> vec(raw_data.begin() + HDR_SIZE, raw_data.end());
