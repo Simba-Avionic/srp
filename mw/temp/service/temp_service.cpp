@@ -41,7 +41,7 @@ using temp_sub_factory = srp::mw::temp::SubMsgFactory;
 using temp_read_factory = srp::mw::temp::TempReadingMsgFactory;
 
 
-TempService::TempService() {
+TempService::TempService(): did_instance{"/srp/mw/temp_service/temp_status_did"} {
     temp_driver_ = std::make_unique<core::temp::TempDriver>();
     delay_time = 0;
 }
@@ -51,15 +51,15 @@ int TempService::Run(const std::stop_token& token) {
     std::vector<TempReading> readings;
     while (!token.stop_requested()) {
         readings = RetrieveTempReadings();
-        // for (const auto& read : readings) {
-        //     this->temp_did_->UpdateTemp(read.first, read.second);
-        // }
+        for (const auto& read : readings) {
+            this->temp_did_->UpdateTemp(read.first, read.second);
+        }
         SendTempReadings(readings);
         readings.clear();
         std::this_thread::sleep_for(std::chrono::milliseconds(kSensor_Delay-kDefault_Response_Time));
     }
     this->sub_sock_->StopRXThread();
-    // this->temp_did_->StopOffer();
+    this->temp_did_->StopOffer();
     return 0;
 }
 
@@ -81,9 +81,8 @@ int TempService::Initialize(const std::map<ara::core::StringView, ara::core::Str
     for (const auto& id : sensorPathsToIds) {
         sensors_id.push_back(id.second);
     }
-    // this->temp_did_ = std::make_unique<TempMWDID>(
-    //             ara::core::InstanceSpecifier("/srp/mw/temp_service/temp_status_did"), sensors_id);
-    // this->temp_did_->StartOffer();
+    this->temp_did_ = std::make_unique<TempMWDID>(did_instance, sensors_id);
+    this->temp_did_->Offer();
     return srp::core::ErrorCode::kOk;
 }
 

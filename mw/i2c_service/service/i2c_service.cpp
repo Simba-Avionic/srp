@@ -40,7 +40,7 @@ std::optional<std::vector<uint8_t>> I2CService::ReadWrite(
   i2c_logger_.LogDebug() << ("Receive READ request");
   if (payload.size()%2 != 0) {
     i2c_logger_.LogWarn() << ("Invalid payload size");
-    return {};
+    return std::nullopt;
   }
   return i2c_->ReadWrite(payload[0], payload[1]);
 }
@@ -52,12 +52,12 @@ std::optional<std::vector<uint8_t>> I2CService::WriteRead(const std::vector<uint
    */
   i2c_logger_.LogDebug() << ("Receive Write Read request");
   if (payload.size() != 2) {
-    return {};
+    return std::nullopt;
   }
   uint8_t dataToWrite = payload[1];
   auto res = this->i2c_->Write({dataToWrite});
   if (res != core::ErrorCode::kOk) {
-    return {};
+    return std::nullopt;
   }
   return this->i2c_->Read(2);
 }
