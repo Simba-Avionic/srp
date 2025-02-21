@@ -45,7 +45,7 @@ std::optional<GPSDataStructure> GPSApp::ParseGPSData(const std::vector<uint8_t>&
   }
   auto someip_data = GetSomeIPData(res.value());
   // TODO(matikrajek42@gmail.com)  uncoment afer basn advice
-  ara::log::LogWarn() << "GPS latitude: " << someip_data.latitude
+  ara::log::LogDebug() << "GPS latitude: " << someip_data.latitude
       << ", longtitude: " << someip_data.longitude << ",height(M):"
       << res.value().height << "satelite_nr: " << res.value().satellite_nr;
   return someip_data;
@@ -55,15 +55,12 @@ int GPSApp::Run(const std::stop_token& token) {
   while (!token.stop_requested()) {
     auto data = uart_->Read();
     if (!data.has_value()) {
-      ara::log::LogWarn() << "no received data";
       continue;
     }
     auto res = ParseGPSData(data.value());
     if (res.has_value()) {
       service_ipc->GPSStatusEvent.Update(res.value());
       service_udp->GPSStatusEvent.Update(res.value());
-    } else {
-      ara::log::LogWarn() << "failed to parse data";
     }
   }
   core::condition::wait(token);
