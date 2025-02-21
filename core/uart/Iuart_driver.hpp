@@ -19,6 +19,7 @@
 #include <vector>
 #include <cstdint>
 #include <optional>
+#include "core/common/error_code.h"
 namespace srp {
 namespace core {
 namespace uart {
@@ -26,8 +27,9 @@ namespace uart {
 class IUartDriver {
  public:
   virtual bool Open(const std::string& portName, const speed_t& baudrate = B9600) = 0;
-  virtual std::optional<std::vector<char>> Read(const uint16_t size = 0) = 0;
+  virtual std::optional<std::vector<uint8_t>> Read(const uint16_t size = 0) = 0;
   virtual void Close() = 0;
+  virtual core::ErrorCode Write(const std::vector<uint8_t>& data) = 0;
 };
 
 }  // namespace uart
