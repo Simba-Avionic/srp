@@ -39,6 +39,7 @@ void GPIOController::ListenToCallbacks() {
     if (this->sock_ == nullptr) {
         return;
     }
+    ara::log::LogDebug() << "controller ID: " << id << " started listening to callbacks";
     std::ostringstream oss;
     oss << PATH << '.' << id;
     this->sock_->Init({oss.str(), 0, 0});
@@ -56,6 +57,7 @@ std::vector<uint8_t> GPIOController::HandleCallback(const std::string& _ip, cons
     if (!this->callback.has_value() || subsbribed_pins.find(pin_id) == subsbribed_pins.end()) {
         return {1};
     }
+    ara::log::LogDebug() << "controller ID: " << id << " received callback for pin ID: " << pin_id;
     this->callback.value()(pin_id, hdr.GetValue());
     return {1};
 }
