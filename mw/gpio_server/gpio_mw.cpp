@@ -141,7 +141,7 @@ GPIOMWService::~GPIOMWService() {
 
 
 int GPIOMWService::Run(const std::stop_token& token) {
-    core::condition::wait(token);
+    PollSubscribedPinsLoop(token);
     this->sock_->StopRXThread();
     // this->pin_did_->StopOffer();
     return core::ErrorCode::kOk;
