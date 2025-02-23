@@ -12,7 +12,8 @@
 #include "core/gpio/gpio_driver.hpp"
 #include "core/file/file.hpp"
 #include "core/file/mock_file.hpp"
-
+using ::testing::Return;
+using ::testing::_;
 class GpioTest : public ::testing::TestWithParam<std::tuple<int, std::string, std::string>> {};
 
 TEST_P(GpioTest, TestGetPath) {
