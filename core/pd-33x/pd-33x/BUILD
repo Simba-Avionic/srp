@@ -1,8 +1,7 @@
 cc_library(
-    name = "delta_pressure_driver",
+    name = "pd33x_driver",
     deps = [
-        "//mw/gpio_server/controller:gpio_controller",
-        "//core/uart:uart_driver",
+        "//core/pd-33x/modbus:modbus_driver",
     ],
     srcs = ["pd33x.cpp"],
     hdrs = ["pd33x.hpp"],

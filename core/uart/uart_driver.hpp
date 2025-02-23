@@ -11,10 +11,6 @@
 #ifndef CORE_UART_UART_DRIVER_HPP_
 #define CORE_UART_UART_DRIVER_HPP_
 
-#include <fcntl.h>
-#include <unistd.h>
-#include <termios.h>
-#include <errno.h>
 #include <string>
 #include <vector>
 #include <cstdint>
@@ -31,7 +27,7 @@ class UartDriver: public IUartDriver {
   int serial_port;
 
  public:
-  bool Open(const std::string& portName, const speed_t& baudrate = B9600) override;
+  bool Open(const std::string& portName, const uint32_t& baudrate = B9600) override;
   std::optional<std::vector<uint8_t>> Read(const uint16_t size = 0) override;
   core::ErrorCode Write(const std::vector<uint8_t>& data) override;
   void Close() override;

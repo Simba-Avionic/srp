@@ -1,14 +1,13 @@
-
 cc_test(
-    name = "pd33x_driver_test",
+    name = "rs485_test",
     srcs = [
-        "pd33x_test.cc"
+        "rs485_test.cc",
     ],
     visibility = ["//visibility:public"],
     deps = [
-        "//core/pd_33x:delta_pressure_driver",
+        "//core/pd-33x/rs485:rs485_driver",
         "@com_google_googletest//:gtest_main",
-        "//core/uart:mock_uart",
         "//mw/gpio_server/controller/mock:mock_gpio_controller",
+        "//core/uart:mock_uart",
     ],
 )

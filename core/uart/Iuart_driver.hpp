@@ -11,10 +11,7 @@
 #ifndef CORE_UART_IUART_DRIVER_HPP_
 #define CORE_UART_IUART_DRIVER_HPP_
 
-#include <fcntl.h>
-#include <unistd.h>
 #include <termios.h>
-#include <errno.h>
 #include <string>
 #include <vector>
 #include <cstdint>
@@ -26,10 +23,11 @@ namespace uart {
 
 class IUartDriver {
  public:
-  virtual bool Open(const std::string& portName, const speed_t& baudrate = B9600) = 0;
+  virtual bool Open(const std::string& portName, const uint32_t& baudrate = B9600) = 0;
   virtual std::optional<std::vector<uint8_t>> Read(const uint16_t size = 0) = 0;
   virtual void Close() = 0;
   virtual core::ErrorCode Write(const std::vector<uint8_t>& data) = 0;
+  virtual ~IUartDriver() = default;
 };
 
 }  // namespace uart
