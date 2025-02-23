@@ -66,9 +66,7 @@ std::vector<uint8_t> GPIOMWService::RxCallback(const std::string& ip, const std:
             return {0};
         }
 
-        case srp::gpio::ACTION::GET:
-
-        {
+        case srp::gpio::ACTION::GET: {
             auto val = this->gpio_driver_->getValue(it->second.pinNum);
             gpio::Header resHeader(hdr.GetActuatorID(), val, gpio::ACTION::RES);
             return resHeader.GetBuffor();
