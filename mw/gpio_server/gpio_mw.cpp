@@ -75,27 +75,30 @@ std::vector<uint8_t> GPIOMWService::RxCallback(const std::string& ip, const std:
         }
 
         case srp::gpio::ACTION::SUBSCRIBE: {
-            auto contoller_id = hdr.GetValue();
+            auto controller_id = hdr.GetValue();
             auto pin_id = hdr.GetActuatorID();
             if (config.find(pin_id) == config.end()) {
                 return {0};
             }
+            if (controller_id == 0) {
+                controller_id = next_controller_id++;
+            }
             if (subscribed_pins_states.find(pin_id) == subscribed_pins_states.end()) {
                 subscribed_pins_states[pin_id] = 0;
             }
-            callbacks[pin_id].push_back(contoller_id);
-            return {1};
+            callbacks[pin_id].push_back(controller_id);
+            return {controller_id};
         }
 
         case srp::gpio::ACTION::UNSUBSCRIBE: {
-            auto contoller_id = hdr.GetValue();
+            auto controller_id = hdr.GetValue();
             auto pin_id = hdr.GetActuatorID();
             if (subscribed_pins_states.find(pin_id) == subscribed_pins_states.end() ||
                 callbacks.find(pin_id) == callbacks.end()) {
                 return {0};
             }
             auto pin_callbacks = callbacks[pin_id];
-            auto find = std::find(pin_callbacks.begin(), pin_callbacks.end(), contoller_id);
+            auto find = std::find(pin_callbacks.begin(), pin_callbacks.end(), controller_id);
             if (find != pin_callbacks.end()) {
                 pin_callbacks.erase(find);
                 if (pin_callbacks.empty()) {
@@ -123,11 +126,11 @@ void GPIOMWService::PollSubscribedPinsLoop(const std::stop_token& token) {
                 continue;
             }
             pair.second = state;
-            for (auto contoller_id : callbacks[pair.first]) {
+            for (auto controller_id : callbacks[pair.first]) {
                 gpio::Header hdr(pair.first, state, gpio::ACTION::CALLBACK);
                 auto res = this->sock_->Transmit(SOCKET_PATH, 0, hdr.GetBuffor());
                 if (!res.has_value()) {
-                    ara::log::LogWarn() << "Callback id: " << std::to_string(contoller_id) << " failed";
+                    ara::log::LogWarn() << "Callback id: " << std::to_string(controller_id) << " failed";
                 }
             }
         }

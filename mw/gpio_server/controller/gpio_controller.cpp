@@ -14,6 +14,7 @@
 #include <unistd.h>
 #include <arpa/inet.h>
 #include <utility>
+#include <sstream>
 
 #include "ara/log/log.h"
 #include "gpio_controller.hpp"
@@ -25,13 +26,11 @@ namespace {
     constexpr auto PATH = "SRP.GPIO";
 }
 
-GPIOController::GPIOController(std::unique_ptr<srp::com::soc::ISocketStream> socket)
-                                                    : sock_(std::move(socket)) {
-    ListenToCallbacks();
-}
+GPIOController::GPIOController(std::unique_ptr<srp::com::soc::ISocketStream> socket) : sock_(std::move(socket)) {}
 
 GPIOController::~GPIOController() {
-    if (this->sock_ != nullptr) {
+    bool started_rx_thread = id != 0;
+    if (this->sock_ != nullptr && started_rx_thread) {
         this->sock_->StopRXThread();
     }
 }
@@ -40,7 +39,9 @@ void GPIOController::ListenToCallbacks() {
     if (this->sock_ == nullptr) {
         return;
     }
-    this->sock_->Init({PATH, 0, 0});
+    std::ostringstream oss;
+    oss << PATH << '.' << id;
+    this->sock_->Init({oss.str(), 0, 0});
     this->sock_->SetRXCallback(std::bind(&GPIOController::HandleCallback, this, std::placeholders::_1,
                                          std::placeholders::_2, std::placeholders::_3));
     this->sock_->StartRXThread();
@@ -102,17 +103,19 @@ core::ErrorCode GPIOController::ManagePinSubscription(const uint8_t pin_id, cons
     } else {
         subsbribed_pins.erase(pin_id);
     }
-    auto action = subscribe ? gpio::ACTION::SUBSCRIBE: gpio::ACTION::UNSUBSCRIBE;
-    gpio::Header hdr(pin_id, 0, action);
+    auto action = subscribe ? gpio::ACTION::SUBSCRIBE : gpio::ACTION::UNSUBSCRIBE;
+    gpio::Header hdr(pin_id, id, action);
     auto res = this->sock_->Transmit(PATH, 0, hdr.GetBuffor());
-    if (res.has_value()) {
-        if (res.value()[0] == 1) {
-          return core::ErrorCode::kOk;
-        } else {
-          return core::ErrorCode::kError;
-        }
+    if (!res.has_value()) {
+        return core::ErrorCode::kConnectionError;
     }
-    return core::ErrorCode::kConnectionError;
+    if (res.value()[0] == 0) {
+        return core::ErrorCode::kError;
+    }
+    if (subscribe && id == 0) {
+        id = res.value()[0];
+        ListenToCallbacks();
+    }
 }
 
 void GPIOController::SetCallback(const std::optional<PinChangeCallback> callback) {

@@ -43,6 +43,7 @@ class GPIOMWService : public ara::exec::AdaptiveApplication {
 
     std::unordered_map<PinId, uint8_t> subscribed_pins_states;
     std::unordered_map<PinId, std::vector<CallbackId>> callbacks;
+    uint8_t next_controller_id = 1;  // indeces start from 1
 
     void PollSubscribedPinsLoop(const std::stop_token& token);
     std::vector<uint8_t> RxCallback(const std::string& ip, const std::uint16_t& port,

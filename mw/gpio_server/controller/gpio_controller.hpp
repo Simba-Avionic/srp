@@ -34,6 +34,7 @@ class GPIOController : public IGPIOController{
     std::unique_ptr<srp::com::soc::ISocketStream> sock_;
     std::optional<PinChangeCallback> callback = std::nullopt;
     std::unordered_set<uint8_t> subsbribed_pins;
+    uint8_t id = 0;
     std::vector<uint8_t> HandleCallback(const std::string& _ip, const std::uint16_t& _port,
           const std::vector<std::uint8_t> data);
     void ListenToCallbacks();
