@@ -79,7 +79,7 @@ void NtpController::thread_loop(std::stop_token token) {
         auto round_trip_time = CalculateRoundTripDelay(header.GetT0Timestamp(),
                         header.GetT1Timestamp(), header.GetT2Timestamp(), t3);
         this->timestamp_.CorrectStartPoint(offset);
-        ara::log::LogInfo() << "Round trip time [ms]: " << std::to_string(round_trip_time)
+        ara::log::LogDebug() << "Round trip time [ms]: " << std::to_string(round_trip_time)
                 << " ,offset value [ms]: " << std::to_string(static_cast<int>(offset));
     }
 }
