@@ -32,6 +32,7 @@ namespace logger {
 class LoggerService final : public ara::exec::AdaptiveApplication {
  private:
   env::EnvAppProxy env_service_proxy;
+  std::shared_ptr<env::EnvAppHandler> env_service_handler;
   core::timestamp::TimestampController timestamp_;
   Data_t data;
   const ara::core::InstanceSpecifier did_instance_;

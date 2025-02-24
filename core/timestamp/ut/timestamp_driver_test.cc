@@ -31,6 +31,7 @@ class TimestampControllerTest : public ::testing::Test {
 };
 
 TEST_F(TimestampControllerTest, GetNewTimeStampReturnsElapsedTimeInLocalMode) {
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
     std::optional<int64_t> timestamp1 = controller.GetNewTimeStamp();
     std::this_thread::sleep_for(std::chrono::milliseconds(50));
     std::optional<int64_t> timestamp2 = controller.GetNewTimeStamp();
