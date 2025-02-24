@@ -114,8 +114,8 @@ std::vector<uint8_t> GPIOMWService::RxCallback(const std::string& ip, const std:
             if (pin_callbacks.empty()) {
                 subscribed_pins_states.erase(pin_id);
             }
-            ara::log::LogDebug() << "controller ID: " << std::to_string(controller_id) << " successfully unsubscribed from pin ID: "
-                                 << std::to_string(pin_id);
+            ara::log::LogDebug() << "controller ID: " << std::to_string(controller_id)
+                                 << " successfully unsubscribed from pin ID: " << std::to_string(pin_id);
             return {0};
         }
 
