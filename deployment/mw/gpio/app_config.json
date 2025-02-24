@@ -7,7 +7,6 @@
         "gpio_service": {
             "app": {
                 "functional_groups":[
-                    "Platform",
                     "MW",
                     "Running",
                     "SafetyMode"

@@ -9,3 +9,13 @@ cc_test(
         "//core/gps:gps_data_parser",
     ],
 )
+
+cc_test(
+    name = "benchmarks",
+    srcs = ["nmea_benchmark.cc"],
+    visibility = ["//visibility:public"],
+    deps = [
+        "//core/gps:gps_data_parser",
+        "@com_google_benchmark//:benchmark_main",
+    ],
+)

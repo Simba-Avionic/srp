@@ -8,7 +8,6 @@ cc_binary(
         "@srp_platform//ara/exec:adaptive_application_lib",
         "//core/common:condition_lib",
         "//deployment/apps/prim_service:ara",
-
         "//apps/ec/primer_service",
         "//apps/ec/primer_service:primer_app",
     ],

@@ -36,7 +36,8 @@ namespace mw {
 
 class GPIOMWService : public ara::exec::AdaptiveApplication {
  protected:
-    // std::unique_ptr<GpioMWDID> pin_did_;
+    std::unique_ptr<GpioMWDID> pin_did_;
+    const ara::core::InstanceSpecifier did_instance;
     std::unique_ptr<srp::com::soc::ISocketStream> sock_;
     std::shared_ptr<core::gpio::IGpioDriver> gpio_driver_;
     std::unordered_map<uint8_t, GpioConf> config;
@@ -56,6 +57,7 @@ class GPIOMWService : public ara::exec::AdaptiveApplication {
 
  public:
   ~GPIOMWService();
+  GPIOMWService();
   int Run(const std::stop_token& token) override;
 
   int Initialize(const std::map<ara::core::StringView, ara::core::StringView>

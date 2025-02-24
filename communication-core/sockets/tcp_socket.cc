@@ -58,7 +58,7 @@ std::optional<std::vector<uint8_t>> StreamTCPSocket::Transmit(const std::string&
                                     std::vector<std::uint8_t> payload) {
     const int client_socket = socket(AF_INET, SOCK_STREAM, 0);
     if (client_socket < 0) {
-      return {};
+      return std::nullopt;
     }
 
     struct sockaddr_in client_addr;
@@ -68,7 +68,7 @@ std::optional<std::vector<uint8_t>> StreamTCPSocket::Transmit(const std::string&
 
     if (inet_pton(AF_INET, ip.c_str(), &client_addr.sin_addr) <= 0) {
       close(client_socket);
-      return {};
+      return std::nullopt;
     }
 
     struct timeval timeout;
@@ -78,19 +78,19 @@ std::optional<std::vector<uint8_t>> StreamTCPSocket::Transmit(const std::string&
 
     if (connect(client_socket, (struct sockaddr*)&client_addr, sizeof(client_addr)) < 0) {
       close(client_socket);
-      return {};
+      return std::nullopt;
     }
 
     if (write(client_socket, payload.data(), payload.size()) < 0) {
       close(client_socket);
-      return {};
+      return std::nullopt;
     }
 
     std::array<char, 256 * 2> buffer;
     const auto size = read(client_socket, reinterpret_cast<char*>(&buffer), buffer.size());
     close(client_socket);
     if (size < 0) {
-      return {};
+      return std::nullopt;
     }
 
     return std::vector<uint8_t>{buffer.begin(), buffer.begin() + size};

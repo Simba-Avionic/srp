@@ -23,7 +23,7 @@ namespace i2c {
 
 namespace {
     constexpr uint8_t ADS7828_ADDRESS = 0x90;
-    constexpr float ADS7828_REF_VOLTAGE = 5.0f;
+    constexpr float ADS7828_REF_VOLTAGE = 3.3f;
     constexpr float ADC_RESOLUTION = 4096.0f;  // for 12 Bit
 }
 
@@ -39,22 +39,22 @@ core::ErrorCode ADS7828::Init(std::unique_ptr<II2CController> i2c_) {
 
 std::optional<uint8_t> ADS7828::GetConfigData(const uint8_t& channel) const {
     if (channel > 7) {
-        return {};
+        return std::nullopt;
     }
     const int channelMap[] = {0, 4, 1, 5, 2, 6, 3, 7};
     uint8_t res = 0;  // [0:1] unused
     res |= (channelMap[channel] << 4);
-    res |= (1 << 7);  // [7] Single-Ennded / Differencial Input
+    res |= (1 << 7);  // 1 Single-Ennded / 0 Differencial Input
     return res;
 }
 std::optional<uint16_t> ADS7828::GetAdcRawRead(const uint8_t& channel) const {
     auto configData = GetConfigData(channel);
     if (!configData.has_value()) {
-        return {};
+        return std::nullopt;
     }
     auto res = this->i2c_->WriteRead(ADS7828_ADDRESS, configData.value(), 2);
     if (!res.has_value()) {
-        return {};
+        return std::nullopt;
     }
     uint16_t data = ((res.value()[0]) << 8);
     data |= res.value()[1];
@@ -63,7 +63,7 @@ std::optional<uint16_t> ADS7828::GetAdcRawRead(const uint8_t& channel) const {
 std::optional<float> ADS7828::GetAdcVoltage(const uint8_t& channel) const {
     auto res = this->GetAdcRawRead(channel);
     if (!res.has_value()) {
-        return {};
+        return std::nullopt;
     }
     return static_cast<float>((res.value()/ADC_RESOLUTION)*ADS7828_REF_VOLTAGE);
 }

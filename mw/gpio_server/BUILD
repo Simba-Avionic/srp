@@ -18,6 +18,7 @@ cc_library(
         "@srp_platform//ara/exec:adaptive_application_lib",
         "//core/common:condition_lib",
         "//communication-core/sockets:socket_ipc",
+        "@srp_platform//ara/diag:uds_lib",
     ] + gpio_drivers_deps,
     visibility = [
         "//mw/gpio_server/tests:__subpackages__",

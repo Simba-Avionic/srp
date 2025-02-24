@@ -124,7 +124,7 @@ std::optional<data::AppConfig> EmService::GetAppConfig(
     }
   }
   if (error_count != 0) {
-    return {};
+    return std::nullopt;
   } else {
     return std::optional{data::AppConfig{bin_path, parm, prio, delay, app_id}};
   }
@@ -154,7 +154,7 @@ std::optional<pid_t> EmService::RestartApp(const uint16_t appID) {
   for ( auto &app : this->app_list ) {
     if ( app.GetAppID() == appID ) {
       if (kill(app.GetPid(), SIGKILL) != 0) {
-        return {};
+        return std::nullopt;
       }
       int status;
       uint8_t i = 0;
@@ -163,11 +163,11 @@ std::optional<pid_t> EmService::RestartApp(const uint16_t appID) {
         i++;
       } while (status == -1 && i < 5);
       if (status == -1) {
-        return {};
+        return std::nullopt;
       }
       pid_t pid = this->StartApp(app);
       if (pid == 0) {
-        return {};
+        return std::nullopt;
       }
       app.SetPid(pid);
       return std::optional<pid_t>{pid};

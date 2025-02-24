@@ -104,11 +104,11 @@ std::unordered_map<uint8_t, SensorConfig> ADCSensorController::ReadConfig(core::
 std::optional<float> ADCSensorController::GetValue(const uint8_t sensor_id) const {
     auto sensor = this->db_.find(sensor_id);
     if (sensor == db_.end()) {
-        return {};
+        return std::nullopt;
     }
     auto res = this->adc_->GetAdcVoltage(sensor->second.channel);
     if (!res.has_value()) {
-        return {};
+        return std::nullopt;
     }
     return sensor->second.a * res.value() + sensor->second.b;
 }
