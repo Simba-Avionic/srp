@@ -18,6 +18,7 @@
 
 #include "ara/log/log.h"
 #include "gpio_controller.hpp"
+#include "mw/gpio_server/gpio_mw.hpp"
 
 namespace srp {
 namespace gpio {
@@ -40,9 +41,8 @@ void GPIOController::ListenToCallbacks() {
         return;
     }
     ara::log::LogDebug() << "controller ID: " << id << " started listening to callbacks";
-    std::ostringstream oss;
-    oss << PATH << '.' << std::to_string(id);
-    this->sock_->Init({oss.str(), 0, 0});
+    std::string path = srp::mw::GPIOMWService::GetCallbackSocketPath(id);
+    this->sock_->Init({path, 0, 0});
     this->sock_->SetRXCallback(std::bind(&GPIOController::HandleCallback, this, std::placeholders::_1,
                                          std::placeholders::_2, std::placeholders::_3));
     this->sock_->StartRXThread();

@@ -56,6 +56,7 @@ class GPIOMWService : public ara::exec::AdaptiveApplication {
                               std::shared_ptr<core::gpio::IGpioDriver> gpio);
 
  public:
+  static std::string GetCallbackSocketPath(const uint8_t controller_id);
   ~GPIOMWService();
   GPIOMWService();
   int Run(const std::stop_token& token) override;

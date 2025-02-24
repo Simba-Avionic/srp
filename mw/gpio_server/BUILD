@@ -22,6 +22,7 @@ cc_library(
     ] + gpio_drivers_deps,
     visibility = [
         "//mw/gpio_server/tests:__subpackages__",
+        "//mw/gpio_server/controller:__subpackages__",
         ],
 )
 

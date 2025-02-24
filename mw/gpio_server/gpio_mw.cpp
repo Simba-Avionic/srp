@@ -44,6 +44,12 @@ int GPIOMWService::Init(std::unique_ptr<srp::com::soc::ISocketStream> socket,
 GPIOMWService::GPIOMWService():did_instance("/srp/mw/gpio_service/gpio_pin_did") {
 }
 
+std::string GPIOMWService::GetCallbackSocketPath(const uint8_t controller_id) {
+    std::ostringstream oss;
+    oss << SOCKET_PATH << '.' << std::to_string(controller_id);
+    return oss.str();
+}
+
 std::vector<uint8_t> GPIOMWService::RxCallback(const std::string& ip, const std::uint16_t& port,
   const std::vector<std::uint8_t> data) {
     gpio::Header hdr(0, 0, gpio::ACTION::GET);
@@ -141,7 +147,7 @@ void GPIOMWService::PollSubscribedPinsLoop(const std::stop_token& token) {
             pair.second = state;
             for (auto controller_id : callbacks[pair.first]) {
                 gpio::Header hdr(pair.first, state, gpio::ACTION::CALLBACK);
-                auto res = this->sock_->Transmit(SOCKET_PATH, 0, hdr.GetBuffor());
+                auto res = this->sock_->Transmit(GetCallbackSocketPath(controller_id), 0, hdr.GetBuffor());
                 ara::log::LogDebug() << "callback to controller ID: " << std::to_string(controller_id)
                                      << " for pin ID: " << std::to_string(pair.first);
                 if (!res.has_value()) {
