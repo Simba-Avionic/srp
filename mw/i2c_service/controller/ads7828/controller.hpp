@@ -36,15 +36,22 @@ class ADS7828 : public IADS7828 {
    * @return uint8_t 
    */
   std::optional<uint8_t> GetConfigData(const uint8_t& channel) const override;
+
+ public:
+  ADS7828();
   /**
-   * @brief Get the Adc Read object
+   * @brief Get adc Raw Read value (0-4095)
    * 
    * @param channel  (0-7)
    * @return std::optional<uint16_t> 
    */
   std::optional<uint16_t> GetAdcRawRead(const uint8_t& channel) const override;
- public:
-  ADS7828();
+  /**
+   * @brief Get the Adc Voltage object
+   * 
+   * @param channel 
+   * @return std::optional<float> 
+   */
   std::optional<float> GetAdcVoltage(const uint8_t& channel) const override;
   core::ErrorCode Init(std::unique_ptr<II2CController> i2c_ = std::make_unique<I2CController>());
 };

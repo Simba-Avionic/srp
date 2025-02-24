@@ -62,18 +62,18 @@ std::optional<std::vector<uint8_t>> StreamIpcSocket::Transmit(
   if (connect(server_socket, (struct sockaddr*)&server_addr,
               sizeof(server_addr)) == -1) {
     close(server_sock);
-    return {};
+    return std::nullopt;
   }
   if (write(server_socket, payload.data(), payload.size()) < 0) {
     close(server_sock);
-    return {};
+    return std::nullopt;
   }
   std::array<char, 256 * 2> buffer;
   const auto size =
       read(server_socket, reinterpret_cast<char*>(&buffer), 256 * 2);
   close(server_socket);
   if (size < 0) {
-    return {};
+    return std::nullopt;
   }
   return std::vector<uint8_t>{buffer.begin(), buffer.begin() + size};
 }

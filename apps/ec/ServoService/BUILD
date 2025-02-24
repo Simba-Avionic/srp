@@ -1,6 +1,3 @@
-load("@srp_platform//tools/model_generator/ara:adaptive_application.bzl", "ara_runtime_lib")
-
-
 cc_binary(
     name = "ServoService",
     srcs = [

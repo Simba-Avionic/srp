@@ -18,7 +18,6 @@
 #include "core/common/condition.h"
 namespace srp {
 namespace service {
-
 namespace {
   constexpr auto kDiag_main_instance_path = "/srp/apps/servoService/MainServoStatus";
   constexpr auto kDiag_venv_instance_path = "/srp/apps/servoService/VentServoStatus";
@@ -27,9 +26,10 @@ namespace {
   constexpr auto kservice_udp_path = "srp/apps/servoService/ServoService_udp";
 }
 
-ServoService::ServoService(): diag_main_instance(kDiag_main_instance_path),
+ServoService::ServoService():
+                diag_main_instance(kDiag_main_instance_path),
                 diag_venv_instance(kDiag_venv_instance_path),
-                diag_serv_instance(kDiag_serv_instance_path) {
+                diag_serv_instance{kDiag_serv_instance_path} {
 }
 
 int ServoService::Run(const std::stop_token& token) {
@@ -58,15 +58,20 @@ int ServoService::Run(const std::stop_token& token) {
 
   main_servo_service_did_->StopOffer();
   vent_servo_service_did_->StopOffer();
+  servo_did_->StopOffer();
   return 0;
 }
 
 int ServoService::Initialize(
     const std::map<ara::core::StringView, ara::core::StringView> parms) {
   this->servo_controller = std::make_shared<i2c::PCA9685>();
-  this->servo_controller->Init(parms.at("app_path"),
-                              std::make_unique<srp::i2c::I2CController>(),
-                              std::make_unique<gpio::GPIOController>());
+  auto err = this->servo_controller->Init(parms.at("app_path"),
+  std::make_unique<srp::i2c::I2CController>(),
+  std::make_unique<gpio::GPIOController>());
+  if (err != core::ErrorCode::kOk) {
+    ara::log::LogError() << "Cant initialize servo controller, shutdown app";
+    return 1;
+  }
   main_servo_service_did_ = std::make_unique<ServoServiceDiD>(diag_main_instance, servo_controller, 60);
   vent_servo_service_did_ = std::make_unique<ServoServiceDiD>(diag_venv_instance, servo_controller, 61);
   servo_did_ = std::make_unique<ServoSecondDid>(diag_serv_instance, this->servo_controller);

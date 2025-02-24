@@ -72,7 +72,8 @@ LoggerService::~LoggerService() {}
 
 LoggerService::LoggerService(): did_instance_(kFile_did_path_name),
     env_service_proxy{ara::core::InstanceSpecifier{kEnv_service_path_name}},
-    env_service_handler{nullptr}, save_thread_{nullptr} {
+    env_service_handler{nullptr}, save_thread_{nullptr},
+    did_instance{kFile_did_path_name} {
   auto builder = Builder([this](uint8_t status) { this->start_func_handler(status); });
   auto result = builder.setLoggerDID(did_instance_)
                 .setLoggerIPC(kIpc_service_path_name)
@@ -82,6 +83,7 @@ LoggerService::LoggerService(): did_instance_(kFile_did_path_name),
   this->logger_did_ = std::move(result.loggerDID);
   this->service_ipc = std::move(result.serviceIPC);
   this->service_udp = std::move(result.serviceUDP);
+  logger_did_->Offer();
 }
 
 void LoggerService::start_func_handler(const std::uint8_t status) {

@@ -14,12 +14,12 @@
 #include <vector>
 #include <memory>
 #include <sstream>
-
 #include <unordered_map>
 #include <bitset>
 #include "ara/log/log.h"
 #include "ara/com/com_error_domain.h"
 #include "ara/diag/generic_data_identifier.h"
+#include "ara/diag/uds_error_domain.h"
 namespace srp {
 namespace logger {
 
@@ -35,13 +35,15 @@ class FileLoggerDID : public ara::diag::GenericDiD {
    * @return DiagResponse
    */
   ara::core::Result<ara::diag::OperationOutput> Read() noexcept override {
-    // return diag::DiagResponse(diag::DiagResponseCodes::kSubFunctionNotSupported);
+    return ara::diag::MakeErrorCode(
+      ara::diag::UdsDiagErrc::kSubFunctionNotSupported);
   }
   ara::core::Result<void> Write(
       const std::vector<uint8_t> &payload) noexcept override {
   ara::log::LogError() << "Receive write req";
   if (payload.size() != 1) {
-    return {};
+    return ara::diag::MakeErrorCode(
+      ara::diag::UdsDiagErrc::kInvalidMessageLengthFormat);
   }
   handler_(payload[0]);
   return {};

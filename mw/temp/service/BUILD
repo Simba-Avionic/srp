@@ -28,7 +28,7 @@ cc_library(
         "//mw/temp/temp_reading_msg:temp_reading_msg_factory",
         "//core/json:simba_json",
         "//core/common:condition_lib",
-        # "//diag/jobs/skeleton:did_job_lib",
+        "@srp_platform//ara/diag:uds_lib",
         "@srp_platform//ara/exec:adaptive_application_lib",
         "//deployment/mw/temp:ara",
     ] + temp_drivers_deps,

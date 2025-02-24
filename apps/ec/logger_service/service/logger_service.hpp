@@ -31,7 +31,6 @@ namespace logger {
 
 class LoggerService final : public ara::exec::AdaptiveApplication {
  private:
-  std::shared_ptr<env::EnvAppHandler> env_service_handler;
   env::EnvAppProxy env_service_proxy;
   core::timestamp::TimestampController timestamp_;
   Data_t data;

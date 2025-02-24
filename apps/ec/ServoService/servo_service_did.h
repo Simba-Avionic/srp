@@ -17,6 +17,7 @@
 #include "ara/log/log.h"
 #include "ara/diag/generic_data_identifier.h"
 #include "ara/com/com_error_domain.h"
+#include "ara/diag/uds_error_domain.h"
 namespace srp {
 namespace service {
 
@@ -27,20 +28,23 @@ class ServoServiceDiD : public ara::diag::GenericDiD {
   ara::core::Result<ara::diag::OperationOutput> Read() noexcept override {
     auto res = this->servoController->ReadServoPosition(actuator_id);
     if (!res.has_value()) {
-      return ara::diag::OperationOutput{};
+      return ara::diag::MakeErrorCode(
+        ara::diag::UdsDiagErrc::kInvalidKey);
     }
     ara::log::LogInfo() << "ServoServiceDID.READ";
     return ara::diag::OperationOutput{{res.value()}};
   }
   ara::core::Result<void> Write(const std::vector<uint8_t>& payload) noexcept override {
     if (payload.size() != 1) {
-      return {};
+      return ara::diag::MakeErrorCode(
+        ara::diag::UdsDiagErrc::kInvalidMessageLengthFormat);
     }
     ara::log::LogInfo() <<  "Set position:" << payload[0] << ", to actuator ID:" <<this->actuator_id;
     auto res = this->servoController->AutoSetServoPosition(this->actuator_id, payload[0]);
     if (res != core::ErrorCode::kOk) {
-      return ara::com::MakeErrorCode(
-        ara::com::ComErrc::kGrantEnforcementError, "driver return error");
+      ara::log::LogWarn() << "huj";
+      return ara::diag::MakeErrorCode(
+        ara::diag::UdsDiagErrc::kFailurePreventsExecutionOfRequestedAction);
     }
     return {};
   }

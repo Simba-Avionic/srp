@@ -52,6 +52,7 @@ class ServoService final : public ara::exec::AdaptiveApplication {
   int Run(const std::stop_token& token) override;
 
  public:
+  ~ServoService() = default;
   ServoService();
 };
 

@@ -40,6 +40,8 @@ int GPIOMWService::Init(std::unique_ptr<srp::com::soc::ISocketStream> socket,
   this->gpio_driver_ = std::move(gpio);
   return 0;
 }
+GPIOMWService::GPIOMWService():did_instance("/srp/mw/gpio_service/gpio_pin_did") {
+}
 
 std::vector<uint8_t> GPIOMWService::RxCallback(const std::string& ip, const std::uint16_t& port,
   const std::vector<std::uint8_t> data) {
@@ -77,7 +79,7 @@ GPIOMWService::~GPIOMWService() {
 int GPIOMWService::Run(const std::stop_token& token) {
     core::condition::wait(token);
     this->sock_->StopRXThread();
-    // this->pin_did_->StopOffer();
+    this->pin_did_->StopOffer();
     return core::ErrorCode::kOk;
 }
 
@@ -98,9 +100,8 @@ int GPIOMWService::Initialize(const std::map<ara::core::StringView,
     }
     config = config_opt.value();
     this->InitPins();
-    // pin_did_ = std::make_unique<GpioMWDID>(
-    //                 ara::core::InstanceSpecifier("/srp/mw/gpio_service/gpio_pin_did"), this->gpio_driver_, config);
-    // pin_did_->StartOffer();
+    pin_did_ = std::make_unique<GpioMWDID>(this->did_instance, this->gpio_driver_, config);
+    pin_did_->Offer();
     this->sock_->StartRXThread();
     return 0;
 }

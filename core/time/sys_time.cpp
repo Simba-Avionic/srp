@@ -27,7 +27,7 @@ std::optional<std::string> TimeChanger::exec(const std::string& cmd) {
     std::string result;
     std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd.c_str(), "r"), pclose);
     if (!pipe) {
-        return {};
+        return std::nullopt;
     }
 
     while (fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr) {
@@ -88,7 +88,7 @@ core::ErrorCode TimeChanger::ChangeSystemTime(Date_t date) {
 std::optional<Date_t> TimeChanger::ReadSystemTime() {
     auto res = exec(DATE_CMD);
     if (!res.has_value()) {
-        return {};
+        return std::nullopt;
     }
     return ParseDate(res.value());
 }
