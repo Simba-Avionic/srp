@@ -21,7 +21,7 @@ class PD33X {
  private:
   std::unique_ptr<MODBUS> modbus_;
  public:
-  bool Init(const RS485_conf_t& config, const uint8_t slave_id = kslave_id,
+  bool Init(const RS485_conf_t& config, const uint8_t slave_id = 0x01,
                 std::unique_ptr<MODBUS> modbus = std::make_unique<MODBUS>());
   std::optional<float> ReadP1();
   std::optional<float> ReadT1();

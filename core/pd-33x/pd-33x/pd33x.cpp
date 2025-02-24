@@ -13,7 +13,6 @@
 namespace srp {
 namespace core {
 namespace {
-    constexpr std::vector<uint8_t> kslave_id = 0x01;
     constexpr uint8_t kFunction_code = 0x03;
     constexpr uint16_t kP1_start_addr = 0x02;
     constexpr uint16_t kT1_start_addr = 0x08;
@@ -31,7 +30,7 @@ std::optional<float> PD33X::ReadP1() {
     return parseFloat(res.value());
 }
 std::optional<float> PD33X::ReadT1() {
-    auto res = this->modbus->SendRequest(kFunction_code, kT1_start_addr, kQuantity);
+    auto res = this->modbus_->SendRequest(kFunction_code, kT1_start_addr, kQuantity);
     if (!res.has_value()) {
         return std::nullopt;
     }

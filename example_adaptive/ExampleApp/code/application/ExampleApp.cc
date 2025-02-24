@@ -20,7 +20,6 @@
 #include "srp/example/ExampleDataStructure.h"
 #include "srp/example/ExampleService/ExampleServiceHandler.h"
 #include "srp/example/ExampleServiceSkeleton.h"
-#include "core/uart/uart_driver.hpp"
 
 namespace srp {
 namespace example {
@@ -34,8 +33,6 @@ int ExampleApp::Initialize(
 }
 
 int ExampleApp::Run(const std::stop_token& token) {
-  core::uart::UartDriver uart;
-  uart.Open("/dev/ttyS1", B9600);
   ara::log::LogInfo() << "App start";
   const ara::core::InstanceSpecifier diag_instance{
       "/srp/example/ExampleApp/UDSReadVin"};
@@ -52,11 +49,6 @@ int ExampleApp::Run(const std::stop_token& token) {
 
   ara::log::LogInfo() << "App started";
   while (!token.stop_requested()) {
-    if (uart.Write(std::vector<uint8_t>{1,2,4,3,5}) != core::ErrorCode::kOk) {
-      ara::log::LogWarn() << "asdaihsdbahsdbaihdsbhads";
-    } else {
-      ara::log::LogWarn() << "git";
-    }
     gpio_.SetPinValue(1, 1);
     core::condition::wait_for(std::chrono::seconds(1), token);
     gpio_.SetPinValue(1, 0);

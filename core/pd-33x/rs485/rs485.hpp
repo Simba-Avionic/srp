@@ -29,8 +29,8 @@ class RS485 : public IRS485 {
 
  public:
     bool Init(const RS485_conf_t& config,
-                std::unique_ptr<uart::IUartDriver>&& uart = std::make_unique<uart::UartDriver>(),
-                std::unique_ptr<srp::gpio::IGPIOController>&& gpio = std::make_unique<srp::gpio::GPIOController>()) override;
+         std::unique_ptr<uart::IUartDriver>&& uart = std::make_unique<uart::UartDriver>(),
+         std::unique_ptr<srp::gpio::IGPIOController>&& gpio = std::make_unique<srp::gpio::GPIOController>()) override;
     std::optional<std::vector<uint8_t>> WriteRead(const std::vector<uint8_t>& data, const uint8_t read_size) override;
     ~RS485();
     RS485() = default;

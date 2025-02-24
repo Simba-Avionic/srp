@@ -1,0 +1,3 @@
+#!/bin/bash
+bazel clean --async
+bazel build //... -- -//deployment/tools/...

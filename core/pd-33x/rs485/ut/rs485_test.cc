@@ -1,3 +1,13 @@
+/**
+ * @file rs485_test.cc
+ * @author Mateusz Krajewski (matikrajek42@gmail.com)
+ * @brief 
+ * @version 0.1
+ * @date 2025-02-24
+ * 
+ * @copyright Copyright (c) 2025
+ * 
+ */
 #include <gtest/gtest.h>
 #include "core/pd-33x/rs485/rs485.hpp"
 #include "mw/gpio_server/controller/mock/mock_gpio_controller.h"

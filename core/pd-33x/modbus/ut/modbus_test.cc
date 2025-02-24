@@ -1,3 +1,13 @@
+/**
+ * @file modbus_test.cc
+ * @author Mateusz Krajewski (matikrajek42@gmail.com)
+ * @brief 
+ * @version 0.1
+ * @date 2025-02-24
+ * 
+ * @copyright Copyright (c) 2025
+ * 
+ */
 #include <gtest/gtest.h>
 #include <iostream>
 #include "core/pd-33x/modbus/modbus.hpp"
@@ -6,19 +16,19 @@
 
 class ModbusTestClass : srp::core::MODBUS {
  public:
- uint16_t TestCalculate_CRC16(const std::vector<uint8_t>& data) {
+  uint16_t TestCalculate_CRC16(const std::vector<uint8_t>& data) {
     return Calculate_CRC16(data);
- }
- bool TestValidate_CRC16(const std::vector<uint8_t>& data) {
+  }
+  bool TestValidate_CRC16(const std::vector<uint8_t>& data) {
     return Validate_CRC16(data);
- }
- bool TestInit(const srp::core::RS485_conf_t& config, const uint8_t slave_id,
-    std::unique_ptr<MockRS485> rs485) {
-        return Init(config, slave_id, std::move(rs485_));
-    }
-std::optional<std::vector<uint8_t>> TestSendRequest(uint8_t function_code, uint16_t start_addr, uint16_t quantity) {
+  }
+  bool TestInit(const srp::core::RS485_conf_t& config, const uint8_t slave_id,
+                                              std::unique_ptr<MockRS485> rs485) {
+    return Init(config, slave_id, std::move(rs485_));
+  }
+  std::optional<std::vector<uint8_t>> TestSendRequest(uint8_t function_code, uint16_t start_addr, uint16_t quantity) {
     return SendRequest(function_code, start_addr, quantity);
-}
+  }
 };
 
 class ModbusTest : public ::testing::Test {
@@ -26,10 +36,10 @@ class ModbusTest : public ::testing::Test {
     ModbusTestClass modbus;
 };
 
-class CalculateCRC16Test : public ModbusTest, public ::testing::WithParamInterface<std::pair<std::vector<uint8_t>, uint16_t>> {};
+class CalculateCRC16Test : public ModbusTest,
+                        public ::testing::WithParamInterface<std::pair<std::vector<uint8_t>, uint16_t>> {};
 
-TEST_P(CalculateCRC16Test, CalculateCRC16)
-{
+TEST_P(CalculateCRC16Test, CalculateCRC16) {
     auto [data, expected_crc] = GetParam();
     EXPECT_EQ(modbus.TestCalculate_CRC16(data), expected_crc);
 }
@@ -44,10 +54,10 @@ INSTANTIATE_TEST_SUITE_P(
     )
 );
 
-class ValidateCRC16Test : public ModbusTest, public ::testing::WithParamInterface<std::pair<std::vector<uint8_t>, bool>> {};
+class ValidateCRC16Test : public ModbusTest,
+                        public ::testing::WithParamInterface<std::pair<std::vector<uint8_t>, bool>> {};
 
-TEST_P(ValidateCRC16Test, ValidateCRC16)
-{
+TEST_P(ValidateCRC16Test, ValidateCRC16) {
     auto [data, is_valid] = GetParam();
     EXPECT_EQ(modbus.TestValidate_CRC16(data), is_valid);
 }
