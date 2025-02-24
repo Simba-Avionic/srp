@@ -15,7 +15,7 @@
                 "logger": {
                     "app_id": "GPIO",
                     "app_des": "GPIO server",
-                    "log_level": "kInfo",
+                    "log_level": "kDebug",
                     "log_mode": "kRemote",
                     "ctx": [
                         {
