@@ -42,10 +42,14 @@ void LoggerService::SaveLoop(const std::stop_token& token) {
   } else {
     csv_.Open(kCsv_filename_prefix + prefix.value() + kCsv_filename, kCsv_header);
   }
-  timestamp_.Start();
+  timestamp_.Init();
   while (!token.stop_requested()) {
     const auto start = std::chrono::high_resolution_clock::now();
-    csv_.WriteLine(this->data.to_string(std::to_string(timestamp_.GetNewTimeStamp())));
+    auto val = timestamp_.GetNewTimeStamp();
+    if (!val.has_value()) {
+      continue;
+    }
+    csv_.WriteLine(this->data.to_string(std::to_string(val.value())));
     const auto now = std::chrono::high_resolution_clock::now();
     const auto elapsed = std::chrono::duration_cast<
                 std::chrono::milliseconds>(now - start).count() +  k_save_interval_fix;
