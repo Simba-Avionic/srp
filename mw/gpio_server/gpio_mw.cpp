@@ -77,8 +77,10 @@ std::vector<uint8_t> GPIOMWService::RxCallback(const std::string& ip, const std:
         case srp::gpio::ACTION::SUBSCRIBE: {
             auto controller_id = hdr.GetValue();
             auto pin_id = hdr.GetActuatorID();
+            ara::log::LogDebug() << "subscription request from controller ID: " << std::to_string(controller_id)
+                                 << " for pin ID: " << std::to_string(pin_id);
             if (config.find(pin_id) == config.end()) {
-                ara::log::LogWarn() << "Subscription failed, unknown pin with ID: " << std::to_string(pin_id);
+                ara::log::LogWarn() << "subscription failed, unknown pin with ID: " << std::to_string(pin_id);
                 return {0};
             }
             if (controller_id == 0) {
@@ -88,8 +90,8 @@ std::vector<uint8_t> GPIOMWService::RxCallback(const std::string& ip, const std:
                 subscribed_pins_states[pin_id] = 0;
             }
             callbacks[pin_id].push_back(controller_id);
-            ara::log::LogDebug() << "controller ID: " << std::to_string(controller_id)
-                                 << " subscribed to pin ID: " << std::to_string(pin_id);
+            ara::log::LogInfo() << "controller ID: " << std::to_string(controller_id)
+                                 << " successfully subscribed to pin ID: " << std::to_string(pin_id);
             return {controller_id};
         }
 
@@ -98,13 +100,13 @@ std::vector<uint8_t> GPIOMWService::RxCallback(const std::string& ip, const std:
             auto pin_id = hdr.GetActuatorID();
             if (subscribed_pins_states.find(pin_id) == subscribed_pins_states.end() ||
                 callbacks.find(pin_id) == callbacks.end()) {
-                ara::log::LogWarn() << "Unsubscription failed, unknown pin ID: " << std::to_string(pin_id);
+                ara::log::LogWarn() << "unsubscription failed, unknown pin ID: " << std::to_string(pin_id);
                 return {0};
             }
             auto pin_callbacks = callbacks[pin_id];
             auto find = std::find(pin_callbacks.begin(), pin_callbacks.end(), controller_id);
             if (find == pin_callbacks.end()) {
-                ara::log::LogWarn() << "Unsubscription failed, unknown controller ID: "
+                ara::log::LogWarn() << "unsubscription failed, unknown controller ID: "
                                     << std::to_string(controller_id);
                 return {1};
             }
@@ -112,7 +114,7 @@ std::vector<uint8_t> GPIOMWService::RxCallback(const std::string& ip, const std:
             if (pin_callbacks.empty()) {
                 subscribed_pins_states.erase(pin_id);
             }
-            ara::log::LogDebug() << "controller ID: " << std::to_string(controller_id) << " unsubscribed from pin ID: "
+            ara::log::LogDebug() << "controller ID: " << std::to_string(controller_id) << " successfully unsubscribed from pin ID: "
                                  << std::to_string(pin_id);
             return {0};
         }
@@ -123,6 +125,7 @@ std::vector<uint8_t> GPIOMWService::RxCallback(const std::string& ip, const std:
 }
 
 void GPIOMWService::PollSubscribedPinsLoop(const std::stop_token& token) {
+    ara::log::LogDebug() << "Starting subscribed pins polling loop";
     for (auto pair : subscribed_pins_states) {
         // subscribed pins are checked for existence before being added to the set
         pair.second = this->gpio_driver_->getValue(config[pair.first].pinNum);
@@ -133,14 +136,16 @@ void GPIOMWService::PollSubscribedPinsLoop(const std::stop_token& token) {
             if (state == pair.second) {
                 continue;
             }
-            ara::log::LogDebug() << "Subscribed pin ID: " << std::to_string(pair.first)
+            ara::log::LogDebug() << "subscribed pin ID: " << std::to_string(pair.first)
                                  << " changed state to: " << std::to_string(state);
             pair.second = state;
             for (auto controller_id : callbacks[pair.first]) {
                 gpio::Header hdr(pair.first, state, gpio::ACTION::CALLBACK);
                 auto res = this->sock_->Transmit(SOCKET_PATH, 0, hdr.GetBuffor());
+                ara::log::LogDebug() << "callback to controller ID: " << std::to_string(controller_id)
+                                     << " for pin ID: " << std::to_string(pair.first);
                 if (!res.has_value()) {
-                    ara::log::LogWarn() << "Callback to controller ID: " << std::to_string(controller_id) << " failed";
+                    ara::log::LogWarn() << "callback to controller ID: " << std::to_string(controller_id) << " failed";
                 }
             }
         }

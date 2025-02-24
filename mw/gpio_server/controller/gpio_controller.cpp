@@ -50,6 +50,7 @@ void GPIOController::ListenToCallbacks() {
 
 std::vector<uint8_t> GPIOController::HandleCallback(const std::string& _ip, const std::uint16_t& _port,
                                                     const std::vector<std::uint8_t> data) {
+    ara::log::LogDebug() << "controller ID: " << id << " received callback";
     gpio::Header hdr(0, 0, gpio::ACTION::GET);
     hdr.SetBuffor(data);
     auto pin_id = hdr.GetActuatorID();
@@ -57,7 +58,6 @@ std::vector<uint8_t> GPIOController::HandleCallback(const std::string& _ip, cons
     if (!this->callback.has_value() || subsbribed_pins.find(pin_id) == subsbribed_pins.end()) {
         return {1};
     }
-    ara::log::LogDebug() << "controller ID: " << id << " received callback for pin ID: " << pin_id;
     this->callback.value()(pin_id, hdr.GetValue());
     return {1};
 }
@@ -93,6 +93,8 @@ std::optional<int8_t> GPIOController::GetPinValue(uint8_t actuatorID) {
 }
 
 core::ErrorCode GPIOController::ManagePinSubscription(const uint8_t pin_id, const bool subscribe) {
+    ara::log::LogInfo() << "controller ID: " << id << " " << (subscribe ? "subscribing" : "unsubscribing")
+                        << " to pin ID: " << pin_id;
     if (this->sock_ == nullptr) {
         return core::ErrorCode::kInitializeError;
     }
@@ -116,6 +118,7 @@ core::ErrorCode GPIOController::ManagePinSubscription(const uint8_t pin_id, cons
     }
     if (subscribe && id == 0) {
         id = res.value()[0];
+        ara::log::LogDebug() << "controller got assigned ID: " << id;
         ListenToCallbacks();
     }
 }
