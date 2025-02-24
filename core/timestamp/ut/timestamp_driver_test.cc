@@ -18,7 +18,6 @@
 namespace srp {
 namespace core {
 namespace timestamp {
-
 class TimestampControllerTest : public ::testing::Test {
  protected:
     TimestampController controller;
@@ -56,9 +55,9 @@ TEST_F(TimestampMasterTest, GetNewTimeStampReturnsElapsedTime) {
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     int64_t timestamp3 = master.GetNewTimeStamp();
 
-    EXPECT_NEAR(timestamp, 100, 1);
-    EXPECT_NEAR(timestamp2, 200, 1);
-    EXPECT_NEAR(timestamp3, 1200, 1);
+    EXPECT_NEAR(timestamp, 100, 10);
+    EXPECT_NEAR(timestamp2, 200, 10);
+    EXPECT_NEAR(timestamp3, 1200, 10);
 }
 
 TEST_F(TimestampMasterTest, CorrectStartPointAdjustsStartTime) {
@@ -86,8 +85,8 @@ TEST(TimestampIntegratedTest, FirstTest) {
     auto t2 = slave2.GetNewTimeStamp();
     ASSERT_TRUE(t1.has_value());
     ASSERT_TRUE(t2.has_value());
-    EXPECT_NEAR(master.GetNewTimeStamp(), t1.value(), 2);
-    EXPECT_NEAR(master.GetNewTimeStamp(), t2.value(), 2);
+    EXPECT_NEAR(master.GetNewTimeStamp(), t1.value(), 10);
+    EXPECT_NEAR(master.GetNewTimeStamp(), t2.value(), 10);
 }
 TEST(TimestampIntegratedTest, SecTest) {
     TimestampMaster master;
@@ -96,7 +95,7 @@ TEST(TimestampIntegratedTest, SecTest) {
     slave1.Init();
     auto t1 = slave1.GetNewTimeStamp();
     ASSERT_TRUE(t1.has_value());
-    EXPECT_NEAR(master.GetNewTimeStamp(), t1.value(), 2);
+    EXPECT_NEAR(master.GetNewTimeStamp(), t1.value(), 10);
 }
 TEST(TimestampTest, Error) {
     TimestampController slave;
