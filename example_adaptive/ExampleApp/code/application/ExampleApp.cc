@@ -48,6 +48,10 @@ int ExampleApp::Run(const std::stop_token& token) {
   dtc_.Offer();
 
   ara::log::LogInfo() << "App started";
+    gpio_.SetCallback([](uint8_t pin_id, uint8_t value) {
+        ara::log::LogInfo() << "Pin ID: " << pin_id << " value: " << value;
+    });
+    gpio_.ManagePinSubscription(1, true);
   while (!token.stop_requested()) {
     gpio_.SetPinValue(1, 1);
     core::condition::wait_for(std::chrono::seconds(1), token);
