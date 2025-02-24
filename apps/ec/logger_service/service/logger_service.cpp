@@ -90,13 +90,11 @@ LoggerService::LoggerService():
 
 void LoggerService::start_func_handler(const std::uint8_t status) {
   if (status == 1 && !this->save_thread_) {
-      // Tworzenie nowego wątku, gdy status jest 1 i wątek nie istnieje
       this->save_thread_ = std::make_unique<std::jthread>(
           [this](std::stop_token token) {
               SaveLoop(token);
           });
   } else if (status == 0 && this->save_thread_) {
-      // Niszczenie istniejącego wątku, co powoduje wysłanie sygnału zatrzymania
       this->save_thread_.reset();
   }
 }
