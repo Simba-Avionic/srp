@@ -8,5 +8,7 @@ cc_library(
         "csvdriver.h",
         "Icsvdriver.h",
         ],
-    visibility = ["//visibility:public"],
+    visibility = [
+        "//visibility:public",
+    ],
 )
