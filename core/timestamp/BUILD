@@ -2,5 +2,11 @@ cc_library(
     name = "timestamp_controller",
     hdrs = ["timestamp_driver.hpp"],
     srcs = ["timestamp_driver.cpp"],
-    visibility = ["//apps/ec/logger_service:__subpackages__"],
+    visibility = ["//visibility:public"],
+    deps = [
+        "@srp_platform//bindings/common/shm:shm_lib",
+        "@srp_platform//ara/core:instance_specifier",
+        "@srp_platform//ara/log",
+        "//core/common:core",
+    ]
 )

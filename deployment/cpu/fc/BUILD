@@ -29,6 +29,7 @@ cpu_def(
         "//deployment/mw/gpio:gpio_service",
         "//deployment/apps/fc/gps_app:GPSApp",
         "//deployment/apps/fc/recovery_service:RecoveryService",
+        "//deployment/mw/timestamp_mw:timestamp_service",
     ],
 )
 

@@ -25,7 +25,6 @@
 #include "apps/ec/logger_service/data_type.hpp"
 #include "apps/ec/logger_service/service/service.hpp"
 #include "apps/ec/logger_service/service/logger_did.hpp"
-
 namespace srp {
 namespace logger {
 
