@@ -26,11 +26,11 @@ namespace gpio {
 
 class GpioDriver: public IGpioDriver{
  protected:
-  std::unique_ptr<FileHandler> file_;
-  ara::log::Logger gpio_logger_;
+  std::unique_ptr<IFileHandler> file_;
+  // ara::log::Logger gpio_logger_;
 
  public:
-  explicit GpioDriver(std::unique_ptr<FileHandler> file);
+  explicit GpioDriver(std::unique_ptr<IFileHandler> file);
   ~GpioDriver();
 
   core::ErrorCode initializePin(const uint16_t& pinNumber, const direction_t& direction) override;

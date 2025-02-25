@@ -1,0 +1,133 @@
+/**
+ * @file test_gpio_driver.cpp
+ * @author Mateusz Krajewski (matikrajek42@gmail.com)
+ * @brief 
+ * @version 0.1
+ * @date 2024-12-02
+ * 
+ * @copyright Copyright (c) 2024
+ * 
+ */
+#include <gtest/gtest.h>
+#include "core/gpio/gpio_driver.hpp"
+#include "core/file/file.hpp"
+#include "core/file/mock_file.hpp"
+
+class GpioTest : public ::testing::TestWithParam<std::tuple<int, std::string, std::string>> {};
+
+TEST_P(GpioTest, TestGetPath) {
+    int pin = std::get<0>(GetParam());
+    std::string suffix = std::get<1>(GetParam());
+    auto val = srp::core::gpio::GpioDriver::getEndpointPath(pin, suffix);
+    std::string expectedPath = "/sys/class/gpio/gpio" + std::to_string(pin) + "/" + suffix;
+    EXPECT_EQ(val, expectedPath);
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    GpioTestInstances,
+    GpioTest,
+    ::testing::Values(
+        std::make_tuple(12, "hello", "/sys/class/gpio/gpio12/hello"),
+        std::make_tuple(13, "world", "/sys/class/gpio/gpio13/world"),
+        std::make_tuple(14, "test", "/sys/class/gpio/gpio14/test"),
+        std::make_tuple(0, "", "/sys/class/gpio/gpio0/"),
+        std::make_tuple(255, "world", "/sys/class/gpio/gpio255/world"),
+        std::make_tuple(65535, "test", "/sys/class/gpio/gpio65535/test")
+    )
+);
+
+TEST(FileHandlerTest, OpenFileTest) {
+    // Tworzymy mocka
+    MockFileHandler mock_file;
+
+    // Określamy, jak ma się zachować mock przy wywołaniu metody 'open'
+    EXPECT_CALL(mock_file, open("/some/path", srp::core::FileMode::WRITE))
+        .WillOnce(::testing::Return(true));  // Zwracamy 'true' przy otwarciu pliku
+
+    // Wywołanie testowanej metody
+    bool result = mock_file.open("/some/path", srp::core::FileMode::WRITE);
+
+    // Sprawdzamy wynik
+    EXPECT_TRUE(result);
+}
+
+TEST(FileHandlerTest, WriteDataTest) {
+    // Tworzymy mocka
+    MockFileHandler mock_file;
+
+    // Określamy, jak ma się zachować mock przy wywołaniu metody 'write'
+    EXPECT_CALL(mock_file, write("some data"))
+        .WillOnce(::testing::Return(true));  // Zwracamy 'true' przy zapisaniu danych
+
+    // Wywołanie testowanej metody
+    bool result = mock_file.write("some data");
+
+    // Sprawdzamy wynik
+    EXPECT_TRUE(result);
+}
+
+using ::testing::Return;
+using ::testing::NiceMock;
+using ::testing::_;
+
+class GpioDriverTest : public ::testing::Test {
+ protected:
+    void SetUp() override {
+        mockFile = std::make_unique<NiceMock<MockFileHandler>>();
+    }
+
+    std::unique_ptr<NiceMock<MockFileHandler>> mockFile;
+};
+
+TEST_F(GpioDriverTest, InitializePinSuccess) {
+    EXPECT_CALL(*mockFile, open(_, srp::core::FileMode::WRITE)).Times(2).WillRepeatedly(Return(true));
+    EXPECT_CALL(*mockFile, write("12")).WillOnce(Return(true));
+    EXPECT_CALL(*mockFile, write("out")).WillOnce(Return(true));
+    EXPECT_CALL(*mockFile, close()).Times(2);
+    srp::core::gpio::GpioDriver gpioDriver(std::move(mockFile));
+    EXPECT_EQ(gpioDriver.initializePin(12, srp::core::gpio::direction_t::OUT), srp::core::ErrorCode::kOk);
+}
+
+TEST_F(GpioDriverTest, SetValueSuccess) {
+    EXPECT_CALL(*mockFile, open(_, srp::core::FileMode::WRITE)).WillOnce(Return(true));
+    EXPECT_CALL(*mockFile, write("1")).WillOnce(Return(true));
+    EXPECT_CALL(*mockFile, close());
+    srp::core::gpio::GpioDriver gpioDriver(std::move(mockFile));
+    EXPECT_EQ(gpioDriver.setValue(12, 1), srp::core::ErrorCode::kOk);
+}
+
+TEST_F(GpioDriverTest, GetValueSuccess) {
+    EXPECT_CALL(*mockFile, open(_, srp::core::FileMode::READ)).WillOnce(Return(true));
+    EXPECT_CALL(*mockFile, read()).WillOnce(Return(std::optional<std::string>{"1"}));
+    EXPECT_CALL(*mockFile, close());
+    srp::core::gpio::GpioDriver gpioDriver(std::move(mockFile));
+    EXPECT_EQ(gpioDriver.getValue(12), 1);
+}
+
+TEST_F(GpioDriverTest, UnregisterPinSuccess) {
+    EXPECT_CALL(*mockFile, open(_, _)).WillOnce(Return(true));
+    EXPECT_CALL(*mockFile, write("12")).WillOnce(Return(true));
+    EXPECT_CALL(*mockFile, close());
+    srp::core::gpio::GpioDriver gpioDriver(std::move(mockFile));
+    EXPECT_EQ(gpioDriver.unregisterPin(12), srp::core::ErrorCode::kOk);
+}
+
+TEST_F(GpioDriverTest, GetDirectionSuccess) {
+    EXPECT_CALL(*mockFile, open(_, _)).WillOnce(Return(true));
+    EXPECT_CALL(*mockFile, read()).WillOnce(Return("1"));
+    EXPECT_CALL(*mockFile, close());
+    srp::core::gpio::GpioDriver gpioDriver(std::move(mockFile));
+    EXPECT_EQ(gpioDriver.getDirection(1), 1);
+}
+TEST_F(GpioDriverTest, GetDirectionFailOpen) {
+    EXPECT_CALL(*mockFile, open(_, _)).WillOnce(Return(false));
+    srp::core::gpio::GpioDriver gpioDriver(std::move(mockFile));
+    EXPECT_EQ(gpioDriver.getDirection(1), srp::core::gpio::direction_t::ERROR);
+}
+TEST_F(GpioDriverTest, GetDirectionFailRead) {
+    EXPECT_CALL(*mockFile, open(_, _)).WillOnce(Return(true));
+    EXPECT_CALL(*mockFile, read()).WillOnce(Return(std::nullopt));
+    EXPECT_CALL(*mockFile, close());
+    srp::core::gpio::GpioDriver gpioDriver(std::move(mockFile));
+    EXPECT_EQ(gpioDriver.getDirection(1), srp::core::gpio::direction_t::ERROR);
+}

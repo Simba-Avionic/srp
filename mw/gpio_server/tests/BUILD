@@ -1,5 +1,5 @@
 cc_test(
-    name = "data_structure",
+    name = "data_structure_test",
     srcs = [
         "test_header.cpp",
         ],
@@ -11,7 +11,7 @@ cc_test(
 )
 
 cc_test(
-    name = "gpio_controller",
+    name = "gpio_controller_test",
     srcs = [
         "test_controller.cpp",
         ],
@@ -24,7 +24,7 @@ cc_test(
 )
 
 cc_test(
-    name = "gpio_service",
+    name = "gpio_service_test",
     srcs = [
         "test_service.cc",
         ],

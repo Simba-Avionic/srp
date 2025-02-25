@@ -22,21 +22,20 @@ namespace {
     constexpr std::string kGpioPath = "/sys/class/gpio";
 }
 
-GpioDriver::GpioDriver(std::unique_ptr<FileHandler> file): gpio_logger_{
-    ara::log::LoggingMenager::GetInstance()->CreateLogger("GPIO", "", ara::log::LogLevel::kDebug)},
-    file_(std::move(file)) {
+GpioDriver::GpioDriver(std::unique_ptr<IFileHandler> file):file_(std::move(file)) {
+// gpio_logger_{ara::log::LoggingMenager::GetInstance()->CreateLogger("GPIO", "", ara::log::LogLevel::kDebug)},
 }
 
 GpioDriver::~GpioDriver() {}
 
 core::ErrorCode  GpioDriver::unregisterPin(const uint16_t& pinNumber) {
-    ara::log::LogInfo() << "Unregister PIN with ID:" << pinNumber;
+    // ara::log::LogInfo() << "Unregister PIN with ID:" << pinNumber;
     return core::ErrorCode::kOk;
 }
 
 core::ErrorCode GpioDriver::initializePin(const uint16_t& pinNumber, const direction_t& direction) {
-    ara::log::LogInfo() << "Initialize PIN with ID:" << pinNumber
-    << "direction:" << ((direction == direction_t::IN) ? "IN" : "OUT");
+    // ara::log::LogInfo() << "Initialize PIN with ID:" << pinNumber
+    // << "direction:" << ((direction == direction_t::IN) ? "IN" : "OUT");
     return core::ErrorCode::kOk;
 }
 
@@ -46,28 +45,28 @@ std::string GpioDriver::getEndpointPath(const uint16_t& pinNumber, const std::st
 }
 
 core::ErrorCode GpioDriver::setValue(const uint16_t& pinNumber , const uint8_t& value) {
-    ara::log::LogInfo() << "SET VALUE PIN with ID:" << pinNumber
-    << "value:" << std::to_string(static_cast<uint16_t>(value));
+    // ara::log::LogInfo() << "SET VALUE PIN with ID:" << pinNumber
+    // << "value:" << std::to_string(static_cast<uint16_t>(value));
     return core::ErrorCode::kOk;
 }
 
 core::ErrorCode GpioDriver::setDirection(const uint16_t& pinNumber , const direction_t& direction) {
-    ara::log::LogInfo() << "SET DIRECTION PIN with ID:" << pinNumber
-    << "direction:" << ((direction == direction_t::IN) ? "IN" : "OUT");
+    // ara::log::LogInfo() << "SET DIRECTION PIN with ID:" << pinNumber
+    // << "direction:" << ((direction == direction_t::IN) ? "IN" : "OUT");
     return ErrorCode::kOk;
 }
 
 uint8_t GpioDriver::getValue(const uint16_t& pinNumber) {
     const uint8_t value = 1;
-    ara::log::LogInfo() << "GET VALUE PIN with ID:" << pinNumber
-    << "VALUE:" << value;
+    // ara::log::LogInfo() << "GET VALUE PIN with ID:" << pinNumber
+    // << "VALUE:" << value;
     return value;
 }
 
 direction_t GpioDriver::getDirection(const uint16_t& pinNumber) {
     const direction_t direction = direction_t::IN;
-    ara::log::LogInfo() << "GET VALUE PIN with ID:" << pinNumber
-    << "VALUE:" << ((direction == direction_t::IN) ? "IN" : "OUT");
+    // ara::log::LogInfo() << "GET VALUE PIN with ID:" << pinNumber
+    // << "VALUE:" << ((direction == direction_t::IN) ? "IN" : "OUT");
     return direction;
 }
 

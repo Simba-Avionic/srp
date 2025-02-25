@@ -10,26 +10,33 @@
  */
 #include "core/csvdriver/csvdriver.h"
 #include <string>
+#include <utility>
 namespace srp {
 namespace csv {
+
+void CSVDriver::Init(std::unique_ptr<core::IFileHandler> handler_) {
+    file_ = std::move(handler_);
+}
 
 CSVDriver::CSVDriver(const char& separator): separator_(separator) {
 }
 void CSVDriver::Close() {
-    csvFile.close();
+    file_->close();
 }
 int CSVDriver::Open(const std::string& fileName, const std::string& HEADER) {
-    this->csvFile = std::ofstream(fileName, std::ios::app);
-    if (!csvFile.is_open()) {
+    if (!file_->open(fileName, core::FileMode::WRITE)) {
         return -1;
     }
-    csvFile << HEADER << "\n";
+    if (!file_->write(HEADER + "\n")) {
+        return -1;
+    }
     return 0;
 }
 
 int CSVDriver::WriteLine(const std::string& line) {
-  csvFile << line << "\n";
-  csvFile.flush();
+  if (!file_->write(line + "\n")) {
+    return -1;
+  }
   return 0;
 }
 

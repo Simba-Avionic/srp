@@ -11,15 +11,9 @@ cc_library(
         ],
     
     deps = [
-        "//communication-core/network-data:network_data_structure",
-        "//communication-core/network-data:network_data_type",
         "//communication-core/sockets:socket_interface",
-        "//mw/temp/subscribe_msg:subscribe_header",
-        "//mw/temp/subscribe_msg:subscribe_msg_factory",
-        "//mw/temp/temp_reading_msg:temp_reading_msg_factory",
         "//mw/temp/service:temp_service_mw",
-        "@com_json//:json"
-
+        "@com_json//:json",
+        "//mw/temp/hdr:temp_com_data",
     ],
-    data = []
 )

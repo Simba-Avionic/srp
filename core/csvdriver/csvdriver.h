@@ -12,14 +12,18 @@
 #define CORE_CSVDRIVER_CSVDRIVER_H_
 #include <fstream>
 #include <string>
+#include <memory>
 #include "core/csvdriver/Icsvdriver.h"
+#include "core/file/file.hpp"
 namespace srp {
 namespace csv {
 class CSVDriver : public ICSVDriver {
  private:
   std::ofstream csvFile;
   const char separator_;
+  std::unique_ptr<core::IFileHandler> file_;
  public:
+  void Init(std::unique_ptr<core::IFileHandler> handler_);
   explicit CSVDriver(const char& separator = ';');
   int Open(const std::string& fileName, const std::string& HEADER) override;
   void Close() override;

@@ -1,14 +1,14 @@
 cc_library(
     name = "csvdriver",
-    deps = [],
+    deps = [
+        "//core/file:file_lib",
+    ],
     srcs = ["csvdriver.cc"],
     hdrs = [
         "csvdriver.h",
         "Icsvdriver.h",
         ],
     visibility = [
-        "//apps/ec/logger_service:__subpackages__",
-        "//core/csvdriver/mock:__subpackages__",
-        "//core/test:__subpackages__",
+        "//visibility:public",
     ],
 )

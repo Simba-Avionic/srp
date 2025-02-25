@@ -27,10 +27,9 @@
 #include "communication-core/sockets/socket_config.h"
 #include "ara/log/log.h"
 #include "ara/exec/adaptive_application.h"
-#include "mw/temp/subscribe_msg/subscribe_header.h"
-#include "mw/temp/subscribe_msg/subscribe_msg_factory.h"
+#include "srp/mw/temp/TempReadHdr.h"
+#include "srp/mw/temp/TempSubHdr.h"
 #include "core/temp/temp_driver.hpp"
-#include "mw/temp/temp_reading_msg/temp_reading_msg_factory.h"
 #include "mw/temp/service/temp_mw_did.h"
 
 using json = nlohmann::json;
@@ -71,9 +70,10 @@ class TempService final : public ara::exec::AdaptiveApplication {
   int Initialize(const std::map<ara::core::StringView, ara::core::StringView>
                       parms) override;
 
-  std::vector<TempReading> RetrieveTempReadings() const;
+  std::vector<srp::mw::temp::TempReadHdr> RetrieveTempReadings() const;
 
-  void SendTempReadings(const std::vector<TempReading>& readings) const;
+  void SendTempReadings(const std::vector<srp::mw::temp::TempReadHdr>& readings) const;
+  std::vector<uint8_t> Conv(const std::vector<srp::mw::temp::TempReadHdr>& readings) const;
 
  public:
   TempService();

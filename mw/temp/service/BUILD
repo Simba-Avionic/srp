@@ -20,17 +20,14 @@ temp_drivers_deps = select({
 cc_library(
     name = "temp_service_lib",
     deps = [
-        "//communication-core/network-data:network_data_structure",
-        "//communication-core/network-data:network_data_type",
         "//communication-core/sockets:socket_interface",
         "//communication-core/sockets:socket_ipc",
-        "//mw/temp/subscribe_msg",
-        "//mw/temp/temp_reading_msg:temp_reading_msg_factory",
         "//core/json:simba_json",
         "//core/common:condition_lib",
         "@srp_platform//ara/diag:uds_lib",
         "@srp_platform//ara/exec:adaptive_application_lib",
         "//deployment/mw/temp:ara",
+        "//mw/temp/hdr:temp_com_data",
     ] + temp_drivers_deps,
     srcs = [
         "temp_service.cpp",

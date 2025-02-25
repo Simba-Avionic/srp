@@ -18,14 +18,11 @@
 
 #include "core/common/condition.h"
 #include "core/json/json_parser.h"
-
+#include "srp/mw/temp/TempReadHdr.h"
+#include "srp/mw/temp/TempSubHdr.h"
 namespace srp {
 namespace mw {
 namespace temp {
-
-// first - sensor_id, second - value
-using TempReading = std::pair<uint8_t, double>;
-
 
 namespace {
     static constexpr char const*
@@ -37,9 +34,6 @@ namespace {
     constexpr uint16_t kDefault_Response_Time = 125;
 }
 
-using temp_sub_factory = srp::mw::temp::SubMsgFactory;
-using temp_read_factory = srp::mw::temp::TempReadingMsgFactory;
-
 
 TempService::TempService(): did_instance{"/srp/mw/temp_service/temp_status_did"} {
     temp_driver_ = std::make_unique<core::temp::TempDriver>();
@@ -48,11 +42,11 @@ TempService::TempService(): did_instance{"/srp/mw/temp_service/temp_status_did"}
 
 int TempService::Run(const std::stop_token& token) {
     ConfigSensors();
-    std::vector<TempReading> readings;
+    std::vector<srp::mw::temp::TempReadHdr> readings;
     while (!token.stop_requested()) {
         readings = RetrieveTempReadings();
         for (const auto& read : readings) {
-            this->temp_did_->UpdateTemp(read.first, read.second);
+            this->temp_did_->UpdateTemp(read.actuator_id, read.value);
         }
         SendTempReadings(readings);
         readings.clear();
@@ -104,9 +98,11 @@ int TempService::ConfigSensors() {
 
 void TempService::SubCallback(const std::string& ip, const std::uint16_t& port,
     const std::vector<std::uint8_t>& data) {
-    auto hdr = temp_sub_factory::GetHeader(data);
-
-    std::uint16_t service_id = hdr->GetServiceID();
+    auto hdr = srp::data::Convert<srp::mw::temp::TempSubHdr>::Conv(data);
+    if (!hdr.has_value()) {
+        return;
+    }
+    std::uint16_t service_id = hdr.value().service_id;
 
     if (!this->subscribers.contains(service_id)) {
         this->subscribers.insert(service_id);
@@ -146,19 +142,20 @@ int TempService::LoadConfig(
     return srp::core::ErrorCode::kOk;
 }
 
-std::vector<TempReading> TempService::RetrieveTempReadings() const {
-    std::vector<std::future<std::optional<TempReading>>> futures;
+std::vector<srp::mw::temp::TempReadHdr> TempService::RetrieveTempReadings() const {
+    std::vector<std::future<std::optional<srp::mw::temp::TempReadHdr>>> futures;
     for (const auto& sensor : sensorPathsToIds) {
-        futures.push_back(std::async(std::launch::async, [this, &sensor]() -> std::optional<TempReading> {
+        futures.push_back(std::async(std::launch::async,
+                            [this, &sensor]() -> std::optional<srp::mw::temp::TempReadHdr> {
             auto res = temp_driver_->ReadTemp(sensor.first);
             if (res.HasValue()) {
                 double val = res.ValueOr(0.00);
-                return TempReading{sensor.second, val};
+                return srp::mw::temp::TempReadHdr{sensor.second, static_cast<float>(val)};
             }
             return std::nullopt;
         }));
     }
-    std::vector<TempReading> readings;
+    std::vector<srp::mw::temp::TempReadHdr> readings;
     for (auto& future : futures) {
         auto result = future.get();
         if (result.has_value()) {
@@ -167,13 +164,22 @@ std::vector<TempReading> TempService::RetrieveTempReadings() const {
     }
     return readings;
 }
+std::vector<uint8_t> TempService::Conv(const std::vector<srp::mw::temp::TempReadHdr>& readings) const {
+    std::vector<uint8_t> out;
+    for (const auto read : readings) {
+        auto part = srp::data::Convert2Vector<srp::mw::temp::TempReadHdr>::Conv(read);
+        out.insert(out.end(), part.begin(), part.end());
+    }
+    return out;
+}
+
 
 void TempService::SendTempReadings(
-    const std::vector<TempReading>& readings) const {
+    const std::vector<srp::mw::temp::TempReadHdr>& readings) const {
     for (const auto& client_id : this->subscribers) {
         std::string ip = kSubscriberPrefix + std::to_string(client_id);
 
-        std::vector<uint8_t> data = temp_read_factory::GetBuffer(readings);
+        std::vector<uint8_t> data = this->Conv(readings);
 
         if (this->sub_sock_->Transmit(ip, 0, data)) {
             ara::log::LogError() <<("Can't send message to: " + ip);
