@@ -23,17 +23,16 @@
 #include "communication-core/sockets/Isocket.h"
 #include "communication-core/sockets/socket_config.h"
 #include "ara/log/log.h"
-
-#include "mw/temp/subscribe_msg/subscribe_header.h"
-#include "mw/temp/subscribe_msg/subscribe_msg_factory.h"
-
-#include "mw/temp/temp_reading_msg/temp_reading_msg_factory.h"
-
 #include "mw/temp/service/temp_service.h"
+#include "srp/mw/temp/TempReadHdr.h"
+#include "srp/mw/temp/TempSubHdr.h"
 
 namespace srp {
 namespace mw {
 namespace temp {
+
+using TempRXCallback =
+std::function<void(const std::vector<srp::mw::temp::TempReadHdr>&)>;
 
 /**
  * @brief Function to receive temp readings from 1Wire using TEMP_MW
@@ -43,13 +42,14 @@ class TempController {
  private:
   uint16_t service_id;
   std::unique_ptr<com::soc::ISocket> sub_sock_{};
-  srp::com::soc::RXCallback callback_;
+  TempRXCallback callback_;
 
  protected:
   void SetTempRXCallback();
   srp::core::ErrorCode Subscribe();
   srp::core::ErrorCode Init(uint16_t service_id, std::unique_ptr<com::soc::ISocket> sock);
-  srp::core::ErrorCode SetUp(srp::com::soc::RXCallback callback);
+  srp::core::ErrorCode SetUp(TempRXCallback callback);
+  std::vector<srp::mw::temp::TempReadHdr> Conv(const std::vector<uint8_t>& data) const;
  public:
  /**
   * @brief Initialize function for temp receive
@@ -60,7 +60,7 @@ class TempController {
   * @return srp::core::ErrorCode 
   */
   srp::core::ErrorCode Initialize(uint16_t service_id,
-                srp::com::soc::RXCallback callback, std::unique_ptr<com::soc::ISocket> sock);
+                TempRXCallback callback, std::unique_ptr<com::soc::ISocket> sock);
 };
 
 }  // namespace temp
