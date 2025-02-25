@@ -15,9 +15,9 @@
 #include <optional>
 #include <vector>
 #include <thread>  // NOLINT
-#include "mw/timestamp_mw/ntp/header/header.hpp"
 #include "communication-core/sockets/tcp_socket.h"
 #include "core/timestamp/timestamp_driver.hpp"
+#include "srp/mw/tinyNTP/ntpStruct.h"
 namespace srp {
 namespace tinyNTP {
 

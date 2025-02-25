@@ -41,16 +41,15 @@ std::vector<uint8_t> NtpController::socket_callback(const std::string& ip, const
                                                                 const std::vector<std::uint8_t> payload) {
     auto now_ms = GetTimestamp();
     ara::log::LogDebug() << "Receive socket callback";
-    if (payload.size() != kHeader_size) {
+    auto val = srp::data::Convert<srp::mw::tinyNTP::ntpStruct>::Conv(payload);
+    if (!val.has_value()) {
         return {};
     }
-    tinyNTP::NtpHeader header;
-    header.SetBuffor(payload);
-    header.SetSettings(2, tinyNTP::NTPMode_t::SERVER);
-    header.SetT1Timestamp(now_ms);
+    mw::tinyNTP::ntpStruct hdr = val.value();
+    hdr.t1 = now_ms;
     ara::log::LogDebug() << "Success send response for callback";
-    header.SetT2Timestamp(GetTimestamp());
-    return header.GetBuffor();
+    hdr.t2 = GetTimestamp();
+    return srp::data::Convert2Vector<srp::mw::tinyNTP::ntpStruct>::Conv(hdr);
 }
 
 
@@ -62,22 +61,21 @@ void NtpController::thread_loop(std::stop_token token) {
     while (!token.stop_requested()) {
         core::condition::wait_for(std::chrono::milliseconds(kDelay_time), token);
         ara::log::LogDebug() << "Start NTP SYNC";
-        tinyNTP::NtpHeader header;
-        header.SetSettings(4, tinyNTP::NTPMode_t::CLIENT);
-        header.SetT0Timestamp(GetTimestamp());
-        auto res = this->sock_.Transmit(masterIP, kRX_port, header.GetBuffor());
+        srp::mw::tinyNTP::ntpStruct header;
+        header.t0 = GetTimestamp();
+        auto buf = srp::data::Convert2Vector<srp::mw::tinyNTP::ntpStruct>::Conv(header);
+        auto res = this->sock_.Transmit(masterIP, kRX_port, buf);
         auto t3 = GetTimestamp();
         if (!res.has_value()) {
             continue;
         }
-        if (res.value().size() != kHeader_size) {
+        auto val = srp::data::Convert<srp::mw::tinyNTP::ntpStruct>::Conv(res.value());
+        if (!val.has_value()) {
             continue;
         }
-        header.SetBuffor(res.value());
-        auto offset = CalculateOffset(header.GetT0Timestamp(), header.GetT1Timestamp(),
-                                                    header.GetT2Timestamp(), t3);
-        auto round_trip_time = CalculateRoundTripDelay(header.GetT0Timestamp(),
-                        header.GetT1Timestamp(), header.GetT2Timestamp(), t3);
+        srp::mw::tinyNTP::ntpStruct hdr = val.value();
+        auto offset = CalculateOffset(hdr.t0, hdr.t1, hdr.t2, t3);
+        auto round_trip_time = CalculateRoundTripDelay(hdr.t0, hdr.t1, hdr.t2, t3);
         this->timestamp_.CorrectStartPoint(offset);
         ara::log::LogDebug() << "Round trip time [ms]: " << std::to_string(round_trip_time)
                 << " ,offset value [ms]: " << std::to_string(static_cast<int>(offset));

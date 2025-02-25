@@ -60,8 +60,7 @@ void TimestampMaster::CorrectStartPoint(const int64_t offset) {
 }
 
 int64_t TimestampMaster::GetNewTimeStamp() {
-  int64_t now = GetNow();
-  return now - start;
+  return GetNow() - start;
 }
 
 

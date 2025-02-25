@@ -25,7 +25,7 @@ namespace mw {
 
 class TimestampService final : public ara::exec::AdaptiveApplication {
  private:
-    tinyNTP::NtpController ntp_controller;
+    srp::tinyNTP::NtpController ntp_controller;
     /**
      * @brief This function is called to launch the application
      *
