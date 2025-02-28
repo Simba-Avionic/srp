@@ -146,7 +146,7 @@ void GPIOMWService::PollSubscribedPinsLoop(const std::stop_token& token) {
             for (auto controller_id : callbacks[pair.first]) {
                 gpio::Header hdr(pair.first, state, gpio::ACTION::CALLBACK);
                 std::string callback_path = CALLBACK_PATH_PREFIX + std::to_string(controller_id);
-                auto res = this->sock_->Transmit(SOCKET_PATH, 0, hdr.GetBuffor());
+                auto res = this->sock_->Transmit(callback_path, 0, hdr.GetBuffor());
                 ara::log::LogDebug() << "callback to controller ID: " << std::to_string(controller_id)
                                      << " for pin ID: " << std::to_string(pair.first);
                 if (!res.has_value()) {
