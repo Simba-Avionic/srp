@@ -42,11 +42,11 @@ TEST(FileHandlerTest, OpenFileTest) {
     MockFileHandler mock_file;
 
     // Określamy, jak ma się zachować mock przy wywołaniu metody 'open'
-    EXPECT_CALL(mock_file, open("/some/path", srp::core::File_mode_t::WRITE))
+    EXPECT_CALL(mock_file, open("/some/path", srp::core::FileMode::WRITE))
         .WillOnce(::testing::Return(true));  // Zwracamy 'true' przy otwarciu pliku
 
     // Wywołanie testowanej metody
-    bool result = mock_file.open("/some/path", srp::core::File_mode_t::WRITE);
+    bool result = mock_file.open("/some/path", srp::core::FileMode::WRITE);
 
     // Sprawdzamy wynik
     EXPECT_TRUE(result);
