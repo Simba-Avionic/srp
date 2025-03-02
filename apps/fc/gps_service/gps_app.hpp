@@ -36,7 +36,7 @@ class GPSApp final : public ara::exec::AdaptiveApplication {
   std::unique_ptr<core::uart::IUartDriver> uart_;
 
  public:
-  static std::optional<GPSDataStructure> ParseGPSData(const std::vector<char>& data);
+  static std::optional<GPSDataStructure> ParseGPSData(const std::vector<uint8_t>& data);
   void Init(std::unique_ptr<core::uart::IUartDriver> uart);
   static GPSDataStructure GetSomeIPData(const core::GPS_DATA_T& data);
   /**
