@@ -1,8 +1,13 @@
 cc_library(
     name = "file_lib",
-    srcs = ["file.cpp"],
+    srcs = [
+        "file.cpp"
+    ],
+    hdrs = [
+        "file.hpp",
+    ],
     visibility = [
-        "//core/gpio:__subpackages__",
+        "//visibility:public",
         ],
     deps = [
         "@srp_platform//ara/log",
@@ -13,7 +18,7 @@ cc_library(
 cc_library(
     name = "file_interface",
     hdrs = [
-         "file.hpp",
+         "Ifile.hpp",
     ],
     visibility = [
         "//core/gpio:__subpackages__",

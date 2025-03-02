@@ -11,26 +11,22 @@
 
 #ifndef CORE_FILE_FILE_HPP_
 #define CORE_FILE_FILE_HPP_
-
 #include <string>
 #include <optional>
 #include <fstream>
+#include "core/file/Ifile.hpp"
 namespace srp {
 namespace core {
-enum File_mode_t {
-  READ,
-  WRITE,
-};
-class FileHandler {
+class FileHandler: public IFileHandler {
  private:
     std::fstream file_;
  public:
-    ~FileHandler();
+    ~FileHandler() override;
     FileHandler();
-    bool open(const std::string& path, const File_mode_t& mode);
-    void close();
-    bool write(const std::string& data);
-    std::optional<std::string> read();
+    bool open(const std::string& path, const FileMode& mode) override;
+    void close() override;
+    bool write(const std::string& data) override;
+    std::optional<std::string> read() override;
 };
 }  // namespace core
 }  // namespace srp
