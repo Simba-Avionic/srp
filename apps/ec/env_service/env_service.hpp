@@ -46,8 +46,7 @@ class EnvService final : public ara::exec::AdaptiveApplication {
    */
   int Initialize(const std::map<ara::core::StringView, ara::core::StringView>
                       parms) override;
-  void TempRxCallback(const std::string& ip, const std::uint16_t& port,
-                                const std::vector<std::uint8_t> data);
+  void TempRxCallback(const std::vector<srp::mw::temp::TempReadHdr>& data);
 
  public:
   ~EnvService() = default;
