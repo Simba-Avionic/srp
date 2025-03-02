@@ -3,6 +3,7 @@ cc_library(
     hdrs = ["iframe.h"],
     visibility = ["//communication-core:__subpackages__"],
     deps = ["//core/common:common_types"],
+    deprecation = "Use: @srp_platform//tools/model_generator/ara:data_structure_generator",
 )
 
 cc_library(
@@ -17,6 +18,7 @@ cc_library(
         "//mw:__subpackages__",
         ],
     deps = [":interfaces"],
+    deprecation = "Use: @srp_platform//tools/model_generator/ara:data_structure_generator",
 )
 
 cc_library(
@@ -31,4 +33,5 @@ cc_library(
         ":interfaces",
         "//core/common:common_converter",
         ],
+    deprecation = "Use: @srp_platform//tools/model_generator/ara:data_structure_generator",
 )

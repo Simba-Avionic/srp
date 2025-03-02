@@ -13,17 +13,34 @@
 #define CORE_TIMESTAMP_TIMESTAMP_DRIVER_HPP_
 
 #include <chrono>  // NOLINT
-
+#include <thread>  // NOLINT
+#include "bindings/common/shm/shm_skeleton.h"
+#include "bindings/common/shm/shm_proxy.h"
 namespace srp {
 namespace core {
 namespace timestamp {
 
 class TimestampController {
  private:
-  std::chrono::time_point<std::chrono::high_resolution_clock> start;
+  const ara::core::InstanceSpecifier instance_;
+  bindings::com::shm::ShmProxy<int64_t> proxy_;
  public:
-  void Start();
-  uint64_t GetNewTimeStamp();
+  std::optional<int64_t> GetNewTimeStamp();
+  void Init();
+  TimestampController();
+};
+
+
+class TimestampMaster {
+ private:
+  const ara::core::InstanceSpecifier instance_;
+  bindings::com::shm::ShmSkeleton<int64_t> skeleton_;
+  int64_t start;
+ public:
+  TimestampMaster();
+  int64_t GetNewTimeStamp();
+  void CorrectStartPoint(const int64_t offset);
+  void Init();
 };
 
 }  // namespace timestamp
