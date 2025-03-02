@@ -42,3 +42,21 @@ cc_test(
         "@com_google_googletest//:gtest_main",
     ],
 )
+
+cc_test(
+    name = "csv_driver_test",
+    srcs = ["csv_driver_test.cc"],
+    deps = [
+        "//core/csvdriver",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+cc_test(
+    name = "gpio_driver_test",
+    srcs = ["test_gpio_driver.cpp"],
+    deps = [
+        "//core/gpio:gpio_drivers",
+        "//core/file:mock_file",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
