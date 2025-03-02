@@ -11,8 +11,6 @@ cc_library(
         "Igpio_controller.h",
         ],
     visibility = [
-        "//apps:__subpackages__",
-        "//mw:__subpackages__",
-        "//example_adaptive/ExampleApp/code/application:__subpackages__",
+       "//visibility:public",
         ],
 )

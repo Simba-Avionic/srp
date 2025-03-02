@@ -5,6 +5,7 @@ cc_library(
         "@srp_platform//ara/core:Result",
         "@srp_platform//ara/log",
         "@srp_platform//ara/com:com_error_domain",
+        "//core/common:core",
     ],
     hdrs = [
         "uart_driver.hpp",
