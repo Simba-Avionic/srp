@@ -12,9 +12,10 @@
 #ifndef MW_GPIO_SERVER_CONTROLLER_GPIO_CONTROLLER_HPP_
 #define MW_GPIO_SERVER_CONTROLLER_GPIO_CONTROLLER_HPP_
 
+#include <functional>
 #include <string>
+#include <unordered_set>
 #include <vector>
-#include <unordered_map>
 #include <optional>
 #include <memory>
 
@@ -26,15 +27,27 @@
 namespace srp {
 namespace gpio {
 
+using PinChangeCallback = std::function<void(uint8_t, uint8_t)>;
 
 class GPIOController : public IGPIOController{
  private:
     std::unique_ptr<srp::com::soc::ISocketStream> sock_;
+    std::optional<PinChangeCallback> callback;
+    std::unordered_set<uint8_t> subsbribed_pins;
+    uint8_t id = 0;
+    std::vector<uint8_t> HandleCallback(const std::string& _ip, const std::uint16_t& _port,
+          const std::vector<std::uint8_t>& data);
+    void ListenToCallbacks();
  public:
+    ~GPIOController();
     GPIOController(): sock_(std::make_unique<com::soc::StreamIpcSocket>()) {}
     explicit GPIOController(std::unique_ptr<srp::com::soc::ISocketStream> socket);
     core::ErrorCode SetPinValue(uint8_t actuatorID, int8_t value) override;
     std::optional<int8_t> GetPinValue(uint8_t actuatorID) override;
+
+    // optional for clearing callback
+    void SetCallback(const std::optional<PinChangeCallback> callback);
+    core::ErrorCode ManagePinSubscription(const uint8_t pin_id, bool subscribe);
 };
 
 }  // namespace gpio
