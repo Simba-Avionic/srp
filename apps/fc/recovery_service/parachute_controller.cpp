@@ -11,19 +11,10 @@
 #include "apps/fc/recovery_service/parachute_controller.hpp"
 #include <utility>
 #include "core/json/json_parser.h"
+#include "core/common/condition.h"
 namespace srp {
 namespace apps {
 namespace recovery {
-
-namespace {
-  constexpr auto kDefLinecutter_pin_id = 1;
-  constexpr auto kDefRecovery_servo_id = 63;
-  constexpr auto kDefServo_move_time = 500;
-  constexpr auto kDefServo_sequence_num = 3;
-  constexpr auto kDefLinecutter_sequence_num = 3;
-  constexpr auto kDefLinecutter_active_time = 3000;
-  constexpr auto kDefLinecutter_inactive_time = 1000;
-}
 
 std::optional<Parachute_config_t> ParachuteController::read_config(std::optional<srp::core::json::JsonParser> parser_) {
   Parachute_config_t config;
@@ -35,31 +26,27 @@ std::optional<Parachute_config_t> ParachuteController::read_config(std::optional
     return std::nullopt;
   }
   auto obj = obj_opt.value();
-  auto get_or_default = [&obj](const std::string& key, uint16_t default_value) {
-    return obj.GetNumber<decltype(default_value)>(key).value_or(default_value);
+  auto get_val = [&obj](const std::string& key) {
+    return obj.GetNumber<decltype(default_value)>(key).value();
   };
-  config.Linecutter_pin_id = get_or_default("linecutter_pin_id", kDefLinecutter_pin_id);
-  config.Recovery_servo_id = get_or_default("recovery_servo_id", kDefRecovery_servo_id);
-  config.Servo_move_time = get_or_default("servo_move_time", kDefServo_move_time);
-  config.Servo_sequence_num = get_or_default("servo_seq_num", kDefServo_sequence_num);
-  config.Linecutter_sequence_num = get_or_default("linecutter_sequence_num", kDefLinecutter_sequence_num);
-  config.Linecutter_active_time = get_or_default("linecutter_active_time", kDefLinecutter_active_time);
-  config.Linecutter_inactive_time = get_or_default("linecutter_inactive_time", kDefLinecutter_inactive_time);
+  config.servo_mosfet_id = get_val("mosfet_id");
+  config.mosfet_delay = get_val("mosfet_delay");
+  config.Linecutter_pin_id = get_val("linecutter_pin_id");
+  config.Recovery_servo_id = get_val("recovery_servo_id");
+  config.Servo_move_time = get_val("servo_move_time");
+  config.Servo_sequence_num = get_val("servo_seq_num");
+  config.Linecutter_sequence_num = get_val("linecutter_sequence_num");
+  config.Linecutter_active_time = get_val("linecutter_active_time");
+  config.Linecutter_inactive_time = get_val("linecutter_inactive_time");
+  config.backup_linecutter_activation_time = get_val("backup_linecutter_activation_time");
+  config.linecutter_active_height = get_val("linecutter_active_height");
   return config;
 }
 
 void ParachuteController::Init(std::unique_ptr<i2c::PCA9685>&& servo,
                               std::unique_ptr<gpio::GPIOController>&& gpio, const std::string& path) {
     auto config_opt = read_config(core::json::JsonParser::Parser(path + "etc/config.json"));
-    this->config_ = config_opt.value_or(Parachute_config_t{
-      kDefLinecutter_pin_id,
-      kDefRecovery_servo_id,
-      kDefServo_move_time,
-      kDefServo_sequence_num,
-      kDefLinecutter_sequence_num,
-      kDefLinecutter_active_time,
-      kDefLinecutter_inactive_time,
-    });
+    this->config_ = config_opt.value();
     this->servo_controller = std::move(servo);
     this->gpio_controller = std::move(gpio);
 }
@@ -74,12 +61,16 @@ bool ParachuteController::OpenParachute(bool diag) {
     if (!diag) {
       parachute_open = true;
     }
+    this->gpio_controller->SetPinValue(config_.servo_mosfet_id, 1);
+    std::this_thread::sleep_for(std::chrono::milliseconds(config_.mosfet_delay));
     for (uint8_t i = 0; i < config_.Servo_sequence_num; i++) {
       this->servo_controller->AutoSetServoPosition(config_.Recovery_servo_id, 1);
       std::this_thread::sleep_for(std::chrono::milliseconds(config_.Servo_move_time));
       this->servo_controller->AutoSetServoPosition(config_.Recovery_servo_id, 0);
       std::this_thread::sleep_for(std::chrono::milliseconds(config_.Servo_move_time));
     }
+    std::this_thread::sleep_for(std::chrono::milliseconds(config_.mosfet_delay));
+    this->gpio_controller->SetPinValue(config_.servo_mosfet_id, 0);
     return true;
 }
 bool ParachuteController::UnreefParachute(bool diag) {

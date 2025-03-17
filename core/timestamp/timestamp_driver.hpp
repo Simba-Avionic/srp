@@ -26,6 +26,7 @@ class TimestampController {
   bindings::com::shm::ShmProxy<int64_t> proxy_;
  public:
   std::optional<int64_t> GetNewTimeStamp();
+  int64_t GetDeltaTime(const int64_t now, const int64_t previous);
   void Init();
   TimestampController();
 };

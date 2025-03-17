@@ -4,27 +4,20 @@
         "actuator_id":62,
         "channel": 0,
         "on_pos" : 3000,
-        "off_pos" : 3,
-        "mosfet_id" : 1,
-        "on_losening_pos": 4000,
-        "off_losening_pos":200,
-        "servo_delay":100,
-        "mosfet_delay":100
-        },
-        {
-        "actuator_id":63,
-        "channel": 1,
-        "on_pos" : 3000,
-        "off_pos" : 1000
+        "off_pos" : 3
         }
-],
+    ],
     "parachute": {
+        "mosfet_id": 1,
+        "mosfet_delay": 100,
         "linecutter_pin_id" : 1,
-        "recovery_servo_id": 63,
+        "recovery_servo_id": 62,
         "servo_move_time": 500,
         "servo_seq_num": 3,
-        "linecutter_sequence_num" : 3,
+        "linecutter_sequence_num" : 2,
         "linecutter_active_time": 3000,
-        "linecutter_inactive_time": 1000
+        "linecutter_inactive_time": 1000,
+        "backup_linecutter_activation_time": 12,
+        "linecutter_active_height": 450
     }
 }

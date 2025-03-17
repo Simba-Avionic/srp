@@ -20,5 +20,6 @@ cc_binary(
         "//deployment/apps/fc/recovery_service:ara",
         "@srp_platform//ara/diag:uds_lib",
         "@srp_platform//ara/log",
+        "//core/common:condition_lib",
     ],
 )
