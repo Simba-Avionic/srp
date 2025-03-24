@@ -13,8 +13,10 @@
 
 #include <string>
 #include <vector>
+#include <memory>
 #include <cstdint>
 #include <functional>
+#include <thread>  // NOLINT
 #include "core/uart/Iuart_driver.hpp"
 #include "core/common/error_code.h"
 
@@ -25,9 +27,13 @@ namespace uart {
 class UartDriver: public IUartDriver {
  private:
   int serial_port;
-
+  UartCallbackHandler rx_callback;
+  std::unique_ptr<std::jthread> rx_thread;
  public:
-  bool Open(const std::string& portName, const uint32_t& baudrate = B9600) override;
+  void SetRxCallback(UartCallbackHandler rx_callback) override;
+  bool StartRxThread(const std::string& app_name) override;
+  bool Open(const std::string& portName, const uint32_t& baudrate = B9600,
+                                  UartConfig config = UartConfig()) override;
   std::optional<std::vector<uint8_t>> Read(const uint16_t size = 0) override;
   core::ErrorCode Write(const std::vector<uint8_t>& data) override;
   void Close() override;

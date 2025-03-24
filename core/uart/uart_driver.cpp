@@ -13,6 +13,7 @@
 #include <unistd.h>
 #include <termios.h>
 #include <errno.h>
+#include <csignal>
 #include <string>
 #include <vector>
 #include <cstring>
@@ -28,14 +29,14 @@ core::ErrorCode UartDriver::Write(const std::vector<uint8_t>& data) {
     if (n < 0) {
         return core::ErrorCode::kConnectionError;
     }
-    if (n != data.size()) {
+    if (static_cast<std::size_t>(n) != data.size()) {
         return core::ErrorCode::kError;
     }
     return core::ErrorCode::kOk;
 }
 
-bool UartDriver::Open(const std::string& portName, const uint32_t& baudrate) {
-    serial_port = open(portName.c_str(), O_RDWR | O_NOCTTY);
+bool UartDriver::Open(const std::string& portName, const uint32_t& baudrate, UartConfig config) {
+    serial_port = open(portName.c_str(), O_RDWR | O_NOCTTY | O_NONBLOCK);
     if (serial_port == -1) {
         return false;
     }
@@ -45,13 +46,21 @@ bool UartDriver::Open(const std::string& portName, const uint32_t& baudrate) {
     }
     cfsetospeed(&tty, baudrate);
     cfsetispeed(&tty, baudrate);
-    tty.c_cflag &= ~PARENB;  // Brak parzystości
-    tty.c_cflag &= ~CSTOPB;  // Jeden bit stopu
+    if (!config.enable_partity) {
+        tty.c_cflag &= ~PARENB;  // Brak parzystości
+    } else {
+        tty.c_cflag |= PARENB;  // ENABLE PARTITY
+    }
+    if (config.two_stop_bits) {
+        tty.c_cflag |= CSTOPB;  // TWO STOP BITS
+    } else {
+        tty.c_cflag &= ~CSTOPB;  // Jeden bit stopu
+    }
     tty.c_cflag &= ~CSIZE;
-    tty.c_cflag |= CS8;  // 8 bitów danych
+    tty.c_cflag |= config.bits;
     tty.c_cflag &= ~CRTSCTS;  // Brak kontroli sprzętowej
     tty.c_cflag |= CREAD | CLOCAL;
-    tty.c_cc[VTIME] = 10;    // Wait for up to 1s (10 deciseconds), returning as soon as any data is received.
+    tty.c_cc[VTIME] = config.read_wait_time;
     tty.c_cc[VMIN] = 0;
     tcsetattr(serial_port, TCSANOW, &tty);
     return true;
@@ -66,7 +75,34 @@ std::optional<std::vector<uint8_t>> UartDriver::Read(const uint16_t size) {
     }
     return std::nullopt;
 }
+void UartDriver::SetRxCallback(UartCallbackHandler rx_callback) {
+    this->rx_callback = rx_callback;
+}
+bool UartDriver::StartRxThread(const std::string& app_name) {
+    if (!this->rx_callback) {
+        return false;
+    }
+    if (!rx_thread) {
+        return false;
+    }
+    this->rx_thread = std::make_unique<std::jthread>(
+        [&](std::stop_token stoken) {
+            while (!stoken.stop_requested()) {
+                auto val = this->Read();
+                if (val.has_value()) {
+                    this->rx_callback(val.value());
+                }
+            }
+    });
+    std::string name = "Uart_Thread" + app_name;
+    pthread_setname_np(this->rx_thread->native_handle(), name.c_str());
+    return true;
+}
 void UartDriver::Close() {
+    if (rx_thread) {
+        rx_thread->request_stop();
+        rx_thread->join();
+    }
     close(serial_port);
 }
 

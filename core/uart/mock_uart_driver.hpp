@@ -18,10 +18,13 @@
 
 class MockUartDriver : public srp::core::uart::IUartDriver {
  public:
-    MOCK_METHOD(bool, Open, (const std::string& portName, const uint32_t& baudrate), (override));
+    MOCK_METHOD(bool, Open, (const std::string& portName, const uint32_t& baudrate,
+                                                srp::core::uart::UartConfig config), (override));
     MOCK_METHOD(std::optional<std::vector<uint8_t>>, Read, (const uint16_t size), (override));
     MOCK_METHOD(void, Close, (), (override));
     MOCK_METHOD(srp::core::ErrorCode, Write, (const std::vector<uint8_t>& data), (override));
+    MOCK_METHOD(void, SetRxCallback, (srp::core::uart::UartCallbackHandler rx_callback), (override));
+    MOCK_METHOD(bool, StartRxThread, (const std::string& app_name), (override));
 };
 
 #endif  // CORE_UART_MOCK_UART_DRIVER_HPP_

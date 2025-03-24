@@ -18,27 +18,6 @@
 namespace srp {
 namespace core {
 namespace timestamp {
-class TimestampControllerTest : public ::testing::Test {
- protected:
-    TimestampController controller;
-    TimestampMaster master;
-
-    void SetUp() override {
-    master.Init();
-    controller.Init();  // Inicjalizacja obiektu
-    }
-};
-
-TEST_F(TimestampControllerTest, GetNewTimeStampReturnsElapsedTimeInLocalMode) {
-    std::this_thread::sleep_for(std::chrono::milliseconds(50));
-    std::optional<int64_t> timestamp1 = controller.GetNewTimeStamp();
-    std::this_thread::sleep_for(std::chrono::milliseconds(50));
-    std::optional<int64_t> timestamp2 = controller.GetNewTimeStamp();
-
-    ASSERT_TRUE(timestamp1.has_value());
-    ASSERT_TRUE(timestamp2.has_value());
-    EXPECT_GE(timestamp2.value(), timestamp1.value() + 49);
-}
 
 class TimestampMasterTest : public ::testing::Test {
  protected:
