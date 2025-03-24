@@ -12,6 +12,7 @@
 #include <utility>
 #include "core/json/json_parser.h"
 #include "core/common/condition.h"
+#include "ara/log/log.h"
 namespace srp {
 namespace apps {
 namespace recovery {
@@ -27,15 +28,20 @@ std::optional<Parachute_config_t> ParachuteController::read_config(std::optional
   }
   auto obj = obj_opt.value();
   auto get_val = [&obj](const std::string& key) {
-    return obj.GetNumber<decltype(default_value)>(key).value();
+    auto val = obj.GetNumber<uint16_t>(key);
+    if (!val.has_value()) {
+      ara::log::LogError() << "Value with name: " << key << ", not define";
+      exit(1);
+    }
+    return obj.GetNumber<uint16_t>(key).value();
   };
-  config.servo_mosfet_id = get_val("mosfet_id");
+  config.servo_mosfet_id = static_cast<uint8_t>(get_val("mosfet_id"));
   config.mosfet_delay = get_val("mosfet_delay");
-  config.Linecutter_pin_id = get_val("linecutter_pin_id");
-  config.Recovery_servo_id = get_val("recovery_servo_id");
+  config.linecutter_pin_id = static_cast<uint8_t>(get_val("linecutter_pin_id"));
+  config.Recovery_servo_id = static_cast<uint8_t>(get_val("recovery_servo_id"));
   config.Servo_move_time = get_val("servo_move_time");
-  config.Servo_sequence_num = get_val("servo_seq_num");
-  config.Linecutter_sequence_num = get_val("linecutter_sequence_num");
+  config.Servo_sequence_num = static_cast<uint8_t>(get_val("servo_seq_num"));
+  config.Linecutter_sequence_num = static_cast<uint8_t>(get_val("linecutter_sequence_num"));
   config.Linecutter_active_time = get_val("linecutter_active_time");
   config.Linecutter_inactive_time = get_val("linecutter_inactive_time");
   config.backup_linecutter_activation_time = get_val("backup_linecutter_activation_time");
@@ -84,9 +90,9 @@ bool ParachuteController::UnreefParachute(bool diag) {
       parachute_unreefed = true;
     }
     for (auto i = 0; i < config_.Linecutter_sequence_num; i++) {
-      this->gpio_controller->SetPinValue(config_.Linecutter_pin_id, 1);
+      this->gpio_controller->SetPinValue(config_.linecutter_pin_id, 1);
       std::this_thread::sleep_for(std::chrono::milliseconds(config_.Linecutter_active_time));
-      this->gpio_controller->SetPinValue(config_.Linecutter_pin_id, 0);
+      this->gpio_controller->SetPinValue(config_.linecutter_pin_id, 0);
       std::this_thread::sleep_for(std::chrono::milliseconds(config_.Linecutter_inactive_time));
     }
     return true;

@@ -32,7 +32,7 @@ class RecoveryService final : public ara::exec::AdaptiveApplication {
   std::unique_ptr<apps::MyRecoveryServiceSkeleton> service_udp;
   std::unique_ptr<apps::RecoveryGenericRoutine> rec_did;
   core::timestamp::TimestampController timestamp_;
-  int64_t apogee_time{0};
+  int64_t apogee_time;
   bool rocket_started;
 
   bool DetectTargetHeight();

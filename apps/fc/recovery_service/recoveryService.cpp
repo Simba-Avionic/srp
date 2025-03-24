@@ -30,7 +30,7 @@ RecoveryService::RecoveryService(): rec_did_specifier(KRec_did_name), rocket_sta
 bool RecoveryService::DetectTargetHeight() {
   static auto activation_height = controller->GetTargetActivationHeight();
   static auto activation_time = controller->GetTargetActivationTime();
-  auto actual_height = 500; // TODO() add read actual height
+  auto actual_height = 500;  // TODO(matik) add read actual height
   auto now = timestamp_.GetNewTimeStamp();
   if (now.has_value()) {
     auto buckup_detected = timestamp_.GetDeltaTime(now.value(), apogee_time) >= activation_time;
@@ -39,7 +39,7 @@ bool RecoveryService::DetectTargetHeight() {
   return actual_height <= actual_height;
 }
 bool RecoveryService::ApogeeDetected() {
-  // TODO() make algorithm that detect apogee
+  // TODO(matik) make algorithm that detect apogee
   return false;
 }
 
