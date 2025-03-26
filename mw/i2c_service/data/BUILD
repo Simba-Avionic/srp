@@ -11,6 +11,7 @@ cc_library(
         "//communication-core/network-data:network_data_type",
     ],
     visibility = ["//visibility:public"],
+    deprecation = "Use: @srp_platform//tools/model_generator/ara:data_structure_generator.bzl",
 )
 cc_library(
     name = "i2c_factory",
@@ -20,4 +21,5 @@ cc_library(
     deps = [
         ":i2c_hdr"
     ],
+    deprecation = "Use: @srp_platform//tools/model_generator/ara:data_structure_generator.bzl",
 )
