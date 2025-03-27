@@ -13,7 +13,8 @@ cc_library(
         "gpio_mw_did.h",
     ],
     deps = [
-        "//mw/gpio_server/data:gpio_hdr",
+        "//mw/gpio_server/data:shared_data",
+        "//mw/gpio_server/data:gpio_com_data",
         "//core/json:simba_json",
         "@srp_platform//ara/exec:adaptive_application_lib",
         "//core/common:condition_lib",

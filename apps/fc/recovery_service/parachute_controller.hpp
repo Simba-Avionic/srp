@@ -19,13 +19,17 @@ namespace apps {
 namespace recovery {
 
 struct Parachute_config_t {
-  uint8_t Linecutter_pin_id;
-  uint8_t Recovery_servo_id;
+  uint16_t mosfet_delay;
   uint16_t Servo_move_time;
-  uint8_t Servo_sequence_num;
-  uint8_t Linecutter_sequence_num;
   uint16_t Linecutter_active_time;
   uint16_t Linecutter_inactive_time;
+  uint16_t backup_linecutter_activation_time;
+  uint16_t linecutter_active_height;
+  uint8_t servo_mosfet_id;
+  uint8_t linecutter_pin_id;
+  uint8_t Recovery_servo_id;
+  uint8_t Servo_sequence_num;
+  uint8_t Linecutter_sequence_num;
 };
 
 class ParachuteController {
@@ -38,6 +42,8 @@ class ParachuteController {
 
   std::optional<Parachute_config_t> read_config(std::optional<srp::core::json::JsonParser> parser_);
  public:
+  uint16_t GetTargetActivationHeight() { return this->config_.linecutter_active_height; }
+  uint16_t GetTargetActivationTime() { return this->config_.backup_linecutter_activation_time; }
   bool OpenParachute(bool diag = false);
   bool UnreefParachute(bool diag = false);
   void Init(std::unique_ptr<i2c::PCA9685>&& servo,

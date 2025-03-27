@@ -21,6 +21,7 @@
 #include "mw/i2c_service/controller/pca9685/controller.hpp"
 #include "apps/fc/recovery_service/parachute_controller.hpp"
 #include "apps/fc/recovery_service/recovery_rid.hpp"
+#include "core/timestamp/timestamp_driver.hpp"
 namespace srp {
 namespace service {
 class RecoveryService final : public ara::exec::AdaptiveApplication {
@@ -30,6 +31,12 @@ class RecoveryService final : public ara::exec::AdaptiveApplication {
   std::unique_ptr<apps::MyRecoveryServiceSkeleton> service_ipc;
   std::unique_ptr<apps::MyRecoveryServiceSkeleton> service_udp;
   std::unique_ptr<apps::RecoveryGenericRoutine> rec_did;
+  core::timestamp::TimestampController timestamp_;
+  int64_t apogee_time;
+  bool rocket_started;
+
+  bool DetectTargetHeight();
+  bool ApogeeDetected();
 
  protected:
   /**

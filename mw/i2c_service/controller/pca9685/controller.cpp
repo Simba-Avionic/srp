@@ -122,13 +122,10 @@ core::ErrorCode PCA9685::AutoSetServoPosition(const uint8_t &actuator_id, const 
     if (it->second.need_mosfet) {
        if (this->gpio_->SetPinValue(it->second.mosfet_id, OPEN) != core::ErrorCode::kOk) {
             // TODO(matikrajek42@gmail.com) generate DTC error
+            return core::ErrorCode::kError;
        }
+       std::this_thread::sleep_for(std::chrono::milliseconds(it->second.servo_delay));
     }
-    /**
-     * @brief odczekujemy na załączenie mosfetu
-     * 
-     */
-    std::this_thread::sleep_for(std::chrono::milliseconds(it->second.servo_delay));
     /**
      * @brief ustawiamy servo w odpowiednia pozycje
      * 
@@ -146,6 +143,7 @@ core::ErrorCode PCA9685::AutoSetServoPosition(const uint8_t &actuator_id, const 
         if (this->SetServo(it->second.channel, (it->second.position == OPEN) ?
                 it->second.on_loosening : it->second.off_loosening)  != core::ErrorCode::kOk) {
             // TODO(matikrajek42@gmail.com) generate DTC error
+            return core::ErrorCode::kError;
         }
     }
     /**

@@ -21,3 +21,8 @@ data_structure_generator(
     ],
     visibility = ["//visibility:public"],
 )
+cc_library(
+    name = "shared_data",
+    hdrs = ["enums.hpp"],
+    visibility = ["//visibility:public"],
+)

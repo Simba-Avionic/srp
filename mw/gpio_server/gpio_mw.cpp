@@ -18,7 +18,8 @@
 #include <sstream>
 
 #include "gpio_mw.hpp"
-#include "mw/gpio_server/data/header.hpp"
+#include "srp/mw/gpio/GpioHdr.h"
+#include "mw/gpio_server/data/enums.hpp"
 #include "core/json/json_parser.h"
 #include "core/common/condition.h"
 #include "core/gpio/Igpio_driver.hpp"
@@ -47,23 +48,25 @@ GPIOMWService::GPIOMWService():did_instance("/srp/mw/gpio_service/gpio_pin_did")
 
 std::vector<uint8_t> GPIOMWService::RxCallback(const std::string& ip, const std::uint16_t& port,
   const std::vector<std::uint8_t> data) {
-    gpio::Header hdr(0, 0, gpio::ACTION::GET);
-    hdr.SetBuffor(data);
-    auto it = this->config.find(hdr.GetActuatorID());
-    if (it == this->config.end()) {
-        ara::log::LogWarn() << "Unknown pin with ID: " << std::to_string(hdr.GetActuatorID());
+    std::optional<srp::mw::gpio::GpioHdr> hdr = srp::data::Convert<srp::mw::gpio::GpioHdr>::Conv(data);
+    if (!hdr.has_value()) {
         return {0};
     }
-    auto action = hdr.GetAction();
+    auto it = this->config.find(hdr.value().pin_id);
+    if (it == this->config.end()) {
+        ara::log::LogWarn() << "Unknown pin with ID: " << std::to_string(hdr.value().pin_id);
+        return {0};
+    }
+    auto action = hdr.value().action;
     switch (action) {
         case srp::gpio::ACTION::SET: {
             if (it->second.direction != core::gpio::direction_t::OUT) {
-                ara::log::LogWarn() << ("Try to set IN pin value, ID: " + std::to_string(hdr.GetActuatorID()));
+                ara::log::LogWarn() << ("Try to set IN pin value, ID: " + std::to_string(hdr.value().pin_id));
                 return {core::ErrorCode::kError};
             }
-            if (this->gpio_driver_->setValue(it->second.pinNum, hdr.GetValue()) == core::ErrorCode::kOk) {
+            if (this->gpio_driver_->setValue(it->second.pinNum, hdr.value().value) == core::ErrorCode::kOk) {
                 ara::log::LogDebug() << ("Change pin with ID:" + std::to_string(it->first) +
-                                         ", to value:" + std::to_string(hdr.GetValue()));
+                                         ", to value:" + std::to_string(hdr.value().value));
                 return {core::ErrorCode::kOk};
             }
             return {core::ErrorCode::kError};
@@ -71,16 +74,16 @@ std::vector<uint8_t> GPIOMWService::RxCallback(const std::string& ip, const std:
 
         case srp::gpio::ACTION::GET: {
             auto val = this->gpio_driver_->getValue(it->second.pinNum);
-            gpio::Header resHeader(hdr.GetActuatorID(), val, gpio::ACTION::RES);
-            return resHeader.GetBuffor();
+            srp::mw::gpio::GpioHdr hdr2{srp::gpio::ACTION::RES, hdr.value().pin_id, val};
+            return srp::data::Convert2Vector<srp::mw::gpio::GpioHdr>::Conv(hdr2);
         }
 
         // subscriptions and unsubscriptions have different return values
         // 0 means failure, any other value is success
         // additionally, in case of subscription, the return value is the controller ID
         case srp::gpio::ACTION::SUBSCRIBE: {
-            auto controller_id = hdr.GetValue();
-            auto pin_id = hdr.GetActuatorID();
+            auto controller_id = hdr.value().value;
+            auto pin_id = hdr.value().pin_id;
             ara::log::LogDebug() << "subscription request from controller ID: " << std::to_string(controller_id)
                                  << " for pin ID: " << std::to_string(pin_id);
             if (config.find(pin_id) == config.end()) {
@@ -100,8 +103,8 @@ std::vector<uint8_t> GPIOMWService::RxCallback(const std::string& ip, const std:
         }
 
         case srp::gpio::ACTION::UNSUBSCRIBE: {
-            auto controller_id = hdr.GetValue();
-            auto pin_id = hdr.GetActuatorID();
+            auto controller_id = hdr.value().value;
+            auto pin_id = hdr.value().pin_id;
             if (subscribed_pins_states.find(pin_id) == subscribed_pins_states.end() ||
                 callbacks.find(pin_id) == callbacks.end()) {
                 ara::log::LogWarn() << "unsubscription failed, unknown pin ID: " << std::to_string(pin_id);
@@ -144,9 +147,10 @@ void GPIOMWService::PollSubscribedPinsLoop(const std::stop_token& token) {
                                  << " changed state to: " << std::to_string(state);
             pair.second = state;
             for (auto controller_id : callbacks[pair.first]) {
-                gpio::Header hdr(pair.first, state, gpio::ACTION::CALLBACK);
+                srp::mw::gpio::GpioHdr hdr{srp::gpio::ACTION::CALLBACK, pair.first, state};
+                auto buf = srp::data::Convert2Vector<srp::mw::gpio::GpioHdr>::Conv(hdr);
                 std::string callback_path = CALLBACK_PATH_PREFIX + std::to_string(controller_id);
-                auto res = this->sock_->Transmit(callback_path, 0, hdr.GetBuffor());
+                auto res = this->sock_->Transmit(callback_path, 0, buf);
                 ara::log::LogDebug() << "callback to controller ID: " << std::to_string(controller_id)
                                      << " for pin ID: " << std::to_string(pair.first);
                 if (!res.has_value()) {

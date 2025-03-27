@@ -47,14 +47,16 @@ void GPIOController::ListenToCallbacks() {
 std::vector<uint8_t> GPIOController::HandleCallback(const std::string& _ip, const std::uint16_t& _port,
                                                     const std::vector<std::uint8_t>& data) {
     ara::log::LogDebug() << "controller ID: " << id << " received callback";
-    gpio::Header hdr(0, 0, gpio::ACTION::GET);
-    hdr.SetBuffor(data);
-    auto pin_id = hdr.GetActuatorID();
-    if (hdr.GetAction() != gpio::ACTION::CALLBACK) return {0};
+    std::optional<srp::mw::gpio::GpioHdr> hdr = srp::data::Convert<srp::mw::gpio::GpioHdr>::Conv(data);
+    if (!hdr.has_value()) {
+        return {0};
+    }
+    auto pin_id = hdr.value().pin_id;
+    if (hdr.value().action != gpio::ACTION::CALLBACK) return {0};
     if (!this->callback.has_value() || subsbribed_pins.find(pin_id) == subsbribed_pins.end()) {
         return {1};
     }
-    this->callback.value()(pin_id, hdr.GetValue());
+    this->callback.value()(pin_id, hdr.value().value);
     return {1};
 }
 
@@ -62,8 +64,9 @@ core::ErrorCode GPIOController::SetPinValue(uint8_t actuatorID, int8_t value) {
     if (this->sock_== nullptr) {
         return core::ErrorCode::kInitializeError;
     }
-    gpio::Header hdr(actuatorID, value, ACTION::SET);
-    auto res = this->sock_->Transmit(PATH, 0, hdr.GetBuffor());
+    srp::mw::gpio::GpioHdr hdr {gpio::ACTION::SET, actuatorID, static_cast<uint8_t>(value)};
+    auto buf = srp::data::Convert2Vector<srp::mw::gpio::GpioHdr>::Conv(hdr);
+    auto res = this->sock_->Transmit(PATH, 0, buf);
     if (res.has_value()) {
       return (core::ErrorCode)res.value()[0];
     }
@@ -74,14 +77,17 @@ std::optional<int8_t> GPIOController::GetPinValue(uint8_t actuatorID) {
     if (this->sock_ == nullptr) {
         return std::nullopt;
     }
-    gpio::Header hdr(actuatorID, 0, gpio::ACTION::GET);
-    auto res = this->sock_->Transmit(PATH, 0, hdr.GetBuffor());
+    srp::mw::gpio::GpioHdr hdr {gpio::ACTION::GET, actuatorID, 0};
+    auto buf = srp::data::Convert2Vector<srp::mw::gpio::GpioHdr>::Conv(hdr);
+    auto res = this->sock_->Transmit(PATH, 0, buf);
     if (!res.has_value()) {
         return std::nullopt;
     }
-    gpio::Header resHdr(0, 0, gpio::ACTION::RES);
-    resHdr.SetBuffor(res.value());
-    return resHdr.GetValue();
+    auto resHdr = srp::data::Convert<srp::mw::gpio::GpioHdr>::Conv(res.value());
+    if (!resHdr.has_value()) {
+        return std::nullopt;
+    }
+    return resHdr.value().value;
 }
 
 core::ErrorCode GPIOController::ManagePinSubscription(const uint8_t pin_id, const bool subscribe) {
@@ -95,8 +101,9 @@ core::ErrorCode GPIOController::ManagePinSubscription(const uint8_t pin_id, cons
         return core::ErrorCode::kOk;
     }
     auto action = subscribe ? gpio::ACTION::SUBSCRIBE : gpio::ACTION::UNSUBSCRIBE;
-    gpio::Header hdr(pin_id, id, action);
-    auto res = this->sock_->Transmit(PATH, 0, hdr.GetBuffor());
+    srp::mw::gpio::GpioHdr hdr {action, pin_id, id};
+    auto buf = srp::data::Convert2Vector<srp::mw::gpio::GpioHdr>::Conv(hdr);
+    auto res = this->sock_->Transmit(PATH, 0, buf);
     if (!res.has_value()) {
         return core::ErrorCode::kConnectionError;
     }
