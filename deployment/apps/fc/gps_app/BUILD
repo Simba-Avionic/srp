@@ -10,6 +10,7 @@ filegroup(
     visibility = [
         "//apps/fc/gps_service:__subpackages__",
         "//deployment/apps/fc/gps_service:__subpackages__",
+        "//deployment/apps/fc/radio_app:__subpackages__"
     ],
 )
 
