@@ -26,13 +26,17 @@ int64_t GetNow() {
     .count();
 }
 
-void TimestampController::Init() {
+bool TimestampController::Init() {
   uint8_t i = 0;
   do {
     std::this_thread::sleep_for(std::chrono::seconds(1));
     i += 1;
-  } while (!proxy_.FindService() && i <= kMax_Wait);
+  } while (!proxy_.FindService().HasValue() && i <= kMax_Wait);
   // error
+  if (i == kMax_Wait) {
+    return false;
+  }
+  return true;
 }
 TimestampController::TimestampController(): instance_(kTimestamp_instance), proxy_(this->instance_) {
 }
@@ -51,10 +55,13 @@ std::optional<int64_t> TimestampController::GetNewTimeStamp() {
 TimestampMaster::TimestampMaster(): instance_(kTimestamp_instance), skeleton_(instance_) {
 }
 
-void TimestampMaster::Init() {
-  skeleton_.OfferService();
+bool TimestampMaster::Init() {
+  if (!skeleton_.OfferService().HasValue()) {
+    return false;
+  }
   start = GetNow();
   skeleton_.Send(start);
+  return true;
 }
 
 void TimestampMaster::CorrectStartPoint(const int64_t offset) {

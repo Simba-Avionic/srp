@@ -55,6 +55,7 @@ std::optional<GPS_DATA_T> Nmea::Parse(const std::string& gps_data) {
         data.height = std::stof(res[8]);
         return data;
     }
+    // TODO(simba) add support for other MSG types than GNGGA
     return std::nullopt;
     } catch (const std::exception& e) {
         return std::nullopt;
