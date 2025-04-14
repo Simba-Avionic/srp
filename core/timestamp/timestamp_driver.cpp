@@ -36,6 +36,9 @@ void TimestampController::Init() {
 }
 TimestampController::TimestampController(): instance_(kTimestamp_instance), proxy_(this->instance_) {
 }
+int64_t TimestampController::GetDeltaTime(const int64_t now, const int64_t previous) {
+  return now - previous;
+}
 
 std::optional<int64_t> TimestampController::GetNewTimeStamp() {
     auto res = proxy_.GetNewSamples();

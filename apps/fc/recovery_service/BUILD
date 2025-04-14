@@ -14,11 +14,12 @@ cc_binary(
         ],
     deps = [
         "@srp_platform//ara/exec:adaptive_application_lib",
+        "@srp_platform//ara/diag:uds_lib",
+        "@srp_platform//ara/log",
         "//core/common:condition_lib",
         "//mw/i2c_service/controller/pca9685:pca9685_controller",
         "//deployment/apps/fc/recovery_service:someip_lib",
         "//deployment/apps/fc/recovery_service:ara",
-        "@srp_platform//ara/diag:uds_lib",
-        "@srp_platform//ara/log",
+        "//core/timestamp:timestamp_controller",
     ],
 )

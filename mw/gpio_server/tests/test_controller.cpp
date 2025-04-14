@@ -12,6 +12,8 @@
 
 #include "mw/gpio_server/controller/gpio_controller.hpp"
 #include "communication-core/sockets/mock/mockSocket.h"
+#include "srp/mw/gpio/GpioHdr.h"
+#include "mw/gpio_server/data/enums.hpp"
 #include "core/common/error_code.h"
 
 class SetPinTest : public ::testing::TestWithParam<
@@ -74,12 +76,13 @@ INSTANTIATE_TEST_SUITE_P(GetPinTestParameters, GetPinTest,
 
 TEST_P(GetPinTest, CONTROLLER_GET_PIN_VALUE_CHECK) {
   auto params = GetParam();
-  uint16_t actuatorID = std::get<0>(params);
-  int8_t value = std::get<1>(params);
+  uint8_t actuatorID = std::get<0>(params);
+  uint8_t value = std::get<1>(params);
   auto sock_ = std::make_unique<MockStreamSocket>();
   EXPECT_CALL(*sock_, Transmit(::testing::_, ::testing::_, ::testing::_))
             .WillOnce(::testing::Return(std::vector<uint8_t>{
-                        srp::gpio::Header(actuatorID, value, srp::gpio::ACTION::RES).GetBuffor()}));
+              srp::data::Convert2Vector<srp::mw::gpio::GpioHdr>
+                    ::Conv(srp::mw::gpio::GpioHdr(srp::gpio::ACTION::RES, actuatorID, value))}));
   srp::gpio::GPIOController gpio_(std::move(sock_));
   EXPECT_EQ(gpio_.GetPinValue(actuatorID), value);
 }
