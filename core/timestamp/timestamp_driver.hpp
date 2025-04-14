@@ -27,7 +27,7 @@ class TimestampController {
  public:
   std::optional<int64_t> GetNewTimeStamp();
   int64_t GetDeltaTime(const int64_t now, const int64_t previous);
-  void Init();
+  bool Init();
   TimestampController();
 };
 
@@ -41,7 +41,7 @@ class TimestampMaster {
   TimestampMaster();
   int64_t GetNewTimeStamp();
   void CorrectStartPoint(const int64_t offset);
-  void Init();
+  bool Init();
 };
 
 }  // namespace timestamp

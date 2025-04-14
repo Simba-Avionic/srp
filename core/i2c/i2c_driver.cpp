@@ -17,7 +17,7 @@ namespace core {
 namespace i2c {
 
 namespace {
-  const constexpr char *path = "/dev/i2c-2";
+  const constexpr auto kPath = "/dev/i2c-2";
 }
 
 I2CDriver::I2CDriver(): i2c_logger_ {
@@ -29,7 +29,7 @@ I2CDriver::~I2CDriver() {
   close(this->i2cFile);
 }
 core::ErrorCode I2CDriver::Init() {
-  if ((this->i2cFile = open(path, O_RDWR)) < 0) {
+  if ((this->i2cFile = open(kPath, O_RDWR)) < 0) {
     return core::ErrorCode::kInitializeError;
   }
   return core::ErrorCode::kOk;
