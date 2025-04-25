@@ -18,6 +18,7 @@
 
 #include "ara/exec/adaptive_application.h"
 #include "lib/simba/mavlink.h"
+#include "apps/fc/radio_service/event_data.h"
 #include "srp/env/EnvApp/EnvAppHandler.h"
 #include "srp/apps/GPSService/GPSServiceHandler.h"
 #include "srp/apps/PrimerService/PrimerServiceHandler.h"
@@ -29,13 +30,9 @@
 
 namespace srp {
 namespace apps {
-class RadioApp final : public ara::exec::AdaptiveApplication {
+class RadioApp : public ara::exec::AdaptiveApplication {
  private:
-  __mavlink_simba_tank_temperature_t temp;
-  __mavlink_simba_tank_pressure_t press;
-  __mavlink_simba_gps_t gps;
-  __mavlink_simba_actuator_t actuator;
-  std::mutex mutex_;
+  std::shared_ptr<EventData> event_data;
   PrimerServiceProxy primer_service_proxy;
   std::shared_ptr<PrimerServiceHandler> primer_service_handler;
   ServoServiceProxy servo_service_proxy;
@@ -49,12 +46,16 @@ class RadioApp final : public ara::exec::AdaptiveApplication {
   std::unique_ptr<apps::RadioServiceSkeleton> service_ipc;
   std::unique_ptr<apps::RadioServiceSkeleton> service_udp;
   std::unique_ptr<core::uart::IUartDriver> uart_;
+  std::unique_ptr<core::timestamp::ITimestampController> timestamp_;
   void SomeIpInit();
+
+ protected:
+  void InitUart(std::unique_ptr<core::uart::IUartDriver> uart);
+  void InitTimestamp(std::unique_ptr<core::timestamp::ITimestampController> timestamp);
   void TransmittingLoop(const std::stop_token& token);
 
  public:
   int Run(const std::stop_token& token) override;
-  void Init(std::unique_ptr<core::uart::IUartDriver> uart);
   int Initialize(const std::map<ara::core::StringView, ara::core::StringView>
     parms) override;
   ~RadioApp();

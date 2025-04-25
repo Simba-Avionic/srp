@@ -10,7 +10,7 @@ filegroup(
     visibility = [
         "//apps/prim_service:__subpackages__",
         "//deployment/apps/engine_app:__subpackages__",
-        "//deployment/apps/fc/radio_app:__subpackages__"
+        "//deployment/apps/fc/radio_app:__subpackages__",
     ],
 )
 

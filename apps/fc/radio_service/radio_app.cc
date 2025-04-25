@@ -25,47 +25,47 @@ constexpr auto kServo_service_path_name = "srp/apps/RadioApp/ServoService";
 constexpr auto kRecovery_service_path_name = "srp/apps/RadioApp/RecoveryService";
 constexpr auto KGPS_UART_path = "/dev/ttyS1";
 constexpr auto KGPS_UART_baudrate = B115200;
-constexpr auto systemId = 1;
+constexpr auto kSystemId = 1;
 }  // namespace
 
 
 
 void RadioApp::TransmittingLoop(const std::stop_token& token) {
-  core::timestamp::TimestampController timestamp_;
   mavlink_message_t msg;
   uint8_t buffer[MAVLINK_MAX_PACKET_LEN];
-  timestamp_.Init();
+  timestamp_->Init();
+  event_data = EventData::GetInstance();
   while (!token.stop_requested()) {
     // TODO(m.mankowski2004@gmail.com): Change the component IDs
-    std::unique_lock<std::mutex> lock(this->mutex_);
-    mavlink_msg_simba_tank_temperature_pack(systemId, 200, &msg,
-      temp.temp1, temp.temp2, temp.temp3);
-    uint16_t len = mavlink_msg_to_send_buffer(buffer, &msg);
-    uart_->Write(std::vector<uint8_t>(buffer, buffer + len));
-
-    mavlink_msg_simba_tank_pressure_pack(systemId, 200, &msg,
-      press.Dpressure, press.pressure);
-    len = mavlink_msg_to_send_buffer(buffer, &msg);
-    uart_->Write(std::vector<uint8_t>(buffer, buffer + len));
-
-    mavlink_msg_simba_gps_pack(systemId, 200, &msg,
-      gps.lon, gps.lat, 0);  // add altitude later
-    len = mavlink_msg_to_send_buffer(buffer, &msg);
-    uart_->Write(std::vector<uint8_t>(buffer, buffer + len));
-
-    auto val = timestamp_.GetNewTimeStamp();
-    if (val.has_value()) {
-      mavlink_msg_simba_heartbeat_pack(systemId, 200, &msg,
-        static_cast<uint64_t>(val.value()), 0, 0);  // add later the status of both computers
-      len = mavlink_msg_to_send_buffer(buffer, &msg);
+    auto start = std::chrono::high_resolution_clock::now();
+    {
+    auto send = [&](auto pack_func) {
+      pack_func();
+      uint16_t len = mavlink_msg_to_send_buffer(buffer, &msg);
       uart_->Write(std::vector<uint8_t>(buffer, buffer + len));
+    };
+    auto temp1 = event_data->GetTemp1();
+    auto temp2 = event_data->GetTemp2();
+    auto temp3 = event_data->GetTemp3();
+    auto Dpress = event_data->GetDPress();
+    auto press = event_data->GetPress();
+    auto gpsLat = event_data->GetGPSLat();
+    auto gpsLon = event_data->GetGPSLon();
+    auto actuator = event_data->GetActuator();
+    send([&] { mavlink_msg_simba_tank_temperature_pack(kSystemId, 200, &msg, temp1, temp2, temp3); });
+    send([&] { mavlink_msg_simba_tank_pressure_pack(kSystemId, 200, &msg, Dpress, press); });
+    // TODO(m.mankowski2004@gmail.com): change altitude
+    send([&] { mavlink_msg_simba_gps_pack(kSystemId, 200, &msg, gpsLon, gpsLat, 0); });
+    auto val = timestamp_->GetNewTimeStamp();
+    if (val.has_value()) {
+      // TODO(m.mankowski2004@gmail.com): add later the status of both computers
+      send([&] { mavlink_msg_simba_heartbeat_pack(kSystemId, 200, &msg, static_cast<uint64_t>(val.value()), 0, 0); });
     }
-    mavlink_msg_simba_actuator_pack(systemId, 200, &msg,
-      actuator.values);
-    len = mavlink_msg_to_send_buffer(buffer, &msg);
-    uart_->Write(std::vector<uint8_t>(buffer, buffer + len));
-    lock.unlock();
-    core::condition::wait_for(std::chrono::milliseconds(1000), token);  // 1 Hz
+    send([&] { mavlink_msg_simba_actuator_pack(kSystemId, 200, &msg, actuator); });
+    }
+    auto end = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+    core::condition::wait_for(std::chrono::milliseconds(1000 - duration.count()), token);  // 1 Hz
   }
 }
 
@@ -80,22 +80,29 @@ int RadioApp::Run(const std::stop_token& token) {
     return core::ErrorCode::kOk;
 }
 
-void RadioApp::Init(std::unique_ptr<core::uart::IUartDriver> uart) {
+void RadioApp::InitUart(std::unique_ptr<core::uart::IUartDriver> uart) {
     this->uart_ = std::move(uart);
 }
+
+void RadioApp::InitTimestamp(std::unique_ptr<core::timestamp::ITimestampController> timestamp) {
+    this->timestamp_ = std::move(timestamp);
+}
+
 int RadioApp::Initialize(const std::map<ara::core::StringView,
    ara::core::StringView> parms) {
     if (!this->uart_) {
         auto uart_d = std::make_unique<core::uart::UartDriver>();
-        Init(std::move(uart_d));
+        InitUart(std::move(uart_d));
     }
     if (!this->uart_->Open(KGPS_UART_path, KGPS_UART_baudrate)) {
         return 1;
       }
-    this->service_ipc = std::make_unique<apps::RadioServiceSkeleton>
-      (this->service_ipc_instance);
-    this->service_udp = std::make_unique<apps::RadioServiceSkeleton>
-      (this->service_udp_instance);
+    if (!this->timestamp_) {
+        auto timestamp_d = std::make_unique<core::timestamp::TimestampController>();
+        InitTimestamp(std::move(timestamp_d));
+    }
+    service_ipc = std::make_unique<apps::RadioServiceSkeleton>(service_ipc_instance);
+    service_udp = std::make_unique<apps::RadioServiceSkeleton>(service_udp_instance);
     service_ipc->StartOffer();
     service_udp->StartOffer();
     this->SomeIpInit();
@@ -110,8 +117,7 @@ void RadioApp::SomeIpInit() {
           if (!res.HasValue()) {
             return;
           }
-          std::unique_lock<std::mutex> lock(this->mutex_);
-          this->temp.temp1 = res.Value();
+          event_data->SetTemp1(res.Value());
         });
       });
       env_service_handler->newTempEvent_2.Subscribe(1, [this](const uint8_t status) {
@@ -120,8 +126,7 @@ void RadioApp::SomeIpInit() {
           if (!res.HasValue()) {
             return;
           }
-          std::unique_lock<std::mutex> lock(this->mutex_);
-          this->temp.temp2 = res.Value();
+          event_data->SetTemp2(res.Value());
         });
       });
       env_service_handler->newTempEvent_3.Subscribe(1, [this](const uint8_t status) {
@@ -130,8 +135,7 @@ void RadioApp::SomeIpInit() {
           if (!res.HasValue()) {
             return;
           }
-          std::unique_lock<std::mutex> lock(this->mutex_);
-          this->temp.temp3 = res.Value();
+          event_data->SetTemp3(res.Value());
         });
       });
       env_service_handler->newDPressEvent.Subscribe(1, [this](const uint8_t status) {
@@ -140,8 +144,7 @@ void RadioApp::SomeIpInit() {
           if (!res.HasValue()) {
             return;
           }
-          std::unique_lock<std::mutex> lock(this->mutex_);
-          this->press.Dpressure = res.Value();
+          event_data->SetDPress(res.Value());
         });
       });
       env_service_handler->newPressEvent.Subscribe(1, [this](const uint8_t status) {
@@ -150,8 +153,7 @@ void RadioApp::SomeIpInit() {
           if (!res.HasValue()) {
             return;
           }
-          std::unique_lock<std::mutex> lock(this->mutex_);
-          this->press.pressure = res.Value();
+          event_data->SetPress(res.Value());
         });
       });
     });
@@ -163,9 +165,7 @@ void RadioApp::SomeIpInit() {
           if (!res.HasValue()) {
             return;
           }
-          std::unique_lock<std::mutex> lock(this->mutex_);
-          std::memcpy(&this->gps.lon, &res.Value().longitude, sizeof(float));
-          std::memcpy(&this->gps.lat, &res.Value().latitude, sizeof(float));
+          event_data->SetGPS(res.Value().longitude, res.Value().latitude);
         });
       });
     });
@@ -177,9 +177,8 @@ void RadioApp::SomeIpInit() {
           if (!res.HasValue()) {
             return;
           }
-          std::unique_lock<std::mutex> lock(this->mutex_);
           uint8_t bit_position = 0;
-          this->actuator.values = (this->actuator.values & ~(1 << bit_position)) | (res.Value() << bit_position);
+          event_data->SetActuatorBit(res.Value(), bit_position);
         });
       });
     });
@@ -191,9 +190,8 @@ void RadioApp::SomeIpInit() {
           if (!res.HasValue()) {
             return;
           }
-          std::unique_lock<std::mutex> lock(this->mutex_);
           uint8_t bit_position = 1;
-          this->actuator.values = (this->actuator.values & ~(1 << bit_position)) | (res.Value() << bit_position);
+          event_data->SetActuatorBit(res.Value(), bit_position);
         });
       });
       servo_service_handler->ServoVentStatusEvent.Subscribe(1, [this](const uint8_t status) {
@@ -202,9 +200,8 @@ void RadioApp::SomeIpInit() {
           if (!res.HasValue()) {
             return;
           }
-          std::unique_lock<std::mutex> lock(this->mutex_);
           uint8_t bit_position = 2;
-          this->actuator.values = (this->actuator.values & ~(1 << bit_position)) | (res.Value() << bit_position);
+          event_data->SetActuatorBit(res.Value(), bit_position);
         });
       });
     });

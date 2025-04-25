@@ -12,7 +12,8 @@ cc_library(
         "radio_app.cc"
     ],
     hdrs = [
-        "radio_app.h"
+        "radio_app.h",
+        "event_data.h",
     ],
     visibility = ["//apps/fc/radio_service:__subpackages__",],
 )
