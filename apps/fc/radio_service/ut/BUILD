@@ -11,3 +11,14 @@ cc_test(
         "//core/timestamp:mock_timestamp_controller",
     ],
 )
+cc_test(
+    name = "event_data_test",
+    srcs = [
+        "event_data_test.cc",
+    ],
+    visibility = ["//visibility:public"],
+    deps = [
+        "@com_google_googletest//:gtest_main",
+        "//apps/fc/radio_service:radio_app_lib",
+    ],
+)

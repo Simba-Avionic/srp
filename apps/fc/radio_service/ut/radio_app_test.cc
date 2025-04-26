@@ -35,6 +35,9 @@ TEST(RADIOAPPTEST, InitializeTestNoUart) {
 
 class TestWrapper : public srp::apps::RadioApp {
  public:
+        TestWrapper(): RadioApp() {
+            this->event_data = srp::apps::EventData::GetInstance();
+        };
        void TestInitUart(std::unique_ptr<srp::core::uart::IUartDriver> uart) {
            InitUart(std::move(uart));
        }
@@ -42,7 +45,10 @@ class TestWrapper : public srp::apps::RadioApp {
            InitTimestamp(std::move(timestamp));
        }
        void TestTransmittingLoop(const std::stop_token& token) {
-           RadioApp::TransmittingLoop(token);
+           this->TransmittingLoop(token);
+       }
+       std::shared_ptr<srp::apps::EventData> GetEventDataPtr() {
+           return this->event_data;
        }
 };
 
@@ -139,6 +145,7 @@ TEST_P(EventDataTest, ValidateEventData) {
     std::jthread transmitting_thread([&wrapper_](const std::stop_token& token) {
         wrapper_.TestTransmittingLoop(token);
     });
+    ASSERT_EQ(event_data.get(), wrapper_.GetEventDataPtr().get());
     std::this_thread::sleep_for(std::chrono::milliseconds(900));
     transmitting_thread.request_stop();
     transmitting_thread.join();

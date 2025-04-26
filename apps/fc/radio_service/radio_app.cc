@@ -35,6 +35,7 @@ void RadioApp::TransmittingLoop(const std::stop_token& token) {
   uint8_t buffer[MAVLINK_MAX_PACKET_LEN];
   timestamp_->Init();
   event_data = EventData::GetInstance();
+  // TODO(m.mankowski2004@gmail.com): catch some error
   while (!token.stop_requested()) {
     // TODO(m.mankowski2004@gmail.com): Change the component IDs
     auto start = std::chrono::high_resolution_clock::now();

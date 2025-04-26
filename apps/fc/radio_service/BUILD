@@ -9,7 +9,8 @@ cc_library(
         "//core/uart:uart_driver"
     ],
     srcs = [
-        "radio_app.cc"
+        "radio_app.cc",
+        "event_data.cc",
     ],
     hdrs = [
         "radio_app.h",

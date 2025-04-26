@@ -32,7 +32,6 @@ namespace srp {
 namespace apps {
 class RadioApp : public ara::exec::AdaptiveApplication {
  private:
-  std::shared_ptr<EventData> event_data;
   PrimerServiceProxy primer_service_proxy;
   std::shared_ptr<PrimerServiceHandler> primer_service_handler;
   ServoServiceProxy servo_service_proxy;
@@ -53,7 +52,7 @@ class RadioApp : public ara::exec::AdaptiveApplication {
   void InitUart(std::unique_ptr<core::uart::IUartDriver> uart);
   void InitTimestamp(std::unique_ptr<core::timestamp::ITimestampController> timestamp);
   void TransmittingLoop(const std::stop_token& token);
-
+  std::shared_ptr<EventData> event_data;
  public:
   int Run(const std::stop_token& token) override;
   int Initialize(const std::map<ara::core::StringView, ara::core::StringView>
