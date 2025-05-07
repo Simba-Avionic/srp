@@ -6,7 +6,8 @@ cc_library(
         "//deployment/apps/fc/radio_app:someip_lib",
         "//deployment/apps/fc/radio_app:ara",
         "//core/timestamp:timestamp_controller",
-        "//core/uart:uart_driver"
+        "//core/uart:uart_driver",
+        "@srp_platform//ara/log",
     ],
     srcs = [
         "radio_app.cc",

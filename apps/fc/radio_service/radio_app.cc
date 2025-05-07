@@ -26,47 +26,49 @@ constexpr auto kRecovery_service_path_name = "srp/apps/RadioApp/RecoveryService"
 constexpr auto KGPS_UART_path = "/dev/ttyS1";
 constexpr auto KGPS_UART_baudrate = B115200;
 constexpr auto kSystemId = 1;
+constexpr auto kComponentId = 200;
+constexpr auto kTime = 1000;
 }  // namespace
-
-
 
 void RadioApp::TransmittingLoop(const std::stop_token& token) {
   mavlink_message_t msg;
   uint8_t buffer[MAVLINK_MAX_PACKET_LEN];
   timestamp_->Init();
   event_data = EventData::GetInstance();
-  // TODO(m.mankowski2004@gmail.com): catch some error
+  auto send = [&](auto pack_func) {
+    pack_func();
+    uint16_t len = mavlink_msg_to_send_buffer(buffer, &msg);
+    mavl_logger.LogDebug() << std::vector<uint8_t>(buffer, buffer + len);
+    uart_->Write(std::vector<uint8_t>(buffer, buffer + len));
+  };
   while (!token.stop_requested()) {
-    // TODO(m.mankowski2004@gmail.com): Change the component IDs
     auto start = std::chrono::high_resolution_clock::now();
     {
-    auto send = [&](auto pack_func) {
-      pack_func();
-      uint16_t len = mavlink_msg_to_send_buffer(buffer, &msg);
-      uart_->Write(std::vector<uint8_t>(buffer, buffer + len));
-    };
-    auto temp1 = event_data->GetTemp1();
-    auto temp2 = event_data->GetTemp2();
-    auto temp3 = event_data->GetTemp3();
-    auto Dpress = event_data->GetDPress();
-    auto press = event_data->GetPress();
-    auto gpsLat = event_data->GetGPSLat();
-    auto gpsLon = event_data->GetGPSLon();
-    auto actuator = event_data->GetActuator();
-    send([&] { mavlink_msg_simba_tank_temperature_pack(kSystemId, 200, &msg, temp1, temp2, temp3); });
-    send([&] { mavlink_msg_simba_tank_pressure_pack(kSystemId, 200, &msg, Dpress, press); });
+    const auto temp1 = event_data->GetTemp1();
+    const auto temp2 = event_data->GetTemp2();
+    const auto temp3 = event_data->GetTemp3();
+    const auto Dpress = event_data->GetDPress();
+    const auto press = event_data->GetPress();
+    const auto gpsLat = event_data->GetGPSLat();
+    const auto gpsLon = event_data->GetGPSLon();
+    const auto actuator = event_data->GetActuator();
+    send([&] { mavlink_msg_simba_tank_temperature_pack(kSystemId, kComponentId, &msg, temp1, temp2, temp3); });
+    send([&] { mavlink_msg_simba_tank_pressure_pack(kSystemId, kComponentId, &msg, Dpress, press); });
     // TODO(m.mankowski2004@gmail.com): change altitude
-    send([&] { mavlink_msg_simba_gps_pack(kSystemId, 200, &msg, gpsLon, gpsLat, 0); });
+    send([&] { mavlink_msg_simba_gps_pack(kSystemId, kComponentId, &msg, gpsLon, gpsLat, 0); });
     auto val = timestamp_->GetNewTimeStamp();
     if (val.has_value()) {
       // TODO(m.mankowski2004@gmail.com): add later the status of both computers
-      send([&] { mavlink_msg_simba_heartbeat_pack(kSystemId, 200, &msg, static_cast<uint64_t>(val.value()), 0, 0); });
+      send([&] {
+        mavlink_msg_simba_heartbeat_pack(
+          kSystemId, kComponentId, &msg, static_cast<uint64_t>(val.value()), 0, 0);
+      });
     }
-    send([&] { mavlink_msg_simba_actuator_pack(kSystemId, 200, &msg, actuator); });
+    send([&] { mavlink_msg_simba_actuator_pack(kSystemId, kComponentId, &msg, actuator); });
     }
     auto end = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-    core::condition::wait_for(std::chrono::milliseconds(1000 - duration.count()), token);  // 1 Hz
+    core::condition::wait_for(std::chrono::milliseconds(kTime - duration.count()), token);  // 1 Hz
   }
 }
 
@@ -219,7 +221,9 @@ gps_service_handler{nullptr},
 primer_service_proxy{ara::core::InstanceSpecifier{kPrimer_service_path_name}},
 primer_service_handler{nullptr},
 servo_service_proxy{ara::core::InstanceSpecifier{kServo_service_path_name}},
-servo_service_handler{nullptr} {
+servo_service_handler{nullptr},
+mavl_logger{ara::log::LoggingMenager::GetInstance()->CreateLogger("MAVL", "", ara::log::LogLevel::kDebug)}
+{
 }
 
 }  // namespace apps

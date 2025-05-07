@@ -1,7 +1,18 @@
+/**
+ * @file event_data.h
+ * @author Michał Mańkowski (m.mankowski2004@gmail.com)
+ * @brief 
+ * @version 0.1
+ * @date 2025-05-07
+ * 
+ * @copyright Copyright (c) 2025
+ * 
+ */
 #ifndef APPS_FC_RADIO_SERVICE_EVENT_DATA_H_
 #define APPS_FC_RADIO_SERVICE_EVENT_DATA_H_
 
-#include <mutex>
+#include <shared_mutex>
+#include <mutex>  // NOLINT
 #include <memory>
 #include <cstdint>
 
@@ -16,7 +27,7 @@ class EventData {
   __mavlink_simba_tank_pressure_t press;
   __mavlink_simba_gps_t gps;
   __mavlink_simba_actuator_t actuator;
-  std::mutex mtx_;
+  std::shared_mutex mtx_;
 
   template <typename T>
   void SetValue(T res, T* field);

@@ -10,10 +10,10 @@
  */
 #include "gtest/gtest.h"
 #include "apps/fc/radio_service/event_data.h"
-using namespace srp::apps;
+namespace srp::apps {
 // --- Temperature Test ---
 class TemperatureTest : public ::testing::TestWithParam<std::tuple<int, uint16_t>> {
-protected:
+ protected:
     std::shared_ptr<EventData> data;
     void SetUp() override { data = EventData::GetInstance(); }
 };
@@ -54,7 +54,7 @@ INSTANTIATE_TEST_SUITE_P(
 
 // --- Pressure Test ---
 class PressureTest : public ::testing::TestWithParam<std::tuple<std::string, float>> {
-protected:
+ protected:
     std::shared_ptr<EventData> data;
     void SetUp() override { data = EventData::GetInstance(); }
 };
@@ -88,7 +88,7 @@ INSTANTIATE_TEST_SUITE_P(
 
 // --- GPS Test ---
 class GPSTest : public ::testing::TestWithParam<std::tuple<int32_t, int32_t>> {
-protected:
+ protected:
     std::shared_ptr<EventData> data;
     void SetUp() override { data = EventData::GetInstance(); }
 };
@@ -114,7 +114,7 @@ INSTANTIATE_TEST_SUITE_P(
 
 // --- Actuator Bit Test ---
 class ActuatorBitTest : public ::testing::TestWithParam<std::tuple<uint8_t, uint8_t, uint8_t>> {
-protected:
+ protected:
     std::shared_ptr<EventData> data;
     void SetUp() override { data = EventData::GetInstance(); }
 };
@@ -150,3 +150,4 @@ TEST(EventDataSingletonTest, SameInstanceReturned) {
     EXPECT_EQ(instance1->GetTemp2(), instance2->GetTemp2());
     EXPECT_EQ(instance1->GetTemp3(), instance2->GetTemp3());
 }
+}  // namespace srp::apps

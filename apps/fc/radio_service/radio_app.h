@@ -26,12 +26,13 @@
 #include "core/timestamp/timestamp_driver.hpp"
 #include "srp/apps/RadioServiceSkeleton.h"
 #include "core/uart/uart_driver.hpp"
-
+#include "ara/log/logging_menager.h"
 
 namespace srp {
 namespace apps {
 class RadioApp : public ara::exec::AdaptiveApplication {
  private:
+  const ara::log::Logger& mavl_logger;
   PrimerServiceProxy primer_service_proxy;
   std::shared_ptr<PrimerServiceHandler> primer_service_handler;
   ServoServiceProxy servo_service_proxy;
@@ -53,6 +54,7 @@ class RadioApp : public ara::exec::AdaptiveApplication {
   void InitTimestamp(std::unique_ptr<core::timestamp::ITimestampController> timestamp);
   void TransmittingLoop(const std::stop_token& token);
   std::shared_ptr<EventData> event_data;
+
  public:
   int Run(const std::stop_token& token) override;
   int Initialize(const std::map<ara::core::StringView, ara::core::StringView>

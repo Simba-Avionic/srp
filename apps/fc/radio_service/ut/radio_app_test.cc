@@ -35,21 +35,21 @@ TEST(RADIOAPPTEST, InitializeTestNoUart) {
 
 class TestWrapper : public srp::apps::RadioApp {
  public:
-        TestWrapper(): RadioApp() {
-            this->event_data = srp::apps::EventData::GetInstance();
-        };
-       void TestInitUart(std::unique_ptr<srp::core::uart::IUartDriver> uart) {
-           InitUart(std::move(uart));
-       }
-       void TestInitTimestamp(std::unique_ptr<srp::core::timestamp::ITimestampController> timestamp) {
-           InitTimestamp(std::move(timestamp));
-       }
-       void TestTransmittingLoop(const std::stop_token& token) {
-           this->TransmittingLoop(token);
-       }
-       std::shared_ptr<srp::apps::EventData> GetEventDataPtr() {
-           return this->event_data;
-       }
+            TestWrapper(): RadioApp() {
+               this->event_data = srp::apps::EventData::GetInstance();
+            }
+          void TestInitUart(std::unique_ptr<srp::core::uart::IUartDriver> uart) {
+              InitUart(std::move(uart));
+          }
+          void TestInitTimestamp(std::unique_ptr<srp::core::timestamp::ITimestampController> timestamp) {
+              InitTimestamp(std::move(timestamp));
+          }
+          void TestTransmittingLoop(const std::stop_token& token) {
+              this->TransmittingLoop(token);
+          }
+          std::shared_ptr<srp::apps::EventData> GetEventDataPtr() {
+              return this->event_data;
+          }
 };
 
 struct EventDataTestParams {
@@ -88,26 +88,15 @@ INSTANTIATE_TEST_SUITE_P(EventDataTestParameters, EventDataTest,
         },
 
         EventDataTestParams {
-            65535, 65535, 65535, FLT_MAX, FLT_MAX, INT32_MAX, INT32_MAX,
+            0xFFFF, 0xFFFF, 0xFFFF, FLT_MAX, FLT_MAX, 0x7FFFFFFF, 0x7FFFFFFF,
             std::optional<int64_t>{INT64_MAX},
             1, 1, 1,
-            {254, 6, 5, 1, 200, 69, 255, 255, 255, 255, 255, 255, 106, 205},  // ??????????
-            {254, 8, 6, 1, 200, 70, 255, 255, 255, 255, 255, 255, 255, 255, 221, 91},
-            {254, 12, 7, 1, 200, 72, 255, 255, 255, 255, 255, 255, 255, 255, 0, 0, 0, 0, 169, 240},
-            {254, 10, 8, 1, 200, 73, 255, 255, 255, 255, 255, 255, 255, 127, 0, 0, 224, 130},
-            {254, 1, 9, 1, 200, 68, 7, 204, 233}
+            {254, 6, 5, 1, 200, 69, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 90, 24},
+            {254, 8, 6, 1, 200, 70, 0xFF, 0xFF, 0x7F, 0x7F, 0xFF, 0xFF, 0x7F, 0x7F, 66, 88},
+            {254, 12, 7, 1, 200, 72, 0xFF, 0xFF, 0xFF, 0x7F, 0xFF, 0xFF, 0xFF, 0x7F, 0, 0, 0, 0, 253, 87},
+            {254, 10, 8, 1, 200, 73, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x7F, 0, 0, 224, 130},
+            {254, 1, 9, 1, 200, 68, 7, 89, 149}
         }
-
-        // EventDataTestParams{
-        //     0, 0, 0, -FLT_MAX, -FLT_MAX, INT32_MIN, INT32_MIN,
-        //     std::optional<int64_t>{INT64_MIN},
-        //     0, 0, 0,
-        //     {254, 6, 10, 1, 200, 69, },
-        //     {254, 8, 11, 1, 200, 70, },
-        //     {254, 12, 12, 1, 200, 72, },
-        //     {254, 10, 13, 1, 200, 73, },
-        //     {254, 1, 14, 1, 200, 68, }
-        // }
     )
 );
 

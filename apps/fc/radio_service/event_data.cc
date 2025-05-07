@@ -24,7 +24,7 @@ std::shared_ptr<EventData> EventData::GetInstance() {
 
 template <typename T>
 void EventData::SetValue(T res, T* field) {
-  std::unique_lock<std::mutex> lock(this->mtx_);
+  std::unique_lock<std::shared_mutex> lock(this->mtx_);
   *field = res;
 }
 
@@ -49,7 +49,7 @@ void EventData::SetPress(float res) {
 }
 
 void EventData::SetGPS(int32_t lon, int32_t lat) {
-  std::unique_lock<std::mutex> lock(this->mtx_);
+  std::unique_lock<std::shared_mutex> lock(this->mtx_);
   this->gps.lat = lat;
   this->gps.lon = lon;
 }
@@ -58,48 +58,48 @@ void EventData::SetActuatorBit(uint8_t res, uint8_t bit_position) {
   if (bit_position > 7 || res > 1) {
     return;
   }
-  std::unique_lock<std::mutex> lock(this->mtx_);
+  std::unique_lock<std::shared_mutex> lock(this->mtx_);
   this->actuator.values =
       (this->actuator.values & ~(1 << bit_position)) | (res << bit_position);
 }
 
 uint16_t EventData::GetTemp1() {
-  std::unique_lock<std::mutex> lock(this->mtx_);
+  std::shared_lock<std::shared_mutex> lock(mtx_);
   return this->temp.temp1;
 }
 
 uint16_t EventData::GetTemp2() {
-  std::unique_lock<std::mutex> lock(this->mtx_);
+  std::shared_lock<std::shared_mutex> lock(mtx_);
   return this->temp.temp2;
 }
 
 uint16_t EventData::GetTemp3() {
-  std::unique_lock<std::mutex> lock(this->mtx_);
+  std::shared_lock<std::shared_mutex> lock(mtx_);
   return this->temp.temp3;
 }
 
 float EventData::GetDPress() {
-  std::unique_lock<std::mutex> lock(this->mtx_);
+  std::shared_lock<std::shared_mutex> lock(mtx_);
   return this->press.Dpressure;
 }
 
 float EventData::GetPress() {
-  std::unique_lock<std::mutex> lock(this->mtx_);
+  std::shared_lock<std::shared_mutex> lock(mtx_);
   return this->press.pressure;
 }
 
 int32_t EventData::GetGPSLat() {
-  std::unique_lock<std::mutex> lock(this->mtx_);
+  std::shared_lock<std::shared_mutex> lock(mtx_);
   return this->gps.lat;
 }
 
 int32_t EventData::GetGPSLon() {
-  std::unique_lock<std::mutex> lock(this->mtx_);
+  std::shared_lock<std::shared_mutex> lock(mtx_);
   return this->gps.lon;
 }
 
 uint8_t EventData::GetActuator() {
-  std::unique_lock<std::mutex> lock(this->mtx_);
+  std::shared_lock<std::shared_mutex> lock(mtx_);
   return this->actuator.values;
 }
 
