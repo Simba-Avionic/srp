@@ -18,14 +18,14 @@
 class MockTimestampController : public srp::core::timestamp::ITimestampController {
  public:
   MOCK_METHOD(std::optional<int64_t>, GetNewTimeStamp, (), (override));
-  MOCK_METHOD(void, Init, (), (override));
+  MOCK_METHOD(bool, Init, (), (override));
 };
 
 class MockTimestampMaster : public srp::core::timestamp::ITimestampMaster {
  public:
   MOCK_METHOD(int64_t, GetNewTimeStamp, (), (override));
   MOCK_METHOD(void, CorrectStartPoint, (const int64_t offset), (override));
-  MOCK_METHOD(void, Init, (), (override));
+  MOCK_METHOD(bool, Init, (), (override));
 };
 
 #endif  // CORE_TIMESTAMP_MOCK_TIMESTAMP_DRIVER_H_

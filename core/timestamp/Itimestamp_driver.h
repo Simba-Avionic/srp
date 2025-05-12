@@ -22,7 +22,8 @@ namespace timestamp {
 class ITimestampController {
  public:
   virtual std::optional<int64_t> GetNewTimeStamp() = 0;
-  virtual void Init() = 0;
+  virtual int64_t GetDeltaTime(const int64_t now, const int64_t previous) = 0;
+  virtual bool Init() = 0;
   virtual ~ITimestampController() = default;
 };
 
@@ -30,7 +31,7 @@ class ITimestampMaster {
  public:
   virtual int64_t GetNewTimeStamp() = 0;
   virtual void CorrectStartPoint(const int64_t offset) = 0;
-  virtual void Init() = 0;
+  virtual bool Init() = 0;
   virtual ~ITimestampMaster() = default;
 };
 

@@ -27,7 +27,8 @@ class TimestampController : public ITimestampController {
   bindings::com::shm::ShmProxy<int64_t> proxy_;
  public:
   std::optional<int64_t> GetNewTimeStamp() override;
-  void Init() override;
+  int64_t GetDeltaTime(const int64_t now, const int64_t previous) override;
+  bool Init() override;
   TimestampController();
 };
 
@@ -41,7 +42,7 @@ class TimestampMaster : public ITimestampMaster {
   TimestampMaster();
   int64_t GetNewTimeStamp() override;
   void CorrectStartPoint(const int64_t offset) override;
-  void Init() override;
+  bool Init() override;
 };
 
 }  // namespace timestamp
