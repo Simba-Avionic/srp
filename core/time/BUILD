@@ -6,4 +6,5 @@ cc_library(
     deps = [
         "//core/common:common_types",
     ],
+    deprecation = "you realy need to use this?",
 )
