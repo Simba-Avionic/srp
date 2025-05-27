@@ -44,10 +44,9 @@ std::optional<GPSDataStructure> GPSApp::ParseGPSData(const std::vector<uint8_t>&
     return std::nullopt;
   }
   auto someip_data = GetSomeIPData(res.value());
-  // TODO(matikrajek42@gmail.com)  uncoment afer basn advice
-  // ara::log::LogDebug() << "GPS latitude: " << someip_data.latitude
-  //     << ", longtitude: " << someip_data.longitude << ",height(M):"
-  //     << res.value().height << "satelite_nr: " << res.value().satellite_nr;
+  ara::log::LogDebug() << "GPS latitude: " << someip_data.latitude
+      << ", longtitude: " << someip_data.longitude << ",height(M):"
+      << res.value().height << "satelite_nr: " << res.value().satellite_nr;
   return someip_data;
 }
 

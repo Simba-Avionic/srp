@@ -12,6 +12,7 @@
 #include <gtest/gtest.h>
 #include "apps/fc/gps_service/gps_app.hpp"
 #include "core/uart/mock_uart_driver.hpp"
+#include "ara/log/log.h"
 
 using ::testing::Return;
 
@@ -107,6 +108,7 @@ TEST(GPSAppTest2, ParseGPSData_ZeroSatellites_ReturnsNullopt) {
 }
 
 TEST(GPSAppTest2, ParseGPSData) {
+    ara::log::LoggingMenager::Create("123", ara::log::LogMode::kConsole);
     std::string str = "$GNGGA,123519,4807.038,N,01131.000,E,1,08,0.9,545.4,M,46.9,M,,*47";
     std::vector<uint8_t> vec(str.begin(), str.end());
     auto res = srp::apps::GPSApp::ParseGPSData(vec);
@@ -115,6 +117,7 @@ TEST(GPSAppTest2, ParseGPSData) {
     EXPECT_NEAR(res.value().longitude, 1131.000, 0.001);
 }
 TEST(GPSAppTest2, ParseGPSData2) {
+    ara::log::LoggingMenager::Create("123", ara::log::LogMode::kConsole);
     std::string str = "$GNGGA,123519,4807.038,S,01131.000,W,1,08,0.9,545.4,M,46.9,M,,*47";
     std::vector<uint8_t> vec(str.begin(), str.end());
     auto res = srp::apps::GPSApp::ParseGPSData(vec);
