@@ -20,6 +20,8 @@ namespace {
   constexpr auto kService_udp_instance = "srp/apps/GPSApp/GPSService_udp";
   constexpr auto KGPS_UART_path = "/dev/ttyS1";
   constexpr auto KGPS_UART_baudrate = B230400;
+  constexpr uint16_t KGps_expected_interval = 1000;
+  constexpr auto kGps_freq_tolerance = 100;
 }
 
 GPSDataStructure GPSApp::GetSomeIPData(const core::GPS_DATA_T& data) {
@@ -50,14 +52,34 @@ std::optional<GPSDataStructure> GPSApp::ParseGPSData(const std::vector<uint8_t>&
   return someip_data;
 }
 
+float GPSApp::GetFreq(const int64_t delta) const {
+  return static_cast<float>(1.0f / static_cast<float>(delta) * 1000);
+}
+
 int GPSApp::Run(const std::stop_token& token) {
   while (!token.stop_requested()) {
+    auto now = std::chrono::high_resolution_clock::now();
+    auto delta = std::chrono::duration_cast<std::chrono::milliseconds>(now - last_frame).count();
+    if (delta > KGps_expected_interval + kGps_freq_tolerance) {
+      ara::log::LogWarn() << "Missing GPS frame";
+    }
+
     auto data = uart_->Read();
     if (!data.has_value()) {
       continue;
     }
     auto res = ParseGPSData(data.value());
     if (res.has_value()) {
+      auto now = std::chrono::high_resolution_clock::now();
+      auto delta = std::chrono::duration_cast<std::chrono::milliseconds>(now - last_frame).count();
+      if (std::abs(delta - KGps_expected_interval) > kGps_freq_tolerance) {
+        ara::log::LogWarn() << "GPS frequency deviation detected: interval = " << std::to_string(delta) << " ms";
+      }
+
+      double freq_hz = GetFreq(delta);
+      ara::log::LogDebug() << "GPS data freq: " << std::to_string(freq_hz) << " Hz";
+
+      last_frame = now;
       service_ipc->GPSStatusEvent.Update(res.value());
       service_udp->GPSStatusEvent.Update(res.value());
     }
@@ -75,7 +97,7 @@ int GPSApp::Initialize(const std::map<ara::core::StringView, ara::core::StringVi
     auto uart_d = std::make_unique<core::uart::UartDriver>();
     Init(std::move(uart_d));
   }
-  if (!this->uart_->Open(KGPS_UART_path, KGPS_UART_baudrate)) {
+  if (!this->uart_->Open(KGPS_UART_path, KGPS_UART_baudrate, 1)) {
     return 1;
   }
   service_ipc = std::make_unique<apps::GPSServiceSkeleton>(service_ipc_instance);
@@ -83,6 +105,7 @@ int GPSApp::Initialize(const std::map<ara::core::StringView, ara::core::StringVi
   service_ipc->StartOffer();
   service_udp->StartOffer();
   ara::log::LogInfo() << "End initialization";
+  last_frame = std::chrono::high_resolution_clock::now();
   return 0;
 }
 
