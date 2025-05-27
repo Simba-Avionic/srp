@@ -35,7 +35,7 @@ core::ErrorCode UartDriver::Write(const std::vector<uint8_t>& data) {
 }
 
 /**
- * @brief 
+ * @brief geswrgewrg
  * 
  * @param portName 
  * @param baudrate 
