@@ -38,7 +38,7 @@ class GPSApp final : public ara::exec::AdaptiveApplication {
 
   std::chrono::high_resolution_clock::time_point last_frame;
 
-  float GetFreq(const int64_t delta) const;
+  int64_t GetTimeDelata() const;
 
  public:
   static std::optional<GPSDataStructure> ParseGPSData(const std::vector<uint8_t>& data);
