@@ -32,11 +32,6 @@ void RocketController::Loop() {
     break;
     case RocketState_t::DISARM:
     break;
-    case RocketState_t::TANK:
-    if (last_state_ != RocketState_t::TANK) {
-        ActivateTankActuators();
-    }
-    break;
     case RocketState_t::ARM:
     if (last_state_ != RocketState_t::ARM) {
         ArmRocket();
@@ -81,25 +76,15 @@ void RocketController::Loop() {
         // TODO(simba) open all actuator and disable power on actuator
     }
     break;
-    case RocketState_t::ABORD:
+    case RocketState_t::ABORT:
         // TODO(simba) open vent valve
         // TODO(simba) disable all actuator power
     break;
-    case RocketState_t::LOST_CONN: {
-        // NOW UNUSED
-        // if (last_state_ != RocketState_t::LOST_CONN) {
-        //     LossConnSeq();
-        // }
-    break;
     }
-}
-last_state_ = now_state;
+    last_state_ = now_state;
 }
 
 core::ErrorCode RocketController::InitializeCompleted() {
-    return core::ErrorCode::kOk;
-}
-core::ErrorCode RocketController::ActivateTankActuators() {
     return core::ErrorCode::kOk;
 }
 core::ErrorCode RocketController::ArmRocket() {
