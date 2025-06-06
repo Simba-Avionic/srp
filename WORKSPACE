@@ -23,7 +23,7 @@ pip_install()
 
 
 
-include_srp_mavlink("0.3")
+include_srp_mavlink("0.4")
 include_gtest_mock()
 include_json("3.11.3")
 
