@@ -21,8 +21,7 @@ namespace apps {
 static const std::unordered_map<RocketState_t, std::vector<RocketState_t>> allowed_transitions{
     {RocketState_t::INIT,         {RocketState_t::DISARM}},
     {RocketState_t::DISARM,       {RocketState_t::ARM, RocketState_t::ABORT}},
-    {RocketState_t::ARM,          {RocketState_t::CUTDOWN, RocketState_t::ABORT}},
-    {RocketState_t::CUTDOWN,      {RocketState_t::CUTDOWN_END, RocketState_t::ABORT}},
+    {RocketState_t::ARM,          {RocketState_t::CUTDOWN_END, RocketState_t::ABORT}},
     {RocketState_t::CUTDOWN_END,  {RocketState_t::FLIGHT}},
     {RocketState_t::FLIGHT,       {RocketState_t::FALL}},
     {RocketState_t::FALL,         {RocketState_t::LANDED}},
@@ -32,12 +31,8 @@ class MyMainServiceSkeleton: public MainServiceSkeleton {
  private:
   std::shared_ptr<RocketState> state;
   inline void CaptureError(const RocketState_t req_state, const RocketState_t actual_state) const {
-    if (req_state == RocketState_t::CUTDOWN_END && actual_state == RocketState_t::CUTDOWN) {
-      ara::log::LogWarn() <<
-          "CUTDOWN_END from CUTDOWN:This change needs to be called automatically by mainService, not from someip!";
-    }
     if (req_state == RocketState_t::DISARM && actual_state == RocketState_t::INIT) {
-      ara::log::LogWarn() <<
+      ara::log::LogError() <<
           "DISARM from INIT: This change needs to be called automatically by mainService, not from someip!";
     }
   }

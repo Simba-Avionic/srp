@@ -37,25 +37,6 @@ void RocketController::Loop() {
         ArmRocket();
     }
     break;
-    case RocketState_t::CUTDOWN: {
-        static int start_timstamp;
-        if (last_state_ != RocketState_t::CUTDOWN) {
-            auto val_opt = timestamp_.GetNewTimeStamp();
-            if (val_opt.has_value()) {
-                start_timstamp = val_opt.value();
-            }
-            break;
-        }
-        auto now = timestamp_.GetNewTimeStamp();
-        if (!now.has_value()) {
-            break;
-        }
-        if (timestamp_.GetDeltaTime(now.value(), start_timstamp) >= kCutdown_end_time_ms) {
-            this->rocket_state_->SetState(RocketState_t::CUTDOWN_END);
-            break;
-        }
-    break;
-    }
     case RocketState_t::CUTDOWN_END:
     this->CutdownEndSeq();
     this->rocket_state_->SetState(RocketState_t::FLIGHT);

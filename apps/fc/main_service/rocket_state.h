@@ -23,11 +23,10 @@ enum RocketState_t {
   INIT = 0,
   DISARM = 1,
   ARM = 2,
-  CUTDOWN = 3,
-  CUTDOWN_END = 4,
-  FLIGHT = 5,
-  FALL = 6,
-  LANDED = 7,
+  CUTDOWN_END = 3,
+  FLIGHT = 4,
+  FALL = 5,
+  LANDED = 6,
   ABORT = 50,
 };
 
