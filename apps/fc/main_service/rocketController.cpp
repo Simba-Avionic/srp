@@ -32,35 +32,11 @@ void RocketController::Loop() {
     break;
     case RocketState_t::DISARM:
     break;
-    case RocketState_t::TANK:
-    if (last_state_ != RocketState_t::TANK) {
-        ActivateTankActuators();
-    }
-    break;
     case RocketState_t::ARM:
     if (last_state_ != RocketState_t::ARM) {
         ArmRocket();
     }
     break;
-    case RocketState_t::CUTDOWN: {
-        static int start_timstamp;
-        if (last_state_ != RocketState_t::CUTDOWN) {
-            auto val_opt = timestamp_.GetNewTimeStamp();
-            if (val_opt.has_value()) {
-                start_timstamp = val_opt.value();
-            }
-            break;
-        }
-        auto now = timestamp_.GetNewTimeStamp();
-        if (!now.has_value()) {
-            break;
-        }
-        if (timestamp_.GetDeltaTime(now.value(), start_timstamp) >= kCutdown_end_time_ms) {
-            this->rocket_state_->SetState(RocketState_t::CUTDOWN_END);
-            break;
-        }
-    break;
-    }
     case RocketState_t::CUTDOWN_END:
     this->CutdownEndSeq();
     this->rocket_state_->SetState(RocketState_t::FLIGHT);
@@ -81,25 +57,15 @@ void RocketController::Loop() {
         // TODO(simba) open all actuator and disable power on actuator
     }
     break;
-    case RocketState_t::ABORD:
+    case RocketState_t::ABORT:
         // TODO(simba) open vent valve
         // TODO(simba) disable all actuator power
     break;
-    case RocketState_t::LOST_CONN: {
-        // NOW UNUSED
-        // if (last_state_ != RocketState_t::LOST_CONN) {
-        //     LossConnSeq();
-        // }
-    break;
     }
-}
-last_state_ = now_state;
+    last_state_ = now_state;
 }
 
 core::ErrorCode RocketController::InitializeCompleted() {
-    return core::ErrorCode::kOk;
-}
-core::ErrorCode RocketController::ActivateTankActuators() {
     return core::ErrorCode::kOk;
 }
 core::ErrorCode RocketController::ArmRocket() {

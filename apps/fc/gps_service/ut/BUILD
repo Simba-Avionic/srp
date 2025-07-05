@@ -8,5 +8,6 @@ cc_test(
         "@com_google_googletest//:gtest_main",
         "//apps/fc/gps_service:gps_app_lib",
         "//core/uart:mock_uart",
+        "@srp_platform//ara/log",
     ],
 )
