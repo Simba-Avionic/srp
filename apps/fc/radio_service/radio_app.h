@@ -34,6 +34,7 @@ namespace srp {
 namespace apps {
 class RadioApp : public ara::exec::AdaptiveApplication {
  private:
+  SIMBA_ROCKET_STATE current_state;
   const ara::log::Logger& mavl_logger;
   PrimerServiceProxy primer_service_proxy;
   std::shared_ptr<PrimerServiceHandler> primer_service_handler;
@@ -44,6 +45,7 @@ class RadioApp : public ara::exec::AdaptiveApplication {
   GPSServiceProxy gps_service_proxy;
   std::shared_ptr<GPSServiceHandler> gps_service_handler;
   std::shared_ptr<MainServiceHandler> main_service_handler;
+  MainServiceProxy main_service_proxy;
   std::shared_ptr<RecoveryServiceHandler> recovery_service_handler;
   const ara::core::InstanceSpecifier service_ipc_instance;
   const ara::core::InstanceSpecifier service_udp_instance;
@@ -58,8 +60,8 @@ class RadioApp : public ara::exec::AdaptiveApplication {
   void InitTimestamp(std::unique_ptr<core::timestamp::ITimestampController> timestamp);
   void TransmittingLoop(const std::stop_token& token);
   void ListeningLoop(const std::stop_token& token);
-  bool ActuatorCMD(uint8_t actuator_id, uint8_t value);
-  void SendAck(uint8_t msgId, uint8_t msgSeq, uint8_t status);
+  SIMBA_STATUS ActuatorCMD(uint8_t actuator_id, uint8_t value);
+  void SendAck(uint8_t status);
   std::shared_ptr<EventData> event_data;
 
  public:
