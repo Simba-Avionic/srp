@@ -23,6 +23,8 @@
 #include "srp/apps/GPSService/GPSServiceHandler.h"
 #include "srp/apps/PrimerService/PrimerServiceHandler.h"
 #include "srp/apps/ServoService/ServoServiceHandler.h"
+#include "srp/apps/MainService/MainServiceHandler.h"
+#include "srp/apps/RecoveryService/RecoveryServiceHandler.h"
 #include "core/timestamp/timestamp_driver.hpp"
 #include "srp/apps/RadioServiceSkeleton.h"
 #include "core/uart/uart_driver.hpp"
@@ -32,6 +34,7 @@ namespace srp {
 namespace apps {
 class RadioApp : public ara::exec::AdaptiveApplication {
  private:
+  SIMBA_ROCKET_STATE current_state;
   const ara::log::Logger& mavl_logger;
   PrimerServiceProxy primer_service_proxy;
   std::shared_ptr<PrimerServiceHandler> primer_service_handler;
@@ -41,6 +44,9 @@ class RadioApp : public ara::exec::AdaptiveApplication {
   std::shared_ptr<env::EnvAppHandler> env_service_handler;
   GPSServiceProxy gps_service_proxy;
   std::shared_ptr<GPSServiceHandler> gps_service_handler;
+  std::shared_ptr<MainServiceHandler> main_service_handler;
+  MainServiceProxy main_service_proxy;
+  std::shared_ptr<RecoveryServiceHandler> recovery_service_handler;
   const ara::core::InstanceSpecifier service_ipc_instance;
   const ara::core::InstanceSpecifier service_udp_instance;
   std::unique_ptr<apps::RadioServiceSkeleton> service_ipc;
@@ -53,6 +59,9 @@ class RadioApp : public ara::exec::AdaptiveApplication {
   void InitUart(std::unique_ptr<core::uart::IUartDriver> uart);
   void InitTimestamp(std::unique_ptr<core::timestamp::ITimestampController> timestamp);
   void TransmittingLoop(const std::stop_token& token);
+  void ListeningLoop(const std::stop_token& token);
+  SIMBA_STATUS ActuatorCMD(uint8_t actuator_id, uint8_t value);
+  void SendAck(SIMBA_STATUS status);
   std::shared_ptr<EventData> event_data;
 
  public:

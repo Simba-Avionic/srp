@@ -10,7 +10,8 @@ cc_binary(
         "rocketController.hpp",
     ],
     visibility = [
-        "//deployment/apps/fc/main_app:__subpackages__"
+        "//deployment/apps/fc/main_app:__subpackages__",
+        "//apps/fc/radio_service:__subpackages__",
         ],
     deps = [
         "@srp_platform//ara/exec:adaptive_application_lib",

@@ -41,7 +41,7 @@ void EventData::SetTemp3(uint16_t res) {
 }
 
 void EventData::SetDPress(float res) {
-  SetValue(res, &this->press.Dpressure);
+  SetValue(res, &this->press.d_pressure);
 }
 
 void EventData::SetPress(float res) {
@@ -80,7 +80,7 @@ uint16_t EventData::GetTemp3() {
 
 float EventData::GetDPress() {
   std::shared_lock<std::shared_mutex> lock(mtx_);
-  return this->press.Dpressure;
+  return this->press.d_pressure;
 }
 
 float EventData::GetPress() {
