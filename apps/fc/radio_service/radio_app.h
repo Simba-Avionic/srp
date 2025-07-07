@@ -61,7 +61,7 @@ class RadioApp : public ara::exec::AdaptiveApplication {
   void TransmittingLoop(const std::stop_token& token);
   void ListeningLoop(const std::stop_token& token);
   SIMBA_STATUS ActuatorCMD(uint8_t actuator_id, uint8_t value);
-  void SendAck(uint8_t status);
+  void SendAck(SIMBA_STATUS status);
   std::shared_ptr<EventData> event_data;
 
  public:

@@ -86,17 +86,20 @@ void RadioApp::ListeningLoop(const std::stop_token& token) {
       if (mavlink_parse_char(MAVLINK_COMM_0, byte[0], &msg, &status)) {
         SIMBA_STATUS status = SIMBA_INITIALIZE_ERROR;
         switch (msg.msgid) {
-          case 146: {
+          case MAVLINK_MSG_ID_SIMBA_CMD_CHANGE_STATE: {
             uint8_t cmd_change = mavlink_msg_simba_cmd_change_state_get_new_state(&msg);
             auto result = this->main_service_handler->setMode(cmd_change);
             if (result.HasValue()) {
-              if (result.Value() == core::ErrorCode::kOk) {
+              if (result.Value() == true) {
                 status = SIMBA_OK;
+              } else {
+                status = SIMBA_INVALID_STATE;
               }
+            } else {
+              status = SIMBA_CONNECTION_ERROR;
             }
-            status = SIMBA_ERROR;
           }
-          case 147: {
+          case MAVLINK_MSG_ID_SIMBA_ACTUATOR_CMD: {
             uint8_t actuator_id = mavlink_msg_simba_actuator_cmd_get_actuator_id(&msg);
             uint8_t value = mavlink_msg_simba_actuator_cmd_get_value(&msg);
             status = ActuatorCMD(actuator_id, value);
@@ -108,7 +111,7 @@ void RadioApp::ListeningLoop(const std::stop_token& token) {
   }
 }
 
-void RadioApp::SendAck(uint8_t status) {
+void RadioApp::SendAck(SIMBA_STATUS status) {
   mavlink_message_t msg;
   uint8_t buffer[MAVLINK_MAX_PACKET_LEN];
   mavlink_msg_simba_ack_pack(kSystemId, kComponentId, &msg, this->current_state, status);
@@ -122,32 +125,35 @@ SIMBA_STATUS RadioApp::ActuatorCMD(uint8_t actuator_id, uint8_t value) {
     case 1: {
       auto result = this->servo_service_handler->SetMainServoValue(value);
       if (result.HasValue()) {
-        if (result.Value() == core::ErrorCode::kOk) {
+        if (result.Value() == true) {
           return SIMBA_OK;
         }
+        return SIMBA_ERROR;
       }
-      return SIMBA_ERROR;
+      return SIMBA_CONNECTION_ERROR;
       break;
     }
     case 2: {
       auto result = this->servo_service_handler->SetVentServoValue(value);
       if (result.HasValue()) {
-        if (result.Value() == core::ErrorCode::kOk) {
+        if (result.Value() == true) {
           return SIMBA_OK;
         }
-      }
       return SIMBA_ERROR;
+      }
+      return SIMBA_CONNECTION_ERROR;
       break;
     }
     case 3: {
       if (value == 1) {
         auto result = this->recovery_service_handler->OpenReefedParachute();
         if (result.HasValue()) {
-        if (result.Value() == core::ErrorCode::kOk) {
-          return SIMBA_OK;
+          if (result.Value() == true) {
+            return SIMBA_OK;
+          }
+        return SIMBA_ERROR;
         }
-      }
-      return SIMBA_ERROR;
+        return SIMBA_CONNECTION_ERROR;
       }
       break;
     }
@@ -155,11 +161,12 @@ SIMBA_STATUS RadioApp::ActuatorCMD(uint8_t actuator_id, uint8_t value) {
       if (value == 1) {
         auto result = this->recovery_service_handler->UnreefeParachute();
         if (result.HasValue()) {
-          if (result.Value() == core::ErrorCode::kOk) {
+          if (result.Value() == true) {
             return SIMBA_OK;
           }
+        return SIMBA_ERROR;
         }
-      return SIMBA_ERROR;
+        return SIMBA_CONNECTION_ERROR;
       }
       break;
     }
