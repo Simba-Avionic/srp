@@ -42,17 +42,10 @@ class TimestampMasterTest : public ::testing::Test {
 //     EXPECT_NEAR(timestamp2, K1 + K2, (K1 + K2) * KBasicCorrection);
 //     EXPECT_NEAR(timestamp3, K1 + K2 + K3, (K1 + K2 + K3) * KBasicCorrection);
 // }
-
 // TEST_F(TimestampMasterTest, CorrectStartPointAdjustsStartTime) {
 //     constexpr auto K1 = 50;
 //     int64_t initial_timestamp = master.GetNewTimeStamp();
 //     master.CorrectStartPoint(K1);  // Korekcja o 50 ms
-//     int64_t adjusted_timestamp = master.GetNewTimeStamp();
-
-//     EXPECT_NEAR(adjusted_timestamp, initial_timestamp + K1, KBasicCorrection);
-// }
-// TEST_F(TimestampMasterTest, InitOffersServiceAndSetsStartTime) {
-//     EXPECT_NO_THROW(master.Init());  // Sprawdzenie, czy Init nie generuje wyjątków
 //     int64_t timestamp = master.GetNewTimeStamp();
 
 //     EXPECT_GE(timestamp, 0);  // Powinien być dodatni
