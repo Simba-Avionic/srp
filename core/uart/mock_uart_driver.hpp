@@ -18,7 +18,7 @@
 
 class MockUartDriver : public srp::core::uart::IUartDriver {
  public:
-    MOCK_METHOD(bool, Open, (const std::string& portName, const uint32_t& baudrate), (override));
+    MOCK_METHOD(bool, Open, (const std::string& portName, const uint32_t& baudrate, const uint8_t timeout), (override));
     MOCK_METHOD(std::optional<std::vector<uint8_t>>, Read, (const uint16_t size), (override));
     MOCK_METHOD(void, Close, (), (override));
     MOCK_METHOD(srp::core::ErrorCode, Write, (const std::vector<uint8_t>& data), (override));
