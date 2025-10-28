@@ -22,15 +22,12 @@ static std::shared_ptr<RocketState> rocket_state = nullptr;
 enum RocketState_t {
   INIT = 0,
   DISARM = 1,
-  TANK = 2,
-  ARM = 3,
-  CUTDOWN = 4,
-  CUTDOWN_END = 5,
-  FLIGHT = 6,
-  FALL = 7,
-  LANDED = 8,
-  ABORD = 50,
-  LOST_CONN = 52
+  ARM = 2,
+  CUTDOWN_END = 3,
+  FLIGHT = 4,
+  FALL = 5,
+  LANDED = 6,
+  ABORT = 50,
 };
 
 class RocketState {

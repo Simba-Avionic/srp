@@ -23,10 +23,10 @@ namespace service {
 namespace {
 constexpr auto kService_ipc_name = "srp/apps/MainService/MainService_ipc";
 constexpr auto kService_udp_name = "srp/apps/RecoveryService/MainService_udp";
-using RocketState_t = apps::RocketState_t;
 const auto kMain_loop_delay_ms = 10;
 const auto kSend_event_time = 1000;
 }
+using RocketState_t = apps::RocketState_t;
 
 MainService::MainService() {}
 
