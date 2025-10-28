@@ -19,6 +19,7 @@ class MockTimestampController : public srp::core::timestamp::ITimestampControlle
  public:
   MOCK_METHOD(std::optional<int64_t>, GetNewTimeStamp, (), (override));
   MOCK_METHOD(bool, Init, (), (override));
+  MOCK_METHOD(int64_t, GetDeltaTime, (const int64_t now, const int64_t previous), (override));
 };
 
 class MockTimestampMaster : public srp::core::timestamp::ITimestampMaster {

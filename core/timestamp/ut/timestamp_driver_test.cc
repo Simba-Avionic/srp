@@ -18,7 +18,7 @@
 namespace srp {
 namespace core {
 namespace timestamp {
-constexpr auto KBasicCorrection = 50;
+constexpr auto KBasicCorrection = 0.1;
 class TimestampMasterTest : public ::testing::Test {
  protected:
   TimestampMaster master;
@@ -38,9 +38,9 @@ TEST_F(TimestampMasterTest, GetNewTimeStampReturnsElapsedTime) {
     std::this_thread::sleep_for(std::chrono::milliseconds(K3));
     int64_t timestamp3 = master.GetNewTimeStamp();
 
-    EXPECT_NEAR(timestamp, K1, KBasicCorrection);
-    EXPECT_NEAR(timestamp2, K1 + K2, KBasicCorrection);
-    EXPECT_NEAR(timestamp3, K1 + K2 + K3, 3 * KBasicCorrection);
+    EXPECT_NEAR(timestamp, K1, K1 * KBasicCorrection);
+    EXPECT_NEAR(timestamp2, K1 + K2, (K1 + K2) * KBasicCorrection);
+    EXPECT_NEAR(timestamp3, K1 + K2 + K3, (K1 + K2 + K3) * KBasicCorrection);
 }
 
 TEST_F(TimestampMasterTest, CorrectStartPointAdjustsStartTime) {

@@ -17,6 +17,7 @@ using ::testing::_;
 using ::testing::Invoke;
 
 TEST(RADIOAPPTEST, InitializeTestNoUart) {
+    ara::log::LoggingMenager::Create("123", ara::log::LogMode::kConsole);
     const std::map<ara::core::StringView, ara::core::StringView> map;
     srp::apps::RadioApp app;
     EXPECT_EQ(app.Initialize(map), 1);
