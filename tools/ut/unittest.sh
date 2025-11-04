@@ -1,2 +1,2 @@
 #!/bin/bash
-bazel test  --nocache_test_results `bazel query 'kind(cc_test, //...)'`
+bazel test  --nocache_test_results --test_output=all `bazel query 'kind(cc_test, //...)'`
