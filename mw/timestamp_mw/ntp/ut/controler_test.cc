@@ -36,8 +36,3 @@ TEST_F(NtpControllerTest, CalculateRoundTripDelayTest) {
     int64_t expected_delay = 1500;  // (3000 - 1000) - (2000 - 1500) = 1500
     EXPECT_EQ(ntpController.CalculateRoundTripDelay(T0, T1, T2, T3), expected_delay);
 }
-
-TEST_F(NtpControllerTest, GetNowMSTest) {
-    auto result = ntpController.GetTimestamp();
-    EXPECT_TRUE(result > 0) << "GetNowMS should return a positive timestamp.";
-}

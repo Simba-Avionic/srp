@@ -1,5 +1,16 @@
 #!/bin/bash
 export GCOV=/usr/bin/gcov-13
+
+# Weryfikacja lcov
+echo "🔍 Verifying lcov availability..."
+if command -v lcov &> /dev/null; then
+    echo "✅ lcov found: $(lcov --version | head -n1)"
+    echo "📍 lcov path: $(which lcov)"
+else
+    echo "❌ WARNING: lcov not found in PATH!"
+    echo "PATH: $PATH"
+fi
+
 # Uruchomienie bazel coverage i ukrycie wyjścia
 bazel coverage --nocache_test_results `bazel query 'kind(cc_test, //...)'`  -s \
   --instrument_test_targets \
