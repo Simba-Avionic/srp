@@ -28,5 +28,6 @@ adaptive_application(
     bin = "//apps/ec/example_service",
     model_src = ["//deployment/apps/example_service:instance"],
     visibility = ["//deployment/cpu/fc:__subpackages__"],
+    etcs = ["accelerometer_noisy_nosecone.csv", "barometer_clean.csv"]
 )
 

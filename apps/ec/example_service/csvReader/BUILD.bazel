@@ -1,0 +1,8 @@
+cc_library(
+    name = "csvReader",
+    srcs = [],
+    hdrs = ["CsvReader.tpp","CsvReader.h", "CsvRow.tpp", "CsvRow.h"],
+    strip_include_prefix = ".",  
+    include_prefix = "",   
+    visibility = ["//visibility:public"],
+)
