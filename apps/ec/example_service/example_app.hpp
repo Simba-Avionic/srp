@@ -13,7 +13,7 @@ namespace srp {
 namespace apps {
 class ExampleApp final : public ara::exec::AdaptiveApplication {
  private:
-
+    std::string myPath;
  protected:
   /**
    * @brief This function is called to launch the application

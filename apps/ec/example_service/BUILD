@@ -16,4 +16,5 @@ cc_binary(
         "//deployment/apps/example_service:ara",
         "@eigen", "//apps/ec/example_service/csvReader:csvReader"
     ],
+    linkopts = ["-lm"],
 )

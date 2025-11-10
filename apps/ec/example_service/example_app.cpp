@@ -22,10 +22,10 @@ namespace srp {
 namespace apps {
 
 
-void myFunction() {
+void myFunction(const std::string path) {
     try {
-        CsvReader<float, float, float, float> barometrCsv(parms.at("app_path") + "etc/barometer_clean.csv");
-        CsvReader<float, float, float, float> accelerometerCsv(parms.at("app_path") + "etc/accelerometer_noisy_nosecone.csv");
+        CsvReader<float, float, float, float> barometrCsv(path + "etc/barometer_clean.csv");
+        CsvReader<float, float, float, float> accelerometerCsv(path + "etc/accelerometer_noisy_nosecone.csv");
 
         std::ofstream file("output.txt");
         file << "t, h, v\n";
@@ -41,7 +41,7 @@ void myFunction() {
         file.close();
     } catch (const std::exception& e) {
         std::cerr << "ERROR: " << e.what() << std::endl;
-        return 1;
+        return;
     }
 }
 
@@ -55,7 +55,7 @@ int ExampleApp::Run(const std::stop_token& token) {
   struct rusage usage_start, usage_end;
 
   getrusage(RUSAGE_SELF, &usage_start);
-  myFunction();
+  myFunction(myPath);
   getrusage(RUSAGE_SELF, &usage_end);
 
   double user_time =
@@ -78,7 +78,8 @@ int ExampleApp::Run(const std::stop_token& token) {
 
 int ExampleApp::Initialize(const std::map<ara::core::StringView, ara::core::StringView>
                       parms) {
-                        
+
+  myPath = parms.at("app_path");
   ara::log::LogInfo() << "Initialize Complete";
   return 0;
 }
