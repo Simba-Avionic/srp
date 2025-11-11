@@ -8,7 +8,7 @@ load("//third_party:deps.bzl", "deps")
 deps()
 
 load("//bazel/libs:third_party_repositories.bzl", "include_srp_platform", "include_srp_mavlink", "include_gtest_mock", "include_json")
-include_srp_platform("0.0.6SQ")
+include_srp_platform("0.0.6SQF")
 load("@srp_platform//:download.bzl", "download")
 download()
 
@@ -21,7 +21,9 @@ install_python()
 load("@srp_platform//:pip_install.bzl", "pip_install")
 pip_install()
 
-include_srp_mavlink("0.2")
+
+
+include_srp_mavlink("0.5.2")
 include_gtest_mock()
 include_json("3.11.3")
 

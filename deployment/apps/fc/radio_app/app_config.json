@@ -1,0 +1,99 @@
+{
+    "include": [
+        "deployment/system_definition/someip/fc/radio_service/service.json",
+        "deployment/system_definition/someip/env_service/service.json",
+        "deployment/system_definition/someip/fc/gps_service/service.json",
+        "deployment/system_definition/someip/prim_service/service.json",
+        "deployment/system_definition/someip/servo_service/service.json",
+        "deployment/system_definition/someip/fc/recovery_service/service.json",
+        "deployment/system_definition/someip/fc/main_service/service.json"
+    ],
+    "package": "srp.apps",
+    "adaptive_application": {
+        "RadioApp": {
+            "app": {
+                "functional_groups":[
+                    "Running",
+                    "SafetyMode"
+                ],
+                "parms": "",
+                "logger": {
+                    "app_id": "RAD-",
+                    "app_des": "czytanie i wysyłanie po radiu",
+                    "log_level": "kInfo",
+                    "log_mode": "kRemote",
+                    "ctx": [
+                        {
+                            "ctx_id": "ara",
+                            "log_level": "kInfo",
+                            "ctx_des": "Default ctx for ara"
+                        },
+                        {
+                            "ctx_id": "acom",
+                            "log_level": "kInfo",
+                            "ctx_des": "Default ctx for ara::com"
+                        },
+                        {
+                            "ctx_id": "adiag",
+                            "log_level": "kInfo",
+                            "ctx_des": "Default ctx for ara::diag"
+                        },
+                        {
+                            "ctx_id": "exec",
+                            "log_level": "kDebug",
+                            "ctx_des": "Default ctx for ara::exec"
+                        }
+                    ]
+                }
+            },
+            "provide": [
+                {
+                    "name": "RadioService as RadioService_ipc",
+                    "on": "ipc",
+                    "instance": 2
+                },
+                {
+                    "name": "RadioService as RadioService_udp",
+                    "on": "udp",
+                    "port": "10002",
+                    "instance": 1
+                }
+            ],
+            "require": [
+                {
+                    "name": "srp.env.EnvApp as EnvApp",
+                    "on": "udp",
+                    "port": "10001",
+                    "instance": 1
+                },
+                {
+                    "name": "srp.apps.GPSService as GPSService",
+                    "on": "ipc",
+                    "instance": 2
+                },
+                {
+                    "name": "srp.apps.PrimerService as PrimerService",
+                    "on": "udp",
+                    "port": "10002",
+                    "instance": 1
+                },
+                {
+                    "name": "srp.apps.ServoService as ServoService",
+                    "on": "udp",
+                    "port": "10001",
+                    "instance": 2
+                },
+                {
+                    "name": "srp.apps.RecoveryService as RecoveryService",
+                    "on": "ipc",
+                    "instance": 2
+                },
+                {
+                    "name": "srp.apps.MainService as MainService",
+                    "on": "ipc",
+                    "instance": 2
+                }
+            ]
+        }
+    }
+}

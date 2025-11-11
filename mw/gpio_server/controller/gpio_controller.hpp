@@ -21,7 +21,8 @@
 
 #include "communication-core/sockets/stream_ipc_socket.h"
 #include "core/gpio/gpio_driver.hpp"
-#include "mw/gpio_server/data/header.hpp"
+#include "srp/mw/gpio/GpioHdr.h"
+#include "mw/gpio_server/data/enums.hpp"
 #include "mw/gpio_server/controller/Igpio_controller.h"
 
 namespace srp {

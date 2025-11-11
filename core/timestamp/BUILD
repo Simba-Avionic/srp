@@ -1,6 +1,9 @@
 cc_library(
     name = "timestamp_controller",
-    hdrs = ["timestamp_driver.hpp"],
+    hdrs = [
+        "timestamp_driver.hpp",
+        "Itimestamp_driver.h",
+        ],
     srcs = ["timestamp_driver.cpp"],
     visibility = ["//visibility:public"],
     deps = [
@@ -9,4 +12,15 @@ cc_library(
         "@srp_platform//ara/log",
         "//core/common:core",
     ]
+)
+
+cc_library(
+    name = "mock_timestamp_controller",
+    srcs = ["mock_timestamp_driver.h"],
+    visibility = ["//visibility:public"],
+    deps = [
+        "@com_google_googletest//:gtest_main",
+        "//core/timestamp:timestamp_controller",
+    ],
+    testonly = True,
 )
