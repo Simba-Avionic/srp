@@ -13,18 +13,21 @@
 #include <memory>
 
 #include "srp/apps/ServoServiceSkeleton.h"
-#include "mw/i2c_service/controller/pca9685/controller.hpp"
+#include "apps/ec/ServoService/servoController/servo_controller.hpp"
+#include "ara/com/com_error_domain.h"
+#include "core/common/error_code.h"
 
 namespace srp {
 namespace apps {
 
 class MyServoService : public ServoServiceSkeleton {
  private:
-  const std::shared_ptr<i2c::PCA9685> servo_;
+  const std::shared_ptr<service::ServoController> servo_;
 
  public:
-  MyServoService(const ara::core::InstanceSpecifier& instance, std::shared_ptr<i2c::PCA9685> servo_controller):
-                                                        ServoServiceSkeleton{instance}, servo_(servo_controller) {
+  MyServoService(const ara::core::InstanceSpecifier& instance,
+                  std::shared_ptr<service::ServoController> servo_controller):
+                    ServoServiceSkeleton{instance}, servo_(servo_controller) {
   }
 
  protected:

@@ -10,6 +10,9 @@
  */
 #include "apps/fc/recovery_service/parachute_controller.hpp"
 #include <utility>
+#include <stdexcept>
+#include <chrono>  // NOLINT
+#include <thread>  // NOLINT
 #include "core/json/json_parser.h"
 #include "core/common/condition.h"
 #include "ara/log/log.h"
@@ -49,9 +52,13 @@ std::optional<Parachute_config_t> ParachuteController::read_config(std::optional
   return config;
 }
 
-void ParachuteController::Init(std::unique_ptr<i2c::PCA9685>&& servo,
+void ParachuteController::Init(std::shared_ptr<srp::service::ServoController> servo,
                               std::unique_ptr<gpio::GPIOController>&& gpio, const std::string& path) {
     auto config_opt = read_config(core::json::JsonParser::Parser(path + "etc/config.json"));
+    if (!config_opt.has_value()) {
+      ara::log::LogError() << "ParachuteController.Init: invalid config at " << path;
+      throw std::runtime_error("Missing parachute config");
+    }
     this->config_ = config_opt.value();
     this->servo_controller = std::move(servo);
     this->gpio_controller = std::move(gpio);

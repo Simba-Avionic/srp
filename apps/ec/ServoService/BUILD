@@ -14,7 +14,7 @@ cc_binary(
     deps = [
         "@srp_platform//ara/exec:adaptive_application_lib",
         "//core/common:condition_lib",
-        "//mw/i2c_service/controller/pca9685:pca9685_controller",
+        "//apps/ec/ServoService/servoController:servo_controller",
         "@srp_platform//ara/diag:uds_lib",
         "//deployment/apps/servo_service:ara",
         "//deployment/apps/servo_service:someip_lib",

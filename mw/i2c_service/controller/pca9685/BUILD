@@ -6,8 +6,6 @@ cc_library(
         "//mw/i2c_service/data:i2c_factory",
         "@srp_platform//ara/log",
         "//mw/i2c_service/controller:i2c_controller",
-        "//mw/gpio_server/controller:gpio_controller",
-        "//core/json:simba_json",
     ],
     srcs = ["controller.cpp"],
     hdrs = ["controller.hpp"],
