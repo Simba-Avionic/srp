@@ -27,7 +27,7 @@ namespace gpio {
 class GpioDriver: public IGpioDriver{
  protected:
   std::unique_ptr<IFileHandler> file_;
-  // ara::log::Logger gpio_logger_;
+  ara::log::Logger gpio_logger_;
 
  public:
   explicit GpioDriver(std::unique_ptr<IFileHandler> file);
