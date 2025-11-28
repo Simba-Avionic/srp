@@ -9,7 +9,7 @@ on:
       - master
 jobs:
   cpplint:
-    name: Run CppLint Check
+    name: CppLint Check
     runs-on: self-hosted
 
     steps:
@@ -23,7 +23,7 @@ jobs:
           /bin/bash ./tools/cpplint/cpplint.sh
 
   bazel-test:
-    name: Run SRP Unit Tests
+    name: SRP Unit Tests
     needs: cpplint
     runs-on: self-hosted
 
@@ -36,8 +36,22 @@ jobs:
       - name: Run Bazel tests
         run: |
           bazel test --nocache_test_results $(bazel query 'kind(cc_test, //...)')
+  bazel-coverage:
+    name: SRP Coverage
+    needs: bazel-test
+    runs-on: self-hosted
 
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Run Bazel tests
+        run: |
+          ./tools/coverage/coverage.sh
   build:
+    name: Build EC & FC
     needs: bazel-test
     runs-on: self-hosted
     steps:
@@ -55,6 +69,7 @@ jobs:
           bazel build --config=bbb-platform //deployment/cpu/fc:pkg
 
   build-all:
+    name: Build All
     needs: build
     runs-on: self-hosted
     steps:
