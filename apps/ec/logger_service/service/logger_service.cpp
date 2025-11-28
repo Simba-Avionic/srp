@@ -60,12 +60,17 @@ void LoggerService::SaveLoop(const std::stop_token& token) {
 
 int LoggerService::Run(const std::stop_token& token) {
   core::condition::wait(token);
+  service_ipc->StopOffer();
+  service_udp->StopOffer();
   logger_did_->StopOffer();
   return 0;
 }
 
 int LoggerService::Initialize(const std::map<ara::core::StringView, ara::core::StringView>
                     parms) {
+  logger_did_->Offer();
+  service_ipc->StartOffer();
+  service_udp->StartOffer();
   this->SomeIpInit();
   return 0;
 }
@@ -85,7 +90,6 @@ LoggerService::LoggerService():
   this->logger_did_ = std::move(result.loggerDID);
   this->service_ipc = std::move(result.serviceIPC);
   this->service_udp = std::move(result.serviceUDP);
-  logger_did_->Offer();
 }
 
 void LoggerService::start_func_handler(const std::uint8_t status) {
