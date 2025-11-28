@@ -27,7 +27,7 @@ class UartDriver: public IUartDriver {
   int serial_port;
 
  public:
-  bool Open(const std::string& portName, const uint32_t& baudrate = B9600) override;
+  bool Open(const std::string& portName, const uint32_t& baudrate = B9600, const uint8_t timeout = 10) override;
   std::optional<std::vector<uint8_t>> Read(const uint16_t size = 0) override;
   core::ErrorCode Write(const std::vector<uint8_t>& data) override;
   void Close() override;

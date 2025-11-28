@@ -24,7 +24,7 @@ TEST(RS485Test, InitSuccess) {
     auto uart_mock = std::make_unique<MockUartDriver>();
     auto gpio_mock = std::make_unique<srp::mock::MOCKGPIOController>();
 
-    EXPECT_CALL(*uart_mock, Open(_, _)).WillOnce(Return(true));
+    EXPECT_CALL(*uart_mock, Open(_, _, _)).WillOnce(Return(true));
     EXPECT_CALL(*uart_mock, Close()).Times(1);
 
     EXPECT_TRUE(rs485.Init(config, std::move(uart_mock), std::move(gpio_mock)));
@@ -36,7 +36,7 @@ TEST(RS485Test, InitFailure) {
     auto uart_mock = std::make_unique<MockUartDriver>();
     auto gpio_mock = std::make_unique<srp::mock::MOCKGPIOController>();
 
-    EXPECT_CALL(*uart_mock, Open(_, _)).WillOnce(Return(false));
+    EXPECT_CALL(*uart_mock, Open(_, _, _)).WillOnce(Return(false));
     EXPECT_CALL(*uart_mock, Close()).Times(1);
 
     EXPECT_FALSE(rs485.Init(config, std::move(uart_mock), std::move(gpio_mock)));
@@ -51,7 +51,7 @@ TEST(RS485Test, WriteReadSuccess) {
     auto uart_mock = std::make_unique<MockUartDriver>();
     auto gpio_mock = std::make_unique<srp::mock::MOCKGPIOController>();
 
-    EXPECT_CALL(*uart_mock, Open(_, _)).WillOnce(Return(true));
+    EXPECT_CALL(*uart_mock, Open(_, _, _)).WillOnce(Return(true));
     EXPECT_CALL(*gpio_mock, SetPinValue(1, 1)).WillOnce(Return(srp::core::ErrorCode::kOk));
     EXPECT_CALL(*uart_mock, Write(data)).WillOnce(Return(srp::core::ErrorCode::kOk));
     EXPECT_CALL(*gpio_mock, SetPinValue(1, 0)).WillOnce(Return(srp::core::ErrorCode::kOk));
@@ -73,7 +73,7 @@ TEST(RS485Test, WriteReadFail1) {
     auto uart_mock = std::make_unique<MockUartDriver>();
     auto gpio_mock = std::make_unique<srp::mock::MOCKGPIOController>();
 
-    EXPECT_CALL(*uart_mock, Open(_, _)).WillOnce(Return(true));
+    EXPECT_CALL(*uart_mock, Open(_, _, _)).WillOnce(Return(true));
     EXPECT_CALL(*gpio_mock, SetPinValue(1, 1)).WillOnce(Return(srp::core::ErrorCode::kNotDefine));
     EXPECT_CALL(*uart_mock, Close()).Times(1);
 
@@ -91,7 +91,7 @@ TEST(RS485Test, WriteReadFail2) {
     auto uart_mock = std::make_unique<MockUartDriver>();
     auto gpio_mock = std::make_unique<srp::mock::MOCKGPIOController>();
 
-    EXPECT_CALL(*uart_mock, Open(_, _)).WillOnce(Return(true));
+    EXPECT_CALL(*uart_mock, Open(_, _, _)).WillOnce(Return(true));
     EXPECT_CALL(*gpio_mock, SetPinValue(1, 1)).WillOnce(Return(srp::core::ErrorCode::kOk));
     EXPECT_CALL(*uart_mock, Write(data)).WillOnce(Return(srp::core::ErrorCode::kNotDefine));
     EXPECT_CALL(*uart_mock, Close()).Times(1);
@@ -109,7 +109,7 @@ TEST(RS485Test, WriteReadFail3) {
     auto uart_mock = std::make_unique<MockUartDriver>();
     auto gpio_mock = std::make_unique<srp::mock::MOCKGPIOController>();
 
-    EXPECT_CALL(*uart_mock, Open(_, _)).WillOnce(Return(true));
+    EXPECT_CALL(*uart_mock, Open(_, _, _)).WillOnce(Return(true));
     EXPECT_CALL(*gpio_mock, SetPinValue(1, 1)).WillOnce(Return(srp::core::ErrorCode::kOk));
     EXPECT_CALL(*uart_mock, Write(data)).WillOnce(Return(srp::core::ErrorCode::kOk));
     EXPECT_CALL(*gpio_mock, SetPinValue(1, 0)).WillOnce(Return(srp::core::ErrorCode::kNotDefine));

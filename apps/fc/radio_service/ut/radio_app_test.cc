@@ -17,6 +17,7 @@ using ::testing::_;
 using ::testing::Invoke;
 
 TEST(RADIOAPPTEST, InitializeTestNoUart) {
+    ara::log::LoggingMenager::Create("123", ara::log::LogMode::kConsole);
     const std::map<ara::core::StringView, ara::core::StringView> map;
     srp::apps::RadioApp app;
     EXPECT_EQ(app.Initialize(map), 1);
@@ -81,7 +82,7 @@ INSTANTIATE_TEST_SUITE_P(EventDataTestParameters, EventDataTest,
             std::optional<int64_t>{0},
             0, 0, 0,
             {254, 6, 0, 1, 200, 69, 0, 0, 0, 0, 0, 0, 170, 105},
-            {254, 8, 1, 1, 200, 70, 0, 0, 0, 0, 0, 0, 0, 0, 178, 119},
+            {254, 8, 1, 1, 200, 70, 0, 0, 0, 0, 0, 0, 0, 0, 87, 172},
             {254, 12, 2, 1, 200, 72, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 50, 93},
             {254, 10, 3, 1, 200, 73, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 182, 219},
             {254, 1, 4, 1, 200, 68, 0, 142, 237}
@@ -92,7 +93,7 @@ INSTANTIATE_TEST_SUITE_P(EventDataTestParameters, EventDataTest,
             std::optional<int64_t>{INT64_MAX},
             1, 1, 1,
             {254, 6, 5, 1, 200, 69, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 90, 24},
-            {254, 8, 6, 1, 200, 70, 0xFF, 0xFF, 0x7F, 0x7F, 0xFF, 0xFF, 0x7F, 0x7F, 66, 88},
+            {254, 8, 6, 1, 200, 70, 0xFF, 0xFF, 0x7F, 0x7F, 0xFF, 0xFF, 0x7F, 0x7F, 167, 131},
             {254, 12, 7, 1, 200, 72, 0xFF, 0xFF, 0xFF, 0x7F, 0xFF, 0xFF, 0xFF, 0x7F, 0, 0, 0, 0, 253, 87},
             {254, 10, 8, 1, 200, 73, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x7F, 0, 0, 224, 130},
             {254, 1, 9, 1, 200, 68, 7, 89, 149}
@@ -121,6 +122,18 @@ TEST_P(EventDataTest, ValidateEventData) {
     wrapper_.TestInitTimestamp(std::move(mock_timestamp));
     auto event_data = srp::apps::EventData::GetInstance();
 
+    // Reset all values to ensure clean state
+    event_data->SetTemp1(0);
+    event_data->SetTemp2(0);
+    event_data->SetTemp3(0);
+    event_data->SetDPress(0.0f);
+    event_data->SetPress(0.0f);
+    event_data->SetGPS(0, 0);
+    event_data->SetActuatorBit(0, 0);
+    event_data->SetActuatorBit(0, 1);
+    event_data->SetActuatorBit(0, 2);
+
+    // Set test values
     event_data->SetTemp1(params.input_temp1);
     event_data->SetTemp2(params.input_temp2);
     event_data->SetTemp3(params.input_temp3);

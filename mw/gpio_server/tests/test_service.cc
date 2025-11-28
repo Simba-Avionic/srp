@@ -40,48 +40,6 @@ class TestWrapper : public srp::mw::GPIOMWService {
   }
 };
 
-// class ReadConfigTest : public ::testing::TestWithParam<
-//   std::tuple<std::string, std::optional<std::unordered_map<uint8_t, srp::mw::GpioConf>>>> {
-//  protected:
-//   std::string path;
-//   std::optional<std::unordered_map<uint8_t, srp::mw::GpioConf>> db_opt;
-
-//   void SetUp() override {
-//     path = std::get<0>(GetParam());
-//     db_opt = std::get<1>(GetParam());
-//   }
-// };
-
-// TEST_P(ReadConfigTest, TEST_READ_CONFIG) {
-//     TestWrapper wrapper{};
-//     auto res_opt = wrapper.TestReadConfig(FILE_PREFIX + path);
-//     ASSERT_EQ(db_opt.has_value(), res_opt.has_value());
-//     if (db_opt.has_value()) {
-//         auto db = db_opt.value();
-//         auto res = res_opt.value();
-//         ASSERT_EQ(db.size(), res.size());
-//         for (const auto& instance : db) {
-//             EXPECT_EQ(instance.second.pinNum, res[instance.first].pinNum);
-//             EXPECT_EQ(instance.second.direction, res[instance.first].direction);
-//         }
-//     } else {
-//         EXPECT_FALSE(res_opt.has_value());
-//     }
-// }
-
-
-// INSTANTIATE_TEST_SUITE_P(ReadConfigTestParameters, ReadConfigTest,
-//   ::testing::Values(
-//     std::make_tuple("t1.json", std::unordered_map<uint8_t, srp::mw::GpioConf>
-//         {{{1, {21, srp::core::gpio::direction_t::OUT}}}}),
-//     std::make_tuple("t2.json", std::nullopt),
-//     std::make_tuple("t3.json", std::optional<std::unordered_map<uint8_t, srp::mw::GpioConf>>{std::in_place}),
-//     std::make_tuple("t4.json", std::optional<std::unordered_map<uint8_t, srp::mw::GpioConf>>{std::in_place}),
-//     std::make_tuple("t5.json", std::optional<std::unordered_map<uint8_t, srp::mw::GpioConf>>{std::in_place}),
-//     std::make_tuple("t6.json", std::unordered_map<uint8_t, srp::mw::GpioConf>
-//                                                         {{{1, {21, srp::core::gpio::direction_t::OUT}}}})));
-
-
 
 TEST(GPIO_SERVICE, TEST_INIT_PINS) {
     TestWrapper wrapper{};
