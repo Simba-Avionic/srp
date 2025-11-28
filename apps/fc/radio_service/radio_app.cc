@@ -23,6 +23,7 @@ constexpr auto kGPS_service_path_name = "srp/apps/RadioApp/GPSService";
 constexpr auto kPrimer_service_path_name = "srp/apps/RadioApp/PrimerService";
 constexpr auto kServo_service_path_name = "srp/apps/RadioApp/ServoService";
 constexpr auto kRecovery_service_path_name = "srp/apps/RadioApp/RecoveryService";
+constexpr auto kMain_service_path_name = "srp/apps/RadioApp/MainService";
 constexpr auto KGPS_UART_path = "/dev/ttyS1";
 constexpr auto KGPS_UART_baudrate = B115200;
 constexpr auto kSystemId = 1;
@@ -72,15 +73,118 @@ void RadioApp::TransmittingLoop(const std::stop_token& token) {
   }
 }
 
+void RadioApp::ListeningLoop(const std::stop_token& token) {
+  mavlink_message_t msg;
+  mavlink_status_t status;
+
+  while (!token.stop_requested()) {
+    auto bytes_read_opt = uart_->Read(1);
+    if (!bytes_read_opt.has_value()) {
+      continue;
+    }
+    auto byte = bytes_read_opt.value();
+      if (mavlink_parse_char(MAVLINK_COMM_0, byte[0], &msg, &status)) {
+        SIMBA_STATUS status = SIMBA_INITIALIZE_ERROR;
+        switch (msg.msgid) {
+          case MAVLINK_MSG_ID_SIMBA_CMD_CHANGE_STATE: {
+            uint8_t cmd_change = mavlink_msg_simba_cmd_change_state_get_new_state(&msg);
+            auto result = this->main_service_handler->setMode(cmd_change);
+            if (result.HasValue()) {
+              if (result.Value() == true) {
+                status = SIMBA_OK;
+              } else {
+                status = SIMBA_INVALID_STATE;
+              }
+            } else {
+              status = SIMBA_CONNECTION_ERROR;
+            }
+          }
+          case MAVLINK_MSG_ID_SIMBA_ACTUATOR_CMD: {
+            uint8_t actuator_id = mavlink_msg_simba_actuator_cmd_get_actuator_id(&msg);
+            uint8_t value = mavlink_msg_simba_actuator_cmd_get_value(&msg);
+            status = ActuatorCMD(actuator_id, value);
+            break;
+          }
+        }
+        SendAck(status);
+      }
+  }
+}
+
+void RadioApp::SendAck(SIMBA_STATUS status) {
+  mavlink_message_t msg;
+  uint8_t buffer[MAVLINK_MAX_PACKET_LEN];
+  mavlink_msg_simba_ack_pack(kSystemId, kComponentId, &msg, this->current_state, status);
+  uint16_t len = mavlink_msg_to_send_buffer(buffer, &msg);
+  mavl_logger.LogDebug() << std::vector<uint8_t>(buffer, buffer + len);
+  uart_->Write(std::vector<uint8_t>(buffer, buffer + len));
+}
+
+SIMBA_STATUS RadioApp::ActuatorCMD(uint8_t actuator_id, uint8_t value) {
+  switch (actuator_id) {
+    case 1: {
+      auto result = this->servo_service_handler->SetMainServoValue(value);
+      if (result.HasValue()) {
+        if (result.Value() == true) {
+          return SIMBA_OK;
+        }
+        return SIMBA_ERROR;
+      }
+      return SIMBA_CONNECTION_ERROR;
+      break;
+    }
+    case 2: {
+      auto result = this->servo_service_handler->SetVentServoValue(value);
+      if (result.HasValue()) {
+        if (result.Value() == true) {
+          return SIMBA_OK;
+        }
+      return SIMBA_ERROR;
+      }
+      return SIMBA_CONNECTION_ERROR;
+      break;
+    }
+    case 3: {
+      if (value == 1) {
+        auto result = this->recovery_service_handler->OpenReefedParachute();
+        if (result.HasValue()) {
+          if (result.Value() == true) {
+            return SIMBA_OK;
+          }
+        return SIMBA_ERROR;
+        }
+        return SIMBA_CONNECTION_ERROR;
+      }
+      break;
+    }
+    case 4: {
+      if (value == 1) {
+        auto result = this->recovery_service_handler->UnreefeParachute();
+        if (result.HasValue()) {
+          if (result.Value() == true) {
+            return SIMBA_OK;
+          }
+        return SIMBA_ERROR;
+        }
+        return SIMBA_CONNECTION_ERROR;
+      }
+      break;
+    }
+  }
+  return SIMBA_NOT_DEFINED;
+}
 int RadioApp::Run(const std::stop_token& token) {
   std::jthread transmitting_thread([this](const std::stop_token& t) {
     this->TransmittingLoop(t);
     });
-    core::condition::wait(token);
-    service_ipc->StopOffer();
-    service_udp->StopOffer();
-    uart_->Close();
-    return core::ErrorCode::kOk;
+  std::jthread listening_thread([this](const std::stop_token& t) {
+    this->ListeningLoop(t);
+  });
+  core::condition::wait(token);
+  service_ipc->StopOffer();
+  service_udp->StopOffer();
+  uart_->Close();
+  return core::ErrorCode::kOk;
 }
 
 void RadioApp::InitUart(std::unique_ptr<core::uart::IUartDriver> uart) {
@@ -208,6 +312,18 @@ void RadioApp::SomeIpInit() {
         });
       });
     });
+    this->main_service_proxy.StartFindService([this](auto handler) {
+      this->main_service_handler = handler;
+      main_service_handler->CurrentModeStatusEvent.Subscribe(1, [this](const uint8_t status) {
+        main_service_handler->CurrentModeStatusEvent.SetReceiveHandler([this] () {
+          auto res = main_service_handler->CurrentModeStatusEvent.GetNewSamples();
+          if (!res.HasValue()) {
+            return;
+          }
+          this->current_state = static_cast<SIMBA_ROCKET_STATE>(res.Value());
+        });
+      });
+    });
     // TODO(m.mankowski2004@gmail.com): Finish actuators
   }
 RadioApp::~RadioApp() {
@@ -222,9 +338,11 @@ primer_service_proxy{ara::core::InstanceSpecifier{kPrimer_service_path_name}},
 primer_service_handler{nullptr},
 servo_service_proxy{ara::core::InstanceSpecifier{kServo_service_path_name}},
 servo_service_handler{nullptr},
+main_service_proxy{ara::core::InstanceSpecifier{kMain_service_path_name}},
+main_service_handler{nullptr},
+recovery_service_handler{nullptr},
 mavl_logger{ara::log::LoggingMenager::GetInstance()->CreateLogger("MAVL", "", ara::log::LogLevel::kDebug)}
 {
 }
-
 }  // namespace apps
 }  // namespace srp

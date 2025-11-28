@@ -5,7 +5,8 @@
         "deployment/system_definition/someip/fc/gps_service/service.json",
         "deployment/system_definition/someip/prim_service/service.json",
         "deployment/system_definition/someip/servo_service/service.json",
-        "deployment/system_definition/someip/fc/recovery_service/service.json"
+        "deployment/system_definition/someip/fc/recovery_service/service.json",
+        "deployment/system_definition/someip/fc/main_service/service.json"
     ],
     "package": "srp.apps",
     "adaptive_application": {
@@ -84,6 +85,11 @@
                 },
                 {
                     "name": "srp.apps.RecoveryService as RecoveryService",
+                    "on": "ipc",
+                    "instance": 2
+                },
+                {
+                    "name": "srp.apps.MainService as MainService",
                     "on": "ipc",
                     "instance": 2
                 }
