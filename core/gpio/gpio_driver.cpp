@@ -22,7 +22,7 @@ namespace {
 }
 
 GpioDriver::GpioDriver(std::unique_ptr<IFileHandler> file): file_(std::move(file))
-// , gpio_logger_{ara::log::LoggingMenager::GetInstance()->CreateLogger("gpio", "", ara::log::LogLevel::kInfo)}
+, gpio_logger_{ara::log::LoggingMenager::GetInstance()->CreateLogger("gpio", "", ara::log::LogLevel::kInfo)}
 {}
 
 GpioDriver::~GpioDriver() {}
