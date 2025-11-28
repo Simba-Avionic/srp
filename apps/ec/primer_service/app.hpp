@@ -20,6 +20,7 @@
 #include "ara/exec/adaptive_application.h"
 #include "apps/ec/primer_service/service.hpp"
 #include "apps/ec/primer_service/controller/primer_controller.hpp"
+#include "apps/ec/primer_service/primer_did.hpp"
 namespace srp {
 namespace primer {
 
@@ -28,6 +29,8 @@ class PrimerService final :  public ara::exec::AdaptiveApplication {
   std::shared_ptr<primer::PrimerController> controller;
   apps::MyPrimerServiceSkeleton service_ipc;
   apps::MyPrimerServiceSkeleton service_udp;
+  const ara::core::InstanceSpecifier did_instance;
+  std::unique_ptr<PrimerDID> primer_did_;
 
 
   /**
