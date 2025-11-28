@@ -16,7 +16,7 @@
 #include "mw/i2c_service/controller/mock/mock_i2ccontroller.h"
 
 namespace {
-    constexpr uint8_t ADS7828_ADDRESS = 0x90;
+    constexpr uint8_t ADS7828_ADDRESS = 0x48;
     constexpr auto RES_SIZE = 2;
 }
 

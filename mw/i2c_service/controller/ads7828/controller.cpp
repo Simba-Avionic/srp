@@ -22,7 +22,7 @@ namespace srp {
 namespace i2c {
 
 namespace {
-    constexpr uint8_t ADS7828_ADDRESS = 0x90;
+    constexpr uint8_t ADS7828_ADDRESS = 0x48;
     constexpr float ADS7828_REF_VOLTAGE = 3.3f;
     constexpr float ADC_RESOLUTION = 4096.0f;  // for 12 Bit
 }
@@ -48,6 +48,9 @@ std::optional<uint8_t> ADS7828::GetConfigData(const uint8_t& channel) const {
     return res;
 }
 std::optional<uint16_t> ADS7828::GetAdcRawRead(const uint8_t& channel) const {
+    if (!this->i2c_) {
+        return std::nullopt;
+    }
     auto configData = GetConfigData(channel);
     if (!configData.has_value()) {
         return std::nullopt;

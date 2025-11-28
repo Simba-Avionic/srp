@@ -41,7 +41,7 @@ class TestWrapper : public srp::i2c::ADCSensorController {
   }
   srp::core::ErrorCode TestInit(const std::unordered_map<std::string, std::string>& parms,
     std::unique_ptr<srp::i2c::IADS7828> adc_) {
-      return Init(parms, std::move(adc_));
+      return Init(parms.at("app_path"), std::move(adc_));
     }
 };
 
@@ -142,7 +142,7 @@ TEST(TestADCSensor, SetPtrTest) {
 TEST(TestADCSensor, SetInitSetPtr) {
   TestWrapper wrapper{};
   std::unordered_map<std::string, std::string> parms;
-  parms["app_name"] = "123";
+  parms["app_path"] = "123";
   auto ptr = std::unique_ptr<srp::i2c::ADS7828>();
 
   EXPECT_EQ(wrapper.TestInit(parms, std::move(ptr)), srp::core::ErrorCode::kInitializeError);
@@ -151,7 +151,7 @@ TEST(TestADCSensor, SetInitSetPtr) {
 TEST(TestADCSensor, SetInitSetNullptr) {
   TestWrapper wrapper{};
   std::unordered_map<std::string, std::string> parms;
-  parms["app_name"] = "123";
+  parms["app_path"] = "123";
   auto ptr = std::unique_ptr<srp::i2c::ADS7828>(nullptr);
 
   EXPECT_EQ(wrapper.TestInit(parms, std::move(ptr)), srp::core::ErrorCode::kInitializeError);
@@ -159,7 +159,7 @@ TEST(TestADCSensor, SetInitSetNullptr) {
 TEST(TestADCSensor, SetInit) {
   TestWrapper wrapper{};
   std::unordered_map<std::string, std::string> parms;
-  parms["app_name"] = "123";
+  parms["app_path"] = "123";
   auto ptr = std::unique_ptr<srp::mock::MockADS7828>();
 
   EXPECT_EQ(wrapper.TestInit(parms, std::move(ptr)), srp::core::ErrorCode::kInitializeError);
