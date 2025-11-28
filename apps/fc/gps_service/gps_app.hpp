@@ -17,6 +17,7 @@
 #include <map>
 #include <memory>
 #include <mutex>  // NOLINT
+#include <chrono>  // NOLINT
 
 #include "ara/exec/adaptive_application.h"
 #include "srp/apps/GPSServiceSkeleton.h"
@@ -35,6 +36,10 @@ class GPSApp final : public ara::exec::AdaptiveApplication {
   std::unique_ptr<apps::GPSServiceSkeleton> service_udp;
   std::unique_ptr<core::uart::IUartDriver> uart_;
 
+  std::chrono::high_resolution_clock::time_point last_frame;
+
+  int64_t GetTimeDelata() const;
+
  public:
   static std::optional<GPSDataStructure> ParseGPSData(const std::vector<uint8_t>& data);
   void Init(std::unique_ptr<core::uart::IUartDriver> uart);
@@ -52,8 +57,6 @@ class GPSApp final : public ara::exec::AdaptiveApplication {
    */
   int Initialize(const std::map<ara::core::StringView, ara::core::StringView>
                       parms) override;
-
- public:
   ~GPSApp();
   GPSApp();
 };

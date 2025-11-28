@@ -34,7 +34,16 @@ core::ErrorCode UartDriver::Write(const std::vector<uint8_t>& data) {
     return core::ErrorCode::kOk;
 }
 
-bool UartDriver::Open(const std::string& portName, const uint32_t& baudrate) {
+/**
+ * @brief Open UART port
+ * 
+ * @param portName 
+ * @param baudrate 
+ * @param timeout  // value in deciseconds
+ * @return true 
+ * @return false 
+ */
+bool UartDriver::Open(const std::string& portName, const uint32_t& baudrate, const uint8_t timeout) {
     serial_port = open(portName.c_str(), O_RDWR | O_NOCTTY);
     if (serial_port == -1) {
         return false;

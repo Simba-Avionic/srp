@@ -23,7 +23,7 @@ namespace uart {
 
 class IUartDriver {
  public:
-  virtual bool Open(const std::string& portName, const uint32_t& baudrate = B9600) = 0;
+  virtual bool Open(const std::string& portName, const uint32_t& baudrate = B9600, const uint8_t timeout = 10) = 0;
   virtual std::optional<std::vector<uint8_t>> Read(const uint16_t size = 0) = 0;
   virtual void Close() = 0;
   virtual core::ErrorCode Write(const std::vector<uint8_t>& data) = 0;
