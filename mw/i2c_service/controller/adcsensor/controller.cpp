@@ -31,13 +31,12 @@ float ADCSensorController::CalculateB(const float& R, const float& A, const floa
 
 ADCSensorController::ADCSensorController() {}
 
-core::ErrorCode ADCSensorController::Init(const std::unordered_map<std::string, std::string>& parms,
+core::ErrorCode ADCSensorController::Init(const std::string path,
     std::unique_ptr<IADS7828> adc_) {
   if (this->setPtr(std::move(adc_)) != core::ErrorCode::kOk) {
     return core::ErrorCode::kInitializeError;
   }
-  this->app_name = parms.at("app_name");
-  std::string file_path = "/opt/"+this->app_name+"/etc/config.json";
+  std::string file_path = path + "etc/config.json";
   auto obj_r = core::json::JsonParser::Parser(file_path);
   if (!obj_r.has_value()) {
     return core::ErrorCode::kNotDefine;
@@ -70,7 +69,7 @@ std::unordered_map<uint8_t, SensorConfig> ADCSensorController::ReadConfig(core::
             continue;
         }
         auto parser = parser_opt.value();
-        auto actuator_id = parser.GetNumber<uint8_t>("actuator_id");
+        auto actuator_id = parser.GetNumber<uint8_t>("sensor_id");
         auto channel = parser.GetNumber<uint8_t>("channel");
         if (!(actuator_id.has_value() && channel.has_value())) {
             continue;
@@ -102,6 +101,9 @@ std::unordered_map<uint8_t, SensorConfig> ADCSensorController::ReadConfig(core::
 }
 
 std::optional<float> ADCSensorController::GetValue(const uint8_t sensor_id) const {
+    if (!this->adc_) {
+        return std::nullopt;
+    }
     auto sensor = this->db_.find(sensor_id);
     if (sensor == db_.end()) {
         return std::nullopt;
@@ -110,7 +112,8 @@ std::optional<float> ADCSensorController::GetValue(const uint8_t sensor_id) cons
     if (!res.has_value()) {
         return std::nullopt;
     }
-    return sensor->second.a * res.value() + sensor->second.b;
+    float value = sensor->second.a * res.value() + sensor->second.b;
+    return value;
 }
 
 }  // namespace i2c

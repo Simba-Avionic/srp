@@ -1,6 +1,7 @@
 {
     "include": [
-        "deployment/system_definition/someip/prim_service/service.json"
+        "deployment/system_definition/someip/prim_service/service.json",
+        "deployment/system_definition/diag/jobs/primer_service/primer_did.json"
     ],
     "package": "srp.apps",
     "adaptive_application": {
@@ -51,6 +52,10 @@
                     "on": "udp",
                     "port": "10002",
                     "instance": 1
+                },
+                {
+                    "name": "PrimerDid as primer_did",
+                    "on": "diag"
                 }
             ]
         }

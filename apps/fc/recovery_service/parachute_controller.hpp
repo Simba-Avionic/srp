@@ -12,7 +12,7 @@
 #define APPS_FC_RECOVERY_SERVICE_PARACHUTE_CONTROLLER_HPP_
 #include <memory>
 #include <string>
-#include "mw/i2c_service/controller/pca9685/controller.hpp"
+#include "apps/ec/ServoService/servoController/servo_controller.hpp"
 #include "mw/gpio_server/controller/gpio_controller.hpp"
 namespace srp {
 namespace apps {
@@ -34,7 +34,7 @@ struct Parachute_config_t {
 
 class ParachuteController {
  private:
-  std::unique_ptr<i2c::PCA9685> servo_controller;
+  std::shared_ptr<srp::service::ServoController> servo_controller;
   std::unique_ptr<gpio::GPIOController> gpio_controller;
   bool parachute_unreefed;
   bool parachute_open;
@@ -46,7 +46,7 @@ class ParachuteController {
   uint16_t GetTargetActivationTime() { return this->config_.backup_linecutter_activation_time; }
   bool OpenParachute(bool diag = false);
   bool UnreefParachute(bool diag = false);
-  void Init(std::unique_ptr<i2c::PCA9685>&& servo,
+  void Init(std::shared_ptr<srp::service::ServoController> servo,
               std::unique_ptr<gpio::GPIOController>&& gpio, const std::string& path);
   ParachuteController();
 };

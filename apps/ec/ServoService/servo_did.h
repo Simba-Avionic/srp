@@ -16,16 +16,17 @@
 #include <memory>
 #include "ara/log/log.h"
 #include "ara/diag/generic_data_identifier.h"
-#include "mw/i2c_service/controller/pca9685/controller.hpp"
+#include "apps/ec/ServoService/servoController/servo_controller.hpp"
 #include "ara/com/com_error_domain.h"
 #include "ara/diag/uds_error_domain.h"
+#include "core/common/error_code.h"
 namespace srp {
 namespace service {
 
 
 class ServoSecondDid : public ara::diag::GenericDiD {
  private:
-  std::shared_ptr<i2c::PCA9685>  servoController;
+  std::shared_ptr<ServoController>  servoController;
   ara::core::Result<ara::diag::OperationOutput> Read() noexcept override {
     return ara::diag::MakeErrorCode(
       ara::diag::UdsDiagErrc::kSubFunctionNotSupported);
@@ -52,8 +53,9 @@ class ServoSecondDid : public ara::diag::GenericDiD {
 
  public:
   ServoSecondDid(const ara::core::InstanceSpecifier &specifier,
-      std::shared_ptr<i2c::PCA9685> servo_controller):
-      servoController(servo_controller), ara::diag::GenericDiD{specifier} {
+      std::shared_ptr<ServoController> servo_controller):
+      ara::diag::GenericDiD{specifier},
+      servoController(servo_controller) {
     }
   ~ServoSecondDid() = default;
 };

@@ -20,21 +20,30 @@
 namespace srp {
 namespace primer {
 
+namespace {
+  constexpr auto kdid_path = "/srp/apps/PrimerService/primer_did";
+}
+
 int PrimerService::Run(const std::stop_token& token) {
   core::condition::wait(token);
   service_ipc.StopOffer();
   service_udp.StopOffer();
+  primer_did_->StopOffer();
   return 0;
 }
 
 PrimerService::PrimerService() :
   controller(std::make_shared<PrimerController>()),
   service_ipc{ara::core::InstanceSpecifier{"srp/apps/PrimerService/PrimService_ipc"}, this->controller},
-  service_udp{ara::core::InstanceSpecifier{"srp/apps/PrimerService/PrimService_udp"}, this->controller} {}
+  service_udp{ara::core::InstanceSpecifier{"srp/apps/PrimerService/PrimService_udp"}, this->controller},
+  did_instance{kdid_path} {
+    primer_did_ = std::make_unique<PrimerDID>(did_instance, controller);
+  }
 
   int PrimerService::Initialize(const std::map<ara::core::StringView, ara::core::StringView>
                       parms) {
   controller->Initialize(parms.at("app_path") + "etc/config.json");
+  primer_did_->Offer();
   service_ipc.StartOffer();
   service_udp.StartOffer();
   return 0;

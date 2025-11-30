@@ -13,8 +13,6 @@
 #define APPS_FC_RECOVERY_SERVICE_SERVICE_HPP_
 #include <memory>
 #include "srp/apps/RecoveryServiceSkeleton.h"
-#include "mw/gpio_server/controller/gpio_controller.hpp"
-#include "mw/i2c_service/controller/pca9685/controller.hpp"
 #include "apps/fc/recovery_service/parachute_controller.hpp"
 
 namespace srp {

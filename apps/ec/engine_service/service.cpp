@@ -45,14 +45,15 @@ ara::core::Result<bool> MyEngineServiceSkeleton::Start() {
         return ara::com::MakeErrorCode(
             ara::com::ComErrc::kWrongMethodCallProcessingMode, "Invalid engine computer MODE");
     }
-    auto res2 = this->primer_handler_->OnPrime();
-    if (!res2.HasValue()) {
+    auto res = this->primer_handler_->OnPrime();
+    if (!res.HasValue()) {
       return ara::com::MakeErrorCode(
             ara::com::ComErrc::kWrongMethodCallProcessingMode, "Invalid request to MW:GPIOService");
     }
     std::this_thread::sleep_for(std::chrono::milliseconds(PRIMER_DELAY));
-    auto res = this->servo_handler_->SetMainServoValue(1);
-    if (!res.HasValue()) {
+    this->primer_handler_->OffPrime();
+    auto res2 = this->servo_handler_->SetMainServoValue(1);
+    if (!res2.HasValue()) {
       return ara::com::MakeErrorCode(
             ara::com::ComErrc::kWrongMethodCallProcessingMode, "Invalid request to MW:I2CService");
     }

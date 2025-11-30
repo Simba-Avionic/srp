@@ -38,7 +38,9 @@ class MyPrimerServiceSkeleton: public PrimerServiceSkeleton {
   return ara::core::Result<bool>(controller_->ChangePrimerState(0));
   }
   ara::core::Result<bool> StartPrime() override {
-  return ara::com::MakeErrorCode(ara::com::ComErrc::kSetHandlerNotSet, "Method handler is not set");
+     auto res = ara::core::Result<bool>(controller_->ChangePrimerState(1));
+     // TODO(matikrajek42@gmail.com) catch res
+     return ara::core::Result<bool>(controller_->ChangePrimerState(1));
   }
 };
 }  // namespace apps

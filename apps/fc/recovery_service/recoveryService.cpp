@@ -16,6 +16,9 @@
 #include <utility>
 #include "ara/log/log.h"
 #include "core/common/condition.h"
+#include "core/common/error_code.h"
+#include "apps/ec/ServoService/servoController/servo_controller.hpp"
+#include "mw/gpio_server/controller/gpio_controller.hpp"
 namespace srp {
 namespace service {
 namespace {
@@ -33,8 +36,8 @@ bool RecoveryService::DetectTargetHeight() {
   auto actual_height = 500;  // TODO(matik) add read actual height
   auto now = timestamp_.GetNewTimeStamp();
   if (now.has_value()) {
-    auto buckup_detected = timestamp_.GetDeltaTime(now.value(), apogee_time) >= activation_time;
-    return (actual_height <= actual_height) || buckup_detected;
+    auto backup_detected = timestamp_.GetDeltaTime(now.value(), apogee_time) >= activation_time;
+    return (actual_height <= actual_height) || backup_detected;
   }
   return actual_height <= actual_height;
 }
@@ -75,10 +78,15 @@ int RecoveryService::Run(const std::stop_token& token) {
 int RecoveryService::Initialize(
     const std::map<ara::core::StringView, ara::core::StringView> parms) {
   this->controller = std::make_shared<apps::recovery::ParachuteController>();
-  auto pca = std::make_unique<i2c::PCA9685>();
-  pca->Init("/srp/opt/RecoveryService/");
-  // TODO(matikrajek42@gmail.com) change to parms.at("app_name") after BS fix adaptiveAplication
-  this->controller->Init(std::move(pca), std::make_unique<gpio::GPIOController>(), "/srp/opt/RecoveryService/");
+  const auto app_path = parms.at("app_path");
+  auto servo_controller = std::make_shared<srp::service::ServoController>();
+  auto init_res = servo_controller->Init(app_path);
+  if (init_res != core::ErrorCode::kOk) {
+    ara::log::LogError() << "RecoveryService.Initialize: unable to init servo controller";
+    return 1;
+  }
+  this->controller->Init(std::move(servo_controller),
+                         std::make_unique<gpio::GPIOController>(), app_path);
   rec_did = std::make_unique<apps::RecoveryGenericRoutine>(rec_did_specifier, controller);
   service_ipc = std::make_unique<apps::MyRecoveryServiceSkeleton>(
                 ara::core::InstanceSpecifier(kService_ipc_name), controller);

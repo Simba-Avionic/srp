@@ -30,7 +30,7 @@ namespace {
     static constexpr char const*
         kSubscriberPrefix = "SRP.TEMP.";
     constexpr uint8_t kSensor_resolution = 10;
-    constexpr auto kSensor_Delay = 500;
+    constexpr auto kSensor_Delay = 750;
     constexpr uint16_t kDefault_Response_Time = 125;
 }
 

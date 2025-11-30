@@ -18,7 +18,6 @@
 #include "ara/exec/adaptive_application.h"
 #include "apps/fc/recovery_service/service.hpp"
 #include "mw/gpio_server/controller/gpio_controller.hpp"
-#include "mw/i2c_service/controller/pca9685/controller.hpp"
 #include "apps/fc/recovery_service/parachute_controller.hpp"
 #include "apps/fc/recovery_service/recovery_rid.hpp"
 #include "core/timestamp/timestamp_driver.hpp"

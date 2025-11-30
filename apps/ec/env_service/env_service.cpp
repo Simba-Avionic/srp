@@ -10,14 +10,22 @@
  */
 #include <memory>
 #include <map>
+#include <string>
 #include <utility>
+#include <sstream>
+#include <iomanip>
 #include "apps/ec/env_service/env_service.hpp"
 #include "core/common/condition.h"
 #include "ara/log/log.h"
 #include "srp/env/EnvAppSkeleton.h"
+#include "mw/i2c_service/controller/ads7828/controller.hpp"
 
 namespace srp {
 namespace envService {
+
+namespace {
+    constexpr uint8_t PRESS_SENSOR_ID = 10;
+}
 
 
 core::ErrorCode EnvService::Init(std::unique_ptr<mw::temp::TempController> temp) {
@@ -35,13 +43,43 @@ EnvService::EnvService(): service_ipc{ara::core::InstanceSpecifier{"srp/env/EnvA
 
 int EnvService::Initialize(const std::map<ara::core::StringView, ara::core::StringView>
                       parms) {
-    this->Init(std::make_unique<mw::temp::TempController>());
+    // Check if app_path exists in parameters
+    auto app_path_it = parms.find("app_path");
+    if (app_path_it == parms.end()) {
+        ara::log::LogError() << "app_path parameter not found in parms";
+        return core::ErrorCode::kInitializeError;
+    }
+
+    // Initialize pressure sensor
+    auto adc = std::make_unique<i2c::ADS7828>();
+    auto i2c = std::make_unique<i2c::I2CController>();
+    i2c->Init(std::make_unique<com::soc::StreamIpcSocket>());
+    auto adc_init_res = adc->Init(std::move(i2c));
+    if (adc_init_res != core::ErrorCode::kOk) {
+        ara::log::LogError() << "Failed to initialize ADC";
+        return core::ErrorCode::kInitializeError;
+    }
+
+    // Convert StringView to string for Init
+    std::string app_path_str(app_path_it->second.data(), app_path_it->second.size());
+    auto press_init_res = this->press_.Init(app_path_str, std::move(adc));
+    if (press_init_res != core::ErrorCode::kOk) {
+        ara::log::LogError() << "Failed to initialize pressure sensor controller";
+        return core::ErrorCode::kInitializeError;
+    }
+
+    auto temp_init_res = this->Init(std::make_unique<mw::temp::TempController>());
+    if (temp_init_res != core::ErrorCode::kOk) {
+        ara::log::LogError() << "Failed to initialize TempController";
+        return core::ErrorCode::kInitializeError;
+    }
     core::ErrorCode res;
     uint8_t i = 0;
     do {
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
         res = this->temp_->Initialize(514, std::bind(&EnvService::TempRxCallback,
             this, std::placeholders::_1), std::make_unique<com::soc::IpcSocket>());
+        i++;
     } while (res != core::ErrorCode::kOk && i < 6);
     service_ipc.StartOffer();
     service_udp.StartOffer();
@@ -49,14 +87,18 @@ int EnvService::Initialize(const std::map<ara::core::StringView, ara::core::Stri
 }
 
 int EnvService::Run(const std::stop_token& token) {
-    int i = 1;
     while (!token.stop_requested()) {
         core::condition::wait_for(std::chrono::milliseconds(1000), token);
-        this->service_ipc.newPressEvent.Update(i);
-        this->service_udp.newPressEvent.Update(i);
-        this->service_ipc.newDPressEvent.Update(i);
-        this->service_udp.newDPressEvent.Update(i);
-        i += 1;
+        auto pressValue = this->press_.GetValue(PRESS_SENSOR_ID);
+        if (pressValue.has_value()) {
+            std::ostringstream ss;
+            ss << std::fixed << std::setprecision(1) << pressValue.value();
+           ara::log::LogDebug() << "Receive new Tank Pressure: " << ss.str() << " Bar";
+            this->service_ipc.newPressEvent.Update(pressValue.value());
+            this->service_udp.newPressEvent.Update(pressValue.value());
+        } else {
+            ara::log::LogWarn() << "dont receive new pressure";
+        }
     }
     service_ipc.StopOffer();
     service_udp.StopOffer();
@@ -65,7 +107,7 @@ int EnvService::Run(const std::stop_token& token) {
 
 void EnvService::TempRxCallback(const std::vector<srp::mw::temp::TempReadHdr>& data) {
     for (auto &hdr : data) {
-        ara::log::LogWarn() << "Receive temp id: " << hdr.actuator_id << ",temp:" << static_cast<float>(hdr.value);
+        ara::log::LogDebug() << "Receive temp id: " << hdr.actuator_id << ",temp:" << static_cast<float>(hdr.value);
         switch (hdr.actuator_id) {
             case 0:
             this->service_ipc.newTempEvent_1.Update(static_cast<int16_t>(hdr.value * 10));

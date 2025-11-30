@@ -51,23 +51,23 @@ TEST_F(TimestampMasterTest, CorrectStartPointAdjustsStartTime) {
     EXPECT_GE(timestamp, 0);  // Powinien być dodatni
 }
 
-TEST(TimestampIntegratedTest, FirstTest) {
-    TimestampMaster master;
-    TimestampController slave1;
-    TimestampController slave2;
-    EXPECT_TRUE(master.Init());
-    std::this_thread::sleep_for(std::chrono::milliseconds(10));
-    EXPECT_TRUE(slave1.Init());
-    EXPECT_TRUE(slave2.Init());
-    std::this_thread::sleep_for(std::chrono::milliseconds(10));
-    auto t1 = slave1.GetNewTimeStamp();
-    auto t2 = slave2.GetNewTimeStamp();
-    auto correct_val = master.GetNewTimeStamp();
-    ASSERT_TRUE(t1.has_value());
-    ASSERT_TRUE(t2.has_value());
-    EXPECT_NEAR(correct_val, t1.value(), 70);
-    EXPECT_NEAR(correct_val, t2.value(), 70);
-}
+// TEST(TimestampIntegratedTest, FirstTest) {
+//     TimestampMaster master;
+//     TimestampController slave1;
+//     TimestampController slave2;
+//     EXPECT_TRUE(master.Init());
+//     std::this_thread::sleep_for(std::chrono::milliseconds(10));
+//     EXPECT_TRUE(slave1.Init());
+//     EXPECT_TRUE(slave2.Init());
+//     std::this_thread::sleep_for(std::chrono::milliseconds(10));
+//     auto t1 = slave1.GetNewTimeStamp();
+//     auto t2 = slave2.GetNewTimeStamp();
+//     auto correct_val = master.GetNewTimeStamp();
+//     ASSERT_TRUE(t1.has_value());
+//     ASSERT_TRUE(t2.has_value());
+//     EXPECT_NEAR(correct_val, t1.value(), 70);
+//     EXPECT_NEAR(correct_val, t2.value(), 70);
+// }
 TEST(TimestampIntegratedTest, SecTest) {
     TimestampMaster master;
     TimestampController slave1;

@@ -10,6 +10,7 @@ cc_binary(
         "//deployment/apps/prim_service:ara",
         "//apps/ec/primer_service",
         "//apps/ec/primer_service:primer_app",
+        "@srp_platform//ara/diag:uds_lib",
     ],
 )
 
@@ -18,6 +19,7 @@ cc_library(
     deps = [
         "//apps/ec/primer_service/controller:primer_controller",
         "//deployment/apps/prim_service:someip_lib",
+        "@srp_platform//ara/diag:uds_lib",
     ],
     srcs = [
     ],
@@ -37,5 +39,6 @@ cc_library(
     ],
     hdrs = [
         "app.hpp",
+        "primer_did.hpp"
     ],
 )
