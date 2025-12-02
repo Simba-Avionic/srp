@@ -58,6 +58,7 @@ class RadioApp : public ara::exec::AdaptiveApplication {
  protected:
   void InitUart(std::unique_ptr<core::uart::IUartDriver> uart);
   void InitTimestamp(std::unique_ptr<core::timestamp::ITimestampController> timestamp);
+
   void TransmittingLoop(const std::stop_token& token);
   void ListeningLoop(const std::stop_token& token);
   SIMBA_STATUS ActuatorCMD(uint8_t actuator_id, uint8_t value);
