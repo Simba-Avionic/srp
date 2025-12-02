@@ -54,6 +54,9 @@ std::optional<std::vector<uint8_t>> I2CController::WriteRead(const uint8_t addre
 
 std::optional<std::vector<uint8_t>> I2CController::SendData(
             ACTION action, uint8_t address, const std::vector<uint8_t>& payload) {
+    if (!this->sock_) {
+        return std::nullopt;
+    }
     auto buf = I2CFactory::GetBuffer(std::make_shared<Header>(action, address), payload);
     return this->sock_->Transmit(I2C_IPC, 0, buf);
 }

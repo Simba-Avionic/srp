@@ -26,8 +26,9 @@ namespace primer {
 
 namespace {
   const constexpr uint8_t kIgniter_pin_id = 1;
-  const constexpr uint16_t kIgniter_active_time = 250;
+  const constexpr uint16_t kIgniter_active_time = 1000;
   const constexpr uint8_t kOff_ignite = 0;
+  const constexpr uint8_t kIgniter_arm_pin_id = 8;
 }  // namespace
 
 PrimerController::PrimerController():
@@ -63,13 +64,23 @@ bool PrimerController::ReadConfig(std::string path) {
         this->primer_pins_.push_back(kIgniter_pin_id);
         return false;
     }
-    auto pin_ids_opt = parser_opt.value().GetArray<uint8_t>("primer_ids");
-    if (!pin_ids_opt.has_value()) {
+
+    auto primer_obj_opt = parser_opt.value().GetObject("primer");
+    if (!primer_obj_opt.has_value()) {
         ara::log::LogWarn() << "config dont contains primer field";
-    } else {
-    this->primer_pins_ = pin_ids_opt.value();
+        this->primer_pins_.push_back(kIgniter_pin_id);
+        return false;
     }
-    auto active_time_opt = parser_opt.value().GetNumber<uint16_t>("primer_active_time");
+
+    auto pin_ids_opt = primer_obj_opt.value().GetArray<uint8_t>("primer_ids");
+    if (!pin_ids_opt.has_value()) {
+        ara::log::LogWarn() << "config dont contains primer_ids field";
+        this->primer_pins_.push_back(kIgniter_pin_id);
+    } else {
+        this->primer_pins_ = pin_ids_opt.value();
+    }
+
+    auto active_time_opt = primer_obj_opt.value().GetNumber<uint16_t>("active_time");
     if (active_time_opt.has_value()) {
         this->active_time = active_time_opt.value();
     }

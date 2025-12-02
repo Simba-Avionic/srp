@@ -6,6 +6,7 @@ filegroup(
     srcs = [
         "app_config.json",
         "//deployment/system_definition/someip/prim_service:service_someipy",
+        "//deployment/system_definition/diag/jobs/primer_service:primer_job",
     ],
     visibility = [
         "//apps/prim_service:__subpackages__",
