@@ -17,7 +17,7 @@
 
 #include "ara/exec/adaptive_application.h"
 
-#include "mw/i2c_service/controller/pca9685/controller.hpp"
+#include "apps/ec/ServoService/servoController/servo_controller.hpp"
 #include "apps/ec/ServoService/servo_service_did.h"
 #include "apps/ec/ServoService/servo_did.h"
 #include "apps/ec/ServoService/service.hpp"
@@ -25,7 +25,7 @@ namespace srp {
 namespace service {
 class ServoService final : public ara::exec::AdaptiveApplication {
  private:
-  std::shared_ptr<i2c::PCA9685> servo_controller;
+  std::shared_ptr<ServoController> servo_controller;
   std::unique_ptr<ServoServiceDiD> main_servo_service_did_;
   std::unique_ptr<ServoServiceDiD> vent_servo_service_did_;
   std::unique_ptr<ServoSecondDid> servo_did_;

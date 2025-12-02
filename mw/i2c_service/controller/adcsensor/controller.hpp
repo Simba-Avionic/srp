@@ -35,7 +35,6 @@ struct SensorConfig {
 class ADCSensorController {
  private:
   std::unique_ptr<IADS7828> adc_;
-  std::string app_name;
   /**
    * @brief actuator_id, config
    * 
@@ -67,12 +66,15 @@ class ADCSensorController {
   float CalculateA(const float& R, const float& RES_MAX, const float& RES_MIN,
                                                     const float& A_MAX, const float& A_MIN) const;
 
+  /**
+   * only for test purpose do not use othervise
+   */
   void setConfig(const std::unordered_map<uint8_t, SensorConfig>& db_);
   core::ErrorCode setPtr(std::unique_ptr<IADS7828> adc_);
 
  public:
   ADCSensorController();
-  core::ErrorCode Init(const std::unordered_map<std::string, std::string>& parms, std::unique_ptr<IADS7828> adc_);
+  core::ErrorCode Init(const std::string path, std::unique_ptr<IADS7828> adc_);
   /**
    * @brief Get the res object w jednostce docelowej
    * 

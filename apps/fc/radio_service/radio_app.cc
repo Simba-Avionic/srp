@@ -45,14 +45,13 @@ void RadioApp::TransmittingLoop(const std::stop_token& token) {
   while (!token.stop_requested()) {
     auto start = std::chrono::high_resolution_clock::now();
     {
-
       // Send Heartbeat msg
       auto val = timestamp_->GetNewTimeStamp();
       if (val.has_value()) {
         // TODO(m.mankowski2004@gmail.com): add later the status of both computers
         send([&] {
-          mavlink_msg_simba_rocket_heartbeat_pack(
-            kSystemId, kComponentId, &msg, static_cast<uint64_t>(val.value()), event_data->GetRocketState(), 0, 0, event_data->GetActuatorStates());
+          mavlink_msg_simba_rocket_heartbeat_pack(kSystemId, kComponentId, &msg,
+            static_cast<uint64_t>(val.value()), event_data->GetRocketState(), 0, 0, event_data->GetActuatorStates());
         });
       }
 
@@ -71,9 +70,10 @@ void RadioApp::TransmittingLoop(const std::stop_token& token) {
       // Send Tank pressure
       send([&] { mavlink_msg_simba_tank_pressure_pack(kSystemId, kComponentId, &msg, event_data->GetPress()); });
 
-      // Send 
+      // Send
       // TODO(m.mankowski2004@gmail.com): change altitude
-      send([&] { mavlink_msg_simba_gps_pack(kSystemId, kComponentId, &msg, event_data->GetGPSLon(), event_data->GetGPSLat(), 0); });
+      send([&] { mavlink_msg_simba_gps_pack(kSystemId, kComponentId, &msg,
+                                                          event_data->GetGPSLon(), event_data->GetGPSLat(), 0); });
     }
     auto end = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
@@ -114,7 +114,7 @@ void RadioApp::ListeningLoop(const std::stop_token& token) {
             break;
           }
           case MAVLINK_MSG_ID_SIMBA_GS_HEARTBEAT: {
-            // TODO (matikrajek42@gmail.com) add gs heartbeat support
+            // TODO(matikrajek42@gmail.com) add gs heartbeat support
             break;
           }
         }
@@ -134,7 +134,6 @@ void RadioApp::SendAck(SIMBA_STATUS status) {
 }
 
 SIMBA_STATUS RadioApp::ActuatorCMD(uint8_t actuator_id, uint8_t value) {
-
   switch (actuator_id) {
     case SIMBA_ROCKET_MAIN_VALVE: {
       auto result = this->servo_service_handler->SetMainServoValue(value);

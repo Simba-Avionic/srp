@@ -17,12 +17,14 @@
 #include "ara/log/log.h"
 #include "ara/diag/generic_data_identifier.h"
 #include "ara/diag/uds_error_domain.h"
+#include "core/common/error_code.h"
+#include "apps/ec/ServoService/servoController/servo_controller.hpp"
 namespace srp {
 namespace service {
 
 class ServoServiceDiD : public ara::diag::GenericDiD {
  private:
-  std::shared_ptr<i2c::PCA9685>  servoController;
+  std::shared_ptr<ServoController>  servoController;
   const uint8_t actuator_id;
   ara::core::Result<ara::diag::OperationOutput> Read() noexcept override {
     auto res = this->servoController->ReadServoPosition(actuator_id);
@@ -38,7 +40,8 @@ class ServoServiceDiD : public ara::diag::GenericDiD {
       return ara::diag::MakeErrorCode(
         ara::diag::UdsDiagErrc::kInvalidMessageLengthFormat);
     }
-    ara::log::LogInfo() <<  "Set position:" << payload[0] << ", to actuator ID:" <<this->actuator_id;
+    ara::log::LogInfo() << "Set position:" << std::to_string(payload[0]) <<
+        ", to actuator ID:" << std::to_string(this->actuator_id);
     auto res = this->servoController->AutoSetServoPosition(this->actuator_id, payload[0]);
     if (res != core::ErrorCode::kOk) {
       ara::log::LogWarn() << "huj";
@@ -50,9 +53,9 @@ class ServoServiceDiD : public ara::diag::GenericDiD {
 
  public:
   ServoServiceDiD(const ara::core::InstanceSpecifier& instance,
-      std::shared_ptr<i2c::PCA9685> servo_controller, uint8_t actuator_id):
-      servoController(servo_controller), actuator_id(actuator_id),
-      ara::diag::GenericDiD{instance} {
+      std::shared_ptr<ServoController> servo_controller, uint8_t actuator_id):
+      ara::diag::GenericDiD{instance},
+      servoController(servo_controller), actuator_id(actuator_id) {
       }
 };
 

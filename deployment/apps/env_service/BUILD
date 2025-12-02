@@ -28,6 +28,7 @@ filegroup(
 adaptive_application(
     name = "EnvApp",
     bin = "//apps/ec/env_service",
+    etcs = ["config.json"],
     model_src = ["//deployment/apps/env_service:instance"],
     visibility = ["//deployment/cpu/ec:__subpackages__"],
 )

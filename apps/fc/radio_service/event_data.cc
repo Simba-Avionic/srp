@@ -30,10 +30,11 @@ uint8_t EventData::GetActuatorStates() {
 
 void EventData::SetActuatorState(const uint8_t actuator, const uint8_t state) {
   std::unique_lock<std::shared_mutex> lock(mtx_);
-  if(state)
-        actuator_state |=  (1 << actuator);
-  else
-        actuator_state &= ~(1 << actuator);
+  if (state) {
+    actuator_state |=  (1 << actuator);
+  } else {
+    actuator_state &= ~(1 << actuator);
+  }
 }
 
 SIMBA_ROCKET_STATE EventData::GetRocketState() {

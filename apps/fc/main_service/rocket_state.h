@@ -14,6 +14,7 @@
 #include <shared_mutex>
 #include <memory>
 #include <utility>
+#include <string>
 #include "lib/simba/mavlink.h"
 namespace srp {
 namespace apps {
@@ -35,6 +36,7 @@ class RocketState {
  private:
   RocketState_t state_;
   std::shared_mutex mtx_;
+
  public:
   static std::shared_ptr<RocketState> GetInstance() {
     if (rocket_state == nullptr) {
@@ -48,8 +50,7 @@ class RocketState {
   }
   static std::string GetStringState(const RocketState_t state) {
     std::string res;
-    switch (state)
-    {
+    switch (state) {
     case INIT:
       res = "INIT";
       break;
@@ -72,7 +73,6 @@ class RocketState {
       res = "ABORT";
       break;
     default:
-      ara::log::LogError() << "try to get string from unknown state";
       break;
     }
     return res;

@@ -1,5 +1,5 @@
 cc_library(
-    name = "pca9685_controller",
+    name = "controller",
     deps = [
         "//communication-core/sockets:socket_ipc",
         "//mw/i2c_service/data:i2c_hdr",
@@ -10,8 +10,7 @@ cc_library(
     srcs = ["controller.cpp"],
     hdrs = ["controller.hpp"],
     visibility = [
-        "//apps:__subpackages__",
-        "//services/ServoService:__subpackages__",
-        "//mw/i2c_service/tests:__subpackages__",
-        ],
+        "//visibility:public",
+    ],
 )
+

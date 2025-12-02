@@ -30,5 +30,6 @@ cc_binary(
         "//deployment/apps/env_service:ara",
         "//deployment/apps/env_service:someip_lib",
         "//communication-core/sockets:socket_ipc",
+        "//mw/i2c_service/controller/adcsensor:adc_sensor_controller",
     ],
 )
