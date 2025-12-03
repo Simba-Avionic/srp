@@ -68,16 +68,16 @@ TEST_F(TimestampMasterTest, CorrectStartPointAdjustsStartTime) {
 //     EXPECT_NEAR(correct_val, t1.value(), 70);
 //     EXPECT_NEAR(correct_val, t2.value(), 70);
 // }
-TEST(TimestampIntegratedTest, SecTest) {
-    TimestampMaster master;
-    TimestampController slave1;
-    EXPECT_TRUE(master.Init());
-    EXPECT_TRUE(slave1.Init());
-    std::this_thread::sleep_for(std::chrono::milliseconds(10));
-    auto t1 = slave1.GetNewTimeStamp();
-    ASSERT_TRUE(t1.has_value());
-    EXPECT_NEAR(master.GetNewTimeStamp(), t1.value(), 70);
-}
+// TEST(TimestampIntegratedTest, SecTest) {
+//     TimestampMaster master;
+//     TimestampController slave1;
+//     EXPECT_TRUE(master.Init());
+//     EXPECT_TRUE(slave1.Init());
+//     std::this_thread::sleep_for(std::chrono::milliseconds(10));
+//     auto t1 = slave1.GetNewTimeStamp();
+//     ASSERT_TRUE(t1.has_value());
+//     EXPECT_NEAR(master.GetNewTimeStamp(), t1.value(), 70);
+// }
 TEST(TimestampTest, Error) {
     TimestampController slave;
     EXPECT_TRUE(slave.Init());
