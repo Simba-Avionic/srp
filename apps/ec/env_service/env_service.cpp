@@ -107,22 +107,23 @@ int EnvService::Run(const std::stop_token& token) {
 
 void EnvService::TempRxCallback(const std::vector<srp::mw::temp::TempReadHdr>& data) {
     for (auto &hdr : data) {
-        ara::log::LogDebug() << "Receive temp id: " << hdr.actuator_id << ",temp:" << static_cast<float>(hdr.value);
+        const int16_t value = static_cast<int16_t>(hdr.value * 10);
+        ara::log::LogInfo() << "Receive temp id: " << hdr.actuator_id << ", temp: " << static_cast<float>(value/10);
         switch (hdr.actuator_id) {
             case 0:
-            this->service_ipc.newTempEvent_1.Update(static_cast<int16_t>(hdr.value * 10));
-            this->service_udp.newTempEvent_1.Update(static_cast<int16_t>(hdr.value * 10));
-            break;
+                this->service_ipc.newTempEvent_1.Update(value);
+                this->service_udp.newTempEvent_1.Update(value);
+                break;
             case 1:
-            this->service_ipc.newTempEvent_2.Update(static_cast<int16_t>(hdr.value * 10));
-            this->service_udp.newTempEvent_2.Update(static_cast<int16_t>(hdr.value * 10));
-            break;
+                this->service_ipc.newTempEvent_2.Update(value);
+                this->service_udp.newTempEvent_2.Update(value);
+                break;
             case 2:
-            this->service_ipc.newTempEvent_3.Update(static_cast<int16_t>(hdr.value * 10));
-            this->service_udp.newTempEvent_3.Update(static_cast<int16_t>(hdr.value * 10));
-            break;
+                this->service_ipc.newTempEvent_3.Update(value);
+                this->service_udp.newTempEvent_3.Update(value);
+                break;
             default:
-            ara::log::LogWarn() << "ID spoza zakresu:" << hdr.actuator_id;
+                ara::log::LogWarn() << "ID spoza zakresu:" << hdr.actuator_id;
             break;
         }
     }

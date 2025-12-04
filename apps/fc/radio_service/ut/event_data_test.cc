@@ -12,7 +12,7 @@
 #include "apps/fc/radio_service/event_data.h"
 namespace srp::apps {
 // --- Temperature Test ---
-class TemperatureTest : public ::testing::TestWithParam<std::tuple<int, uint16_t>> {
+class TemperatureTest : public ::testing::TestWithParam<std::tuple<int, int16_t>> {
  protected:
     std::shared_ptr<EventData> data;
     void SetUp() override { data = EventData::GetInstance(); }
@@ -20,7 +20,7 @@ class TemperatureTest : public ::testing::TestWithParam<std::tuple<int, uint16_t
 
 TEST_P(TemperatureTest, SetAndGetTemperature) {
     int temp_number = std::get<0>(GetParam());
-    uint16_t value = std::get<1>(GetParam());
+    int16_t value = std::get<1>(GetParam());
 
     switch (temp_number) {
     case 1:
@@ -45,10 +45,10 @@ INSTANTIATE_TEST_SUITE_P(
     TemperatureTest,
     ::testing::Values(
         std::make_tuple(1, 0),              // minimal
-        std::make_tuple(2, UINT16_MAX),     // maksymalna wartość uint16_t
-        std::make_tuple(3, 32767),          // środek zakresu
+        std::make_tuple(2, INT16_MAX),      // maksymalna wartość int16_t
+        std::make_tuple(3, 100),            // środek zakresu
         std::make_tuple(1, 42),             // losowa wartość
-        std::make_tuple(2, 9999)            // losowa wartość
+        std::make_tuple(2, 1000)            // wartość dodatnia
     )
 );
 
@@ -62,14 +62,13 @@ class PressureTest : public ::testing::TestWithParam<std::tuple<std::string, flo
 TEST_P(PressureTest, SetAndGetPressure) {
     auto [field, value] = GetParam();
 
-    if (field == "DPress") {
-    data->SetDPress(value);
-    EXPECT_FLOAT_EQ(data->GetDPress(), value);
-    } else if (field == "Press") {
-    data->SetPress(value);
-    EXPECT_FLOAT_EQ(data->GetPress(), value);
+    if (field == "Press") {
+        uint16_t press_int = static_cast<uint16_t>(value);
+        data->SetPress(press_int);
+        // GetPress returns float, but SetPress accepts uint16_t, so compare as uint16_t
+        EXPECT_EQ(static_cast<uint16_t>(data->GetPress()), press_int);
     } else {
-    FAIL() << "Invalid pressure field";
+        FAIL() << "Invalid pressure field";
     }
 }
 
@@ -77,12 +76,11 @@ INSTANTIATE_TEST_SUITE_P(
     PressureTests,
     PressureTest,
     ::testing::Values(
-        std::make_tuple("DPress", 0.0f),         // min
-        std::make_tuple("Press", 0.0f),          // min
-        std::make_tuple("DPress", 1e10f),        // duża wartość
-        std::make_tuple("Press", -1e5f),         // wartość ujemna
-        std::make_tuple("DPress", 123.456f),     // losowa
-        std::make_tuple("Press", 789.123f)       // losowa
+        std::make_tuple("Press", 0.0f),         // min
+        std::make_tuple("Press", 65535.0f),     // max uint16_t
+        std::make_tuple("Press", 1000.0f),      // typowa wartość
+        std::make_tuple("Press", 123.456f),     // losowa
+        std::make_tuple("Press", 789.123f)      // losowa
     )
 );
 
@@ -95,7 +93,7 @@ class GPSTest : public ::testing::TestWithParam<std::tuple<int32_t, int32_t>> {
 
 TEST_P(GPSTest, SetAndGetGPS) {
     auto [lon, lat] = GetParam();
-    data->SetGPS(lon, lat);
+    data->SetGPS(lon, lat, 0);
     EXPECT_EQ(data->GetGPSLon(), lon);
     EXPECT_EQ(data->GetGPSLat(), lat);
 }
@@ -112,30 +110,30 @@ INSTANTIATE_TEST_SUITE_P(
     )
 );
 
-// --- Actuator Bit Test ---
-class ActuatorBitTest : public ::testing::TestWithParam<std::tuple<uint8_t, uint8_t, uint8_t>> {
+// --- Actuator State Test ---
+class ActuatorStateTest : public ::testing::TestWithParam<std::tuple<uint8_t, uint8_t>> {
  protected:
     std::shared_ptr<EventData> data;
     void SetUp() override { data = EventData::GetInstance(); }
 };
 
-TEST_P(ActuatorBitTest, SetAndCheckBit) {
-    auto [value, bit_position, expected] = GetParam();
-    data->SetActuatorBit(value, bit_position);
-    uint8_t actuator = data->GetActuator();
-    EXPECT_EQ(((actuator >> bit_position) & 1), expected);
+TEST_P(ActuatorStateTest, SetAndGetActuatorState) {
+    auto [actuator_id, state] = GetParam();
+    data->SetActuatorState(actuator_id, state);
+    uint8_t actuator_states = data->GetActuatorStates();
+    EXPECT_EQ(((actuator_states >> actuator_id) & 1), state);
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    ActuatorBitTests,
-    ActuatorBitTest,
+    ActuatorStateTests,
+    ActuatorStateTest,
     ::testing::Values(
-        std::make_tuple(1, 0, 1),    // pierwszy bit
-        std::make_tuple(1, 7, 1),    // ostatni bit
-        std::make_tuple(0, 0, 0),    // wyczyszczony pierwszy bit
-        std::make_tuple(0, 7, 0),    // wyczyszczony ostatni bit
-        std::make_tuple(1, 3, 1),    // środkowy ustawiony
-        std::make_tuple(0, 4, 0)     // środkowy wyczyszczony
+        std::make_tuple(0, 1),    // pierwszy aktuator włączony
+        std::make_tuple(1, 1),    // drugi aktuator włączony
+        std::make_tuple(2, 1),    // trzeci aktuator włączony
+        std::make_tuple(0, 0),    // pierwszy aktuator wyłączony
+        std::make_tuple(1, 0),    // drugi aktuator wyłączony
+        std::make_tuple(2, 0)     // trzeci aktuator wyłączony
     )
 );
 

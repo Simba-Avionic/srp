@@ -37,22 +37,22 @@ void RocketController::Loop() {
         ArmRocket();
     }
     break;
-    case RocketState_t::CUTDOWN_END:
+    case RocketState_t::LAUNCH:
     this->CutdownEndSeq();
     this->rocket_state_->SetState(RocketState_t::FLIGHT);
     break;
     case RocketState_t::FLIGHT:
     // TODO(simba) IDK thath we need something
     break;
-    case RocketState_t::FALL:
-    if (last_state_ != RocketState_t::FALL) {
+    case RocketState_t::MAIN_PARACHUTE_TRIGGERED:
+    if (last_state_ != RocketState_t::MAIN_PARACHUTE_TRIGGERED) {
         // TODO(simba) call Ref Parachute open
         break;
     }
 
     break;
-    case RocketState_t::LANDED:
-    if (last_state_ != RocketState_t::LANDED) {
+    case RocketState_t::SECOND_PARACHUTE_TRIGGERED:
+    if (last_state_ != RocketState_t::SECOND_PARACHUTE_TRIGGERED) {
         // TODO(simba) call Main Parachute open
         // TODO(simba) open all actuator and disable power on actuator
     }

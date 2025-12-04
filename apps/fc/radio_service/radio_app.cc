@@ -28,7 +28,7 @@ constexpr auto KGPS_UART_path = "/dev/ttyS1";
 constexpr auto KGPS_UART_baudrate = B115200;
 constexpr auto kSystemId = 1;
 constexpr auto kComponentId = 200;
-constexpr auto kTime = 1000;
+constexpr auto kTime = 950;  // Should be 1 Hz but better make it 1.1Hz than 0.9 wchich can trigger error on GS
 }  // namespace
 
 void RadioApp::TransmittingLoop(const std::stop_token& token) {
@@ -45,27 +45,35 @@ void RadioApp::TransmittingLoop(const std::stop_token& token) {
   while (!token.stop_requested()) {
     auto start = std::chrono::high_resolution_clock::now();
     {
-    const auto temp1 = event_data->GetTemp1();
-    const auto temp2 = event_data->GetTemp2();
-    const auto temp3 = event_data->GetTemp3();
-    const auto Dpress = event_data->GetDPress();
-    const auto press = event_data->GetPress();
-    const auto gpsLat = event_data->GetGPSLat();
-    const auto gpsLon = event_data->GetGPSLon();
-    const auto actuator = event_data->GetActuator();
-    send([&] { mavlink_msg_simba_tank_temperature_pack(kSystemId, kComponentId, &msg, temp1, temp2, temp3); });
-    send([&] { mavlink_msg_simba_tank_pressure_pack(kSystemId, kComponentId, &msg, Dpress, press); });
-    // TODO(m.mankowski2004@gmail.com): change altitude
-    send([&] { mavlink_msg_simba_gps_pack(kSystemId, kComponentId, &msg, gpsLon, gpsLat, 0); });
-    auto val = timestamp_->GetNewTimeStamp();
-    if (val.has_value()) {
-      // TODO(m.mankowski2004@gmail.com): add later the status of both computers
+      // Send Heartbeat msg
+      auto val = timestamp_->GetNewTimeStamp();
+      if (val.has_value()) {
+        // TODO(m.mankowski2004@gmail.com): add later the status of both computers
+        send([&] {
+          mavlink_msg_simba_rocket_heartbeat_pack(kSystemId, kComponentId, &msg,
+            static_cast<uint64_t>(val.value()), event_data->GetRocketState(), 0, 0, event_data->GetActuatorStates());
+        });
+      }
+
+      // Send Max Altitude MSG
       send([&] {
-        mavlink_msg_simba_heartbeat_pack(
-          kSystemId, kComponentId, &msg, static_cast<uint64_t>(val.value()), 0, 0);
+        mavlink_msg_simba_max_altitude_pack(kSystemId, kComponentId, &msg, event_data->GetMaxAltitude());
       });
-    }
-    send([&] { mavlink_msg_simba_actuator_pack(kSystemId, kComponentId, &msg, actuator); });
+
+
+      // TODO(matikrajek42@gmail.com) Add send IMU data
+
+      // Send Tank Temps
+      send([&] { mavlink_msg_simba_tank_temperature_pack(kSystemId, kComponentId, &msg,
+                                      event_data->GetTemp1(), event_data->GetTemp2(), event_data->GetTemp3()); });
+
+      // Send Tank pressure
+      send([&] { mavlink_msg_simba_tank_pressure_pack(kSystemId, kComponentId, &msg, event_data->GetPress()); });
+
+      // Send
+      // TODO(m.mankowski2004@gmail.com): change altitude
+      send([&] { mavlink_msg_simba_gps_pack(kSystemId, kComponentId, &msg,
+                                                          event_data->GetGPSLon(), event_data->GetGPSLat(), 0); });
     }
     auto end = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
@@ -105,6 +113,10 @@ void RadioApp::ListeningLoop(const std::stop_token& token) {
             status = ActuatorCMD(actuator_id, value);
             break;
           }
+          case MAVLINK_MSG_ID_SIMBA_GS_HEARTBEAT: {
+            // TODO(matikrajek42@gmail.com) add gs heartbeat support
+            break;
+          }
         }
         SendAck(status);
       }
@@ -112,17 +124,18 @@ void RadioApp::ListeningLoop(const std::stop_token& token) {
 }
 
 void RadioApp::SendAck(SIMBA_STATUS status) {
-  mavlink_message_t msg;
-  uint8_t buffer[MAVLINK_MAX_PACKET_LEN];
-  mavlink_msg_simba_ack_pack(kSystemId, kComponentId, &msg, this->current_state, status);
-  uint16_t len = mavlink_msg_to_send_buffer(buffer, &msg);
-  mavl_logger.LogDebug() << std::vector<uint8_t>(buffer, buffer + len);
-  uart_->Write(std::vector<uint8_t>(buffer, buffer + len));
+  // now UNUSED
+  // mavlink_message_t msg;
+  // uint8_t buffer[MAVLINK_MAX_PACKET_LEN];
+  // mavlink_msg_simba_ack_pack(kSystemId, kComponentId, &msg, this->current_state, status);
+  // uint16_t len = mavlink_msg_to_send_buffer(buffer, &msg);
+  // mavl_logger.LogDebug() << std::vector<uint8_t>(buffer, buffer + len);
+  // uart_->Write(std::vector<uint8_t>(buffer, buffer + len));
 }
 
 SIMBA_STATUS RadioApp::ActuatorCMD(uint8_t actuator_id, uint8_t value) {
   switch (actuator_id) {
-    case 1: {
+    case SIMBA_ROCKET_MAIN_VALVE: {
       auto result = this->servo_service_handler->SetMainServoValue(value);
       if (result.HasValue()) {
         if (result.Value() == true) {
@@ -133,7 +146,7 @@ SIMBA_STATUS RadioApp::ActuatorCMD(uint8_t actuator_id, uint8_t value) {
       return SIMBA_CONNECTION_ERROR;
       break;
     }
-    case 2: {
+    case SIMBA_ROCKET_VENT_VALVE: {
       auto result = this->servo_service_handler->SetVentServoValue(value);
       if (result.HasValue()) {
         if (result.Value() == true) {
@@ -144,7 +157,11 @@ SIMBA_STATUS RadioApp::ActuatorCMD(uint8_t actuator_id, uint8_t value) {
       return SIMBA_CONNECTION_ERROR;
       break;
     }
-    case 3: {
+    case SIMBA_ROCKET_DUMP_VALVE: {
+      // TODO(matikrajek42@gmail.com) add dump valve logic
+      break;
+    }
+    case SIMBA_ROCKET_RECOVERY_SERVO: {
       if (value == 1) {
         auto result = this->recovery_service_handler->OpenReefedParachute();
         if (result.HasValue()) {
@@ -157,7 +174,7 @@ SIMBA_STATUS RadioApp::ActuatorCMD(uint8_t actuator_id, uint8_t value) {
       }
       break;
     }
-    case 4: {
+    case SIMBA_ROCKET_RECOVERY_LINECUTTER: {
       if (value == 1) {
         auto result = this->recovery_service_handler->UnreefeParachute();
         if (result.HasValue()) {
@@ -245,15 +262,6 @@ void RadioApp::SomeIpInit() {
           event_data->SetTemp3(res.Value());
         });
       });
-      env_service_handler->newDPressEvent.Subscribe(1, [this](const uint8_t status) {
-        env_service_handler->newDPressEvent.SetReceiveHandler([this] () {
-          auto res = env_service_handler->newDPressEvent.GetNewSamples();
-          if (!res.HasValue()) {
-            return;
-          }
-          event_data->SetDPress(res.Value());
-        });
-      });
       env_service_handler->newPressEvent.Subscribe(1, [this](const uint8_t status) {
         env_service_handler->newPressEvent.SetReceiveHandler([this] () {
           auto res = env_service_handler->newPressEvent.GetNewSamples();
@@ -272,23 +280,12 @@ void RadioApp::SomeIpInit() {
           if (!res.HasValue()) {
             return;
           }
-          event_data->SetGPS(res.Value().longitude, res.Value().latitude);
+          // TODO(matikrajek42@gmail.com) change 0 to GPS altitude after fix
+          event_data->SetGPS(res.Value().longitude, res.Value().latitude, 0);
         });
       });
     });
-    this->primer_service_proxy.StartFindService([this](auto handler) {
-      this->primer_service_handler = handler;
-      primer_service_handler->primeStatusEvent.Subscribe(1, [this](const uint8_t status) {
-        primer_service_handler->primeStatusEvent.SetReceiveHandler([this] () {
-          auto res = primer_service_handler->primeStatusEvent.GetNewSamples();
-          if (!res.HasValue()) {
-            return;
-          }
-          uint8_t bit_position = 0;
-          event_data->SetActuatorBit(res.Value(), bit_position);
-        });
-      });
-    });
+    // TODO(matikrajek42@gmail.com) add rest of actuators
     this->servo_service_proxy.StartFindService([this](auto handler) {
       this->servo_service_handler = handler;
       servo_service_handler->ServoStatusEvent.Subscribe(1, [this](const uint8_t status) {
@@ -297,8 +294,7 @@ void RadioApp::SomeIpInit() {
           if (!res.HasValue()) {
             return;
           }
-          uint8_t bit_position = 1;
-          event_data->SetActuatorBit(res.Value(), bit_position);
+          event_data->SetActuatorState(SIMBA_ROCKET_MAIN_VALVE, res.Value());
         });
       });
       servo_service_handler->ServoVentStatusEvent.Subscribe(1, [this](const uint8_t status) {
@@ -307,8 +303,7 @@ void RadioApp::SomeIpInit() {
           if (!res.HasValue()) {
             return;
           }
-          uint8_t bit_position = 2;
-          event_data->SetActuatorBit(res.Value(), bit_position);
+          event_data->SetActuatorState(SIMBA_ROCKET_MAIN_VALVE, res.Value());
         });
       });
     });

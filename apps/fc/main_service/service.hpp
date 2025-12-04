@@ -18,13 +18,10 @@
 #include "ara/log/log.h"
 namespace srp {
 namespace apps {
+// Transitions allowed from external like GS
 static const std::unordered_map<RocketState_t, std::vector<RocketState_t>> allowed_transitions{
-    {RocketState_t::INIT,         {RocketState_t::DISARM}},
     {RocketState_t::DISARM,       {RocketState_t::ARM, RocketState_t::ABORT}},
-    {RocketState_t::ARM,          {RocketState_t::CUTDOWN_END, RocketState_t::ABORT}},
-    {RocketState_t::CUTDOWN_END,  {RocketState_t::FLIGHT}},
-    {RocketState_t::FLIGHT,       {RocketState_t::FALL}},
-    {RocketState_t::FALL,         {RocketState_t::LANDED}},
+    {RocketState_t::ARM,          {RocketState_t::LAUNCH, RocketState_t::ABORT, RocketState_t::DISARM}},
     {RocketState_t::ABORT,        {RocketState_t::DISARM}}
 };
 class MyMainServiceSkeleton: public MainServiceSkeleton {
@@ -56,6 +53,8 @@ class MyMainServiceSkeleton: public MainServiceSkeleton {
         CurrentModeStatusEvent.Update(static_cast<uint8_t>(req_state));
         return true;
     }
+    ara::log::LogError() << "Incorrect transactions from: " << RocketState::GetStringState(actual_state)
+                          << ", to state: " << RocketState::GetStringState(req_state);
     return false;
   }
 };

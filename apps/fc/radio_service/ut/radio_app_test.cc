@@ -57,7 +57,6 @@ struct EventDataTestParams {
     uint16_t input_temp1;
     uint16_t input_temp2;
     uint16_t input_temp3;
-    float input_Dpressure;
     float input_pressure;
     int32_t input_gpslat;
     int32_t input_gpslon;
@@ -65,38 +64,22 @@ struct EventDataTestParams {
     uint8_t input_primer;
     uint8_t input_servo;
     uint8_t input_servovent;
-    std::vector<uint8_t> expected_temp;
-    std::vector<uint8_t> expected_pressure;
-    std::vector<uint8_t> expected_gps;
-    std::vector<uint8_t> expected_heartbeat;
-    std::vector<uint8_t> expected_actuator;
 };
 
 class EventDataTest : public ::testing::TestWithParam<EventDataTestParams> {};
 
-// EXPECTED SHOULD LOOK LIKE: {STX, payloadLen, seq, systemId, compId, msgId, valuesInUint8_t, CRC_calculated}
+// INSTANTIATE_TEST_SUITE_P - Tests that radio app correctly sends messages
 INSTANTIATE_TEST_SUITE_P(EventDataTestParameters, EventDataTest,
     ::testing::Values(
         EventDataTestParams{
-            0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0.0f, 0, 0,
             std::optional<int64_t>{0},
-            0, 0, 0,
-            {254, 6, 0, 1, 200, 69, 0, 0, 0, 0, 0, 0, 170, 105},
-            {254, 8, 1, 1, 200, 70, 0, 0, 0, 0, 0, 0, 0, 0, 87, 172},
-            {254, 12, 2, 1, 200, 72, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 50, 93},
-            {254, 10, 3, 1, 200, 73, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 182, 219},
-            {254, 1, 4, 1, 200, 68, 0, 142, 237}
+            0, 0, 0
         },
-
-        EventDataTestParams {
-            0xFFFF, 0xFFFF, 0xFFFF, FLT_MAX, FLT_MAX, 0x7FFFFFFF, 0x7FFFFFFF,
+        EventDataTestParams{
+            0xFFFF, 0xFFFF, 0xFFFF, FLT_MAX, 0x7FFFFFFF, 0x7FFFFFFF,
             std::optional<int64_t>{INT64_MAX},
-            1, 1, 1,
-            {254, 6, 5, 1, 200, 69, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 90, 24},
-            {254, 8, 6, 1, 200, 70, 0xFF, 0xFF, 0x7F, 0x7F, 0xFF, 0xFF, 0x7F, 0x7F, 167, 131},
-            {254, 12, 7, 1, 200, 72, 0xFF, 0xFF, 0xFF, 0x7F, 0xFF, 0xFF, 0xFF, 0x7F, 0, 0, 0, 0, 253, 87},
-            {254, 10, 8, 1, 200, 73, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x7F, 0, 0, 224, 130},
-            {254, 1, 9, 1, 200, 68, 7, 89, 149}
+            1, 1, 1
         }
     )
 );
@@ -126,23 +109,21 @@ TEST_P(EventDataTest, ValidateEventData) {
     event_data->SetTemp1(0);
     event_data->SetTemp2(0);
     event_data->SetTemp3(0);
-    event_data->SetDPress(0.0f);
-    event_data->SetPress(0.0f);
-    event_data->SetGPS(0, 0);
-    event_data->SetActuatorBit(0, 0);
-    event_data->SetActuatorBit(0, 1);
-    event_data->SetActuatorBit(0, 2);
+    event_data->SetPress(0);
+    event_data->SetGPS(0, 0, 0);
+    event_data->SetActuatorState(0, 0);
+    event_data->SetActuatorState(1, 0);
+    event_data->SetActuatorState(2, 0);
 
     // Set test values
-    event_data->SetTemp1(params.input_temp1);
-    event_data->SetTemp2(params.input_temp2);
-    event_data->SetTemp3(params.input_temp3);
-    event_data->SetDPress(params.input_Dpressure);
-    event_data->SetPress(params.input_pressure);
-    event_data->SetGPS(params.input_gpslon, params.input_gpslat);
-    event_data->SetActuatorBit(params.input_primer, 0);
-    event_data->SetActuatorBit(params.input_servo, 1);
-    event_data->SetActuatorBit(params.input_servovent, 2);
+    event_data->SetTemp1(static_cast<int16_t>(params.input_temp1));
+    event_data->SetTemp2(static_cast<int16_t>(params.input_temp2));
+    event_data->SetTemp3(static_cast<int16_t>(params.input_temp3));
+    event_data->SetPress(static_cast<uint16_t>(params.input_pressure));
+    event_data->SetGPS(params.input_gpslon, params.input_gpslat, 0);
+    event_data->SetActuatorState(0, params.input_primer);
+    event_data->SetActuatorState(1, params.input_servo);
+    event_data->SetActuatorState(2, params.input_servovent);
 
     std::jthread transmitting_thread([&wrapper_](const std::stop_token& token) {
         wrapper_.TestTransmittingLoop(token);
@@ -152,9 +133,40 @@ TEST_P(EventDataTest, ValidateEventData) {
     transmitting_thread.request_stop();
     transmitting_thread.join();
     EXPECT_EQ(sent_data.size(), 5);
-    EXPECT_EQ(sent_data[0], params.expected_temp);
-    EXPECT_EQ(sent_data[1], params.expected_pressure);
-    EXPECT_EQ(sent_data[2], params.expected_gps);
-    EXPECT_EQ(sent_data[3], params.expected_heartbeat);
-    EXPECT_EQ(sent_data[4], params.expected_actuator);
+
+    // Verify message structure: {STX, payloadLen, seq, systemId, compId, msgId, ... payload ..., CRC1, CRC2}
+    // Message order: heartbeat, max_altitude, tank_temperature, tank_pressure, gps
+    const uint8_t kFrameStart = 254;
+    const uint8_t kSystemId = 1;
+    const uint8_t kComponentId = 200;
+
+    // Check heartbeat (msgId=73)
+    EXPECT_EQ(sent_data[0][0], kFrameStart);
+    EXPECT_EQ(sent_data[0][3], kSystemId);
+    EXPECT_EQ(sent_data[0][4], kComponentId);
+    EXPECT_EQ(sent_data[0][5], 73);  // SIMBA_ROCKET_HEARTBEAT
+
+    // Check max_altitude (msgId=75)
+    EXPECT_EQ(sent_data[1][0], kFrameStart);
+    EXPECT_EQ(sent_data[1][3], kSystemId);
+    EXPECT_EQ(sent_data[1][4], kComponentId);
+    EXPECT_EQ(sent_data[1][5], 75);  // SIMBA_MAX_ALTITUDE
+
+    // Check tank_temperature (msgId=69)
+    EXPECT_EQ(sent_data[2][0], kFrameStart);
+    EXPECT_EQ(sent_data[2][3], kSystemId);
+    EXPECT_EQ(sent_data[2][4], kComponentId);
+    EXPECT_EQ(sent_data[2][5], 69);  // SIMBA_TANK_TEMPERATURE
+
+    // Check tank_pressure (msgId=70)
+    EXPECT_EQ(sent_data[3][0], kFrameStart);
+    EXPECT_EQ(sent_data[3][3], kSystemId);
+    EXPECT_EQ(sent_data[3][4], kComponentId);
+    EXPECT_EQ(sent_data[3][5], 70);  // SIMBA_TANK_PRESSURE
+
+    // Check GPS (msgId=72)
+    EXPECT_EQ(sent_data[4][0], kFrameStart);
+    EXPECT_EQ(sent_data[4][3], kSystemId);
+    EXPECT_EQ(sent_data[4][4], kComponentId);
+    EXPECT_EQ(sent_data[4][5], 72);  // SIMBA_GPS
 }

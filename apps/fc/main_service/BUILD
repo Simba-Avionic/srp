@@ -22,5 +22,6 @@ cc_binary(
         "//deployment/apps/fc/main_app:ara",
         "//core/common:common_types",
         "//core/timestamp:timestamp_controller",
+        "@srp_mavlink//lib:mavlink_lib",
     ],
 )

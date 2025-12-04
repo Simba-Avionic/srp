@@ -40,7 +40,9 @@ jobs:
           bazel test --nocache_test_results $(bazel query 'kind(cc_test, //...)')
   bazel-coverage:
     name: SRP Coverage
-    needs: bazel-test
+    needs:
+      - build
+      - bazel-test
     runs-on: self-hosted
 
     steps:
@@ -54,7 +56,7 @@ jobs:
           ./tools/coverage/coverage.sh
   build:
     name: Build EC & FC
-    needs: bazel-test
+    needs: cpplint
     runs-on: self-hosted
     steps:
       - name: Checkout repository
@@ -73,7 +75,7 @@ jobs:
   build-all:
     name: Build All
     needs:
-      - bazel-coverage
+      - build
       - bazel-test
     runs-on: self-hosted
     steps:

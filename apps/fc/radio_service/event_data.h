@@ -15,7 +15,6 @@
 #include <mutex>  // NOLINT
 #include <memory>
 #include <cstdint>
-
 #include "lib/simba/mavlink.h"
 
 namespace srp {
@@ -26,7 +25,10 @@ class EventData {
   __mavlink_simba_tank_temperature_t temp;
   __mavlink_simba_tank_pressure_t press;
   __mavlink_simba_gps_t gps;
-  __mavlink_simba_actuator_t actuator;
+  __mavlink_simba_imu_t imu;
+  __mavlink_simba_max_altitude_t max_altitude;
+  SIMBA_ROCKET_STATE rocket_state;
+  uint8_t actuator_state;
   std::shared_mutex mtx_;
 
   template <typename T>
@@ -35,27 +37,33 @@ class EventData {
  public:
   static std::shared_ptr<EventData> GetInstance();
 
-  void SetTemp1(uint16_t res);
-  void SetTemp2(uint16_t res);
-  void SetTemp3(uint16_t res);
+  SIMBA_ROCKET_STATE GetRocketState();
+  void SetRocketState(const SIMBA_ROCKET_STATE state);
 
-  void SetDPress(float res);
-  void SetPress(float res);
+  uint8_t GetActuatorStates();
+  void SetActuatorState(const uint8_t actuator, const uint8_t state);
 
-  void SetGPS(int32_t lon, int32_t lat);
-  void SetActuatorBit(uint8_t res, uint8_t bit_position);
+  void SetTemp1(int16_t res);
+  void SetTemp2(int16_t res);
+  void SetTemp3(int16_t res);
+
+  void SetPress(uint16_t res);
+
+  void SetGPS(int32_t lon, int32_t lat, int32_t alt);
+
+  void SetMaxAltitude(const int32_t alt);
+
+  int32_t GetMaxAltitude();
 
   uint16_t GetTemp1();
   uint16_t GetTemp2();
   uint16_t GetTemp3();
 
-  float GetDPress();
   float GetPress();
 
   int32_t GetGPSLat();
   int32_t GetGPSLon();
-
-  uint8_t GetActuator();
+  int32_t GetGPSAlt();
 };
 
 }  // namespace apps
