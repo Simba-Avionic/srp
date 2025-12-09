@@ -21,9 +21,9 @@ namespace service {
 namespace {
 constexpr uint8_t kOpenState = 1U;
 constexpr uint8_t kCloseState = 0U;
-constexpr uint16_t kDefaultMosfetPowerOnDelayMs = 50U;
-constexpr uint16_t kDefaultServoMoveTimeMs = 400U;
-constexpr uint16_t kDefaultLooseningDelayMs = 50U;
+constexpr uint16_t kDefaultMosfetPowerOnDelayMs = 100U;
+constexpr uint16_t kDefaultServoMoveTimeMs = 3000U;
+constexpr uint16_t kDefaultLooseningDelayMs = 150U;
 }  // namespace
 
 ServoController::ServoController()

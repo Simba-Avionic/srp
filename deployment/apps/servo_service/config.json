@@ -3,23 +3,17 @@
         {
         "actuator_id":60,
         "channel": 1,
-        "on_pos" : 1000,
-        "off_pos" : 209,
+        "on_pos" : 540,
+        "off_pos" : 102,
         "mosfet_id" : 15,
-        "on_losening_pos": 1000,
-        "off_losening_pos":209,
-        "servo_delay":50,
-        "mosfet_delay":5000,
         "desc": "on devboard have name C70, MAIN VALVE"
         },
         {
         "actuator_id":61,
         "channel": 3,
-        "on_pos" : 416,
-        "off_pos" : 209,
+        "on_pos" : 540,
+        "off_pos" : 102,
         "mosfet_id" : 6,
-        "servo_delay":50,
-        "mosfet_delay":5000,
         "desc": "on devboard have name C69, VENT VALVE"
         }
 ]
