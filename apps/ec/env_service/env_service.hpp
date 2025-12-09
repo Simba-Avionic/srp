@@ -19,7 +19,7 @@
 
 #include "mw/temp/controller/temp_controller.h"
 #include "ara/exec/adaptive_application.h"
-#include "srp/env/EnvAppSkeleton.h"
+#include "apps/ec/env_service/service.hpp"
 #include "communication-core/sockets/ipc_socket.h"
 #include "mw/i2c_service/controller/adcsensor/controller.hpp"
 
@@ -28,10 +28,11 @@ namespace envService {
 
 class EnvService final : public ara::exec::AdaptiveApplication {
  private:
-  env::EnvAppSkeleton service_ipc;
-  env::EnvAppSkeleton service_udp;
   std::unique_ptr<mw::temp::TempController> temp_{};
-  i2c::ADCSensorController press_;
+  std::shared_ptr<i2c::ADCSensorController> press_{};
+
+  apps::MyEnvAppSkeleton service_ipc;
+  apps::MyEnvAppSkeleton service_udp;
 
  protected:
   /**

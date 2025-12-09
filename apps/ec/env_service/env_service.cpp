@@ -38,8 +38,9 @@ core::ErrorCode EnvService::Init(std::unique_ptr<mw::temp::TempController> temp)
     return core::ErrorCode::kOk;
 }
 
-EnvService::EnvService(): service_ipc{ara::core::InstanceSpecifier{"srp/env/EnvApp/envService_ipc"}},
-                        service_udp{ara::core::InstanceSpecifier{"srp/env/EnvApp/envService_udp"}} {
+EnvService::EnvService(): press_{std::move(std::make_shared<i2c::ADCSensorController>())},
+                service_ipc{press_, ara::core::InstanceSpecifier{"srp/env/EnvApp/envService_ipc"}, PRESS_SENSOR_ID},
+                service_udp{press_, ara::core::InstanceSpecifier{"srp/env/EnvApp/envService_udp"}, PRESS_SENSOR_ID} {
 }
 
 
@@ -64,7 +65,7 @@ int EnvService::Initialize(const std::map<ara::core::StringView, ara::core::Stri
 
     // Convert StringView to string for Init
     std::string app_path_str(app_path_it->second.data(), app_path_it->second.size());
-    auto press_init_res = this->press_.Init(app_path_str, std::move(adc));
+    auto press_init_res = this->press_->Init(app_path_str, std::move(adc));
     if (press_init_res != core::ErrorCode::kOk) {
         ara::log::LogError() << "Failed to initialize pressure sensor controller";
         return core::ErrorCode::kInitializeError;
