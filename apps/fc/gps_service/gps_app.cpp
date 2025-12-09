@@ -28,6 +28,7 @@ GPSDataStructure GPSApp::GetSomeIPData(const core::GPS_DATA_T& data) {
     GPSDataStructure someip_data;
     someip_data.latitude = data.latitude;
     someip_data.longitude = data.longitude;
+    someip_data.altitude = data.height;
     if (data.latitude_dir == 'S') {
       someip_data.latitude *= -1;
     }
