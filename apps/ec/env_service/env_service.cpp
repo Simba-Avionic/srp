@@ -25,6 +25,8 @@ namespace envService {
 
 namespace {
     constexpr uint8_t PRESS_SENSOR_ID = 10;
+    constexpr uint8_t PRESS_SENSOR_SAMPLING = 15;
+    constexpr auto kDelay = 500;
 }
 
 
@@ -88,17 +90,28 @@ int EnvService::Initialize(const std::map<ara::core::StringView, ara::core::Stri
 
 int EnvService::Run(const std::stop_token& token) {
     while (!token.stop_requested()) {
-        core::condition::wait_for(std::chrono::milliseconds(1000), token);
-        auto pressValue = this->press_.GetValue(PRESS_SENSOR_ID);
-        if (pressValue.has_value()) {
-            std::ostringstream ss;
-            ss << std::fixed << std::setprecision(1) << pressValue.value();
-           ara::log::LogDebug() << "Receive new Tank Pressure: " << ss.str() << " Bar";
-            this->service_ipc.newPressEvent.Update(pressValue.value());
-            this->service_udp.newPressEvent.Update(pressValue.value());
-        } else {
-            ara::log::LogWarn() << "dont receive new pressure";
+        auto start = std::chrono::high_resolution_clock::now();
+        float press_sum;
+        float num;
+        for (uint8_t i = 0; i < PRESS_SENSOR_SAMPLING; i++) {
+            auto pressValue = this->press_.GetValue(PRESS_SENSOR_ID);
+            if (pressValue.has_value()) {
+                press_sum += pressValue.value();
+                num += 1;
+            } else {
+                ara::log::LogWarn() << "dont receive new pressure";
+            }
         }
+        float mean_press = press_sum / num;
+        std::ostringstream ss;
+                ss << std::fixed << std::setprecision(2) << mean_press;
+            ara::log::LogDebug() << "Receive new Tank Pressure: " << ss.str() << " Bar";
+                this->service_ipc.newPressEvent.Update(static_cast<uint16_t>(mean_press * 100));
+                this->service_udp.newPressEvent.Update(static_cast<uint16_t>(mean_press * 100));
+        auto end = std::chrono::high_resolution_clock::now();
+        auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+        ara::log::LogDebug() << "loop taken:" << std::to_string(duration.count()) << "ms";
+        core::condition::wait_for(std::chrono::milliseconds(kDelay - duration.count()), token);  // 1 Hz
     }
     service_ipc.StopOffer();
     service_udp.StopOffer();
@@ -108,7 +121,7 @@ int EnvService::Run(const std::stop_token& token) {
 void EnvService::TempRxCallback(const std::vector<srp::mw::temp::TempReadHdr>& data) {
     for (auto &hdr : data) {
         const int16_t value = static_cast<int16_t>(hdr.value * 10);
-        ara::log::LogInfo() << "Receive temp id: " << hdr.actuator_id << ", temp: " << static_cast<float>(value/10);
+        ara::log::LogDebug() << "Receive temp id: " << hdr.actuator_id << ", temp: " << static_cast<float>(value/10);
         switch (hdr.actuator_id) {
             case 0:
                 this->service_ipc.newTempEvent_1.Update(value);
