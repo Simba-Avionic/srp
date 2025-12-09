@@ -14,6 +14,7 @@
 #include "core/common/condition.h"
 #include "ara/log/log.h"
 #include "core/time/sys_time.hpp"
+#include "core/file/file.hpp"
 #include "apps/ec/logger_service/service/logger_builder.hpp"
 
 
@@ -35,6 +36,8 @@ namespace {
 
 void LoggerService::SaveLoop(const std::stop_token& token) {
   csv::CSVDriver csv_;
+  // ensure file handler is initialized to avoid null dereference on Open
+  csv_.Init(std::make_unique<core::FileHandler>());
   core::timestamp::TimestampController timestamp_;
   auto prefix = core::time::TimeChanger::ReadSystemTimeAsString();
   if (!prefix.has_value()) {

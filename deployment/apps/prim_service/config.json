@@ -1,6 +1,6 @@
 {
     "primer":{
-        "primer_ids":[13, 14, 9, 8],
+        "primer_ids":[8, 13, 14, 9],
         "active_time":2500,
         "desc": "8 is primer arm pin, remove from list after rewrite primer service, and make one more security step"
     }
