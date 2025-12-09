@@ -134,15 +134,15 @@ void LoggerService::SomeIpInit() {
         this->data.SetTemp3(res.Value());
       });
     });
-    env_service_handler->newDPressEvent.Subscribe(1, [this](const uint8_t status) {
-      env_service_handler->newDPressEvent.SetReceiveHandler([this] () {
-        auto res = env_service_handler->newDPressEvent.GetNewSamples();
-        if (!res.HasValue()) {
-          return;
-        }
-        this->data.SetTankDPress(res.Value());
-      });
-    });
+    // env_service_handler->newDPressEvent.Subscribe(1, [this](const uint8_t status) {
+    //   env_service_handler->newDPressEvent.SetReceiveHandler([this] () {
+    //     auto res = env_service_handler->newDPressEvent.GetNewSamples();
+    //     if (!res.HasValue()) {
+    //       return;
+    //     }
+    //     this->data.SetTankDPress(res.Value());
+    //   });
+    // });
     env_service_handler->newPressEvent.Subscribe(1, [this](const uint8_t status) {
       env_service_handler->newPressEvent.SetReceiveHandler([this] () {
         auto res = env_service_handler->newPressEvent.GetNewSamples();

@@ -17,7 +17,8 @@ cc_binary(
     srcs = [
         "main.cpp",
         "env_service.cpp",
-        "env_service.hpp"
+        "env_service.hpp",
+        "service.hpp",
     ],
     visibility = [
         "//deployment/apps:__subpackages__"
