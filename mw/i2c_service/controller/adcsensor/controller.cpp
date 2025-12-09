@@ -116,5 +116,23 @@ std::optional<float> ADCSensorController::GetValue(const uint8_t sensor_id) cons
     return value;
 }
 
+std::optional<SensorConfig> ADCSensorController::MakeCalibration(const uint8_t sensor_id) {
+    if (!this->adc_) {
+        return std::nullopt;
+    }
+    auto sensor = this->db_.find(sensor_id);
+    if (sensor == db_.end()) {
+        return std::nullopt;
+    }
+    auto res = this->adc_->GetAdcVoltage(sensor->second.channel);
+    if (!res.has_value()) {
+        return std::nullopt;
+    }
+
+    sensor->second.a = (1.0f - sensor->second.b) / res.value();
+
+    return sensor->second;
+}
+
 }  // namespace i2c
 }  // namespace srp

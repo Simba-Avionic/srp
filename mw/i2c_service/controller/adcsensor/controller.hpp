@@ -82,6 +82,8 @@ class ADCSensorController {
    * @return std::optional<float> 
    */
   std::optional<float> GetValue(const uint8_t sensor_id) const;
+
+  std::optional<SensorConfig> MakeCalibration(const uint8_t sensor_id);
 };
 
 }  // namespace i2c
