@@ -64,7 +64,7 @@ void ParachuteController::Init(std::shared_ptr<srp::service::ServoController> se
     this->gpio_controller = std::move(gpio);
 }
 
-bool ParachuteController::OpenParachute(bool diag) {
+bool ParachuteController::OpenParachute(const std::stop_token& token, bool diag) {
     if (!servo_controller) {
         return false;
     }
@@ -74,19 +74,42 @@ bool ParachuteController::OpenParachute(bool diag) {
     if (!diag) {
       parachute_open = true;
     }
-    this->gpio_controller->SetPinValue(config_.servo_mosfet_id, 1);
-    std::this_thread::sleep_for(std::chrono::milliseconds(config_.mosfet_delay));
-    for (uint8_t i = 0; i < config_.Servo_sequence_num; i++) {
-      this->servo_controller->AutoSetServoPosition(config_.Recovery_servo_id, 1);
-      std::this_thread::sleep_for(std::chrono::milliseconds(config_.Servo_move_time));
-      this->servo_controller->AutoSetServoPosition(config_.Recovery_servo_id, 0);
-      std::this_thread::sleep_for(std::chrono::milliseconds(config_.Servo_move_time));
+    if (token.stop_requested()) {
+      return false;
     }
-    std::this_thread::sleep_for(std::chrono::milliseconds(config_.mosfet_delay));
+    this->gpio_controller->SetPinValue(config_.servo_mosfet_id, 1);
+    core::condition::wait_for(std::chrono::milliseconds(config_.mosfet_delay), token);
+    if (token.stop_requested()) {
+      this->gpio_controller->SetPinValue(config_.servo_mosfet_id, 0);
+      return false;
+    }
+    for (uint8_t i = 0; i < config_.Servo_sequence_num; i++) {
+      if (token.stop_requested()) {
+        this->gpio_controller->SetPinValue(config_.servo_mosfet_id, 0);
+        return false;
+      }
+      this->servo_controller->AutoSetServoPosition(config_.Recovery_servo_id, 1);
+      core::condition::wait_for(std::chrono::milliseconds(config_.Servo_move_time), token);
+      if (token.stop_requested()) {
+        this->gpio_controller->SetPinValue(config_.servo_mosfet_id, 0);
+        return false;
+      }
+      this->servo_controller->AutoSetServoPosition(config_.Recovery_servo_id, 0);
+      core::condition::wait_for(std::chrono::milliseconds(config_.Servo_move_time), token);
+      if (token.stop_requested()) {
+        this->gpio_controller->SetPinValue(config_.servo_mosfet_id, 0);
+        return false;
+      }
+    }
+    if (token.stop_requested()) {
+      this->gpio_controller->SetPinValue(config_.servo_mosfet_id, 0);
+      return false;
+    }
+    core::condition::wait_for(std::chrono::milliseconds(config_.mosfet_delay), token);
     this->gpio_controller->SetPinValue(config_.servo_mosfet_id, 0);
-    return true;
+    return token.stop_requested() ? false : true;
 }
-bool ParachuteController::UnreefParachute(bool diag) {
+bool ParachuteController::UnreefParachute(const std::stop_token& token, bool diag) {
     if (!gpio_controller) {
         return false;
     }
@@ -98,11 +121,11 @@ bool ParachuteController::UnreefParachute(bool diag) {
     }
     for (auto i = 0; i < config_.Linecutter_sequence_num; i++) {
       this->gpio_controller->SetPinValue(config_.linecutter_pin_id, 1);
-      std::this_thread::sleep_for(std::chrono::milliseconds(config_.Linecutter_active_time));
+      core::condition::wait_for(std::chrono::milliseconds(config_.Linecutter_active_time), token);
       this->gpio_controller->SetPinValue(config_.linecutter_pin_id, 0);
-      std::this_thread::sleep_for(std::chrono::milliseconds(config_.Linecutter_inactive_time));
+      core::condition::wait_for(std::chrono::milliseconds(config_.Linecutter_inactive_time), token);
     }
-    return true;
+    return token.stop_requested() ? false : true;
 }
 ParachuteController::ParachuteController(): parachute_unreefed(false), parachute_open(false) {
 }

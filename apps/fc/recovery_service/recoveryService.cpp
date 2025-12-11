@@ -27,47 +27,15 @@ namespace {
   constexpr auto KRec_did_name = "/srp/apps/RecoveryService/REC_RID";
   constexpr auto kRefresh_delay_time = 50;
 }
-RecoveryService::RecoveryService(): rec_did_specifier(KRec_did_name), rocket_started(false) {
-  timestamp_.Init();
+RecoveryService::RecoveryService(): rec_did_specifier(KRec_did_name) {
 }
-bool RecoveryService::DetectTargetHeight() {
-  static auto activation_height = controller->GetTargetActivationHeight();
-  static auto activation_time = controller->GetTargetActivationTime();
-  auto actual_height = 500;  // TODO(matik) add read actual height
-  auto now = timestamp_.GetNewTimeStamp();
-  if (now.has_value()) {
-    auto backup_detected = timestamp_.GetDeltaTime(now.value(), apogee_time) >= activation_time;
-    return (actual_height <= actual_height) || backup_detected;
-  }
-  return actual_height <= actual_height;
-}
-bool RecoveryService::ApogeeDetected() {
-  // TODO(matik) make algorithm that detect apogee
-  return false;
-}
+
 
 int RecoveryService::Run(const std::stop_token& token) {
   service_ipc->StartOffer();
   service_udp->StartOffer();
-  while (!token.stop_requested()) {
-    while (!rocket_started) {
-      core::condition::wait_for(std::chrono::milliseconds(kRefresh_delay_time), token);
-    }
-    while (!ApogeeDetected()) {
-      core::condition::wait_for(std::chrono::milliseconds(kRefresh_delay_time), token);
-    }
-    auto now = timestamp_.GetNewTimeStamp();
-    if (now.has_value()) {
-      apogee_time = now.value();
-    } else {
-      ara::log::LogError() << "cant set apogee time, backup unreef dont work properly";
-    }
-    this->controller->OpenParachute();
-    while (!DetectTargetHeight()) {
-      core::condition::wait_for(std::chrono::milliseconds(kRefresh_delay_time), token);
-    }
-    this->controller->UnreefParachute();
-  }
+  service_ipc->NewParachuteStatusEvent.Update(static_cast<uint8_t>(apps::recovery::ParachuteState_t::CLOSED));
+  service_udp->NewParachuteStatusEvent.Update(static_cast<uint8_t>(apps::recovery::ParachuteState_t::CLOSED));
   core::condition::wait(token);
   service_ipc->StopOffer();
   service_udp->StopOffer();

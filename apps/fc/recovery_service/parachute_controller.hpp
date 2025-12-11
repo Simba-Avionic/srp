@@ -10,6 +10,7 @@
  */
 #ifndef APPS_FC_RECOVERY_SERVICE_PARACHUTE_CONTROLLER_HPP_
 #define APPS_FC_RECOVERY_SERVICE_PARACHUTE_CONTROLLER_HPP_
+#include <stop_token>
 #include <memory>
 #include <string>
 #include "apps/ec/ServoService/servoController/servo_controller.hpp"
@@ -18,6 +19,11 @@ namespace srp {
 namespace apps {
 namespace recovery {
 
+enum ParachuteState_t {
+  CLOSED = 1,
+  OPEN_REEFED = 2,
+  OPEN_UNREEFED = 3,
+};
 struct Parachute_config_t {
   uint16_t mosfet_delay;
   uint16_t Servo_move_time;
@@ -44,8 +50,8 @@ class ParachuteController {
  public:
   uint16_t GetTargetActivationHeight() { return this->config_.linecutter_active_height; }
   uint16_t GetTargetActivationTime() { return this->config_.backup_linecutter_activation_time; }
-  bool OpenParachute(bool diag = false);
-  bool UnreefParachute(bool diag = false);
+  bool OpenParachute(const std::stop_token& token, bool diag = false);
+  bool UnreefParachute(const std::stop_token& token, bool diag = false);
   void Init(std::shared_ptr<srp::service::ServoController> servo,
               std::unique_ptr<gpio::GPIOController>&& gpio, const std::string& path);
   ParachuteController();
