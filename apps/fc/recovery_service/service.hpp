@@ -11,12 +11,14 @@
 
 #ifndef APPS_FC_RECOVERY_SERVICE_SERVICE_HPP_
 #define APPS_FC_RECOVERY_SERVICE_SERVICE_HPP_
+#include <stop_token>
 #include <memory>
 #include "srp/apps/RecoveryServiceSkeleton.h"
 #include "apps/fc/recovery_service/parachute_controller.hpp"
 
 namespace srp {
 namespace apps {
+
 class MyRecoveryServiceSkeleton: public RecoveryServiceSkeleton {
  private:
   const std::shared_ptr<recovery::ParachuteController> controller;
@@ -31,10 +33,22 @@ class MyRecoveryServiceSkeleton: public RecoveryServiceSkeleton {
 
  protected:
   ara::core::Result<bool> OpenReefedParachute() override {
-    return controller->OpenParachute();
+    std::stop_source never_stop_source;
+    auto res = controller->OpenParachute(never_stop_source.get_token(), false);
+    if (!res) {
+      return false;
+    }
+    this->NewParachuteStatusEvent.Update(static_cast<uint8_t>(recovery::ParachuteState_t::OPEN_REEFED));
+    return res;
   }
   ara::core::Result<bool> UnreefeParachute() override {
-    return controller->UnreefParachute();
+    std::stop_source never_stop_source;
+    auto res = controller->UnreefParachute(never_stop_source.get_token(), false);
+    if (!res) {
+      return false;
+    }
+    this->NewParachuteStatusEvent.Update(static_cast<uint8_t>(recovery::ParachuteState_t::OPEN_UNREEFED));
+    return res;
   }
 };
 }  // namespace apps
