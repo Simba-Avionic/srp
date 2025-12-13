@@ -57,6 +57,9 @@ class RocketState {
     case DISARM:
       res = "DISARM";
       break;
+    case ARM:
+      res = "ARM";
+      break;
     case LAUNCH:
       res = "LAUNCH";
       break;

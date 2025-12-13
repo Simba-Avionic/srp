@@ -24,7 +24,8 @@ namespace {
 
 
 MyEngineServiceSkeleton::MyEngineServiceSkeleton(ara::core::InstanceSpecifier instance):
-        EngineServiceSkeleton{instance}, primer_handler_{nullptr}, servo_handler_{nullptr} {
+        EngineServiceSkeleton{instance}, primer_handler_{nullptr}, servo_handler_{nullptr},
+        gpio_{std::make_unique<gpio::GPIOController>()} {
     state_ctr_ = engineApp::EngineStateController::GetInstance();
 }
 void MyEngineServiceSkeleton::Init(std::shared_ptr<PrimerServiceHandler> primer_handler,
@@ -62,13 +63,21 @@ ara::core::Result<bool> MyEngineServiceSkeleton::Start() {
     }
     state_ctr_->SetEngineState(RocketState_t::FLIGHT);
     CurrentMode.Update(static_cast<uint8_t>(RocketState_t::FLIGHT));
-    return true;
+    return ara::core::Result<bool>{true};
 }
 
 ara::core::Result<bool> MyEngineServiceSkeleton::SetMode(const std::uint8_t& in_parm) {
-    this->state_ctr_->SetEngineState(static_cast<RocketState_t>(in_parm));
+    auto old_state = state_ctr_->GetEngineState();
+    if (!this->state_ctr_->SetEngineState(static_cast<RocketState_t>(in_parm))) {
+        ara::log::LogError() << "Try to do illegal transition from: "
+                        << RocketState::GetStringState(old_state) <<
+                        ", to: " <<RocketState::GetStringState(static_cast<RocketState_t>(in_parm));
+        return ara::core::Result<bool>{false};
+    }
     CurrentMode.Update(static_cast<uint8_t>(in_parm));
-    return true;
+    ara::log::LogInfo() << "Change Mode from: " << RocketState::GetStringState(old_state) <<
+                        ", to: " <<RocketState::GetStringState(static_cast<RocketState_t>(in_parm));
+    return ara::core::Result<bool>{true};
 }
 
 }  // namespace service

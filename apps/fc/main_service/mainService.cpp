@@ -37,15 +37,15 @@ int MainService::Initialize(const std::map<ara::core::StringView, ara::core::Str
     service_udp = std::make_unique<apps::MyMainServiceSkeleton>(
         ara::core::InstanceSpecifier(kService_udp_name));
     controller.Init();
+    service_ipc->StartOffer();
+    service_udp->StartOffer();
     return 0;
 }
 int MainService::Run(const std::stop_token& token) {
-    service_ipc->StartOffer();
-    service_udp->StartOffer();
     auto last_send = std::chrono::high_resolution_clock::now();
     auto state = apps::RocketState::GetInstance();
     while (!token.stop_requested()) {
-        controller.Loop();
+        controller.SecureLoop();
         auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
             std::chrono::high_resolution_clock::now() - last_send);
         if (elapsed.count() > kSend_event_time) {
