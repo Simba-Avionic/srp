@@ -26,7 +26,7 @@ namespace envService {
 namespace {
     constexpr uint8_t PRESS_SENSOR_ID = 10;
     constexpr uint8_t PRESS_SENSOR_SAMPLING = 15;
-    constexpr auto kDelay = 500;
+    constexpr auto kDelay = 1000;
 }
 
 

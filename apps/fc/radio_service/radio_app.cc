@@ -28,7 +28,7 @@ constexpr auto KGPS_UART_path = "/dev/ttyS1";
 constexpr auto KGPS_UART_baudrate = B115200;
 constexpr auto kSystemId = 1;
 constexpr auto kComponentId = 200;
-constexpr auto kTime = 950;  // Should be 1 Hz but better make it 1.1Hz than 0.9 wchich can trigger error on GS
+constexpr auto kTime = 1000;  // Should be 1 Hz but better make it 1.1Hz than 0.9 wchich can trigger error on GS
 }  // namespace
 
 void RadioApp::TransmittingLoop(const std::stop_token& token) {

@@ -39,8 +39,8 @@ int EngineApp::Run(const std::stop_token& token) {
   while (!token.stop_requested()) {
     service_ipc.CurrentMode.Update(static_cast<uint8_t>(state_ctr_->GetEngineState()));
     service_udp.CurrentMode.Update(static_cast<uint8_t>(state_ctr_->GetEngineState()));
+    core::condition::wait_for(std::chrono::milliseconds(1000), token);
   }
-  core::condition::wait(token);
   ara::log::LogInfo() << "Run complete, closing";
   service_ipc.StopOffer();
   service_udp.StopOffer();
