@@ -44,7 +44,6 @@ class ServoServiceDiD : public ara::diag::GenericDiD {
         ", to actuator ID:" << std::to_string(this->actuator_id);
     auto res = this->servoController->AutoSetServoPosition(this->actuator_id, payload[0]);
     if (res != core::ErrorCode::kOk) {
-      ara::log::LogWarn() << "huj";
       return ara::diag::MakeErrorCode(
         ara::diag::UdsDiagErrc::kFailurePreventsExecutionOfRequestedAction);
     }
