@@ -30,7 +30,7 @@ class RocketController {
 
  public:
   void Loop();
-  void Init() {}
+  void Init();
   RocketController();
 };
 

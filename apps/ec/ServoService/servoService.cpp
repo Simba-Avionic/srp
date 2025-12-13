@@ -23,6 +23,10 @@
 namespace srp {
 namespace service {
 
+namespace {
+  constexpr auto kEvent_interval_ms = 1000;
+}
+
 ServoService::ServoService():
                 diag_main_instance("/srp/apps/servoService/MainServoStatus"),
                 diag_venv_instance("/srp/apps/servoService/VentServoStatus"),
@@ -51,7 +55,7 @@ int ServoService::Run(const std::stop_token& token) {
       ara::log::LogDebug() << "ServoService.Run: updated vent servo status " << std::to_string(val2.value());
     }
     ara::log::LogDebug() << "ServoService.Run: status events sent";
-    core::condition::wait_for(std::chrono::milliseconds(500), token);
+    core::condition::wait_for(std::chrono::milliseconds(kEvent_interval_ms), token);
   }
   ara::log::LogInfo() << "ServoService.Run: stopping offers";
   service_ipc->StopOffer();

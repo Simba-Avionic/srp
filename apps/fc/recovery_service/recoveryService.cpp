@@ -34,9 +34,11 @@ RecoveryService::RecoveryService(): rec_did_specifier(KRec_did_name) {
 int RecoveryService::Run(const std::stop_token& token) {
   service_ipc->StartOffer();
   service_udp->StartOffer();
-  service_ipc->NewParachuteStatusEvent.Update(static_cast<uint8_t>(apps::recovery::ParachuteState_t::CLOSED));
-  service_udp->NewParachuteStatusEvent.Update(static_cast<uint8_t>(apps::recovery::ParachuteState_t::CLOSED));
-  core::condition::wait(token);
+  while (!token.stop_requested()) {
+    service_ipc->NewParachuteStatusEvent.Update(static_cast<uint8_t>(apps::recovery::ParachuteState_t::CLOSED));
+    service_udp->NewParachuteStatusEvent.Update(static_cast<uint8_t>(apps::recovery::ParachuteState_t::CLOSED));
+    core::condition::wait_for(std::chrono::milliseconds(1000), token);
+  }
   service_ipc->StopOffer();
   service_udp->StopOffer();
   rec_did->StopOffer();

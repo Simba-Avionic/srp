@@ -14,6 +14,7 @@
 #include <future>  // NOLINT
 #include <chrono> // NOLINT
 
+#include "ara/log/log.h"
 #include "mw/i2c_service/controller/adcsensor/controller.hpp"
 #include "core/json/json_parser.h"
 #include "core/common/error_code.h"
@@ -42,6 +43,14 @@ core::ErrorCode ADCSensorController::Init(const std::string path,
     return core::ErrorCode::kNotDefine;
   }
   this->db_ = this->ReadConfig(obj_r.value());
+  for (const auto sensor : this->db_) {
+    std::ostringstream ss;
+    ss << "register sensor id: " << std::to_string(sensor.first) << " on ADC channel: " <<
+                        std::to_string(static_cast<int>(sensor.second.channel))<< " with y = "
+                        << std::fixed << std::setprecision(2) << sensor.second.a << " * V "
+                        << (sensor.second.b >= 0 ? "+ " : "- ") << abs(sensor.second.b);
+    ara::log::LogInfo() << ss.str();
+  }
   return core::ErrorCode::kOk;
 }
 
@@ -61,6 +70,7 @@ std::unordered_map<uint8_t, SensorConfig> ADCSensorController::ReadConfig(core::
     std::unordered_map<uint8_t, SensorConfig> db;
     auto sensors_opt = parser_.GetArray<nlohmann::json>("sensors");
     if (!sensors_opt.has_value()) {
+        ara::log::LogError() << "failed to read adcsensor config";
         return db;
     }
     for (const auto &sensor__ : sensors_opt.value()) {
@@ -69,9 +79,9 @@ std::unordered_map<uint8_t, SensorConfig> ADCSensorController::ReadConfig(core::
             continue;
         }
         auto parser = parser_opt.value();
-        auto actuator_id = parser.GetNumber<uint8_t>("sensor_id");
+        auto sensor_id = parser.GetNumber<uint8_t>("sensor_id");
         auto channel = parser.GetNumber<uint8_t>("channel");
-        if (!(actuator_id.has_value() && channel.has_value())) {
+        if (!(sensor_id.has_value() && channel.has_value())) {
             continue;
         }
         auto a = parser.GetNumber<float>("a");
@@ -81,7 +91,7 @@ std::unordered_map<uint8_t, SensorConfig> ADCSensorController::ReadConfig(core::
         if (a.has_value() && b.has_value()) {
             config.a = a.value();
             config.b = b.value();
-            db.insert({actuator_id.value(), config});
+            db.insert({sensor_id.value(), config});
         } else {
             auto r = parser.GetNumber<float>("R");
             auto resMin = parser.GetNumber<float>("RES_MIN");
@@ -94,7 +104,7 @@ std::unordered_map<uint8_t, SensorConfig> ADCSensorController::ReadConfig(core::
             }
             config.a = CalculateA(r.value(), resMax.value(), resMin.value(), AMax.value(), AMin.value());
             config.b = CalculateB(r.value(), config.a, AMin.value(), resMin.value());
-            db.insert({actuator_id.value(), config});
+            db.insert({sensor_id.value(), config});
         }
     }
     return db;

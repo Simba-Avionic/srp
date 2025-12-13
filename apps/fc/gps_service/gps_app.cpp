@@ -84,8 +84,8 @@ int GPSApp::Run(const std::stop_token& token) {
       service_ipc->GPSStatusEvent.Update(res.value());
       service_udp->GPSStatusEvent.Update(res.value());
     }
+    core::condition::wait_for(std::chrono::milliseconds(1000), token);
   }
-  core::condition::wait(token);
   service_ipc->StopOffer();
   service_udp->StopOffer();
   uart_->Close();

@@ -18,7 +18,7 @@ namespace mw {
 
 int TimestampService::Run(const std::stop_token& token) {
     core::condition::wait(token);
-    return 1;
+    return 0;
 }
 int TimestampService::Initialize(const std::map<ara::core::StringView, ara::core::StringView>
                     parms) {

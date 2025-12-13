@@ -22,6 +22,8 @@ RocketController::RocketController() {
     last_state_ = rocket_state_->GetState();
     timestamp_.Init();
 }
+void RocketController::Init() {
+}
 void RocketController::Loop() {
   auto now_state = rocket_state_->GetState();
   switch (now_state) {

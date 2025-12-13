@@ -40,7 +40,7 @@ void PrimerController::Initialize(std::string path) {
 }
 
 bool PrimerController::ChangePrimerState(uint8_t state) {
-    ara::log::LogError() << "changePrimerState";
+    ara::log::LogInfo() << "changePrimerState";
     for (const auto primer : primer_pins_) {
         if (this->gpio_.SetPinValue(primer, state) != core::ErrorCode::kOk) {
             ara::log::LogError() << "Failed to enable primer";

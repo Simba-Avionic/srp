@@ -5,9 +5,6 @@ cc_binary(
         "mainService.cpp",
         "mainService.hpp",
         "service.hpp",
-        "rocket_state.h",
-        "rocketController.cpp",
-        "rocketController.hpp",
     ],
     visibility = [
         "//deployment/apps/fc/main_app:__subpackages__",
@@ -23,5 +20,23 @@ cc_binary(
         "//core/common:common_types",
         "//core/timestamp:timestamp_controller",
         "@srp_mavlink//lib:mavlink_lib",
+        "//apps/fc/main_service:rocket_states",
     ],
+)
+
+cc_library(
+    name = "rocket_states",
+    srcs = [
+        "rocketController.cpp",
+    ],
+    hdrs = [
+        "rocket_state.h",
+        "rocketController.hpp",
+    ],
+    deps = [
+        "@srp_mavlink//lib:mavlink_lib",
+        "//core/common:condition_lib",
+        "//core/timestamp:timestamp_controller",
+    ],
+    visibility = ["//visibility:public"],
 )

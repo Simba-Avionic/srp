@@ -59,7 +59,6 @@ int64_t NtpController::GetTimestamp() {
 
 void NtpController::thread_loop(std::stop_token token) {
     while (!token.stop_requested()) {
-        core::condition::wait_for(std::chrono::milliseconds(kDelay_time), token);
         ara::log::LogDebug() << "Start NTP SYNC";
         srp::mw::tinyNTP::ntpStruct header;
         header.t0 = GetTimestamp();
@@ -79,6 +78,7 @@ void NtpController::thread_loop(std::stop_token token) {
         this->timestamp_.CorrectStartPoint(offset);
         ara::log::LogDebug() << "Round trip time [ms]: " << std::to_string(round_trip_time)
                 << " ,offset value [ms]: " << std::to_string(static_cast<int>(offset));
+        core::condition::wait_for(std::chrono::milliseconds(kDelay_time), token);
     }
 }
 
