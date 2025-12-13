@@ -92,23 +92,25 @@ int EnvService::Initialize(const std::map<ara::core::StringView, ara::core::Stri
 int EnvService::Run(const std::stop_token& token) {
     while (!token.stop_requested()) {
         auto start = std::chrono::high_resolution_clock::now();
-        float press_sum;
-        float num;
+        float press_sum = 0.0f;
+        float num = 0.0f;
         for (uint8_t i = 0; i < PRESS_SENSOR_SAMPLING; i++) {
             auto pressValue = this->press_->GetValue(PRESS_SENSOR_ID);
             if (pressValue.has_value()) {
                 press_sum += pressValue.value();
-                num += 1;
+                num += 1.0f;
             } else {
                 ara::log::LogWarn() << "dont receive new pressure";
             }
         }
-        float mean_press = press_sum / num;
-        std::ostringstream ss;
-                ss << std::fixed << std::setprecision(2) << mean_press;
-            ara::log::LogDebug() << "Receive new Tank Pressure: " << ss.str() << " Bar";
-                this->service_ipc.newPressEvent.Update(static_cast<uint16_t>(mean_press * 100));
-                this->service_udp.newPressEvent.Update(static_cast<uint16_t>(mean_press * 100));
+        if (num > 0.0f) {
+            float mean_press = press_sum / num;
+            std::ostringstream ss;
+            ss << std::fixed << std::setprecision(2) << mean_press;
+            ara::log::LogInfo() << "Receive new Tank Pressure: " << ss.str() << " Bar";
+            this->service_ipc.newPressEvent.Update(static_cast<uint16_t>(mean_press * 100));
+            this->service_udp.newPressEvent.Update(static_cast<uint16_t>(mean_press * 100));
+        }
         auto end = std::chrono::high_resolution_clock::now();
         auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
         ara::log::LogDebug() << "loop taken:" << std::to_string(duration.count()) << "ms";
