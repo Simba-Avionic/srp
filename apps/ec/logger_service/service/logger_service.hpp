@@ -36,6 +36,8 @@ class LoggerService final : public ara::exec::AdaptiveApplication {
   std::unique_ptr<FileLoggerDID> logger_did_;
   const ara::core::InstanceSpecifier did_instance;
 
+  uint8_t save_state;
+
   std::shared_ptr<std::jthread> save_thread_;
   void SaveLoop(const std::stop_token& token);
   void start_func_handler(const std::uint8_t status);

@@ -26,13 +26,17 @@ cc_binary(
 
 cc_library(
     name = "rocket_states",
-    deps = [
-        "@srp_mavlink//lib:mavlink_lib",
+    srcs = [
+        "rocketController.cpp",
     ],
     hdrs = [
         "rocket_state.h",
-        "rocketController.cpp",
         "rocketController.hpp",
+    ],
+    deps = [
+        "@srp_mavlink//lib:mavlink_lib",
+        "//core/common:condition_lib",
+        "//core/timestamp:timestamp_controller",
     ],
     visibility = ["//visibility:public"],
 )

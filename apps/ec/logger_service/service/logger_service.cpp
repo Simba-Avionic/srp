@@ -25,26 +25,21 @@ namespace {
   constexpr auto kCsv_header = "TIMESTAMP;TEMP1;TEMP2;TEMP3;TANK_PRESS;TANK_D_PRESS";
   constexpr std::string kCsv_filename = "log.csv";
   constexpr std::string kCsv_filename_prefix = "/home/root/";
-  constexpr uint16_t kSave_interval = 100;
+  constexpr uint16_t kSave_interval = 200;
   constexpr auto k_save_interval_fix = 1;
   constexpr auto kEnv_service_path_name = "srp/apps/FileLoggerApp/EnvApp";
   constexpr auto kUdp_service_path_name = "srp/apps/FileLoggerApp/logService_udp";
   constexpr auto kIpc_service_path_name = "srp/apps/FileLoggerApp/logService_ipc";
   constexpr auto kFile_did_path_name = "/srp/apps/FileLoggerApp/logger_did";
+  constexpr auto kLogs_on = 1;
+  constexpr auto kLogs_off = 0;
 }  // namespace
 
 
-void LoggerService::SaveLoop(const std::stop_token& token) {
+void LoggerService::SaveLoop(const std::stop_token& token, std::shared_ptr<core::timestamp::TimestampController> timestamp) {
   csv::CSVDriver csv_;
 
   csv_.Init(std::make_unique<core::FileHandler>());
-  core::timestamp::TimestampController timestamp_;
-
-  if (!timestamp_.Init()) {
-    ara::log::LogError() << "LoggerService::SaveLoop: Failed to initialize timestamp controller";
-    return;
-  }
-
 
   auto prefix = core::time::TimeChanger::ReadSystemTimeAsString();
   std::string filename;
@@ -60,31 +55,43 @@ void LoggerService::SaveLoop(const std::stop_token& token) {
   }
 
   ara::log::LogInfo() << "LoggerService::SaveLoop: Started logging to " << filename;
+  save_state = kLogs_on;
+  try {
+    while (!token.stop_requested()) {
+      const auto start = std::chrono::high_resolution_clock::now();
+      auto val = timestamp->GetNewTimeStamp();
+      if (!val.has_value()) {
+        core::condition::wait_for(std::chrono::milliseconds(kSave_interval), token);
+        continue;
+      }
 
-  while (!token.stop_requested()) {
-    const auto start = std::chrono::high_resolution_clock::now();
-    auto val = timestamp_.GetNewTimeStamp();
-    if (!val.has_value()) {
-      core::condition::wait_for(std::chrono::milliseconds(kSave_interval), token);
-      continue;
+      if (csv_.WriteLine(this->data.to_string(std::to_string(val.value()))) != 0) {
+        ara::log::LogWarn() << "LoggerService::SaveLoop: Failed to write line to CSV";
+      }
+
+      const auto now = std::chrono::high_resolution_clock::now();
+      const auto elapsed = std::chrono::duration_cast<
+                  std::chrono::milliseconds>(now - start).count() +  k_save_interval_fix;
+      core::condition::wait_for(std::chrono::milliseconds(kSave_interval - elapsed), token);
     }
-
-    if (csv_.WriteLine(this->data.to_string(std::to_string(val.value()))) != 0) {
-      ara::log::LogWarn() << "LoggerService::SaveLoop: Failed to write line to CSV";
-    }
-
-    const auto now = std::chrono::high_resolution_clock::now();
-    const auto elapsed = std::chrono::duration_cast<
-                std::chrono::milliseconds>(now - start).count() +  k_save_interval_fix;
-    core::condition::wait_for(std::chrono::milliseconds(kSave_interval - elapsed), token);
+  } catch (...) {
+    csv_.Close();
+    save_state = kLogs_off;
+    ara::log::LogFatal() << "LoggerService::SaveLoop: Stopped logging due to Fatal error";
   }
 
   csv_.Close();
+  save_state = kLogs_off;
   ara::log::LogInfo() << "LoggerService::SaveLoop: Stopped logging, file closed";
 }
 
 int LoggerService::Run(const std::stop_token& token) {
-  core::condition::wait(token);
+  while (!token.stop_requested()) {
+    service_ipc->LoggingState.Update(save_state);
+    service_udp->LoggingState.Update(save_state);
+    ara::log::LogDebug() << "logging state: " << save_state;
+    core::condition::wait_for(std::chrono::milliseconds(1000), token);
+  }
   service_ipc->StopOffer();
   service_udp->StopOffer();
   logger_did_->StopOffer();
@@ -105,7 +112,8 @@ LoggerService::~LoggerService() {}
 LoggerService::LoggerService():
     env_service_proxy{ara::core::InstanceSpecifier{kEnv_service_path_name}},
     env_service_handler{nullptr}, save_thread_{nullptr},
-    did_instance{kFile_did_path_name} {
+    did_instance{kFile_did_path_name}, 
+    timestamp_{std::make_shared<core::timestamp::TimestampController>()} {
   auto builder = Builder([this](uint8_t status) { this->start_func_handler(status); });
   auto result = builder.setLoggerDID(did_instance)
                 .setLoggerIPC(kIpc_service_path_name)
@@ -115,13 +123,17 @@ LoggerService::LoggerService():
   this->logger_did_ = std::move(result.loggerDID);
   this->service_ipc = std::move(result.serviceIPC);
   this->service_udp = std::move(result.serviceUDP);
+  if (!timestamp_->Init()) {
+    ara::log::LogError() << "LoggerService::LoggerService: Failed to initialize timestamp controller";
+    return;
+  }
 }
 
 void LoggerService::start_func_handler(const std::uint8_t status) {
   if (status == 1 && !this->save_thread_) {
     this->save_thread_ = std::make_shared<std::jthread>(
       [this](std::stop_token token) {
-          SaveLoop(token);
+          SaveLoop(token, this->timestamp_);
       });
   } else if (status == 0 && this->save_thread_) {
     if (this->save_thread_) {
