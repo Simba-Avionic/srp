@@ -1,6 +1,6 @@
 #!/bin/bash
 export GCOV=/usr/bin/gcov-13
-bazel coverage --nocache_test_results --config=ut `bazel query 'kind(cc_test, //...)'`  -s \
+bazel coverage --config=ut `bazel query 'kind(cc_test, //...)'`  -s \
   --instrument_test_targets \
   --experimental_cc_coverage \
   --combined_report=lcov \

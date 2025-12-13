@@ -2,6 +2,7 @@
     "include": [
         "deployment/system_definition/diag/jobs/servo_service/servo_status_did.json",
         "deployment/system_definition/diag/jobs/servo_service/vent_servo_status_did.json",
+        "deployment/system_definition/diag/jobs/servo_service/dump_servo_status_did.json",
         "deployment/system_definition/someip/servo_service/service.json",
         "deployment/system_definition/diag/jobs/servo_service/basic_did.json"
     ],
@@ -54,6 +55,10 @@
                 },
                 {
                     "name": "ServoDid as ServoDID",
+                    "on": "diag"
+                },
+                {
+                    "name": "DumpServoStatusDiD as DumpServoStatus",
                     "on": "diag"
                 },
                 {

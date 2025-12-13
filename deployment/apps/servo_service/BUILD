@@ -9,6 +9,7 @@ filegroup(
         "//deployment/system_definition/diag/jobs/servo_service:servo_status_job",
         "//deployment/system_definition/diag/jobs/servo_service:vent_servo_status_job",
         "//deployment/system_definition/diag/jobs/servo_service:basic_servo_job",
+        "//deployment/system_definition/diag/jobs/servo_service:dump_servo_status_job",
     ],
     visibility = [
         "//apps/ServoService:__subpackages__",

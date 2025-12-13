@@ -15,6 +15,14 @@
         "off_pos" : 102,
         "mosfet_id" : 6,
         "desc": "on devboard have name C69, VENT VALVE"
+        },
+        {
+        "actuator_id":62,
+        "channel": 0,
+        "on_pos" : 540,
+        "off_pos" : 102,
+        "mosfet_id" : 16,
+        "desc": "on devboard have name C67, DUMP VALVE"
         }
 ]
 }

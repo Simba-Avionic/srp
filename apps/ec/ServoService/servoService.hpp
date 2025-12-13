@@ -28,12 +28,14 @@ class ServoService final : public ara::exec::AdaptiveApplication {
   std::shared_ptr<ServoController> servo_controller;
   std::unique_ptr<ServoServiceDiD> main_servo_service_did_;
   std::unique_ptr<ServoServiceDiD> vent_servo_service_did_;
+  std::unique_ptr<ServoServiceDiD> dump_servo_service_did_;
   std::unique_ptr<ServoSecondDid> servo_did_;
   std::unique_ptr<apps::MyServoService> service_ipc;
   std::unique_ptr<apps::MyServoService> service_udp;
 
   const ara::core::InstanceSpecifier diag_main_instance;
   const ara::core::InstanceSpecifier diag_venv_instance;
+  const ara::core::InstanceSpecifier diag_dump_instance;
   const ara::core::InstanceSpecifier diag_serv_instance;
 
  protected:
