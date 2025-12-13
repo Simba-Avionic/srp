@@ -19,5 +19,6 @@ cc_binary(
         "//deployment/apps/engine_app:ara",
         "//deployment/apps/engine_app:someip_lib",
         "//apps/fc/main_service:rocket_states",
+        "//mw/gpio_server/controller:gpio_controller",
     ],
 )

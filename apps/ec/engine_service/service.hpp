@@ -19,6 +19,7 @@
 #include "srp/apps/ServoService/ServoServiceHandler.h"
 #include "apps/fc/main_service/rocket_state.h"
 #include "apps/ec/engine_service/state_controller.hpp"
+#include "mw/gpio_server/controller/gpio_controller.hpp"
 
 namespace srp {
 namespace apps {
@@ -30,6 +31,7 @@ class MyEngineServiceSkeleton: public EngineServiceSkeleton {
   std::shared_ptr<PrimerServiceHandler> primer_handler_;
   std::shared_ptr<ServoServiceHandler> servo_handler_;
   std::shared_ptr<engineApp::EngineStateController> state_ctr_;
+  std::unique_ptr<gpio::IGPIOController> gpio_;
  public:
   explicit MyEngineServiceSkeleton(ara::core::InstanceSpecifier instance);
   void Init(std::shared_ptr<PrimerServiceHandler> primer_handler,

@@ -15,15 +15,19 @@
 #include "apps/fc/main_service/rocket_state.h"
 namespace srp {
 namespace engineApp {
+
+using RocketState_t = apps::RocketState_t;
 class EngineStateController {
  private:
-  apps::RocketState_t state_;
+  RocketState_t state_;
   std::mutex state_mtx_;
+
+  bool IsChangeStateAllowed(const RocketState_t new_state);
  public:
   EngineStateController();
   static std::shared_ptr<EngineStateController> GetInstance();
-  apps::RocketState_t GetEngineState();
-  void SetEngineState(const apps::RocketState_t state);
+  RocketState_t GetEngineState();
+  bool SetEngineState(const RocketState_t state);
 };
 }  // namespace engineApp
 }  // namespace srp
