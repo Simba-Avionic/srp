@@ -107,7 +107,7 @@ int EnvService::Run(const std::stop_token& token) {
             float mean_press = press_sum / num;
             std::ostringstream ss;
             ss << std::fixed << std::setprecision(2) << mean_press;
-            ara::log::LogInfo() << "Receive new Tank Pressure: " << ss.str() << " Bar";
+            ara::log::LogDebug() << "Receive new Tank Pressure: " << ss.str() << " Bar";
             this->service_ipc.newPressEvent.Update(static_cast<uint16_t>(mean_press * 100));
             this->service_udp.newPressEvent.Update(static_cast<uint16_t>(mean_press * 100));
         }
