@@ -97,12 +97,16 @@ LoggerService::LoggerService():
 
 void LoggerService::start_func_handler(const std::uint8_t status) {
   if (status == 1 && !this->save_thread_) {
-      this->save_thread_ = std::make_unique<std::jthread>(
-          [this](std::stop_token token) {
-              SaveLoop(token);
-          });
+    this->save_thread_ = std::make_shared<std::jthread>(
+      [this](std::stop_token token) {
+          SaveLoop(token);
+      });
   } else if (status == 0 && this->save_thread_) {
+    if (this->save_thread_) {
+      this->save_thread_->request_stop();
+      this->save_thread_->join();
       this->save_thread_.reset();
+      }
   }
 }
 
