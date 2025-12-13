@@ -37,7 +37,8 @@ jobs:
 
       - name: Run Bazel tests
         run: |
-          bazel test --nocache_test_results $(bazel query 'kind(cc_test, //...)')
+          ./tools/ut/unittest.sh --no_cache
+
   bazel-coverage:
     name: SRP Coverage
     needs:
@@ -54,6 +55,7 @@ jobs:
       - name: Run Bazel tests
         run: |
           ./tools/coverage/coverage.sh
+
   build:
     name: Build EC & FC
     needs: cpplint
@@ -86,4 +88,4 @@ jobs:
 
       - name: Build All
         run: |
-          ./tools/build_all/build_all.sh
+          ./tools/build_all/build_all.sh --no_cache

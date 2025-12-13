@@ -1,3 +1,7 @@
 #!/bin/bash
-bazel clean --async
-bazel build //... -- -//deployment/tools/...
+
+if [[ "$1" == "--no_cache" ]]; then
+    bazel clean --async
+fi
+
+bazel build //... -- -//deployment/tools/... -//tools/...
