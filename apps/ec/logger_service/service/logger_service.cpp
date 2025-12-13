@@ -36,7 +36,8 @@ namespace {
 }  // namespace
 
 
-void LoggerService::SaveLoop(const std::stop_token& token, std::shared_ptr<core::timestamp::TimestampController> timestamp) {
+void LoggerService::SaveLoop(const std::stop_token& token,
+            std::shared_ptr<core::timestamp::TimestampController> timestamp) {
   csv::CSVDriver csv_;
 
   csv_.Init(std::make_unique<core::FileHandler>());
@@ -110,10 +111,10 @@ int LoggerService::Initialize(const std::map<ara::core::StringView, ara::core::S
 LoggerService::~LoggerService() {}
 
 LoggerService::LoggerService():
-    env_service_proxy{ara::core::InstanceSpecifier{kEnv_service_path_name}},
-    env_service_handler{nullptr}, save_thread_{nullptr},
-    did_instance{kFile_did_path_name}, 
-    timestamp_{std::make_shared<core::timestamp::TimestampController>()} {
+      env_service_proxy{ara::core::InstanceSpecifier{kEnv_service_path_name}},
+      env_service_handler{nullptr}, save_thread_{nullptr},
+      did_instance{kFile_did_path_name},
+      timestamp_{std::make_shared<core::timestamp::TimestampController>()} {
   auto builder = Builder([this](uint8_t status) { this->start_func_handler(status); });
   auto result = builder.setLoggerDID(did_instance)
                 .setLoggerIPC(kIpc_service_path_name)
