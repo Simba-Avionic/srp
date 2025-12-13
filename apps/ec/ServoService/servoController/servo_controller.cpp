@@ -99,17 +99,29 @@ void ServoController::ExecuteServoMovement(const uint8_t actuator_id, const uint
     return;
   }
   auto& servo = it->second;
-
-  if (servo.need_mosfet) {
+  if (servo.need_mosfet || servo.need_aux_power) {
     if (gpio_ == nullptr) {
       logger_.LogError() << "ServoController.ExecuteServoMovement: GPIO controller not available";
       return;
     }
+  }
+  if (servo.need_aux_power) {
+    if (gpio_->SetPinValue(servo.aux_power_id, kOpenState) != core::ErrorCode::kOk) {
+      logger_.LogError() << "ServoController.ExecuteServoMovement: failed to enable MOSFET " <<
+                             std::to_string(static_cast<int>(servo.mosfet_id));
+      return;
+    }
+  }
+
+  if (servo.need_mosfet) {
     if (gpio_->SetPinValue(servo.mosfet_id, kOpenState) != core::ErrorCode::kOk) {
       logger_.LogError() << "ServoController.ExecuteServoMovement: failed to enable MOSFET " <<
                              std::to_string(static_cast<int>(servo.mosfet_id));
       return;
     }
+  }
+
+  if (servo.need_mosfet || servo.need_aux_power) {
     std::this_thread::sleep_for(
         std::chrono::milliseconds(servo.timing.mosfet_power_on_delay_ms));
   }
@@ -159,25 +171,25 @@ std::optional<uint8_t> ServoController::ReadServoPosition(uint8_t actuator_id) {
     return std::nullopt;
   }
   auto& servo = it->second;
-  return servo.last_state;
-  // auto pos_opt = driver_->ReadChannelPosition(servo.channel);
-  // if (!pos_opt.has_value()) {
-  //   logger_.LogWarn() << "ServoController.ReadServoPosition: unable to read PWM for actuator " <<
-  //                         std::to_string(static_cast<int>(actuator_id));
-  //   return std::nullopt;
-  // }
-  // const auto current = pos_opt.value();
-  // if (current == servo.on_pos ||
-  //     (servo.need_loosening && current == servo.on_loosening)) {
-  //   servo.last_state = kOpenState;
-  //   return kOpenState;
-  // }
-  // if (current == servo.off_pos ||
-  //     (servo.need_loosening && current == servo.off_loosening)) {
-  //   servo.last_state = kCloseState;
-  //   return kCloseState;
-  // }
   // return servo.last_state;
+  auto pos_opt = driver_->ReadChannelPosition(servo.channel);
+  if (!pos_opt.has_value()) {
+    logger_.LogWarn() << "ServoController.ReadServoPosition: unable to read PWM for actuator " <<
+                          std::to_string(static_cast<int>(actuator_id));
+    return std::nullopt;
+  }
+  const auto current = pos_opt.value();
+  if (current == servo.on_pos ||
+      (servo.need_loosening && current == servo.on_loosening)) {
+    servo.last_state = kOpenState;
+    return kOpenState;
+  }
+  if (current == servo.off_pos ||
+      (servo.need_loosening && current == servo.off_loosening)) {
+    servo.last_state = kCloseState;
+    return kCloseState;
+  }
+  return servo.last_state;
 }
 
 std::optional<uint16_t> ServoController::ReadRawServoPosition(uint8_t actuator_id) {
@@ -217,7 +229,7 @@ core::ErrorCode ServoController::InitializeServosToDefault() {
   for (auto& entry : servo_db_) {
     auto& servo = entry.second;
     EnsureTimingConsistency(&servo);
-    if (driver_->SetChannelPosition(servo.channel, servo.off_pos) !=
+    if (AutoSetServoPosition(entry.first, entry.second.off_pos) !=
         core::ErrorCode::kOk) {
       logger_.LogWarn() << "ServoController.InitializeServosToDefault: failed to reset actuator " <<
                             std::to_string(static_cast<int>(entry.first));
@@ -291,6 +303,12 @@ ServoController::LoadConfig(const std::string& file_path) {
     if (mosfet_id.has_value()) {
       cfg.need_mosfet = true;
       cfg.mosfet_id = mosfet_id.value();
+    }
+
+    auto switch_id = servo_parser.GetNumber<uint8_t>("aux_power_id");
+    if (switch_id.has_value()) {
+      cfg.need_aux_power = true;
+      cfg.aux_power_id = switch_id.value();
     }
 
     cfg.timing.mosfet_power_on_delay_ms =

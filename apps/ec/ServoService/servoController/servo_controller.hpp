@@ -46,6 +46,8 @@ struct ServoRuntimeConfig {
   uint8_t last_state{0};
   bool need_mosfet{false};
   uint8_t mosfet_id{0};
+  bool need_aux_power{false};
+  uint8_t aux_power_id{0};
   bool need_loosening{false};
   ServoTimingConfig timing{};
 };
