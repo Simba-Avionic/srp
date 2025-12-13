@@ -21,6 +21,7 @@
 #include "srp/apps/PrimerService/PrimerServiceHandler.h"
 #include "srp/apps/ServoService/ServoServiceHandler.h"
 #include "apps/ec/engine_service/service.hpp"
+#include "apps/ec/engine_service/state_controller.hpp"
 
 namespace srp {
 namespace apps {
@@ -31,9 +32,10 @@ class EngineApp final : public ara::exec::AdaptiveApplication {
   std::shared_ptr<ServoServiceHandler> servo_handler_;
   PrimerServiceProxy primer_proxy;
   ServoServiceProxy servo_proxy;
+  std::shared_ptr<engineApp::EngineStateController> state_ctr_;
 
-//   service::MyEngineServiceSkeleton service_ipc;
-//   service::MyEngineServiceSkeleton service_udp;
+  service::MyEngineServiceSkeleton service_ipc;
+  service::MyEngineServiceSkeleton service_udp;
 
  protected:
   /**
