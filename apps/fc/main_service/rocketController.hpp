@@ -22,14 +22,10 @@ class RocketController {
   std::shared_ptr<RocketState> rocket_state_;
   apps::RocketState_t last_state_;
   srp::core::timestamp::TimestampController timestamp_;
-  core::ErrorCode InitializeCompleted();
-  core::ErrorCode ActivateTankActuators();
-  core::ErrorCode ArmRocket();
-  core::ErrorCode CutdownEndSeq();
-  core::ErrorCode LossConnSeq();
 
  public:
-  void Loop();
+  void SecureLoop();
+  void Loop(const RocketState_t new_state);
   void Init();
   RocketController();
 };
