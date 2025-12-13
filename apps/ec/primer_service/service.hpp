@@ -38,9 +38,10 @@ class MyPrimerServiceSkeleton: public PrimerServiceSkeleton {
   return ara::core::Result<bool>(controller_->ChangePrimerState(0));
   }
   ara::core::Result<bool> StartPrime() override {
-     auto res = ara::core::Result<bool>(controller_->ChangePrimerState(1));
-     // TODO(matikrajek42@gmail.com) catch res
-     return ara::core::Result<bool>(controller_->ChangePrimerState(1));
+    OnPrime();
+    std::this_thread::sleep_for(std::chrono::milliseconds(250));
+    OffPrime();
+    return ara::core::Result<bool>(true);
   }
 };
 }  // namespace apps

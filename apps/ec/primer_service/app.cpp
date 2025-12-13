@@ -22,10 +22,15 @@ namespace primer {
 
 namespace {
   constexpr auto kdid_path = "/srp/apps/PrimerService/primer_did";
+  constexpr auto kEvent_interval_ms = 1000;
 }
 
 int PrimerService::Run(const std::stop_token& token) {
-  core::condition::wait(token);
+  while (!token.stop_requested()) {
+    service_ipc.primeStatusEvent.Update(0);
+    service_udp.primeStatusEvent.Update(0);
+    core::condition::wait_for(std::chrono::milliseconds(kEvent_interval_ms), token);
+  }
   service_ipc.StopOffer();
   service_udp.StopOffer();
   primer_did_->StopOffer();

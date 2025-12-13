@@ -69,17 +69,13 @@ int EngineApp::Initialize(const std::map<ara::core::StringView, ara::core::Strin
   }
   service_ipc.StartOffer();
   service_udp.StartOffer();
-  
-  // Wait a bit to ensure StartOffer() has completed initialization
-  // CurrentMode may not be ready immediately after StartOffer()
+
   std::this_thread::sleep_for(std::chrono::milliseconds(100));
-  
-  // Verify state_ctr_ is valid before using it
   if (state_ctr_ == nullptr) {
     ara::log::LogError() << "EngineApp::Initialize: state_ctr_ is nullptr!";
     return 1;
   }
-  
+
   service_ipc.CurrentMode.Update(static_cast<uint8_t>(state_ctr_->GetEngineState()));
   service_udp.CurrentMode.Update(static_cast<uint8_t>(state_ctr_->GetEngineState()));
   ara::log::LogInfo() << "Initialize Complete";

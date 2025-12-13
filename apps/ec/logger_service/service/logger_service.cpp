@@ -36,29 +36,51 @@ namespace {
 
 void LoggerService::SaveLoop(const std::stop_token& token) {
   csv::CSVDriver csv_;
-  // ensure file handler is initialized to avoid null dereference on Open
+
   csv_.Init(std::make_unique<core::FileHandler>());
   core::timestamp::TimestampController timestamp_;
-  auto prefix = core::time::TimeChanger::ReadSystemTimeAsString();
-  if (!prefix.has_value()) {
-    csv_.Open(kCsv_filename_prefix + kCsv_filename, kCsv_header);
-  } else {
-    csv_.Open(kCsv_filename_prefix + prefix.value() + kCsv_filename, kCsv_header);
+
+  if (!timestamp_.Init()) {
+    ara::log::LogError() << "LoggerService::SaveLoop: Failed to initialize timestamp controller";
+    return;
   }
-  timestamp_.Init();
+
+
+  auto prefix = core::time::TimeChanger::ReadSystemTimeAsString();
+  std::string filename;
+  if (!prefix.has_value()) {
+    filename = kCsv_filename_prefix + kCsv_filename;
+  } else {
+    filename = kCsv_filename_prefix + prefix.value() + kCsv_filename;
+  }
+
+  if (csv_.Open(filename, kCsv_header) != 0) {
+    ara::log::LogError() << "LoggerService::SaveLoop: Failed to open CSV file: " << filename;
+    return;
+  }
+
+  ara::log::LogInfo() << "LoggerService::SaveLoop: Started logging to " << filename;
+
   while (!token.stop_requested()) {
     const auto start = std::chrono::high_resolution_clock::now();
     auto val = timestamp_.GetNewTimeStamp();
     if (!val.has_value()) {
+      core::condition::wait_for(std::chrono::milliseconds(kSave_interval), token);
       continue;
     }
-    csv_.WriteLine(this->data.to_string(std::to_string(val.value())));
+
+    if (csv_.WriteLine(this->data.to_string(std::to_string(val.value()))) != 0) {
+      ara::log::LogWarn() << "LoggerService::SaveLoop: Failed to write line to CSV";
+    }
+
     const auto now = std::chrono::high_resolution_clock::now();
     const auto elapsed = std::chrono::duration_cast<
                 std::chrono::milliseconds>(now - start).count() +  k_save_interval_fix;
     core::condition::wait_for(std::chrono::milliseconds(kSave_interval - elapsed), token);
   }
+
   csv_.Close();
+  ara::log::LogInfo() << "LoggerService::SaveLoop: Stopped logging, file closed";
 }
 
 int LoggerService::Run(const std::stop_token& token) {
