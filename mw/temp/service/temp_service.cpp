@@ -56,6 +56,9 @@ int TempService::Run(const std::stop_token& token) {
     this->temp_did_->StopOffer();
     return 0;
 }
+int TempService::LoadConfig(const std::map<ara::core::StringView, ara::core::StringView>& parms, std::unique_ptr<com::soc::IpcSocket> sock) {
+    this->sub_sock_ = std::move(sock);
+}
 
 int TempService::Initialize(const std::map<ara::core::StringView, ara::core::StringView>
                       parms) {
@@ -103,44 +106,19 @@ void TempService::SubCallback(const std::string& ip, const std::uint16_t& port,
         return;
     }
     std::uint16_t service_id = hdr.value().service_id;
+    std::string physical_id = hdr.value().physical_id;
 
-    if (!this->subscribers.contains(service_id)) {
-        this->subscribers.insert(service_id);
+    if (!this->sensorPathsToIds.count(physical_id)) {
+        this->sensorPathsToIds[physical_id] = nextSensorId;
+        ara::log::LogInfo() << ("Registered new sensor with id: " + std::to_string(physical_id) " as " + std::to_string(nextSensorId));
+        this->subscribers[nextSensorId++].insert(service_id);
         ara::log::LogInfo() <<("Registered new client with id: "
-            + std::to_string(service_id));
+            + std::to_string(service_id) + " to sensor nr: " + std::to_string(this->sensorPathsToIds[physical_id]));
+    } else if(!this->subscribers[this->sensorPathsToIds[physical_id]].contains(service_id))
+        this->subscribers[this->sensorPathsToIds[physical-id]].insert(service_id);    
+        ara::log::LogInfo() << ("Registered new client with id: " + std::to_string(service_id) + " to sensor nr: " + std::to_string(this->sensorPathsToIds[physical_id]));    
     }
-}
 
-int TempService::LoadConfig(
-    const std::map<ara::core::StringView, ara::core::StringView>& parms, std::unique_ptr<com::soc::IpcSocket> sock) {
-    this->sub_sock_ = std::move(sock);
-    const std::string path = parms.at("app_path") + "etc/config.json";
-    auto parser_opt = core::json::JsonParser::Parser(path);
-    if (!parser_opt.has_value()) {
-        ara::log::LogError() <<("Failed to open temp_Service config file");
-        exit(1);
-    }
-    auto temp_opt = parser_opt.value().GetArray<nlohmann::json>("sensors-temp");
-    if (!temp_opt.has_value()) {
-        ara::log::LogError() <<("Invalid temp_Service config format");
-        exit(2);
-    }
-    for (const auto &data : temp_opt.value()) {
-        auto parser_opt = core::json::JsonParser::Parser(data);
-        if (!parser_opt.has_value()) {
-            continue;
-        }
-        auto parser = parser_opt.value();
-
-        auto sensor_id = parser.GetNumber<uint8_t>("sensor_id");
-        auto physical_id = parser.GetString("id");
-        if (!sensor_id.has_value() || !physical_id.has_value()) {
-            continue;
-        }
-        sensorPathsToIds[physical_id.value()] = sensor_id.value();
-    }
-    return srp::core::ErrorCode::kOk;
-}
 
 std::vector<srp::mw::temp::TempReadHdr> TempService::RetrieveTempReadings() const {
     std::vector<std::future<std::optional<srp::mw::temp::TempReadHdr>>> futures;

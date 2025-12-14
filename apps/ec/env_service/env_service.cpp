@@ -89,6 +89,38 @@ int EnvService::Initialize(const std::map<ara::core::StringView, ara::core::Stri
     return core::ErrorCode::kOk;
 }
 
+int EnvService::LoadTempConfig(const std::map<ara::core::StringView, ara::core::StringView>& parms, std::unique_ptr<com::soc::IpcSocket> sock) {
+    const std::string path = parms.at("app_path") + "etc/temp-config.json";
+    auto parser_opt = core::json::JsonParser::Parser(path);
+    if (!parser_opt.has_value()) {
+        ara::log::LogError() <<("Failed to open temp_Service config file");
+        exit(1);
+    }
+    auto temp_opt = parser_opt.value().GetArray<nlohmann::json>("sensors-temp");
+    if (!temp_opt.has_value()) {
+        ara::log::LogError() <<("Invalid temp_Service config format");
+        exit(2);
+    }
+    for (const auto &data : temp_opt.value()) {
+        auto parser_opt = core::json::JsonParser::Parser(data);
+        if (!parser_opt.has_value()) {
+            continue;
+        }
+        auto parser = parser_opt.value();
+        auto physical_id = parser.GetString("physical_id");
+        auto name = parser.GetString("name");
+        if (!physical_id.has_value()) {
+            continue;
+        }
+
+        // tu się potrzebujemy odpytac o sensor_id
+        auto sensor_id = this->temp_->Subscribe(physical_id);
+
+        // sensorPathsToIds[physical_id.value()] = sensor_id.value();
+    }
+    return srp::core::ErrorCode::kOk;
+}
+
 int EnvService::Run(const std::stop_token& token) {
     while (!token.stop_requested()) {
         auto start = std::chrono::high_resolution_clock::now();

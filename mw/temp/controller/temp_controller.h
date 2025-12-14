@@ -46,7 +46,6 @@ class TempController {
 
  protected:
   void SetTempRXCallback();
-  srp::core::ErrorCode Subscribe();
   srp::core::ErrorCode Init(uint16_t service_id, std::unique_ptr<com::soc::ISocket> sock);
   srp::core::ErrorCode SetUp(TempRXCallback callback);
   std::vector<srp::mw::temp::TempReadHdr> Conv(const std::vector<uint8_t>& data) const;
@@ -59,8 +58,8 @@ class TempController {
   * @param sock 
   * @return srp::core::ErrorCode 
   */
-  srp::core::ErrorCode Initialize(uint16_t service_id,
-                TempRXCallback callback, std::unique_ptr<com::soc::ISocket> sock);
+  srp::core::ErrorCode Initialize(uint16_t service_id, TempRXCallback callback, std::unique_ptr<com::soc::ISocket> sock);
+  srp::core::ErrorCode Subscribe(std::optional<std::string> name);
 };
 
 }  // namespace temp
