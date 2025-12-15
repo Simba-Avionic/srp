@@ -106,18 +106,33 @@ void TempService::SubCallback(const std::string& ip, const std::uint16_t& port,
         return;
     }
     std::uint16_t service_id = hdr.value().service_id;
-    std::string physical_id = hdr.value().physical_id;
+    std::string physical_id;
+    physical_id[0] = hdr.value().physical_id_1;
+    physical_id[1] = hdr.value().physical_id_2;
+    physical_id[2] = hdr.value().physical_id_3;
+    physical_id[3] = hdr.value().physical_id_4;
+    physical_id[4] = hdr.value().physical_id_5;
+    physical_id[5] = hdr.value().physical_id_6;
+    physical_id[6] = hdr.value().physical_id_7;
+    physical_id[7] = hdr.value().physical_id_8;
+    physical_id[8] = hdr.value().physical_id_9;
+    physical_id[9] = hdr.value().physical_id_10;
+    physical_id[10] = hdr.value().physical_id_11;
+    physical_id[11] = hdr.value().physical_id_12;
+
+
 
     if (!this->sensorPathsToIds.count(physical_id)) {
         this->sensorPathsToIds[physical_id] = nextSensorId;
-        ara::log::LogInfo() << ("Registered new sensor with id: " + std::to_string(physical_id) " as " + std::to_string(nextSensorId));
+        ara::log::LogInfo() << ("Registered new sensor with id: " + physical_id + " as " + std::to_string(nextSensorId));
         this->subscribers[nextSensorId++].insert(service_id);
         ara::log::LogInfo() <<("Registered new client with id: "
             + std::to_string(service_id) + " to sensor nr: " + std::to_string(this->sensorPathsToIds[physical_id]));
-    } else if(!this->subscribers[this->sensorPathsToIds[physical_id]].contains(service_id))
-        this->subscribers[this->sensorPathsToIds[physical-id]].insert(service_id);    
+    } else if(!this->subscribers[this->sensorPathsToIds[physical_id]].contains(service_id)) {
+        this->subscribers[this->sensorPathsToIds[physical_id]].insert(service_id);    
         ara::log::LogInfo() << ("Registered new client with id: " + std::to_string(service_id) + " to sensor nr: " + std::to_string(this->sensorPathsToIds[physical_id]));    
     }
+}
 
 
 std::vector<srp::mw::temp::TempReadHdr> TempService::RetrieveTempReadings() const {
@@ -152,16 +167,18 @@ std::vector<uint8_t> TempService::Conv(const std::vector<srp::mw::temp::TempRead
 }
 
 
-void TempService::SendTempReadings(
-    const std::vector<srp::mw::temp::TempReadHdr>& readings) const {
-    for (const auto& client_id : this->subscribers) {
-        std::string ip = kSubscriberPrefix + std::to_string(client_id);
+void TempService::SendTempReadings(const std::vector<srp::mw::temp::TempReadHdr>& readings) {
 
-        std::vector<uint8_t> data = this->Conv(readings);
+    for(const auto& read : readings){
+        for (auto client_id : this->subscribers[read.actuator_id]) {
+            std::string ip = kSubscriberPrefix + std::to_string(client_id);
 
-        if (this->sub_sock_->Transmit(ip, 0, data)) {
-            ara::log::LogError() <<("Can't send message to: " + ip);
-            break;
+            std::vector<uint8_t> data = srp::data::Convert2Vector<srp::mw::temp::TempReadHdr>::Conv(read);
+
+            if (this->sub_sock_->Transmit(ip, 0, data)) {
+                ara::log::LogError() <<("Can't send message to: " + ip);
+                break;
+            }
         }
     }
 }

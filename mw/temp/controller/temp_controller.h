@@ -15,6 +15,7 @@
 #include <cstdio>
 #include <cinttypes>
 #include <cstdint>
+#include <utility>
 
 #include <memory>
 #include <vector>
@@ -59,7 +60,7 @@ class TempController {
   * @return srp::core::ErrorCode 
   */
   srp::core::ErrorCode Initialize(uint16_t service_id, TempRXCallback callback, std::unique_ptr<com::soc::ISocket> sock);
-  srp::core::ErrorCode Subscribe(std::optional<std::string> name);
+  std::pair<uint8_t, srp::core::ErrorCode> Subscribe(std::string name);
 };
 
 }  // namespace temp

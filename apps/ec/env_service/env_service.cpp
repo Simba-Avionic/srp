@@ -46,6 +46,7 @@ EnvService::EnvService(): press_{std::move(std::make_shared<i2c::ADCSensorContro
 
 int EnvService::Initialize(const std::map<ara::core::StringView, ara::core::StringView>
                       parms) {
+    ara::log::LogInfo() << "EnvService has been started";
     // Check if app_path exists in parameters
     auto app_path_it = parms.find("app_path");
     if (app_path_it == parms.end()) {
@@ -84,18 +85,22 @@ int EnvService::Initialize(const std::map<ara::core::StringView, ara::core::Stri
             this, std::placeholders::_1), std::make_unique<com::soc::IpcSocket>());
         i++;
     } while (res != core::ErrorCode::kOk && i < 6);
+    LoadTempConfig(parms);
     service_ipc.StartOffer();
     service_udp.StartOffer();
     return core::ErrorCode::kOk;
 }
 
-int EnvService::LoadTempConfig(const std::map<ara::core::StringView, ara::core::StringView>& parms, std::unique_ptr<com::soc::IpcSocket> sock) {
-    const std::string path = parms.at("app_path") + "etc/temp-config.json";
+int EnvService::LoadTempConfig(const std::map<ara::core::StringView, ara::core::StringView>& parms) {
+    ara::log::LogInfo() << "Starting function LoadTempConfig";
+    const std::string path = parms.at("app_path") + "etc/config.json";
     auto parser_opt = core::json::JsonParser::Parser(path);
+    ara::log::LogInfo() << path;
     if (!parser_opt.has_value()) {
         ara::log::LogError() <<("Failed to open temp_Service config file");
         exit(1);
     }
+    ara::log::LogInfo() << "Opened file";
     auto temp_opt = parser_opt.value().GetArray<nlohmann::json>("sensors-temp");
     if (!temp_opt.has_value()) {
         ara::log::LogError() <<("Invalid temp_Service config format");
@@ -109,14 +114,13 @@ int EnvService::LoadTempConfig(const std::map<ara::core::StringView, ara::core::
         auto parser = parser_opt.value();
         auto physical_id = parser.GetString("physical_id");
         auto name = parser.GetString("name");
-        if (!physical_id.has_value()) {
+        if (!physical_id.has_value() || !name.has_value()) {
             continue;
         }
 
+        ara::log::LogInfo() << "Sending subscribe request to our temp_sensors";
         // tu się potrzebujemy odpytac o sensor_id
-        auto sensor_id = this->temp_->Subscribe(physical_id);
-
-        // sensorPathsToIds[physical_id.value()] = sensor_id.value();
+        auto sensor_id = this->temp_->Subscribe(physical_id.value());
     }
     return srp::core::ErrorCode::kOk;
 }

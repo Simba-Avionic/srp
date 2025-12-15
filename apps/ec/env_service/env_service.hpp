@@ -16,6 +16,7 @@
 #include <vector>
 #include <map>
 #include <memory>
+#include <utility>
 
 #include "mw/temp/controller/temp_controller.h"
 #include "ara/exec/adaptive_application.h"
@@ -30,12 +31,11 @@ class EnvService final : public ara::exec::AdaptiveApplication {
  private:
   std::unique_ptr<mw::temp::TempController> temp_{};
   std::shared_ptr<i2c::ADCSensorController> press_{};
-  std::unordered_map<uint8_t, string> temp_names;
 
   apps::MyEnvAppSkeleton service_ipc;
   apps::MyEnvAppSkeleton service_udp;
   int LoadTempConfig(
-    const std::map<ara::core::StringView, ara::core::StringView>& parms, std::unique_ptr<com::soc::IpcSocket> sock);
+    const std::map<ara::core::StringView, ara::core::StringView>& parms);
 
  protected:
   /**
