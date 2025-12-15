@@ -6,5 +6,19 @@
             "a": 41.25,
             "b": -23.75
         }
+    ],
+    "sensors-temp": [
+      {
+        "physical_id" : "28-062018f00883",
+        "name" : "sensor_temp_1"
+      },
+      {
+        "physical_id" : "28-3c01e076e761",
+        "name" : "sensor_temp_2"
+      },
+      {
+        "physical_id" : "28-3c29e381356d",
+        "name" : "sensor_temp_3"
+      }
     ]
 }

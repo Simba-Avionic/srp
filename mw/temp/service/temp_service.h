@@ -74,7 +74,7 @@ class TempService final : public ara::exec::AdaptiveApplication {
 
   std::vector<srp::mw::temp::TempReadHdr> RetrieveTempReadings() const;
 
-  void SendTempReadings(const std::vector<srp::mw::temp::TempReadHdr>& readings) const;
+  void SendTempReadings(const std::vector<srp::mw::temp::TempReadHdr>& readings);
   std::vector<uint8_t> Conv(const std::vector<srp::mw::temp::TempReadHdr>& readings) const;
 
  public:

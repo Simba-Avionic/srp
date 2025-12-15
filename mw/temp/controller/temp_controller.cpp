@@ -50,14 +50,14 @@ srp::core::ErrorCode TempController::SetUp(TempRXCallback callback) {
     return res;
 }
 
-srp::core::ErrorCode TempController::Subscribe(std::optional<std::string> name) {
-    srp::mw::temp::TempSubHdr hdr{this->service_id, name};
+std::pair<uint8_t, srp::core::ErrorCode> TempController::Subscribe(std::string name) {
+    srp::mw::temp::TempSubHdr hdr{this->service_id, name[3], name[4], name[5], name[6], name[7], name[8], name[9], name[10], name[11], name[12], name[13], name[14]};
     auto buf = srp::data::Convert2Vector<srp::mw::temp::TempSubHdr>::Conv(hdr);
     if (auto res = sub_sock_->Transmit(kTempServiceName, 0, buf)) {
         ara::log::LogError() <<("Failed to subscribe to " + std::string(kTempServiceName)+":::"+std::to_string(res));
-        return res;
+        return {0, res};
     }
-    return srp::core::ErrorCode::kOk;
+    return {1, srp::core::ErrorCode::kOk};
 }
 
 std::vector<srp::mw::temp::TempReadHdr> TempController::Conv(const std::vector<uint8_t>& data) const {
