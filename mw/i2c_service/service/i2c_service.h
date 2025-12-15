@@ -19,6 +19,8 @@
 #include "ara/exec/adaptive_application.h"
 #include "communication-core/sockets/stream_ipc_socket.h"
 #include "core/i2c/i2c_driver.hpp"
+
+#include "mw/i2c_service/service/i2c_mw_write.h"
 #include "mw/i2c_service/data/header.h"
 namespace srp {
 namespace mw {
@@ -30,6 +32,11 @@ class I2CService final : public ara::exec::AdaptiveApplication {
   std::unique_ptr<srp::com::soc::ISocketStream> sock_;
 
  protected:
+    std::unique_ptr<I2CMWWRITE> pin_did_;
+    const ara::core::InstanceSpecifier did_instance;
+    int InitPins();
+
+
   core::ErrorCode Init(
       std::shared_ptr<core::i2c::II2CDriver> i2c,
       std::unique_ptr<srp::com::soc::ISocketStream> socket);

@@ -4,6 +4,7 @@ filegroup(
     name = "instance",
     srcs = [
         "app_config.json",
+        "//deployment/system_definition/diag/jobs/i2c_service/i2c_write:i2c_Write_job",
     ],
     visibility = ["//mw/i2c_service:__subpackages__"],
 )

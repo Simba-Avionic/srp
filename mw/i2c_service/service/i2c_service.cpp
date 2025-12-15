@@ -22,8 +22,7 @@ namespace {
     const constexpr char* I2C_IPC_ADDR = "SRP.I2C";
 }
 I2CService::I2CService():
-    i2c_logger_(ara::log::LoggingMenager::GetInstance()->CreateLogger("i2c", "", ara::log::LogLevel::kInfo)) {}
-
+    i2c_logger_(ara::log::LoggingMenager::GetInstance()->CreateLogger("i2c", "", ara::log::LogLevel::kInfo)),did_instance("/srp/mw/i2cMWService/i2c_Write_did") {}
 
 core::ErrorCode I2CService::Init(std::shared_ptr<core::i2c::II2CDriver> i2c,
                               std::unique_ptr<srp::com::soc::ISocketStream> socket) {
@@ -42,7 +41,7 @@ std::optional<std::vector<uint8_t>> I2CService::ReadWrite(
     i2c_logger_.LogWarn() << ("Invalid payload size");
     return std::nullopt;
   }
-  return i2c_->ReadWrite(payload[0], payload[1]);
+  return i2c_->ReadWrite(payload[0]);
 }
 std::optional<std::vector<uint8_t>> I2CService::WriteRead(const std::vector<uint8_t> &payload,
                                                           std::shared_ptr<i2c::Header> headerPtr) {
@@ -119,6 +118,7 @@ std::vector<uint8_t> I2CService::RxCallback(const std::string& ip, const std::ui
 int I2CService::Run(const std::stop_token& token) {
     core::condition::wait(token);
     this->sock_->StopRXThread();
+    pin_did_->StopOffer();
     return core::ErrorCode::kOk;
 }
 int I2CService::Initialize(
@@ -136,6 +136,9 @@ int I2CService::Initialize(
     this->sock_->SetRXCallback(std::bind(&I2CService::RxCallback, this, std::placeholders::_1,
                 std::placeholders::_2, std::placeholders::_3));
     this->sock_->StartRXThread();
+
+    pin_did_ = std::make_unique<I2CMWWRITE>(this->did_instance, this->i2c_);
+    pin_did_->Offer();
     return core::ErrorCode::kOk;
 }
 

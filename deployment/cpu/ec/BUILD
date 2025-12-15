@@ -33,6 +33,7 @@ cpu_def(
         "//deployment/apps/logger_service:FileLoggerApp",
         "//deployment/apps/prim_service:PrimerService",
         "//deployment/mw/timestamp_mw:timestamp_service",
+        
     ],
 )
 
