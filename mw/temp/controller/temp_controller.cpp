@@ -15,6 +15,8 @@
 #include <utility>
 #include "mw/temp/controller/temp_controller.h"
 
+#define PHYSICAL_ID_SIZE 15
+
 namespace srp {
 namespace mw {
 namespace temp {
@@ -46,18 +48,27 @@ srp::core::ErrorCode TempController::SetUp(TempRXCallback callback) {
     if (res != core::ErrorCode::kOk) {
         return res;
     }
-    this->sub_sock_->StartRXThread();
+    // this->sub_sock_->StartRXThread();
     return res;
 }
 
-std::pair<uint8_t, srp::core::ErrorCode> TempController::Subscribe(std::string name) {
+srp::core::ErrorCode TempController::Register(std::string name) {
+    srp::core::ErrorCode subscribeError = Subscribe(name);
+    this->sub_sock_->StartRXThread();
+    return subscribeError;
+}
+
+srp::core::ErrorCode TempController::Subscribe(std::string name) {
+    if(name.size() != PHYSICAL_ID_SIZE){
+        return srp::core::ErrorCode::kError;
+    }
     srp::mw::temp::TempSubHdr hdr{this->service_id, name[3], name[4], name[5], name[6], name[7], name[8], name[9], name[10], name[11], name[12], name[13], name[14]};
     auto buf = srp::data::Convert2Vector<srp::mw::temp::TempSubHdr>::Conv(hdr);
     if (auto res = sub_sock_->Transmit(kTempServiceName, 0, buf)) {
         ara::log::LogError() <<("Failed to subscribe to " + std::string(kTempServiceName)+":::"+std::to_string(res));
-        return {0, res};
+        return res;
     }
-    return {1, srp::core::ErrorCode::kOk};
+    return srp::core::ErrorCode::kOk;
 }
 
 std::vector<srp::mw::temp::TempReadHdr> TempController::Conv(const std::vector<uint8_t>& data) const {

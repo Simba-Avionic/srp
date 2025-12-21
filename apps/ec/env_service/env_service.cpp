@@ -120,7 +120,8 @@ int EnvService::LoadTempConfig(const std::map<ara::core::StringView, ara::core::
 
         ara::log::LogInfo() << "Sending subscribe request to our temp_sensors";
         // tu się potrzebujemy odpytac o sensor_id
-        auto sensor_id = this->temp_->Subscribe(physical_id.value());
+        auto sensor_id = this->temp_->Register(physical_id.value());
+        // this->temp_->sub_sock_->StartRXThread();
     }
     return srp::core::ErrorCode::kOk;
 }
