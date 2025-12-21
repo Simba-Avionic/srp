@@ -56,13 +56,14 @@ int TempService::Run(const std::stop_token& token) {
     this->temp_did_->StopOffer();
     return 0;
 }
-int TempService::LoadConfig(const std::map<ara::core::StringView, ara::core::StringView>& parms, std::unique_ptr<com::soc::IpcSocket> sock) {
-    this->sub_sock_ = std::move(sock);
-}
+// int TempService::LoadConfig(const std::map<ara::core::StringView, ara::core::StringView>& parms, std::unique_ptr<com::soc::IpcSocket> sock) {
+//     this->sub_sock_ = std::move(sock);
+// }
 
 int TempService::Initialize(const std::map<ara::core::StringView, ara::core::StringView>
                       parms) {
-    LoadConfig(parms, std::make_unique<com::soc::IpcSocket>());
+    ara::log::LogInfo() << "Starting TempService Initialization";
+    // LoadConfig(parms, std::make_unique<com::soc::IpcSocket>());
     if (auto ret = this->sub_sock_->Init(
         com::soc::SocketConfig(kTempServiceName, 0, 0))) {
         ara::log::LogError() <<("Couldn't initialize " +
@@ -119,6 +120,7 @@ void TempService::SubCallback(const std::string& ip, const std::uint16_t& port,
     physical_id[9] = hdr.value().physical_id_10;
     physical_id[10] = hdr.value().physical_id_11;
     physical_id[11] = hdr.value().physical_id_12;
+    physical_id = "28-" + physical_id;
 
 
 

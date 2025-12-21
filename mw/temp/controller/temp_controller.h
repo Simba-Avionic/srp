@@ -60,7 +60,8 @@ class TempController {
   * @return srp::core::ErrorCode 
   */
   srp::core::ErrorCode Initialize(uint16_t service_id, TempRXCallback callback, std::unique_ptr<com::soc::ISocket> sock);
-  std::pair<uint8_t, srp::core::ErrorCode> Subscribe(std::string name);
+  srp::core::ErrorCode Subscribe(std::string name);
+  srp::core::ErrorCode Register(std::string name);
 };
 
 }  // namespace temp
