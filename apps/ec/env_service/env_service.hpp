@@ -32,6 +32,8 @@ class EnvService final : public ara::exec::AdaptiveApplication {
   std::unique_ptr<mw::temp::TempController> temp_{};
   std::shared_ptr<i2c::ADCSensorController> press_{};
 
+  using TempMessage = std::variant<srp::mw::temp::TempRetIdHdr, srp::mw::temp::TempReadHdr>;
+
   apps::MyEnvAppSkeleton service_ipc;
   apps::MyEnvAppSkeleton service_udp;
   int LoadTempConfig(
@@ -52,7 +54,8 @@ class EnvService final : public ara::exec::AdaptiveApplication {
    */
   int Initialize(const std::map<ara::core::StringView, ara::core::StringView>
                       parms) override;
-  void TempRxCallback(const std::vector<srp::mw::temp::TempReadHdr>& data);
+  void TempRxCallback(const std::vector<TempMessage>& data);
+
 
  public:
   ~EnvService() = default;

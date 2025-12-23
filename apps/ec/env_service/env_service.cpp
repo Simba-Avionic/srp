@@ -158,7 +158,7 @@ int EnvService::Run(const std::stop_token& token) {
     return core::ErrorCode::kOk;
 }
 
-void EnvService::TempRxCallback(const std::vector<srp::mw::temp::TempReadHdr>& data) {
+void EnvService::TempRxCallback(const std::vector<TempMessage>& data) {
     for (auto &hdr : data) {
         const int16_t value = static_cast<int16_t>(hdr.value * 10);
         ara::log::LogDebug() << "Receive temp id: " << hdr.actuator_id << ", temp: " << static_cast<float>(value/10);
