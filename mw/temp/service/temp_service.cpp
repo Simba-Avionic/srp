@@ -29,6 +29,8 @@ namespace {
         kTempServiceName = "SRP.TEMP.SERVICE";
     static constexpr char const*
         kSubscriberPrefix = "SRP.TEMP.";
+    static constexpr char const*
+        kSubscriberSensorIdPrefix = "SRP.TEMP.RETURNID."
     constexpr uint8_t kSensor_resolution = 10;
     constexpr auto kSensor_Delay = 750;
     constexpr uint16_t kDefault_Response_Time = 125;
@@ -64,6 +66,7 @@ int TempService::Initialize(const std::map<ara::core::StringView, ara::core::Str
                       parms) {
     ara::log::LogInfo() << "Starting TempService Initialization";
     // LoadConfig(parms, std::make_unique<com::soc::IpcSocket>());
+    this->sub_sock_ = std::move(std::make_unique<com::soc::IpcSocket>());
     if (auto ret = this->sub_sock_->Init(
         com::soc::SocketConfig(kTempServiceName, 0, 0))) {
         ara::log::LogError() <<("Couldn't initialize " +
@@ -107,7 +110,7 @@ void TempService::SubCallback(const std::string& ip, const std::uint16_t& port,
         return;
     }
     std::uint16_t service_id = hdr.value().service_id;
-    std::string physical_id;
+    std::string physical_id = "            ";
     physical_id[0] = hdr.value().physical_id_1;
     physical_id[1] = hdr.value().physical_id_2;
     physical_id[2] = hdr.value().physical_id_3;
