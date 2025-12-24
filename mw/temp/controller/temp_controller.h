@@ -22,6 +22,7 @@
 #include <unordered_map>
 
 #include "communication-core/sockets/Isocket.h"
+#include "communication-core/sockets/stream_ipc_socket.h"
 #include "communication-core/sockets/socket_config.h"
 #include "ara/log/log.h"
 #include "mw/temp/service/temp_service.h"
@@ -42,12 +43,12 @@ std::function<void(const std::vector<srp::mw::temp::TempReadHdr>&)>;
 class TempController {
  private:
   uint16_t service_id;
-  std::unique_ptr<com::soc::ISocket> sub_sock_{};
+  std::unique_ptr<srp::com::soc::StreamIpcSocket> sub_sock_{};
   TempRXCallback callback_;
 
  protected:
   void SetTempRXCallback();
-  srp::core::ErrorCode Init(uint16_t service_id, std::unique_ptr<com::soc::ISocket> sock);
+  srp::core::ErrorCode Init(uint16_t service_id, std::unique_ptr<com::soc::StreamIpcSocket> sock);
   srp::core::ErrorCode SetUp(TempRXCallback callback);
   std::vector<srp::mw::temp::TempReadHdr> Conv(const std::vector<uint8_t>& data) const;
  public:
@@ -59,9 +60,9 @@ class TempController {
   * @param sock 
   * @return srp::core::ErrorCode 
   */
-  srp::core::ErrorCode Initialize(uint16_t service_id, TempRXCallback callback, std::unique_ptr<com::soc::ISocket> sock);
-  srp::core::ErrorCode Subscribe(std::string name);
-  srp::core::ErrorCode Register(std::string name);
+  srp::core::ErrorCode Initialize(uint16_t service_id, TempRXCallback callback, std::unique_ptr<com::soc::StreamIpcSocket> sock);
+  std::optional<std::vector<unsigned char>> Subscribe(std::string name);
+  std::optional<std::vector<unsigned char>> Register(std::string name);
 };
 
 }  // namespace temp

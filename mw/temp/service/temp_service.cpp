@@ -64,7 +64,7 @@ int TempService::Initialize(const std::map<ara::core::StringView, ara::core::Str
                       parms) {
     ara::log::LogInfo() << "Starting TempService Initialization";
     // LoadConfig(parms, std::make_unique<com::soc::IpcSocket>());
-    this->sub_sock_ = std::move(std::make_unique<com::soc::IpcSocket>());
+    this->sub_sock_ = std::move(std::make_unique<com::soc::StreamIpcSocket>());
     if (auto ret = this->sub_sock_->Init(
         com::soc::SocketConfig(kTempServiceName, 0, 0))) {
         ara::log::LogError() <<("Couldn't initialize " +
@@ -101,11 +101,11 @@ int TempService::ConfigSensors() {
     return srp::core::ErrorCode::kOk;
 }
 
-void TempService::SubCallback(const std::string& ip, const std::uint16_t& port,
+std::vector<uint8_t> TempService::SubCallback(const std::string& ip, const std::uint16_t& port,
     const std::vector<std::uint8_t>& data) {
     auto hdr = srp::data::Convert<srp::mw::temp::TempSubHdr>::Conv(data);
     if (!hdr.has_value()) {
-        return;
+        return std::vector<uint8_t>{};
     }
     std::uint16_t service_id = hdr.value().service_id;
     std::string physical_id = "            ";
@@ -135,6 +135,10 @@ void TempService::SubCallback(const std::string& ip, const std::uint16_t& port,
         this->subscribers[this->sensorPathsToIds[physical_id]].insert(service_id);    
         ara::log::LogInfo() << ("Registered new client with id: " + std::to_string(service_id) + " to sensor nr: " + std::to_string(this->sensorPathsToIds[physical_id]));    
     }
+
+    std::vector<uint8_t> wektor;
+    wektor.push_back(nextSensorId - 1);
+    return wektor;
 }
 
 
