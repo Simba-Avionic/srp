@@ -118,21 +118,15 @@ int EnvService::LoadTempConfig(const std::map<ara::core::StringView, ara::core::
             continue;
         }
 
-        ara::log::LogInfo() << "Sending subscribe request to our temp_sensors";
+        ara::log::LogDebug() << "Sending subscribe request to temp_service";
         std::optional<std::vector<uint8_t>> retSensorId = this->temp_->Register(physical_id.value());
         uint8_t sensor_id;
-        if(retSensorId.has_value())
-        {
+        if(retSensorId.has_value()){
             for(uint8_t data: *retSensorId){
                 sensor_id = data;
             }
         }
         sensorIdsToPaths[sensor_id] = physical_id.value();
-            ara::log::LogInfo() << "Zawartość mapy w EnvService po wysłaniu subskrybcji";
-        for(auto w: sensorIdsToPaths){
-            ara::log::LogInfo() << w.first;
-            ara::log::LogInfo() << w.second;
-        }
     }
     return srp::core::ErrorCode::kOk;
 }

@@ -23,7 +23,6 @@
 #include "core/json/json_parser.h"
 #include "nlohmann/json.hpp"
 
-#include "communication-core/sockets/ipc_socket.h"
 #include "communication-core/sockets/stream_ipc_socket.h"
 #include "communication-core/sockets/socket_config.h"
 #include "ara/log/log.h"
