@@ -29,8 +29,6 @@ namespace {
         kTempServiceName = "SRP.TEMP.SERVICE";
     static constexpr char const*
         kSubscriberPrefix = "SRP.TEMP.";
-    static constexpr char const*
-        kSubscriberSensorIdPrefix = "SRP.TEMP.RETURNID."
     constexpr uint8_t kSensor_resolution = 10;
     constexpr auto kSensor_Delay = 750;
     constexpr uint16_t kDefault_Response_Time = 125;
