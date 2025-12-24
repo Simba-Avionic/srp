@@ -26,7 +26,7 @@ namespace {
     constexpr auto kSubscriberPrefix = "SRP.TEMP.";
 }
 
-srp::core::ErrorCode TempController::Init(uint16_t service_id, std::unique_ptr<com::soc::ISocket> sock) {
+srp::core::ErrorCode TempController::Init(uint16_t service_id, std::unique_ptr<com::soc::StreamIpcSocket> sock) {
     if (!sock) {
         return core::ErrorCode::kInitializeError;
     }
@@ -52,23 +52,24 @@ srp::core::ErrorCode TempController::SetUp(TempRXCallback callback) {
     return res;
 }
 
-srp::core::ErrorCode TempController::Register(std::string name) {
-    srp::core::ErrorCode subscribeError = Subscribe(name);
+std::optional<std::vector<unsigned char>> TempController::Register(std::string name) {
+    auto subscribeError = Subscribe(name);
     this->sub_sock_->StartRXThread();
     return subscribeError;
 }
 
-srp::core::ErrorCode TempController::Subscribe(std::string name) {
+std::optional<std::vector<uint8_t>> TempController::Subscribe(std::string name) {
     if(name.size() != PHYSICAL_ID_SIZE){
-        return srp::core::ErrorCode::kError;
+        return std::vector<uint8_t>{srp::core::ErrorCode::kError};
     }
     srp::mw::temp::TempSubHdr hdr{this->service_id, name[3], name[4], name[5], name[6], name[7], name[8], name[9], name[10], name[11], name[12], name[13], name[14]};
     auto buf = srp::data::Convert2Vector<srp::mw::temp::TempSubHdr>::Conv(hdr);
-    if (auto res = sub_sock_->Transmit(kTempServiceName, 0, buf)) {
-        ara::log::LogError() <<("Failed to subscribe to " + std::string(kTempServiceName)+":::"+std::to_string(res));
+    std::optional<std::vector<uint8_t>> res;
+    if (res = sub_sock_->Transmit(kTempServiceName, 0, buf)) {
+        // ara::log::LogError() <<("Failed to subscribe to " + std::string(kTempServiceName)+":::"/* +std::to_string(res[0]) */);
         return res;
     }
-    return srp::core::ErrorCode::kOk;
+    return res;
 }
 
 std::vector<srp::mw::temp::TempReadHdr> TempController::Conv(const std::vector<uint8_t>& data) const {
@@ -87,17 +88,18 @@ std::vector<srp::mw::temp::TempReadHdr> TempController::Conv(const std::vector<u
 }
 
 void TempController::SetTempRXCallback() {
-    srp::com::soc::RXCallback lambdaCallback = [this](
+    srp::com::soc::RXCallbackStream lambdaCallback = [this](
         const std::string& ip, const std::uint16_t& port,
             const std::vector<std::uint8_t> data) {
         auto hdr = this->Conv(data);
         this->callback_(hdr);
+        return std::vector<uint8_t>{};
     };
     this->sub_sock_->SetRXCallback(lambdaCallback);
 }
 
 srp::core::ErrorCode TempController::Initialize(uint16_t service_id,
-                TempRXCallback callback, std::unique_ptr<com::soc::ISocket> sock) {
+                TempRXCallback callback, std::unique_ptr<com::soc::StreamIpcSocket> sock) {
     if (this->Init(service_id, std::move(sock)) != core::ErrorCode::kOk) {
         return core::ErrorCode::kInitializeError;
     }

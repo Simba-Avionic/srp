@@ -82,7 +82,7 @@ int EnvService::Initialize(const std::map<ara::core::StringView, ara::core::Stri
     do {
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
         res = this->temp_->Initialize(514, std::bind(&EnvService::TempRxCallback,
-            this, std::placeholders::_1), std::make_unique<com::soc::IpcSocket>());
+            this, std::placeholders::_1), std::make_unique<com::soc::StreamIpcSocket>());
         i++;
     } while (res != core::ErrorCode::kOk && i < 6);
     LoadTempConfig(parms);
@@ -119,9 +119,20 @@ int EnvService::LoadTempConfig(const std::map<ara::core::StringView, ara::core::
         }
 
         ara::log::LogInfo() << "Sending subscribe request to our temp_sensors";
-        // tu się potrzebujemy odpytac o sensor_id
-        auto sensor_id = this->temp_->Register(physical_id.value());
-        // this->temp_->sub_sock_->StartRXThread();
+        std::optional<std::vector<uint8_t>> retSensorId = this->temp_->Register(physical_id.value());
+        uint8_t sensor_id;
+        if(retSensorId.has_value())
+        {
+            for(uint8_t data: *retSensorId){
+                sensor_id = data;
+            }
+        }
+        sensorIdsToPaths[sensor_id] = physical_id.value();
+            ara::log::LogInfo() << "Zawartość mapy w EnvService po wysłaniu subskrybcji";
+        for(auto w: sensorIdsToPaths){
+            ara::log::LogInfo() << w.first;
+            ara::log::LogInfo() << w.second;
+        }
     }
     return srp::core::ErrorCode::kOk;
 }

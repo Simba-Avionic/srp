@@ -32,6 +32,9 @@ class EnvService final : public ara::exec::AdaptiveApplication {
   std::unique_ptr<mw::temp::TempController> temp_{};
   std::shared_ptr<i2c::ADCSensorController> press_{};
 
+  std::unordered_map<std::uint8_t, std::string> sensorIdsToPaths{};
+
+
   apps::MyEnvAppSkeleton service_ipc;
   apps::MyEnvAppSkeleton service_udp;
   int LoadTempConfig(
