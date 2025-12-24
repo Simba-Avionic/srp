@@ -21,7 +21,6 @@
 #include "mw/temp/controller/temp_controller.h"
 #include "ara/exec/adaptive_application.h"
 #include "apps/ec/env_service/service.hpp"
-#include "communication-core/sockets/ipc_socket.h"
 #include "mw/i2c_service/controller/adcsensor/controller.hpp"
 
 namespace srp {

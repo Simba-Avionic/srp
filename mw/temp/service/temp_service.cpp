@@ -128,17 +128,14 @@ std::vector<uint8_t> TempService::SubCallback(const std::string& ip, const std::
     if (!this->sensorPathsToIds.count(physical_id)) {
         this->sensorPathsToIds[physical_id] = nextSensorId;
         ara::log::LogInfo() << ("Registered new sensor with id: " + physical_id + " as " + std::to_string(nextSensorId));
-        this->subscribers[nextSensorId++].insert(service_id);
+        this->subscribers[nextSensorId].insert(service_id);
         ara::log::LogInfo() <<("Registered new client with id: "
             + std::to_string(service_id) + " to sensor nr: " + std::to_string(this->sensorPathsToIds[physical_id]));
     } else if(!this->subscribers[this->sensorPathsToIds[physical_id]].contains(service_id)) {
         this->subscribers[this->sensorPathsToIds[physical_id]].insert(service_id);    
         ara::log::LogInfo() << ("Registered new client with id: " + std::to_string(service_id) + " to sensor nr: " + std::to_string(this->sensorPathsToIds[physical_id]));    
     }
-
-    std::vector<uint8_t> wektor;
-    wektor.push_back(nextSensorId - 1);
-    return wektor;
+    return std::vector<uint8_t>{nextSensorId++};
 }
 
 
