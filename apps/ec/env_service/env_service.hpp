@@ -28,16 +28,24 @@ namespace envService {
 
 class EnvService final : public ara::exec::AdaptiveApplication {
  private:
+  enum Command {
+    SENSOR_TEMP_1,
+    SENSOR_TEMP_2,
+    SENSOR_TEMP_3,
+    SENSOR_UNKNOWN
+  };
+
   std::unique_ptr<mw::temp::TempController> temp_{};
   std::shared_ptr<i2c::ADCSensorController> press_{};
 
-  std::unordered_map<std::uint8_t, std::string> sensorIdsToPaths{};
+  std::unordered_map<std::uint8_t, std::pair<std::string, std::string>> sensorIdsToPaths{}; // [sensor_id] = {name, physical_id}
 
 
   apps::MyEnvAppSkeleton service_ipc;
   apps::MyEnvAppSkeleton service_udp;
   int LoadTempConfig(
     const std::map<ara::core::StringView, ara::core::StringView>& parms);
+  Command resolveCommand(std::string const& input);
 
  protected:
   /**

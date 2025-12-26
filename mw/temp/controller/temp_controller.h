@@ -21,7 +21,6 @@
 #include <vector>
 #include <unordered_map>
 
-#include "communication-core/sockets/Isocket.h"
 #include "communication-core/sockets/stream_ipc_socket.h"
 #include "communication-core/sockets/socket_config.h"
 #include "ara/log/log.h"
