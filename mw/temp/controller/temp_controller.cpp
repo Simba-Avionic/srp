@@ -15,7 +15,7 @@
 #include <utility>
 #include "mw/temp/controller/temp_controller.h"
 
-#define PHYSICAL_ID_SIZE 15
+
 
 namespace srp {
 namespace mw {
@@ -24,6 +24,7 @@ namespace temp {
 namespace {
     constexpr auto kTempServiceName = "SRP.TEMP.SERVICE";
     constexpr auto kSubscriberPrefix = "SRP.TEMP.";
+    constexpr int PHYSICAL_ID_SIZE = 15;
 }
 
 srp::core::ErrorCode TempController::Init(uint16_t service_id, std::unique_ptr<com::soc::StreamIpcSocket> sock) {
@@ -52,7 +53,7 @@ srp::core::ErrorCode TempController::SetUp(TempRXCallback callback) {
     return res;
 }
 
-std::optional<std::vector<unsigned char>> TempController::Register(std::string name) {
+std::optional<std::vector<uint8_t>> TempController::Register(std::string name) {
     auto subscribeError = Subscribe(name);
     this->sub_sock_->StartRXThread();
     return subscribeError;
