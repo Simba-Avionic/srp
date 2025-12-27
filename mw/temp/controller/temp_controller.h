@@ -61,7 +61,7 @@ class TempController {
   */
   srp::core::ErrorCode Initialize(uint16_t service_id, TempRXCallback callback, std::unique_ptr<com::soc::StreamIpcSocket> sock);
   std::optional<std::vector<uint8_t>> Subscribe(std::string name);
-  std::optional<std::vector<uint8_t>> Register(std::string name);
+  std::optional<uint8_t> Register(std::string name);
 };
 
 }  // namespace temp
