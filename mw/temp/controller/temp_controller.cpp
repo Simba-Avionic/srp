@@ -53,10 +53,10 @@ srp::core::ErrorCode TempController::SetUp(TempRXCallback callback) {
     return res;
 }
 
-std::optional<std::vector<uint8_t>> TempController::Register(std::string name) {
-    auto subscribeError = Subscribe(name);
+std::optional<uint8_t> TempController::Register(std::string name) {
+    auto sensor_id = Subscribe(name);
     this->sub_sock_->StartRXThread();
-    return subscribeError;
+    return (sensor_id && !sensor_id->empty()) ? std::make_optional(sensor_id->front()) : std::nullopt;
 }
 
 std::optional<std::vector<uint8_t>> TempController::Subscribe(std::string name) {

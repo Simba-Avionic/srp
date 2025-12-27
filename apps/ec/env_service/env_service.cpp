@@ -134,14 +134,12 @@ int EnvService::LoadTempConfig(const std::map<ara::core::StringView, ara::core::
         }
 
         ara::log::LogDebug() << "Sending subscribe request to temp_service";
-        std::optional<std::vector<uint8_t>> retSensorId = this->temp_->Register(physical_id.value());
-        uint8_t sensor_id;
-        if(retSensorId.has_value()){
-            for(uint8_t data: *retSensorId){
-                sensor_id = data;
-            }
+        std::optional<uint8_t> sensor_id = this->temp_->Register(physical_id.value());
+        if(!sensor_id.has_value()){
+            ara::log::LogError() << "Sensor_id is empty";
+            continue;
         }
-        sensorIdsToPaths[sensor_id] = std::make_pair(name.value(), physical_id.value());
+        sensorIdsToPaths[sensor_id.value()] = std::make_pair(name.value(), physical_id.value());
     }
     return srp::core::ErrorCode::kOk;
 }
