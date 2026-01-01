@@ -56,14 +56,10 @@ int TempService::Run(const std::stop_token& token) {
     this->temp_did_->StopOffer();
     return 0;
 }
-// int TempService::LoadConfig(const std::map<ara::core::StringView, ara::core::StringView>& parms, std::unique_ptr<com::soc::IpcSocket> sock) {
-//     this->sub_sock_ = std::move(sock);
-// }
 
 int TempService::Initialize(const std::map<ara::core::StringView, ara::core::StringView>
                       parms) {
     ara::log::LogInfo() << "Starting TempService Initialization";
-    // LoadConfig(parms, std::make_unique<com::soc::IpcSocket>());
     this->sub_sock_ = std::move(std::make_unique<com::soc::StreamIpcSocket>());
     if (auto ret = this->sub_sock_->Init(
         com::soc::SocketConfig(kTempServiceName, 0, 0))) {

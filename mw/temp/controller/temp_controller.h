@@ -42,7 +42,7 @@ std::function<void(const std::vector<srp::mw::temp::TempReadHdr>&)>;
 class TempController {
  private:
   uint16_t service_id;
-  std::unique_ptr<srp::com::soc::StreamIpcSocket> sub_sock_{};
+  std::unique_ptr<com::soc::StreamIpcSocket> sub_sock_{};
   TempRXCallback callback_;
 
  protected:
