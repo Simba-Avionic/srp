@@ -29,8 +29,6 @@ namespace {
     constexpr auto kDelay = 500;
 }
 
-
-
 EnvService::Command EnvService::resolveCommand(std::string const& input) {
     static const std::unordered_map<std::string, Command> commandMap = {
         {"sensor_temp_1", SENSOR_TEMP_1},
