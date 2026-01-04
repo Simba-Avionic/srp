@@ -29,19 +29,7 @@ namespace {
     constexpr auto kDelay = 1000;
 }
 
-EnvService::Command EnvService::resolveCommand(std::string const& input) {
-    static const std::unordered_map<std::string, Command> commandMap = {
-        {"sensor_temp_1", SENSOR_TEMP_1},
-        {"sensor_temp_2", SENSOR_TEMP_2},
-        {"sensor_temp_3", SENSOR_TEMP_3}
-    };
 
-    auto it = commandMap.find(input);
-    if (it != commandMap.end()) {
-        return it->second;
-    }
-    return SENSOR_UNKNOWN;
-}
 
 core::ErrorCode EnvService::Init(std::unique_ptr<mw::temp::TempController> temp) {
     if (this->temp_ || !temp) {
@@ -178,22 +166,20 @@ void EnvService::TempRxCallback(const std::vector<srp::mw::temp::TempReadHdr>& d
     for (auto &hdr : data) {
         const int16_t value = static_cast<int16_t>(hdr.value * 10);
         ara::log::LogDebug() << "Receive temp id: " << hdr.actuator_id << ", name: " << sensorIdsToPaths[hdr.actuator_id].first << ", temp: " << static_cast<float>(value/10);
-        switch (resolveCommand(sensorIdsToPaths[hdr.actuator_id].first)) {
-            case SENSOR_TEMP_1:
-                this->service_ipc.newTempEvent_1.Update(value);
-                this->service_udp.newTempEvent_1.Update(value);
-                break;
-            case SENSOR_TEMP_2:
-                this->service_ipc.newTempEvent_2.Update(value);
-                this->service_udp.newTempEvent_2.Update(value);
-                break;
-            case SENSOR_TEMP_3:
-                this->service_ipc.newTempEvent_3.Update(value);
-                this->service_udp.newTempEvent_3.Update(value);
-                break;
-            default:
-                ara::log::LogWarn() << "ID spoza zakresu:" << hdr.actuator_id;
-            break;
+        if(sensorIdsToPaths[hdr.actuator_id].first == "sensor_temp_1"){
+            this->service_ipc.newTempEvent_1.Update(value);
+            this->service_udp.newTempEvent_1.Update(value);
+        }
+        else if(sensorIdsToPaths[hdr.actuator_id].first == "sensor_temp_2"){
+            this->service_ipc.newTempEvent_2.Update(value);
+            this->service_udp.newTempEvent_2.Update(value);
+        }
+        else if(sensorIdsToPaths[hdr.actuator_id].first == "sensor_temp_3"){
+            this->service_ipc.newTempEvent_3.Update(value);
+            this->service_udp.newTempEvent_3.Update(value);
+        }
+        else {
+            ara::log::LogWarn() << "ID spoza zakresu:" << hdr.actuator_id;
         }
     }
 }
