@@ -46,7 +46,6 @@ class TempService final : public ara::exec::AdaptiveApplication {
   std::unique_ptr<core::temp::ITempDriver> temp_driver_;
   std::unique_ptr<TempMWDID> temp_did_;
   const ara::core::InstanceSpecifier did_instance;
-  // std::set<std::uint16_t> subscribers{};
   std::unordered_map<uint8_t, std::set<uint8_t>> subscribers{};
   uint16_t delay_time;
   uint8_t nextSensorId = 0;
@@ -55,8 +54,6 @@ class TempService final : public ara::exec::AdaptiveApplication {
 
 
   int ConfigSensors();
-  int LoadConfig(
-    const std::map<ara::core::StringView, ara::core::StringView>& parms, std::unique_ptr<com::soc::StreamIpcSocket> sock);
 
   /**
    * @brief This function is called to launch the application
