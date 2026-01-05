@@ -104,21 +104,23 @@ std::vector<uint8_t> TempService::SubCallback(const std::string& ip, const std::
         return std::vector<uint8_t>{};
     }
     std::uint16_t service_id = hdr.value().service_id;
-    std::string physical_id = "            ";
-    physical_id[0] = hdr.value().physical_id_1;
-    physical_id[1] = hdr.value().physical_id_2;
-    physical_id[2] = hdr.value().physical_id_3;
-    physical_id[3] = hdr.value().physical_id_4;
-    physical_id[4] = hdr.value().physical_id_5;
-    physical_id[5] = hdr.value().physical_id_6;
-    physical_id[6] = hdr.value().physical_id_7;
-    physical_id[7] = hdr.value().physical_id_8;
-    physical_id[8] = hdr.value().physical_id_9;
-    physical_id[9] = hdr.value().physical_id_10;
-    physical_id[10] = hdr.value().physical_id_11;
-    physical_id[11] = hdr.value().physical_id_12;
-    physical_id = "28-" + physical_id;
-
+    std::string physical_id{
+        '2',
+        '8',
+        '-',
+        hdr.value().physical_id_1,
+        hdr.value().physical_id_2,
+        hdr.value().physical_id_3,
+        hdr.value().physical_id_4,
+        hdr.value().physical_id_5,
+        hdr.value().physical_id_6,
+        hdr.value().physical_id_7,
+        hdr.value().physical_id_8,
+        hdr.value().physical_id_9,
+        hdr.value().physical_id_10,
+        hdr.value().physical_id_11,
+        hdr.value().physical_id_12
+    };
 
 
     if (!this->sensorPathsToIds.count(physical_id)) {

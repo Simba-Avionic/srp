@@ -49,7 +49,6 @@ srp::core::ErrorCode TempController::SetUp(TempRXCallback callback) {
     if (res != core::ErrorCode::kOk) {
         return res;
     }
-    // this->sub_sock_->StartRXThread();
     return res;
 }
 
@@ -67,9 +66,9 @@ std::optional<std::vector<uint8_t>> TempController::Subscribe(std::string name) 
     auto buf = srp::data::Convert2Vector<srp::mw::temp::TempSubHdr>::Conv(hdr);
     std::optional<std::vector<uint8_t>> res;
     if (res = sub_sock_->Transmit(kTempServiceName, 0, buf)) {
-        // ara::log::LogError() <<("Failed to subscribe to " + std::string(kTempServiceName)+":::"/* +std::to_string(res[0]) */);
         return res;
     }
+    ara::log::LogError() <<("Failed to subscribe to " + std::string(kTempServiceName)+":::"/* +std::to_string(res[0]) */);
     return res;
 }
 
