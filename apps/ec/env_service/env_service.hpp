@@ -30,8 +30,8 @@ class EnvService final : public ara::exec::AdaptiveApplication {
  private:
   std::unique_ptr<mw::temp::TempController> temp_{};
   std::shared_ptr<i2c::ADCSensorController> press_{};
-
-  std::unordered_map<std::uint8_t, std::pair<std::string, std::string>> sensorIdsToPaths{}; // [sensor_id] = {name, physical_id}
+  // [sensor_id] = {name, physical_id}
+  std::unordered_map<std::uint8_t, std::pair<std::string, std::string>> sensorIdsToPaths{};
 
 
   apps::MyEnvAppSkeleton service_ipc;
