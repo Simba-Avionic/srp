@@ -169,17 +169,19 @@ std::vector<uint8_t> TempService::Conv(const std::vector<srp::mw::temp::TempRead
 }
 
 
-void TempService::SendTempReadings(const std::vector<srp::mw::temp::TempReadHdr>& readings) {
-
-    for(const auto& read : readings){
-        for (auto client_id : this->subscribers[read.actuator_id]) {
-            std::string ip = kSubscriberPrefix + std::to_string(client_id);
-
+void TempService::SendTempReadings(const std::vector<srp::mw::temp::TempReadHdr>& readings) const {
+    for (const auto& read : readings) {
+        auto it = this->subscribers.find(read.actuator_id);
+        if (it == this->subscribers.end()) {
+            ara::log::LogDebug() << "Can't find any subscriber for sensor: " << std::to_string(static_cast<int>(read.actuator_id));
+            continue;
+        }
+        for (const auto& client_id : it->second) {
+            std::string ip = kSubscriberPrefix + std::to_string(static_cast<int>(client_id));
             std::vector<uint8_t> data = srp::data::Convert2Vector<srp::mw::temp::TempReadHdr>::Conv(read);
-
             if (this->sub_sock_->Transmit(ip, 0, data)) {
-                ara::log::LogError() <<("Can't send message to: " + ip);
-                break;
+                ara::log::LogError() << ("Can't send message to: " + ip);
+                continue;
             }
         }
     }
