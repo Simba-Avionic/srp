@@ -23,7 +23,7 @@
 #include "core/json/json_parser.h"
 #include "nlohmann/json.hpp"
 
-#include "communication-core/sockets/ipc_socket.h"
+#include "communication-core/sockets/stream_ipc_socket.h"
 #include "communication-core/sockets/socket_config.h"
 #include "ara/log/log.h"
 #include "ara/exec/adaptive_application.h"
@@ -40,20 +40,19 @@ namespace temp {
 
 class TempService final : public ara::exec::AdaptiveApplication {
  protected:
-  std::unique_ptr<com::soc::IpcSocket> sub_sock_{};
+  std::unique_ptr<com::soc::StreamIpcSocket> sub_sock_{};
 
  private:
   std::unique_ptr<core::temp::ITempDriver> temp_driver_;
   std::unique_ptr<TempMWDID> temp_did_;
   const ara::core::InstanceSpecifier did_instance;
-  std::set<std::uint16_t> subscribers{};
+  std::unordered_map<uint8_t, std::set<uint8_t>> subscribers{};
   uint16_t delay_time;
+  uint8_t nextSensorId = 0;
   //                 physical ID, sensor ID
   std::unordered_map<std::string, std::uint8_t> sensorPathsToIds{};
 
 
-  int LoadConfig(
-    const std::map<ara::core::StringView, ara::core::StringView>& parms, std::unique_ptr<com::soc::IpcSocket> sock);
   int ConfigSensors();
 
   /**
@@ -79,7 +78,7 @@ class TempService final : public ara::exec::AdaptiveApplication {
   TempService();
   int Loop(std::stop_token stoken);
 
-  void SubCallback(const std::string& ip, const std::uint16_t& port,
+  std::vector<uint8_t> SubCallback(const std::string& ip, const std::uint16_t& port,
     const std::vector<std::uint8_t>& data);
 };
 

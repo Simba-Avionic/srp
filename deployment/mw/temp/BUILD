@@ -13,7 +13,6 @@ adaptive_application(
     name = "temp_service",
     bin = "//mw/temp/service:temp_service_mw",
     model_src = ["//deployment/mw/temp:instance"],
-    etcs = ["config.json"],
     visibility = ["//visibility:public"],
 )
 
