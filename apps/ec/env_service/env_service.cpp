@@ -121,7 +121,7 @@ int EnvService::LoadTempConfig(const std::map<ara::core::StringView, ara::core::
 
         ara::log::LogDebug() << "Sending subscribe request to temp_service";
         std::optional<uint8_t> sensor_id = this->temp_->Register(physical_id.value());
-        if(!sensor_id.has_value()){
+        if (!sensor_id.has_value()) {
             ara::log::LogError() << "Sensor_id is empty";
             continue;
         }
@@ -165,20 +165,18 @@ int EnvService::Run(const std::stop_token& token) {
 void EnvService::TempRxCallback(const std::vector<srp::mw::temp::TempReadHdr>& data) {
     for (auto &hdr : data) {
         const int16_t value = static_cast<int16_t>(hdr.value * 10);
-        ara::log::LogDebug() << "Receive temp id: " << hdr.actuator_id << ", name: " << sensorIdsToPaths[hdr.actuator_id].first << ", temp: " << static_cast<float>(value/10);
-        if(sensorIdsToPaths[hdr.actuator_id].first == "sensor_temp_1"){
+        ara::log::LogDebug() << "Receive temp id: " << hdr.actuator_id << ", name: " <<
+                sensorIdsToPaths[hdr.actuator_id].first << ", temp: " << static_cast<float>(value/10);
+        if (sensorIdsToPaths[hdr.actuator_id].first == "sensor_temp_1") {
             this->service_ipc.newTempEvent_1.Update(value);
             this->service_udp.newTempEvent_1.Update(value);
-        }
-        else if(sensorIdsToPaths[hdr.actuator_id].first == "sensor_temp_2"){
+        } else if (sensorIdsToPaths[hdr.actuator_id].first == "sensor_temp_2") {
             this->service_ipc.newTempEvent_2.Update(value);
             this->service_udp.newTempEvent_2.Update(value);
-        }
-        else if(sensorIdsToPaths[hdr.actuator_id].first == "sensor_temp_3"){
+        } else if (sensorIdsToPaths[hdr.actuator_id].first == "sensor_temp_3") {
             this->service_ipc.newTempEvent_3.Update(value);
             this->service_udp.newTempEvent_3.Update(value);
-        }
-        else {
+        } else {
             ara::log::LogWarn() << "ID spoza zakresu:" << hdr.actuator_id;
         }
     }

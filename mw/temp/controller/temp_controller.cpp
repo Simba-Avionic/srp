@@ -59,16 +59,19 @@ std::optional<uint8_t> TempController::Register(std::string name) {
 }
 
 std::optional<std::vector<uint8_t>> TempController::Subscribe(std::string name) {
-    if(name.size() != PHYSICAL_ID_SIZE){
+    if (name.size() != PHYSICAL_ID_SIZE) {
         return std::vector<uint8_t>{srp::core::ErrorCode::kError};
     }
-    srp::mw::temp::TempSubHdr hdr{this->service_id, name[3], name[4], name[5], name[6], name[7], name[8], name[9], name[10], name[11], name[12], name[13], name[14]};
+    srp::mw::temp::TempSubHdr hdr{this->service_id, name[3], name[4],
+                                name[5], name[6], name[7], name[8],
+                                name[9], name[10], name[11], name[12],
+                                name[13], name[14]};
     auto buf = srp::data::Convert2Vector<srp::mw::temp::TempSubHdr>::Conv(hdr);
     std::optional<std::vector<uint8_t>> res;
     if (res = sub_sock_->Transmit(kTempServiceName, 0, buf)) {
         return res;
     }
-    ara::log::LogError() <<("Failed to subscribe to " + std::string(kTempServiceName)+":::"/* +std::to_string(res[0]) */);
+    ara::log::LogError() << "Failed to subscribe to " << std::string(kTempServiceName);
     return res;
 }
 
