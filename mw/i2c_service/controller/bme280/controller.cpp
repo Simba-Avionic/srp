@@ -9,6 +9,7 @@
  * 
  */
 #include <chrono>  // NOLINT
+#include <math.h>
 #include <string>
 #include <thread>  // NOLINT
 #include <utility>
@@ -30,7 +31,8 @@ namespace {
     static constexpr uint8_t TRIMMING_REGISTER_3 = 0xE1; // 6 * 8 bits
     static constexpr uint8_t CTRL_MEAS_DEFAULT_VALUE = 0x37;
     static constexpr uint8_t CONFIG_DEFAULT_VALUE = 0x20;
-}  // namespace
+
+    static constexpr int32_t HUMIDITY_MAX = 419430400;
 
 BME280::BME280(): pac_logger_{
     ara::log::LoggingMenager::GetInstance()->CreateLogger("bme2", "", ara::log::LogLevel::kDebug)} {
@@ -138,10 +140,10 @@ uint32_t BME280::getHumidity(){
 
     int32_t v_x1_u32r = (getTemperature() - (static_cast<int32_t>(76800)));
     v_x1_u32r = (((((humidityRawData.value() << 14) - ((static_cast<int32_t>(param.dig_H4)) << 20) - (static_cast<int32_t>(param.dig_H5)) * v_x1_u32r)) + (static_cast<int32_t>(16384))) >> 15);
-    v_x1_u32r *= (((((((v_x1_u32r * (static_cast<int32_t>(param.dig_H6))) >> 10) * (((v_x1_u32r * (static_cast<int32_t>(param.dig_H3))) >> 11) + (static_cast<int32_t>(32768)))) >> 10) + (static_cast<int32_t>(2097152))) * (static_cast<int32_t>(param.dig_H2)) + 8192) >> 14)r;
+    v_x1_u32r *= (((((((v_x1_u32r * (static_cast<int32_t>(param.dig_H6))) >> 10) * (((v_x1_u32r * (static_cast<int32_t>(param.dig_H3))) >> 11) + (static_cast<int32_t>(32768)))) >> 10) + (static_cast<int32_t>(2097152))) * (static_cast<int32_t>(param.dig_H2)) + 8192) >> 14);
     v_x1_u32r = (v_x1_u32r - (((((v_x1_u32r >> 15) * (v_x1_u32r >> 15)) >> 7) * (static_cast<int32_t>(param.dig_H1))) >> 4));
-    v_x1_u32r = (v_x1_u32r < 0 ? 0 : v_x1_u32r);
-    v_x1_u32r = (v_x1_u32r > 419430400 ? 419430400 : v_x1_u32r);
+    v_x1_u32r = max(0, v_x1_u32r);
+    v_x1_u32r = min(v_x1_u32r, HUMIDITY_MAX);
     return (uint32_t)(v_x1_u32r >> 12);
 }
 
