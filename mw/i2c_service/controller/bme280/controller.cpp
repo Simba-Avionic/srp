@@ -35,6 +35,7 @@ namespace {
 BME280::BME280(): pac_logger_{
     ara::log::LoggingMenager::GetInstance()->CreateLogger("bme2", "", ara::log::LogLevel::kDebug)} {
 }
+
 core::ErrorCode BME280::Init(std::unique_ptr<II2CController> i2c) {
   pac_logger_.LogInfo() << "BME280.Init: starting initialization";
   if (this->setI2C(std::move(i2c)) != core::ErrorCode::kOk) {
@@ -94,8 +95,8 @@ int32_t BME280::getTemperature(){
         return 0;
     }
     int32_t var1, var2, T;
-    var1 = ((((tempRawData.value()>>3) - ((int32_t)param.dig_T1<<1))) * ((int32_t)param.dig_T2)) >> 11;
-    var2 = (((((tempRawData.value()>>4) - ((int32_t)param.dig_T1)) * ((tempRawData.value() >> 4) - ((int32_t)param.dig_T1))) >> 12) * ((int32_t)param.dig_T3)) >> 14;
+    var1 = ((((tempRawData.value()>>3) - (static_cast<int32_t>(param.dig_T1<<1)))) * (static_cast<int32_t>(param.dig_T2))) >> 11;
+    var2 = (((((tempRawData.value()>>4) - (static_cast<int32_t>(param.dig_T1))) * ((tempRawData.value() >> 4) - (static_cast<int32_t>(param.dig_T1)))) >> 12) * (static_cast<int32_t>(param.dig_T3))) >> 14;
     return (((var1 + var2) * 5 + 128) >> 8);
 }
 
@@ -113,19 +114,19 @@ uint32_t BME280::getPressure(){
         pac_logger_.LogDebug() << "BME280.getPressure: Error getting data for conversion";
         return 0;
     }
-    var1 = ((int64_t)temp) - 128000;
-    var2 = var1 * var1 * (int64_t)param.dig_P6;
-    var2 = var2 + ((var1 * (int64_t)param.dig_P5) << 17);
-    var2 = var2 + (((int64_t)param.dig_P4)<<35);
-    var1 = ((var1 * var1 * (int64_t)param.dig_P3)>>8) + ((var1 + (int64_t)param.dig_P2)<<12);
-    var1 = (((((int64_t)1)<<47)+ var1)) * ((int64_t)param.dig_P1)>>33;
+    var1 = (static_cast<int64_t>(temp)) - 128000;
+    var2 = var1 * var1 * static_cast<int64_t>(param.dig_P6);
+    var2 = var2 + ((var1 * static_cast<int64_t>(param.dig_P5)) << 17);
+    var2 = var2 + ((static_cast<int64_t>(param.dig_P4))<<35);
+    var1 = ((var1 * var1 * static_cast<int64_t>(param.dig_P3))>>8) + ((var1 + static_cast<int64_t>(param.dig_P2))<<12);
+    var1 = ((((static_cast<int64_t>(1))<<47)+ var1)) * (static_cast<int64_t>(param.dig_P1))>>33;
     if(var1 == 0) return 0;
     p = 1048576 - pressRawData.value();
     p = (((p<<31)-var2)*3125)/var1;
-    var1 = (((int64_t)param.dig_P9) * (p>>13) * (p>>13)) >> 25;
-    var2 = (((int64_t)param.dig_P8) * p) >> 19;
-    p = ((p + var1 + var2) >> 8) + (((int64_t)param.dig_P7) << 4);
-    return (uint32_t)p;
+    var1 = ((static_cast<int64_t>(param.dig_P9)) * (p>>13) * (p>>13)) >> 25;
+    var2 = ((static_cast<int64_t>(param.dig_P8)) * p) >> 19;
+    p = ((p + var1 + var2) >> 8) + ((static_cast<int64_t>(param.dig_P7)) << 4);
+    return static_cast<uint32_t>(p);
 }
 
 uint32_t BME280::getHumidity(){
@@ -135,9 +136,10 @@ uint32_t BME280::getHumidity(){
         return 0;
     }
 
-    int32_t v_x1_u32r = (getTemperature() - ((int32_t)76800));
-    v_x1_u32r = (((((humidityRawData.value() << 14) - (((int32_t)param.dig_H4) << 20) - ((int32_t)param.dig_H5) * v_x1_u32r)) + ((int32_t)16384)) >> 15) * (((((((v_x1_u32r * ((int32_t)param.dig_H6)) >> 10) * (((v_x1_u32r * ((int32_t)param.dig_H3)) >> 11) + ((int32_t)32768))) >> 10) + ((int32_t)2097152)) * ((int32_t)param.dig_H2) + 8192) >> 14);
-    v_x1_u32r = (v_x1_u32r - (((((v_x1_u32r >> 15) * (v_x1_u32r >> 15)) >> 7) * ((int32_t)param.dig_H1)) >> 4));
+    int32_t v_x1_u32r = (getTemperature() - (static_cast<int32_t>(76800)));
+    v_x1_u32r = (((((humidityRawData.value() << 14) - ((static_cast<int32_t>(param.dig_H4)) << 20) - (static_cast<int32_t>(param.dig_H5)) * v_x1_u32r)) + (static_cast<int32_t>(16384))) >> 15);
+    v_x1_u32r *= (((((((v_x1_u32r * (static_cast<int32_t>(param.dig_H6))) >> 10) * (((v_x1_u32r * (static_cast<int32_t>(param.dig_H3))) >> 11) + (static_cast<int32_t>(32768)))) >> 10) + (static_cast<int32_t>(2097152))) * (static_cast<int32_t>(param.dig_H2)) + 8192) >> 14)r;
+    v_x1_u32r = (v_x1_u32r - (((((v_x1_u32r >> 15) * (v_x1_u32r >> 15)) >> 7) * (static_cast<int32_t>(param.dig_H1))) >> 4));
     v_x1_u32r = (v_x1_u32r < 0 ? 0 : v_x1_u32r);
     v_x1_u32r = (v_x1_u32r > 419430400 ? 419430400 : v_x1_u32r);
     return (uint32_t)(v_x1_u32r >> 12);
