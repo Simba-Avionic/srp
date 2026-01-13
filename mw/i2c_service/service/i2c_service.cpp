@@ -22,7 +22,7 @@ namespace {
     const constexpr char* I2C_IPC_ADDR = "SRP.I2C";
 }
 I2CService::I2CService():
-    i2c_logger_(ara::log::LoggingMenager::GetInstance()->CreateLogger("i2c", "", ara::log::LogLevel::kInfo)),did_instance("/srp/mw/i2cMWService/i2c_Write_did") {}
+    i2c_logger_(ara::log::LoggingMenager::GetInstance()->CreateLogger("i2c", "", ara::log::LogLevel::kInfo)),did_instance("/srp/mw/i2cMWService/i2c_Write_did"), read_instance("/srp/mw/i2cMWService/i2c_Read_did") {}
 
 core::ErrorCode I2CService::Init(std::shared_ptr<core::i2c::II2CDriver> i2c,
                               std::unique_ptr<srp::com::soc::ISocketStream> socket) {
@@ -119,6 +119,7 @@ int I2CService::Run(const std::stop_token& token) {
     core::condition::wait(token);
     this->sock_->StopRXThread();
     pin_did_->StopOffer();
+    read_did_->StopOffer();
     return core::ErrorCode::kOk;
 }
 int I2CService::Initialize(
@@ -138,7 +139,9 @@ int I2CService::Initialize(
     this->sock_->StartRXThread();
 
     pin_did_ = std::make_unique<I2CMWWRITE>(this->did_instance, this->i2c_);
+    read_did_ = std::make_unique<I2CMWREAD>(this->read_instance, this, this->i2c_);
     pin_did_->Offer();
+    read_did_->Offer();
     return core::ErrorCode::kOk;
 }
 

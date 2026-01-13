@@ -39,20 +39,26 @@ class I2CMWWRITE : public ara::diag::GenericDiD {
   }
 
 
-  ara::core::Result<void> Write(
-    const std::vector<uint8_t> &payload) noexcept override {
-  ara::log::LogInfo() << "Receive diag write req with payload size: "
-      << (uint16_t)payload.size() << ",p[0] = " << payload[0] << ",p[1] = " << payload[1];
-  if (payload.size()%2 != 1) {
-    ara::log::LogWarn() << "Invalid payload size ";
-    return ara::diag::MakeErrorCode(
-      ara::diag::UdsDiagErrc::kInvalidMessageLengthFormat);
-  }
-  for(size_t i=1;i<payload.size();i+=2){
-    this->i2c_->Write(payload[i]);
-  }
-  ara::log::LogInfo() << "OK";
-  return {};
+   ara::core::Result<void> Write(
+      const std::vector<uint8_t> &payload) noexcept override {
+    if (payload.size()%2 != 1 || payload.size() < 3) {
+      ara::log::LogWarn() << "Invalid payload size: " << payload.size();
+      return ara::diag::MakeErrorCode(
+        ara::diag::UdsDiagErrc::kSubFunctionNotSupported);
+    }
+    ara::log::LogInfo() << "Receive diag write req for address:" << payload[0] << ", with size: "
+        << (uint16_t)payload.size();
+    if (this->i2c_->Ioctl(payload[0]) != core::ErrorCode::kOk) {
+      ara::log::LogInfo() << "Wrong Input for payload i2c write";
+      return {};
+    }
+    std::vector<uint8_t> vec(payload.begin() + 1, payload.end());
+    if (this->i2c_->Write(vec) == core::ErrorCode::kOk) {
+      ara::log::LogInfo() << "Wrong Input for i2c Write";
+      return ara::diag::MakeErrorCode(
+        ara::diag::UdsDiagErrc::kSubFunctionNotSupported);
+    }
+    return {};
 }
 
  public:
