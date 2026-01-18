@@ -8,6 +8,7 @@
  * @copyright Copyright (c) 2026
  * 
  */
+
 #include <chrono>  // NOLINT
 #include <math.h>
 #include <string>
@@ -29,12 +30,12 @@ namespace {
     static constexpr uint8_t TRIMMING_REGISTER_1 = 0x88;
     static constexpr uint8_t TRIMMING_REGISTER_2 = 0xA1;
     static constexpr uint8_t TRIMMING_REGISTER_3 = 0xE1;
-    static constexpr uint8_t SIZE_OF_TRIMMING_REGISTER_1 = 24;
-    static constexpr uint8_t SIZE_OF_TRIMMING_REGISTER_2 = 1;
-    static constexpr uint8_t SIZE_OF_TRIMMING_REGISTER_3 = 8;
     static constexpr uint8_t CTRL_MEAS_DEFAULT_VALUE = 0x37;
     static constexpr uint8_t CONFIG_DEFAULT_VALUE = 0x20;
 
+    static constexpr uint8_t SIZE_OF_TRIMMING_REGISTER_1 = 24;
+    static constexpr uint8_t SIZE_OF_TRIMMING_REGISTER_2 = 1;
+    static constexpr uint8_t SIZE_OF_TRIMMING_REGISTER_3 = 8;
     static constexpr int32_t HUMIDITY_MAX = 419430400;
 }
 
@@ -61,24 +62,21 @@ core::ErrorCode BME280::Init(std::unique_ptr<II2CController> i2c) {
   return core::ErrorCode::kOk;
 }
 core::ErrorCode BME280::InitializeBME() {
-    pac_logger_.LogInfo() << "BME280.InitalizeBME: starting initialization";
+    pac_logger_.LogDebug() << "BME280.InitializeBME: Starting initialization of BME registers";
     // Setting oversampling to: pressure x16, temperature x1, humidity x1 -> 38ms time of measurement
     // Setting work mode to normal and t_standby to 62.5ms
     // Setting IIR FILTER to OFF -> i have no idea what this does ://
     auto hum_oversampling = this->i2c_->Read(BME280_ADDRESS, CTRL_HUM, 1);
-    if(!hum_oversampling.has_value()){
+    if(!hum_oversampling.has_value() || hum_oversampling.value().size() != 1){
         pac_logger_.LogInfo() << "BME280.InitalizeBME: Not able to read hum_oversampling setting";
-    }else{
-        pac_logger_.LogInfo() << "BME280.InitalizeBME: hum_oversampling_value: " << std::to_string(hum_oversampling.value()[0]);
+        return core::ErrorCode::kError;
     }
     hum_oversampling.value()[0] |= (1<<0);
     hum_oversampling.value()[0] &= ~(3<<1);
-    pac_logger_.LogInfo() << "BME280.InitalizeBME: hum_oversampling_value: " << std::to_string(hum_oversampling.value()[0]);
     if (this->i2c_->Write(BME280_ADDRESS, {CTRL_HUM, hum_oversampling.value()[0]}) != core::ErrorCode::kOk) {
         pac_logger_.LogWarn() << "BME280.InitalizeBME: failed to set humidity oversampling";
         return core::ErrorCode::kInitializeError;
     }
-    pac_logger_.LogInfo() << "BME280.InitalizeBME: Humidity Initialization Complete";
     if (this->i2c_->Write(BME280_ADDRESS, {CTRL_MEAS, CTRL_MEAS_DEFAULT_VALUE}) != core::ErrorCode::kOk) {
         pac_logger_.LogWarn() << "BME280.InitalizeBME: failed to set ctrl meas register";
         return core::ErrorCode::kInitializeError;
@@ -88,7 +86,7 @@ core::ErrorCode BME280::InitializeBME() {
         return core::ErrorCode::kInitializeError;
     }
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
-    pac_logger_.LogDebug() << "BME280.InitalizeBME: chip configured";
+    pac_logger_.LogDebug() << "BME280.InitalizeBME: chip configured successfully";
     return core::ErrorCode::kOk;
 }
 
@@ -157,7 +155,6 @@ uint32_t BME280::getHumidity(){
     getTemperature();
 
     int32_t t_fine_adj = this->t_fine - 76800;
-    // v_x1_u32r = (((((humidityRawData.value() << 14) - ((static_cast<int32_t>(param.dig_H4)) << 20) - (static_cast<int32_t>(param.dig_H5)) * v_x1_u32r)) + (static_cast<int32_t>(16384))) >> 15) * (((((((v_x1_u32r * (static_cast<int32_t>(param.dig_H6))) >> 10) * (((v_x1_u32r * (static_cast<int32_t>(param.dig_H3))) >> 11) + (static_cast<int32_t>(32768)))) >> 10) + (static_cast<int32_t>(2097152))) * (static_cast<int32_t>(param.dig_H2)) + 8192) >> 14);
     int32_t part1 = (humidityRawData.value() << 14) - (static_cast<int32_t>(param.dig_H4) << 20) - (static_cast<int32_t>(param.dig_H5) * t_fine_adj);
     part1 = (part1 + 16384) >> 15;
 
@@ -193,7 +190,6 @@ std::optional<int32_t> BME280::extractBits(const std::optional<std::vector<uint8
 }
 
 std::optional<std::vector<uint8_t>> BME280::readOutputData(){
-    pac_logger_.LogDebug() << "BME280.readOutputData: reading new data from the device";
     return this->i2c_->Read(BME280_ADDRESS, PRESSURE_OUTPUT, 8);
 }
 
