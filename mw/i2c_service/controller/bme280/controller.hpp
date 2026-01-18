@@ -1,10 +1,3 @@
-// SDO is connected to GND
-// Slave adress -> 0x76
-
-
-// 10 / second -> t_stop ~ 100ms?? (62.5 eeventually)
-// normal mode
-
 /**
  * @file controller.hpp
  * @author Grzegorz Horbaczewski (gregority9@gmail.com)
