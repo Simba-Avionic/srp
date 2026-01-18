@@ -13,6 +13,7 @@ cc_binary(
         "//deployment/apps/gh_service:ara",
         "//core/common:condition_lib",
         "//mw/gpio_server/controller:gpio_controller",
+        "//mw/i2c_service/controller/bme280:bme280_controller",
     ]
 
 )
