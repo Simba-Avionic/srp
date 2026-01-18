@@ -30,7 +30,11 @@ namespace srp {
                 auto pressure = bme->getPressure();
                 auto temp = bme->getTemperature();
                 auto hum = bme->getHumidity();
-                ara::log::logInfo() << "Pressure: " << pressure << ", temperature: " << temperature << ", humidity: " << humidity;
+
+                float actualPressure = pressure / 256.0f;
+                float actualTemp = temp / 100.0f;
+                float actualHum = hum / 1024.0f;
+                ara::log::LogInfo() << "Pressure: " << std::to_string(actualPressure) << ", temperature: " << std::to_string(actualTemp) << ", humidity: " << std::to_string(actualHum);
                 //wait
                 core::condition::wait_for(std::chrono::milliseconds(3000), token);
             }
@@ -41,16 +45,22 @@ namespace srp {
         }
 
         int GhApp::Initialize(const std::map<ara::core::StringView, ara::core::StringView> parms) {
+            ara::log::LogInfo() << "Starting init of GHAPP";
             bme = std::make_unique<i2c::BME280>();
             auto i2c = std::make_unique<i2c::I2CController>();
-            i2c->Init(std::make_unique<com::soc::StreamIpcSocket>())
-            if(bme->Init(std::move(i2c)) != core::ErrorCode::kOk){
-                ara::log::LogError() << "GhApp: Failed to initialize BME280 sensor";
+            if(i2c->Init(std::make_unique<com::soc::StreamIpcSocket>()) != core::ErrorCode::kOk){
+                ara::log::LogError() << "GhApp: Failed to initialize i2c pointer";
+            } else {
+                ara::log::LogInfo() << "GhApp: Initialized i2c pointer";
             }
+            ara::log::LogInfo() << "init Complete";
+            if(bme->Init(std::move(i2c)) != core::ErrorCode::kOk){
+                ara::log::LogInfo() << "GhApp: Failed to initialize BME280 sensor";
+            }
+            ara::log::LogInfo() << "Initialize Complete";
 
 
             myPath = parms.at("app_path");
-            ara::log::LogInfo() << "Initialize Complete";
             return 0;
         }
 

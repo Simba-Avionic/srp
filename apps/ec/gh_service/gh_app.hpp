@@ -9,6 +9,7 @@
 
 #include "ara/exec/adaptive_application.h"
 #include "mw/gpio_server/controller/gpio_controller.hpp"
+#include "mw/i2c_service/controller/bme280/controller.hpp"
 
 
 namespace srp {

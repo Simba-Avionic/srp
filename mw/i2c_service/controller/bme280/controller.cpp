@@ -25,14 +25,18 @@ namespace {
     static constexpr uint8_t CTRL_HUM = 0xF2; 
     static constexpr uint8_t CTRL_MEAS = 0xF4;
     static constexpr uint8_t CONFIG = 0xF5;
-    static constexpr uint8_t PRESSURE_OUTPUT = 0xF7; //16 to 20 bits
-    static constexpr uint8_t TRIMMING_REGISTER_1 = 0x88; // 24 * 8 bits
-    static constexpr uint8_t TRIMMING_REGISTER_2 = 0xA1; // 8 bits
-    static constexpr uint8_t TRIMMING_REGISTER_3 = 0xE1; // 6 * 8 bits
+    static constexpr uint8_t PRESSURE_OUTPUT = 0xF7;
+    static constexpr uint8_t TRIMMING_REGISTER_1 = 0x88;
+    static constexpr uint8_t TRIMMING_REGISTER_2 = 0xA1;
+    static constexpr uint8_t TRIMMING_REGISTER_3 = 0xE1;
+    static constexpr uint8_t SIZE_OF_TRIMMING_REGISTER_1 = 24;
+    static constexpr uint8_t SIZE_OF_TRIMMING_REGISTER_2 = 1;
+    static constexpr uint8_t SIZE_OF_TRIMMING_REGISTER_3 = 8;
     static constexpr uint8_t CTRL_MEAS_DEFAULT_VALUE = 0x37;
     static constexpr uint8_t CONFIG_DEFAULT_VALUE = 0x20;
 
     static constexpr int32_t HUMIDITY_MAX = 419430400;
+}
 
 BME280::BME280(): pac_logger_{
     ara::log::LoggingMenager::GetInstance()->CreateLogger("bme2", "", ara::log::LogLevel::kDebug)} {
@@ -57,26 +61,34 @@ core::ErrorCode BME280::Init(std::unique_ptr<II2CController> i2c) {
   return core::ErrorCode::kOk;
 }
 core::ErrorCode BME280::InitializeBME() {
+    pac_logger_.LogInfo() << "BME280.InitalizeBME: starting initialization";
     // Setting oversampling to: pressure x16, temperature x1, humidity x1 -> 38ms time of measurement
     // Setting work mode to normal and t_standby to 62.5ms
     // Setting IIR FILTER to OFF -> i have no idea what this does ://
-    uint8_t hum_oversampling = this->i2c_->Read(BME280_ADDRESS, CTRL_HUM, 8).value()[0];
-    hum_oversampling |= (1<<0);
-    hum_oversampling &= ~(3<<1);
-    if (this->i2c_->Write(BME280_ADDRESS, {CTRL_HUM, hum_oversampling}) != core::ErrorCode::kOk) {
-        pac_logger_.LogWarn() << "BME280.InitializePCA: failed to set humidity oversampling";
+    auto hum_oversampling = this->i2c_->Read(BME280_ADDRESS, CTRL_HUM, 1);
+    if(!hum_oversampling.has_value()){
+        pac_logger_.LogInfo() << "BME280.InitalizeBME: Not able to read hum_oversampling setting";
+    }else{
+        pac_logger_.LogInfo() << "BME280.InitalizeBME: hum_oversampling_value: " << std::to_string(hum_oversampling.value()[0]);
+    }
+    hum_oversampling.value()[0] |= (1<<0);
+    hum_oversampling.value()[0] &= ~(3<<1);
+    pac_logger_.LogInfo() << "BME280.InitalizeBME: hum_oversampling_value: " << std::to_string(hum_oversampling.value()[0]);
+    if (this->i2c_->Write(BME280_ADDRESS, {CTRL_HUM, hum_oversampling.value()[0]}) != core::ErrorCode::kOk) {
+        pac_logger_.LogWarn() << "BME280.InitalizeBME: failed to set humidity oversampling";
         return core::ErrorCode::kInitializeError;
     }
+    pac_logger_.LogInfo() << "BME280.InitalizeBME: Humidity Initialization Complete";
     if (this->i2c_->Write(BME280_ADDRESS, {CTRL_MEAS, CTRL_MEAS_DEFAULT_VALUE}) != core::ErrorCode::kOk) {
-        pac_logger_.LogWarn() << "BME280.InitializePCA: failed to set ctrl meas register";
+        pac_logger_.LogWarn() << "BME280.InitalizeBME: failed to set ctrl meas register";
         return core::ErrorCode::kInitializeError;
     }
     if (this->i2c_->Write(BME280_ADDRESS, {CONFIG, CONFIG_DEFAULT_VALUE}) != core::ErrorCode::kOk) {
-        pac_logger_.LogWarn() << "BME280.InitializePCA: failed to set ctrl meas register";
+        pac_logger_.LogWarn() << "BME280.InitalizeBME: failed to set ctrl meas register";
         return core::ErrorCode::kInitializeError;
     }
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
-    pac_logger_.LogDebug() << "BME280.InitializePCA: chip configured";
+    pac_logger_.LogDebug() << "BME280.InitalizeBME: chip configured";
     return core::ErrorCode::kOk;
 }
 
@@ -142,8 +154,8 @@ uint32_t BME280::getHumidity(){
     v_x1_u32r = (((((humidityRawData.value() << 14) - ((static_cast<int32_t>(param.dig_H4)) << 20) - (static_cast<int32_t>(param.dig_H5)) * v_x1_u32r)) + (static_cast<int32_t>(16384))) >> 15);
     v_x1_u32r *= (((((((v_x1_u32r * (static_cast<int32_t>(param.dig_H6))) >> 10) * (((v_x1_u32r * (static_cast<int32_t>(param.dig_H3))) >> 11) + (static_cast<int32_t>(32768)))) >> 10) + (static_cast<int32_t>(2097152))) * (static_cast<int32_t>(param.dig_H2)) + 8192) >> 14);
     v_x1_u32r = (v_x1_u32r - (((((v_x1_u32r >> 15) * (v_x1_u32r >> 15)) >> 7) * (static_cast<int32_t>(param.dig_H1))) >> 4));
-    v_x1_u32r = max(0, v_x1_u32r);
-    v_x1_u32r = min(v_x1_u32r, HUMIDITY_MAX);
+    v_x1_u32r = std::max(0, v_x1_u32r);
+    v_x1_u32r = std::min(v_x1_u32r, HUMIDITY_MAX);
     return (uint32_t)(v_x1_u32r >> 12);
 }
 
@@ -169,13 +181,13 @@ std::optional<int32_t> BME280::extractBits(const std::optional<std::vector<uint8
 
 std::optional<std::vector<uint8_t>> BME280::readOutputData(){
     pac_logger_.LogDebug() << "BME280.readOutputData: reading new data from the device";
-    return this->i2c_->Read(BME280_ADDRESS, PRESSURE_OUTPUT, 64);
+    return this->i2c_->Read(BME280_ADDRESS, PRESSURE_OUTPUT, 8);
 }
 
 
 core::ErrorCode BME280::readTrimmingParameters(){
-    auto temp = this->i2c_->Read(BME280_ADDRESS, TRIMMING_REGISTER_1, 24*8);
-    if(!temp.has_value() || temp->size() != 24){
+    auto temp = this->i2c_->Read(BME280_ADDRESS, TRIMMING_REGISTER_1, SIZE_OF_TRIMMING_REGISTER_1);
+    if(!temp.has_value() || temp->size() != SIZE_OF_TRIMMING_REGISTER_1){
         pac_logger_.LogError() << "BME280.readTrimmingParameters: Failed reading from trimming registers 1";
         return core::ErrorCode::kError;
     }
@@ -193,15 +205,15 @@ core::ErrorCode BME280::readTrimmingParameters(){
     param.dig_P8 = static_cast<int16_t>((static_cast<uint16_t>(temp.value()[21]) << 8) | temp.value()[20]);
     param.dig_P9 = static_cast<int16_t>((static_cast<uint16_t>(temp.value()[23]) << 8) | temp.value()[22]);
 
-    temp = this->i2c_->Read(BME280_ADDRESS, TRIMMING_REGISTER_2, 1*8);
-    if(!temp.has_value() || temp->size() != 1){
+    temp = this->i2c_->Read(BME280_ADDRESS, TRIMMING_REGISTER_2, SIZE_OF_TRIMMING_REGISTER_2);
+    if(!temp.has_value() || temp->size() != SIZE_OF_TRIMMING_REGISTER_2){
         pac_logger_.LogError() << "BME280.readTrimmingParameters: Failed reading from trimming registers 2";
         return core::ErrorCode::kError;
     }
     param.dig_H1 = temp.value()[0];
 
-    temp = this->i2c_->Read(BME280_ADDRESS, TRIMMING_REGISTER_2, 8*8);
-    if(!temp.has_value() || temp->size() != 8){
+    temp = this->i2c_->Read(BME280_ADDRESS, TRIMMING_REGISTER_2, SIZE_OF_TRIMMING_REGISTER_3);
+    if(!temp.has_value() || temp->size() != SIZE_OF_TRIMMING_REGISTER_3){
         pac_logger_.LogError() << "BME280.readTrimmingParameters: Failed reading from trimming registers 3";
         return core::ErrorCode::kError;
     }
