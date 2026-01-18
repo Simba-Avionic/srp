@@ -15,6 +15,7 @@
 #include "mw/gpio_server/controller/gpio_controller.hpp"
 #include <sys/resource.h>
 #include "mw/i2c_service/controller/bme280/controller.hpp"
+#include <iomanip>
 
 namespace srp {
     namespace apps {
@@ -31,11 +32,16 @@ namespace srp {
                 auto temp = bme->getTemperature();
                 auto hum = bme->getHumidity();
 
-                float actualPressure = pressure / 256.0f;
+                float actualPressure = pressure / 25600.0f;
                 float actualTemp = temp / 100.0f;
                 float actualHum = hum / 1024.0f;
-                ara::log::LogInfo() << "Pressure: " << std::to_string(actualPressure) << ", temperature: " << std::to_string(actualTemp) << ", humidity: " << std::to_string(actualHum);
-                //wait
+
+                std::stringstream ss;
+                ss << std::fixed << std::setprecision(2);
+                ss << "Pressure: " << actualPressure << " hPa, " << "temperature: " << actualTemp << " C, "<< "humidity: " << actualHum << " %";
+
+                ara::log::LogInfo() << ss.str();
+                
                 core::condition::wait_for(std::chrono::milliseconds(3000), token);
             }
 

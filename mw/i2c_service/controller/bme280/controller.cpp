@@ -111,6 +111,9 @@ int32_t BME280::getTemperature(){
     int32_t var1, var2, T;
     var1 = ((((tempRawData.value()>>3) - (static_cast<int32_t>(param.dig_T1<<1)))) * (static_cast<int32_t>(param.dig_T2))) >> 11;
     var2 = (((((tempRawData.value()>>4) - (static_cast<int32_t>(param.dig_T1))) * ((tempRawData.value() >> 4) - (static_cast<int32_t>(param.dig_T1)))) >> 12) * (static_cast<int32_t>(param.dig_T3))) >> 14;
+    
+    this->t_fine = var1 + var2;
+
     return (((var1 + var2) * 5 + 128) >> 8);
 }
 
@@ -123,7 +126,8 @@ uint32_t BME280::getPressure(){
         return 0;
     }
     int64_t var1, var2, p;
-    int32_t temp = getTemperature();
+    getTemperature();;
+    int32_t temp = this->t_fine;
     if(temp == 0){
         pac_logger_.LogDebug() << "BME280.getPressure: Error getting data for conversion";
         return 0;
@@ -146,13 +150,22 @@ uint32_t BME280::getPressure(){
 uint32_t BME280::getHumidity(){
     auto humidityRawData = extractBits(readOutputData(), 0, 16);
     if(!humidityRawData.has_value()){
-        pac_logger_.LogDebug() << "BME280.getPressure: Error getting data for conversion";
+        pac_logger_.LogDebug() << "BME280.getHumidity: Error getting data for conversion";
         return 0;
     }
 
-    int32_t v_x1_u32r = (getTemperature() - (static_cast<int32_t>(76800)));
-    v_x1_u32r = (((((humidityRawData.value() << 14) - ((static_cast<int32_t>(param.dig_H4)) << 20) - (static_cast<int32_t>(param.dig_H5)) * v_x1_u32r)) + (static_cast<int32_t>(16384))) >> 15);
-    v_x1_u32r *= (((((((v_x1_u32r * (static_cast<int32_t>(param.dig_H6))) >> 10) * (((v_x1_u32r * (static_cast<int32_t>(param.dig_H3))) >> 11) + (static_cast<int32_t>(32768)))) >> 10) + (static_cast<int32_t>(2097152))) * (static_cast<int32_t>(param.dig_H2)) + 8192) >> 14);
+    getTemperature();
+
+    int32_t t_fine_adj = this->t_fine - 76800;
+    // v_x1_u32r = (((((humidityRawData.value() << 14) - ((static_cast<int32_t>(param.dig_H4)) << 20) - (static_cast<int32_t>(param.dig_H5)) * v_x1_u32r)) + (static_cast<int32_t>(16384))) >> 15) * (((((((v_x1_u32r * (static_cast<int32_t>(param.dig_H6))) >> 10) * (((v_x1_u32r * (static_cast<int32_t>(param.dig_H3))) >> 11) + (static_cast<int32_t>(32768)))) >> 10) + (static_cast<int32_t>(2097152))) * (static_cast<int32_t>(param.dig_H2)) + 8192) >> 14);
+    int32_t part1 = (humidityRawData.value() << 14) - (static_cast<int32_t>(param.dig_H4) << 20) - (static_cast<int32_t>(param.dig_H5) * t_fine_adj);
+    part1 = (part1 + 16384) >> 15;
+
+    int32_t part2 = (t_fine_adj * static_cast<int32_t>(param.dig_H6)) >> 10;
+    part2 = (part2 * (((t_fine_adj * static_cast<int32_t>(param.dig_H3)) >> 11) + 32768)) >> 10;
+    part2 = ((part2 + 2097152) * static_cast<int32_t>(param.dig_H2) + 8192) >> 14;
+
+    int32_t v_x1_u32r = part1 * part2;
     v_x1_u32r = (v_x1_u32r - (((((v_x1_u32r >> 15) * (v_x1_u32r >> 15)) >> 7) * (static_cast<int32_t>(param.dig_H1))) >> 4));
     v_x1_u32r = std::max(0, v_x1_u32r);
     v_x1_u32r = std::min(v_x1_u32r, HUMIDITY_MAX);
@@ -212,7 +225,7 @@ core::ErrorCode BME280::readTrimmingParameters(){
     }
     param.dig_H1 = temp.value()[0];
 
-    temp = this->i2c_->Read(BME280_ADDRESS, TRIMMING_REGISTER_2, SIZE_OF_TRIMMING_REGISTER_3);
+    temp = this->i2c_->Read(BME280_ADDRESS, TRIMMING_REGISTER_3, SIZE_OF_TRIMMING_REGISTER_3);
     if(!temp.has_value() || temp->size() != SIZE_OF_TRIMMING_REGISTER_3){
         pac_logger_.LogError() << "BME280.readTrimmingParameters: Failed reading from trimming registers 3";
         return core::ErrorCode::kError;

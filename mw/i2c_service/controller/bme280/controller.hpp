@@ -61,7 +61,7 @@ class BME280 {
  private:
   std::unique_ptr<II2CController> i2c_;
   const ara::log::Logger& pac_logger_;
-  long t_fine;
+  int32_t t_fine;
   trimmingParameters param;
 
 
