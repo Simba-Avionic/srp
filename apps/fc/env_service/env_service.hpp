@@ -20,7 +20,7 @@
 
 #include "mw/temp/controller/temp_controller.h"
 #include "ara/exec/adaptive_application.h"
-#include "apps/fc/env_service/service.hpp"
+#include "apps/ec/env_service/service.hpp"
 #include "mw/i2c_service/controller/adcsensor/controller.hpp"
 
 namespace srp {
@@ -30,21 +30,14 @@ class EnvService final : public ara::exec::AdaptiveApplication {
  private:
   std::unique_ptr<mw::temp::TempController> temp_{};
   std::shared_ptr<i2c::ADCSensorController> press_{};
-  // [sensor_id] = {name, physical_id}
-  std::unordered_map<std::uint8_t, std::pair<std::string, std::string>> sensorIdsToPaths{};
+
+  std::unordered_map<std::uint8_t, std::pair<std::string, std::string>> sensorIdsToPaths{}; // [sensor_id] = {name, physical_id}
 
 
   apps::MyEnvAppSkeleton service_ipc;
   apps::MyEnvAppSkeleton service_udp;
-  core::ErrorCode LoadTempConfig(
+  int LoadTempConfig(
     const std::map<ara::core::StringView, ara::core::StringView>& parms);
-  void GenericPressureLoop(
-    const std::stop_token& token,
-    uint8_t sensorId,
-    std::chrono::milliseconds delay,
-    const std::string& label,
-    auto& eventIpc, // NOLINT
-    auto& eventUdp);  // NOLINT
 
  protected:
   /**
