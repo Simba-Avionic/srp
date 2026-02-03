@@ -113,9 +113,9 @@ std::optional<uint16_t> PCA9685::ReadChannelPosition(const uint8_t &channel) {
         return std::nullopt;
     }
     auto position = ComposePosition(val_opt.value());
-    pac_logger_.LogDebug() << "PCA9685.ReadChannelPosition: channel " <<
-                               std::to_string(static_cast<int>(channel)) <<
-                               " pos " << std::to_string(position);
+    // pac_logger_.LogDebug() << "PCA9685.ReadChannelPosition: channel " <<
+    //                            std::to_string(static_cast<int>(channel)) <<
+    //                            " pos " << std::to_string(position);
     return position;
 }
 
