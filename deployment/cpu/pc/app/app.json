@@ -45,7 +45,8 @@
                 "PrimerApp/primeStatusEvent as primeStatusEvent",
                 "EC_DiagOtaApp/newDTCEvent as EC_newDTCEvent",
                 "FC_DiagOtaApp/currentMode as FC_currentCPUMode",
-                "EngineApp/currentMode as currentMode"
+                "EngineApp/currentMode as currentMode",
+                "GhApp/newForceEvent as newForceEvent"
             ]
         }
     }
