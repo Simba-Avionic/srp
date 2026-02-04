@@ -30,6 +30,7 @@ namespace {
 }
 
 
+
 core::ErrorCode EnvService::Init(std::unique_ptr<mw::temp::TempController> temp) {
     if (this->temp_ || !temp) {
       return core::ErrorCode::kInitializeError;
@@ -46,6 +47,7 @@ EnvService::EnvService(): press_{std::move(std::make_shared<i2c::ADCSensorContro
 
 int EnvService::Initialize(const std::map<ara::core::StringView, ara::core::StringView>
                       parms) {
+    ara::log::LogInfo() << "EnvService has been started";
     // Check if app_path exists in parameters
     auto app_path_it = parms.find("app_path");
     if (app_path_it == parms.end()) {
@@ -81,12 +83,51 @@ int EnvService::Initialize(const std::map<ara::core::StringView, ara::core::Stri
     do {
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
         res = this->temp_->Initialize(514, std::bind(&EnvService::TempRxCallback,
-            this, std::placeholders::_1), std::make_unique<com::soc::IpcSocket>());
+            this, std::placeholders::_1), std::make_unique<com::soc::StreamIpcSocket>());
         i++;
     } while (res != core::ErrorCode::kOk && i < 6);
+    LoadTempConfig(parms);
     service_ipc.StartOffer();
     service_udp.StartOffer();
     return core::ErrorCode::kOk;
+}
+
+int EnvService::LoadTempConfig(const std::map<ara::core::StringView, ara::core::StringView>& parms) {
+    ara::log::LogInfo() << "Starting function LoadTempConfig";
+    const std::string path = parms.at("app_path") + "etc/config.json";
+    auto parser_opt = core::json::JsonParser::Parser(path);
+    ara::log::LogInfo() << path;
+    if (!parser_opt.has_value()) {
+        ara::log::LogError() <<("Failed to open temp_Service config file");
+        exit(1);
+    }
+    ara::log::LogInfo() << "Opened file";
+    auto temp_opt = parser_opt.value().GetArray<nlohmann::json>("sensors-temp");
+    if (!temp_opt.has_value()) {
+        ara::log::LogError() <<("Invalid temp_Service config format");
+        exit(2);
+    }
+    for (const auto &data : temp_opt.value()) {
+        auto parser_opt = core::json::JsonParser::Parser(data);
+        if (!parser_opt.has_value()) {
+            continue;
+        }
+        auto parser = parser_opt.value();
+        auto physical_id = parser.GetString("physical_id");
+        auto name = parser.GetString("name");
+        if (!physical_id.has_value() || !name.has_value()) {
+            continue;
+        }
+
+        ara::log::LogDebug() << "Sending subscribe request to temp_service";
+        std::optional<uint8_t> sensor_id = this->temp_->Register(physical_id.value());
+        if (!sensor_id.has_value()) {
+            ara::log::LogError() << "Sensor_id is empty";
+            continue;
+        }
+        sensorIdsToPaths[sensor_id.value()] = std::make_pair(name.value(), physical_id.value());
+    }
+    return srp::core::ErrorCode::kOk;
 }
 
 int EnvService::Run(const std::stop_token& token) {
@@ -100,7 +141,7 @@ int EnvService::Run(const std::stop_token& token) {
                 press_sum += pressValue.value();
                 num += 1.0f;
             } else {
-                ara::log::LogWarn() << "dont receive new pressure";
+                ara::log::LogWarn() << "Don't receive new pressure";
             }
         }
         if (num > 0.0f) {
@@ -124,26 +165,24 @@ int EnvService::Run(const std::stop_token& token) {
 void EnvService::TempRxCallback(const std::vector<srp::mw::temp::TempReadHdr>& data) {
     for (auto &hdr : data) {
         const int16_t value = static_cast<int16_t>(hdr.value * 10);
-        ara::log::LogDebug() << "Receive temp id: " << hdr.actuator_id << ", temp: " << static_cast<float>(value/10);
-        switch (hdr.actuator_id) {
-            case 0:
-                this->service_ipc.newTempEvent_1.Update(value);
-                this->service_udp.newTempEvent_1.Update(value);
-                break;
-            case 1:
-                this->service_ipc.newTempEvent_2.Update(value);
-                this->service_udp.newTempEvent_2.Update(value);
-                break;
-            case 2:
-                this->service_ipc.newTempEvent_3.Update(value);
-                this->service_udp.newTempEvent_3.Update(value);
-                break;
-            default:
-                ara::log::LogWarn() << "ID spoza zakresu:" << hdr.actuator_id;
-            break;
+        ara::log::LogDebug() << "Receive new temp id: " << hdr.actuator_id << ", name: " <<
+                sensorIdsToPaths[hdr.actuator_id].first << ", temp: " << static_cast<float>(value/10);
+        if (sensorIdsToPaths[hdr.actuator_id].first == "sensor_temp_1") {
+            this->service_ipc.newTempEvent_1.Update(value);
+            this->service_udp.newTempEvent_1.Update(value);
+        } else if (sensorIdsToPaths[hdr.actuator_id].first == "sensor_temp_2") {
+            this->service_ipc.newTempEvent_2.Update(value);
+            this->service_udp.newTempEvent_2.Update(value);
+        } else if (sensorIdsToPaths[hdr.actuator_id].first == "sensor_temp_3") {
+            this->service_ipc.newTempEvent_3.Update(value);
+            this->service_udp.newTempEvent_3.Update(value);
+        } else {
+            ara::log::LogWarn() << "ID spoza zakresu:" << hdr.actuator_id;
         }
     }
 }
+
+
 
 
 }  // namespace envService

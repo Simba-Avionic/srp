@@ -15,12 +15,13 @@
 #include <cstdio>
 #include <cinttypes>
 #include <cstdint>
+#include <utility>
 
 #include <memory>
 #include <vector>
 #include <unordered_map>
 
-#include "communication-core/sockets/Isocket.h"
+#include "communication-core/sockets/stream_ipc_socket.h"
 #include "communication-core/sockets/socket_config.h"
 #include "ara/log/log.h"
 #include "mw/temp/service/temp_service.h"
@@ -41,15 +42,16 @@ std::function<void(const std::vector<srp::mw::temp::TempReadHdr>&)>;
 class TempController {
  private:
   uint16_t service_id;
-  std::unique_ptr<com::soc::ISocket> sub_sock_{};
+  std::unique_ptr<com::soc::StreamIpcSocket> sub_sock_{};
+  std::unique_ptr<com::soc::IpcSocket> sock{};
   TempRXCallback callback_;
 
  protected:
   void SetTempRXCallback();
-  srp::core::ErrorCode Subscribe();
-  srp::core::ErrorCode Init(uint16_t service_id, std::unique_ptr<com::soc::ISocket> sock);
+  srp::core::ErrorCode Init(uint16_t service_id, std::unique_ptr<com::soc::StreamIpcSocket> sock);
   srp::core::ErrorCode SetUp(TempRXCallback callback);
   std::vector<srp::mw::temp::TempReadHdr> Conv(const std::vector<uint8_t>& data) const;
+
  public:
  /**
   * @brief Initialize function for temp receive
@@ -59,8 +61,10 @@ class TempController {
   * @param sock 
   * @return srp::core::ErrorCode 
   */
-  srp::core::ErrorCode Initialize(uint16_t service_id,
-                TempRXCallback callback, std::unique_ptr<com::soc::ISocket> sock);
+  srp::core::ErrorCode Initialize(uint16_t service_id, TempRXCallback callback,
+                                  std::unique_ptr<com::soc::StreamIpcSocket> sock);
+  std::optional<std::vector<uint8_t>> Subscribe(std::string name);
+  std::optional<uint8_t> Register(std::string name);
 };
 
 }  // namespace temp

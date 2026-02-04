@@ -16,11 +16,11 @@
 #include <vector>
 #include <map>
 #include <memory>
+#include <utility>
 
 #include "mw/temp/controller/temp_controller.h"
 #include "ara/exec/adaptive_application.h"
 #include "apps/ec/env_service/service.hpp"
-#include "communication-core/sockets/ipc_socket.h"
 #include "mw/i2c_service/controller/adcsensor/controller.hpp"
 
 namespace srp {
@@ -30,9 +30,14 @@ class EnvService final : public ara::exec::AdaptiveApplication {
  private:
   std::unique_ptr<mw::temp::TempController> temp_{};
   std::shared_ptr<i2c::ADCSensorController> press_{};
+  // [sensor_id] = {name, physical_id}
+  std::unordered_map<std::uint8_t, std::pair<std::string, std::string>> sensorIdsToPaths{};
+
 
   apps::MyEnvAppSkeleton service_ipc;
   apps::MyEnvAppSkeleton service_udp;
+  int LoadTempConfig(
+    const std::map<ara::core::StringView, ara::core::StringView>& parms);
 
  protected:
   /**
@@ -50,6 +55,7 @@ class EnvService final : public ara::exec::AdaptiveApplication {
   int Initialize(const std::map<ara::core::StringView, ara::core::StringView>
                       parms) override;
   void TempRxCallback(const std::vector<srp::mw::temp::TempReadHdr>& data);
+
 
  public:
   ~EnvService() = default;

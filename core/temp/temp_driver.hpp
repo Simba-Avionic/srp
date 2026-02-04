@@ -24,6 +24,8 @@ namespace temp {
 
 class TempDriver : public ITempDriver {
  public:
+  // TODO(GH): Add Check that sensor exist.
+  // TODO(GH): Add print all sensors value on startup as ara::logInfo
   TempDriver();
   ara::core::Result<double> ReadTemp(const std::string& sensorPhysicalID) override;
   ara::core::Result<bool> SetResolution(const std::string& sensorPhysicalID, uint8_t resolution) override;
