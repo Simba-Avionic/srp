@@ -38,7 +38,7 @@ namespace {
     };
 }  // namespace
 PCA9685::PCA9685(): pac_logger_{
-    ara::log::LoggingMenager::GetInstance()->CreateLogger("pca9", "", ara::log::LogLevel::kDebug)} {
+    ara::log::LoggingMenager::GetInstance()->CreateLogger("pca9", "", ara::log::LogLevel::kInfo)} {
 }
 core::ErrorCode PCA9685::Init(std::unique_ptr<II2CController> i2c) {
   pac_logger_.LogInfo() << "PCA9685.Init: starting initialization";
@@ -113,9 +113,9 @@ std::optional<uint16_t> PCA9685::ReadChannelPosition(const uint8_t &channel) {
         return std::nullopt;
     }
     auto position = ComposePosition(val_opt.value());
-    // pac_logger_.LogDebug() << "PCA9685.ReadChannelPosition: channel " <<
-    //                            std::to_string(static_cast<int>(channel)) <<
-    //                            " pos " << std::to_string(position);
+    pac_logger_.LogDebug() << "PCA9685.ReadChannelPosition: channel " <<
+                               std::to_string(static_cast<int>(channel)) <<
+                               " pos " << std::to_string(position);
     return position;
 }
 
