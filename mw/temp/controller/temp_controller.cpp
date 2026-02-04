@@ -32,13 +32,14 @@ srp::core::ErrorCode TempController::Init(uint16_t service_id, std::unique_ptr<c
         return core::ErrorCode::kInitializeError;
     }
     this->sub_sock_ = std::move(sock);
+    this->sock = std::move(std::make_unique<com::soc::IpcSocket>());
     this->service_id = service_id;
     return core::ErrorCode::kOk;
 }
 
 srp::core::ErrorCode TempController::SetUp(TempRXCallback callback) {
     auto res = core::ErrorCode::kOk;
-    if ((res = this->sub_sock_->Init(
+    if ((res = this->sock->Init(
         com::soc::SocketConfig(
             kSubscriberPrefix + std::to_string(this->service_id), 0, 0)))) {
         ara::log::LogError() <<("Couldn't initialize socket!");
@@ -54,7 +55,7 @@ srp::core::ErrorCode TempController::SetUp(TempRXCallback callback) {
 
 std::optional<uint8_t> TempController::Register(std::string name) {
     auto sensor_id = Subscribe(name);
-    this->sub_sock_->StartRXThread();
+    this->sock->StartRXThread();
     return (sensor_id && !sensor_id->empty()) ? std::make_optional(sensor_id->front()) : std::nullopt;
 }
 
@@ -98,7 +99,7 @@ void TempController::SetTempRXCallback() {
         this->callback_(hdr);
         return std::vector<uint8_t>{};
     };
-    this->sub_sock_->SetRXCallback(lambdaCallback);
+    this->sock->SetRXCallback(lambdaCallback);
 }
 
 srp::core::ErrorCode TempController::Initialize(uint16_t service_id,

@@ -141,7 +141,7 @@ int EnvService::Run(const std::stop_token& token) {
                 press_sum += pressValue.value();
                 num += 1.0f;
             } else {
-                ara::log::LogWarn() << "dont receive new pressure";
+                ara::log::LogWarn() << "Don't receive new pressure";
             }
         }
         if (num > 0.0f) {
@@ -165,7 +165,7 @@ int EnvService::Run(const std::stop_token& token) {
 void EnvService::TempRxCallback(const std::vector<srp::mw::temp::TempReadHdr>& data) {
     for (auto &hdr : data) {
         const int16_t value = static_cast<int16_t>(hdr.value * 10);
-        ara::log::LogDebug() << "Receive temp id: " << hdr.actuator_id << ", name: " <<
+        ara::log::LogDebug() << "Receive new temp id: " << hdr.actuator_id << ", name: " <<
                 sensorIdsToPaths[hdr.actuator_id].first << ", temp: " << static_cast<float>(value/10);
         if (sensorIdsToPaths[hdr.actuator_id].first == "sensor_temp_1") {
             this->service_ipc.newTempEvent_1.Update(value);
