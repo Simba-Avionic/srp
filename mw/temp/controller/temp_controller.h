@@ -51,7 +51,7 @@ class TempController {
   srp::core::ErrorCode Init(uint16_t service_id, std::unique_ptr<com::soc::StreamIpcSocket> sock);
   srp::core::ErrorCode SetUp(TempRXCallback callback);
   std::vector<srp::mw::temp::TempReadHdr> Conv(const std::vector<uint8_t>& data) const;
-  
+
  public:
  /**
   * @brief Initialize function for temp receive
