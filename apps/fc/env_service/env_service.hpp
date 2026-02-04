@@ -20,8 +20,9 @@
 
 #include "mw/temp/controller/temp_controller.h"
 #include "ara/exec/adaptive_application.h"
-#include "apps/ec/env_service/service.hpp"
-#include "mw/i2c_service/controller/adcsensor/controller.hpp"
+#include "apps/fc/env_service/service.hpp"
+// #include "mw/i2c_service/controller/adcsensor/controller.hpp"
+#include "mw/i2c_service/controller/bme280/controller.hpp"
 
 namespace srp {
 namespace envService {
@@ -29,7 +30,7 @@ namespace envService {
 class EnvService final : public ara::exec::AdaptiveApplication {
  private:
   std::unique_ptr<mw::temp::TempController> temp_{};
-  std::shared_ptr<i2c::ADCSensorController> press_{};
+  std::shared_ptr<i2c::BME280> press_{};
 
   std::unordered_map<std::uint8_t, std::pair<std::string, std::string>> sensorIdsToPaths{}; // [sensor_id] = {name, physical_id}
 
