@@ -56,11 +56,11 @@ TEST(FileHandlerTest, WriteDataTest) {
     MockFileHandler mock_file;
 
     // Określamy, jak ma się zachować mock przy wywołaniu metody 'write'
-    EXPECT_CALL(mock_file, write("some data"))
+    EXPECT_CALL(mock_file, write("some data", true))
         .WillOnce(::testing::Return(true));  // Zwracamy 'true' przy zapisaniu danych
 
     // Wywołanie testowanej metody
-    bool result = mock_file.write("some data");
+    bool result = mock_file.write("some data", true);
 
     // Sprawdzamy wynik
     EXPECT_TRUE(result);
@@ -81,8 +81,8 @@ class GpioDriverTest : public ::testing::Test {
 
 TEST_F(GpioDriverTest, InitializePinSuccess) {
     EXPECT_CALL(*mockFile, open(_, srp::core::FileMode::WRITE)).Times(2).WillRepeatedly(Return(true));
-    EXPECT_CALL(*mockFile, write("12")).WillOnce(Return(true));
-    EXPECT_CALL(*mockFile, write("out")).WillOnce(Return(true));
+    EXPECT_CALL(*mockFile, write("12", true)).WillOnce(Return(true));
+    EXPECT_CALL(*mockFile, write("out", true)).WillOnce(Return(true));
     EXPECT_CALL(*mockFile, close()).Times(2);
     srp::core::gpio::GpioDriver gpioDriver(std::move(mockFile));
     EXPECT_EQ(gpioDriver.initializePin(12, srp::core::gpio::direction_t::OUT), srp::core::ErrorCode::kOk);
@@ -90,7 +90,7 @@ TEST_F(GpioDriverTest, InitializePinSuccess) {
 
 TEST_F(GpioDriverTest, SetValueSuccess) {
     EXPECT_CALL(*mockFile, open(_, srp::core::FileMode::WRITE)).WillOnce(Return(true));
-    EXPECT_CALL(*mockFile, write("1")).WillOnce(Return(true));
+    EXPECT_CALL(*mockFile, write("1", true)).WillOnce(Return(true));
     EXPECT_CALL(*mockFile, close());
     srp::core::gpio::GpioDriver gpioDriver(std::move(mockFile));
     EXPECT_EQ(gpioDriver.setValue(12, 1), srp::core::ErrorCode::kOk);
@@ -106,7 +106,7 @@ TEST_F(GpioDriverTest, GetValueSuccess) {
 
 TEST_F(GpioDriverTest, UnregisterPinSuccess) {
     EXPECT_CALL(*mockFile, open(_, _)).WillOnce(Return(true));
-    EXPECT_CALL(*mockFile, write("12")).WillOnce(Return(true));
+    EXPECT_CALL(*mockFile, write("12", true)).WillOnce(Return(true));
     EXPECT_CALL(*mockFile, close());
     srp::core::gpio::GpioDriver gpioDriver(std::move(mockFile));
     EXPECT_EQ(gpioDriver.unregisterPin(12), srp::core::ErrorCode::kOk);
