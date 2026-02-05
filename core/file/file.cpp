@@ -35,7 +35,7 @@ void FileHandler::close() {
     }
 }
 
-bool FileHandler::write(const std::string& data) {
+bool FileHandler::write(const std::string& data, const bool flush_after_write) {
     if (!file_.is_open()) {
         return false;
     }
@@ -43,7 +43,9 @@ bool FileHandler::write(const std::string& data) {
     if (!file_) {  // Sprawdzenie błędu zapisu
         return false;
     }
-    file_.flush();
+    if (flush_after_write) {
+        file_.flush();
+    }
     return true;
 }
 

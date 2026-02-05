@@ -27,7 +27,7 @@ class IFileHandler {
     virtual ~IFileHandler() = default;
     virtual bool open(const std::string& path, const FileMode& mode) = 0;
     virtual void close() = 0;
-    virtual bool write(const std::string& data) = 0;
+    virtual bool write(const std::string& data, const bool flush_after_write = true) = 0;
     virtual std::optional<std::string> read() = 0;
 };
 
