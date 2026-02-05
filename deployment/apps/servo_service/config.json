@@ -3,18 +3,18 @@
         {
         "actuator_id":60,
         "channel": 1,
-        "on_pos" : 540,
-        "off_pos" : 102,
+        "on_pos" : 102,
+        "off_pos" : 540,
         "mosfet_id" : 15,
-        "desc": "on devboard have name C70, MAIN VALVE"
+        "desc": "on devboard have name C70, MAIN VALVE, 102 to 0.5ms, 540 prawdopodobnie 2.5ms"
         },
         {
         "actuator_id":61,
         "channel": 3,
-        "on_pos" : 540,
+        "on_pos" : 253,
         "off_pos" : 102,
         "mosfet_id" : 6,
-        "desc": "on devboard have name C69, VENT VALVE"
+        "desc": "on devboard have name C69, VENT VALVE, off: 102 - on: 404, calculate open % by changing on pos"
         },
         {
         "actuator_id":62,
