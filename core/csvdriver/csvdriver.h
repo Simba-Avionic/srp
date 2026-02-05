@@ -27,7 +27,7 @@ class CSVDriver : public ICSVDriver {
   explicit CSVDriver(const char& separator = ';');
   int Open(const std::string& fileName, const std::string& HEADER) override;
   void Close() override;
-  int WriteLine(const std::string& line) override;
+  int WriteLine(const std::string& line, const bool flush_after_write = true) override;
 };
 }  // namespace csv
 }  // namespace srp

@@ -57,11 +57,11 @@ TEST(FileHandlerTest, WriteDataTest) {
     MockFileHandler mock_file;
 
     // Określamy, jak ma się zachować mock przy wywołaniu metody 'write'
-    EXPECT_CALL(mock_file, write("some data"))
+    EXPECT_CALL(mock_file, write("some data", true))
         .WillOnce(::testing::Return(true));  // Zwracamy 'true' przy zapisaniu danych
 
     // Wywołanie testowanej metody
-    bool result = mock_file.write("some data");
+    bool result = mock_file.write("some data", true);
 
     // Sprawdzamy wynik
     EXPECT_TRUE(result);

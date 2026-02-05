@@ -17,7 +17,7 @@ class MockFileHandler : public srp::core::IFileHandler {
  public:
     MOCK_METHOD(bool, open, (const std::string& path, const srp::core::FileMode& mode), (override));
     MOCK_METHOD(void, close, (), (override));
-    MOCK_METHOD(bool, write, (const std::string& data), (override));
+    MOCK_METHOD(bool, write, (const std::string& data, const bool flush_after_write), (override));
     MOCK_METHOD(std::optional<std::string>, read, (), (override));
 };
 
