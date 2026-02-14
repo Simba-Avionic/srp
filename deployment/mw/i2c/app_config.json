@@ -1,5 +1,7 @@
 {
     "include": [
+        "deployment/system_definition/diag/jobs/i2c_service/i2c_write/i2c_Write_did.json",
+        "deployment/system_definition/diag/jobs/i2c_service/i2c_read/i2c_Read_did.json"
     ],
     "package": "srp.mw",
     "adaptive_application": {
@@ -41,6 +43,14 @@
                 }
             },
             "provide": [
+            {
+                "name": "i2c_Write_did as i2c_Write_did",
+                "on": "diag"
+            },
+            {
+                "name": "i2c_Read_did as i2c_Read_did",
+                "on": "diag"
+            }
             ]
         }
     }
