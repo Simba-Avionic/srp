@@ -53,7 +53,7 @@ struct trimmingParameters {
 class BME280 {
  private:
   std::unique_ptr<II2CController> i2c_;
-  const ara::log::Logger& pac_logger_;
+  const ara::log::Logger& bme_logger_;
   int32_t t_fine;
   trimmingParameters param;
 
@@ -61,7 +61,8 @@ class BME280 {
  protected:
   core::ErrorCode setI2C(std::unique_ptr<II2CController> adc_);
   std::optional<std::vector<uint8_t>> readOutputData();
-  std::optional<int32_t> extractBits(const std::optional<std::vector<uint8_t>>& input, uint8_t startBit, uint8_t length);
+  std::optional<int32_t> extractMeasurementField(const std::optional<std::vector<uint8_t>>& input,
+                                       const uint8_t startBit, const uint8_t length);
 
 
  private:
@@ -71,9 +72,9 @@ class BME280 {
  public:
   BME280();
   core::ErrorCode Init(std::unique_ptr<II2CController> i2c = std::make_unique<I2CController>());
-  uint32_t getPressure();
-  int32_t getTemperature();
-  uint32_t getHumidity();
+  std::optional<float> getPressure();
+  std::optional<float> getTemperature();
+  std::optional<float> getHumidity();
 };
 
 }  // namespace i2c

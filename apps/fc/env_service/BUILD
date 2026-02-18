@@ -13,12 +13,11 @@ ara_someip_lib(
 )
 
 cc_binary(
-    name = "env_service",
+    name = "env_service_fc",
     srcs = [
         "main.cpp",
         "env_service.cpp",
         "env_service.hpp",
-        "service.hpp",
     ],
     visibility = [
         "//deployment/apps:__subpackages__"
@@ -26,11 +25,10 @@ cc_binary(
     deps = [
         "@srp_platform//ara/exec:adaptive_application_lib",
         "//core/common:condition_lib",
-        "@srp_platform//ara/diag:uds_lib",
         "//mw/temp/controller:temp_controller_mw",
         "//deployment/apps/fc/env_service:ara",
         "//deployment/apps/fc/env_service:someip_lib",
-        "//communication-core/sockets:socket_ipc",
-        "//mw/i2c_service/controller/bme280:bme280",
+        "//mw/i2c_service/controller/bme280:bme280_controller",
+        "//core/json:simba_json",
     ],
 )

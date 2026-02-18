@@ -1,10 +1,10 @@
 {
     "include": [
-        "deployment/system_definition/someip/env_service/service.json"
+        "deployment/system_definition/someip/fc/env_service/service.json"
     ],
     "package": "srp.env",
     "adaptive_application": {
-        "EnvApp": {
+        "EnvAppFc": {
             "app": {
                 "functional_groups":[
                     "Running",
@@ -12,11 +12,16 @@
                 ],
                 "parms": "",
                 "logger": {
-                    "app_id": "ENVA",
+                    "app_id": "ENV-",
                     "app_des": "Enviroment Adaptive application",
                     "log_level": "kInfo",
                     "log_mode": "kRemote",
                     "ctx": [
+                        {
+                            "ctx_id": "BME-",
+                            "log_level": "kInfo",
+                            "ctx_des": "Log Data from BME280 Pressure sensor"
+                        },
                         {
                             "ctx_id": "ara",
                             "log_level": "kInfo",
@@ -42,13 +47,13 @@
             },
             "provide": [
                 {
-                    "name": "EnvApp as envService_udp",
+                    "name": "EnvAppFc as envServiceFc_udp",
                     "on": "udp",
                     "port": "10001",
                     "instance": 1
                 },
                 {
-                    "name": "EnvApp as envService_ipc",
+                    "name": "EnvAppFc as envServiceFc_ipc",
                     "on": "ipc",
                     "instance": 2
                 }

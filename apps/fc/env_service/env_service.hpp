@@ -1,15 +1,15 @@
 /**
  * @file env_service.hpp
- * @author Mateusz Krajewski (matikrajek42@gmail.com)
+ * @author Grzegorz Horbaczewski (gregority9@gmail.com)
  * @brief 
  * @version 0.1
- * @date 2024-04-04
+ * @date 2026-03-13
  * 
- * @copyright Copyright (c) 2024
+ * @copyright Copyright (c) 2026
  * 
  */
-#ifndef APPS_EC_ENV_SERVICE_ENV_SERVICE_HPP_
-#define APPS_EC_ENV_SERVICE_ENV_SERVICE_HPP_
+#ifndef APPS_FC_ENV_SERVICE_ENV_SERVICE_HPP_
+#define APPS_FC_ENV_SERVICE_ENV_SERVICE_HPP_
 
 #include <string>
 #include <unordered_map>
@@ -20,25 +20,26 @@
 
 #include "mw/temp/controller/temp_controller.h"
 #include "ara/exec/adaptive_application.h"
-#include "apps/fc/env_service/service.hpp"
-// #include "mw/i2c_service/controller/adcsensor/controller.hpp"
 #include "mw/i2c_service/controller/bme280/controller.hpp"
+#include "srp/env/EnvAppFcSkeleton.h"
+
 
 namespace srp {
-namespace envService {
+namespace envServiceFc {
 
-class EnvService final : public ara::exec::AdaptiveApplication {
+class EnvServiceFc final : public ara::exec::AdaptiveApplication {
  private:
   std::unique_ptr<mw::temp::TempController> temp_{};
-  std::shared_ptr<i2c::BME280> press_{};
+  std::shared_ptr<i2c::BME280> bme{};
 
-  std::unordered_map<std::uint8_t, std::pair<std::string, std::string>> sensorIdsToPaths{}; // [sensor_id] = {name, physical_id}
-
-
-  apps::MyEnvAppSkeleton service_ipc;
-  apps::MyEnvAppSkeleton service_udp;
+  std::unordered_map<std::uint8_t, std::pair<std::string, std::string>> sensorIdsToPaths{};
+  // [sensor_id] = {name, physical_id}
+  
+  env::EnvAppFcSkeleton service_ipc;
+  env::EnvAppFcSkeleton service_udp;
   int LoadTempConfig(
     const std::map<ara::core::StringView, ara::core::StringView>& parms);
+  void TempRxCallback(const std::vector<srp::mw::temp::TempReadHdr>& data);
 
  protected:
   /**
@@ -55,16 +56,15 @@ class EnvService final : public ara::exec::AdaptiveApplication {
    */
   int Initialize(const std::map<ara::core::StringView, ara::core::StringView>
                       parms) override;
-  void TempRxCallback(const std::vector<srp::mw::temp::TempReadHdr>& data);
+                      
 
 
  public:
-  ~EnvService() = default;
-  EnvService();
+  ~EnvServiceFc() = default;
+  EnvServiceFc();
 };
 
-}  // namespace envService
+}  // namespace envServiceFc
 }  // namespace srp
 
-
-#endif  // APPS_EC_ENV_SERVICE_ENV_SERVICE_HPP_
+#endif  // APPS_FC_ENV_SERVICE_ENV_SERVICE_HPP_
