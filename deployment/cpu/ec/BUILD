@@ -27,7 +27,6 @@ cpu_def(
         "//deployment/apps/system_stat_service:SysStatService",
         "//deployment/apps/prim_service:PrimerService",
         "//deployment/mw/timestamp_mw:timestamp_service",
-        "//deployment/apps/gh_service:GhApp"
     ],
 )
 

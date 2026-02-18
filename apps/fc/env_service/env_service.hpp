@@ -8,8 +8,8 @@
  * @copyright Copyright (c) 2024
  * 
  */
-#ifndef APPS_EC_ENV_SERVICE_ENV_SERVICE_HPP_
-#define APPS_EC_ENV_SERVICE_ENV_SERVICE_HPP_
+#ifndef APPS_FC_ENV_SERVICE_ENV_SERVICE_HPP_
+#define APPS_FC_ENV_SERVICE_ENV_SERVICE_HPP_
 
 #include <string>
 #include <unordered_map>
@@ -20,7 +20,8 @@
 
 #include "mw/temp/controller/temp_controller.h"
 #include "ara/exec/adaptive_application.h"
-#include "apps/fc/env_service/service.hpp"
+#include "srp/env/EnvAppSkeleton.h"
+// #include "apps/fc/env_service/service.hpp"
 // #include "mw/i2c_service/controller/adcsensor/controller.hpp"
 #include "mw/i2c_service/controller/bme280/controller.hpp"
 
@@ -30,13 +31,14 @@ namespace envService {
 class EnvService final : public ara::exec::AdaptiveApplication {
  private:
   std::unique_ptr<mw::temp::TempController> temp_{};
-  std::shared_ptr<i2c::BME280> press_{};
+  std::shared_ptr<i2c::BME280> bme{};
 
-  std::unordered_map<std::uint8_t, std::pair<std::string, std::string>> sensorIdsToPaths{}; // [sensor_id] = {name, physical_id}
+  std::unordered_map<std::uint8_t, std::pair<std::string, std::string>> sensorIdsToPaths{};
+  // [sensor_id] = {name, physical_id}
 
 
-  apps::MyEnvAppSkeleton service_ipc;
-  apps::MyEnvAppSkeleton service_udp;
+  env::EnvAppSkeleton service_ipc;
+  env::EnvAppSkeleton service_udp;
   int LoadTempConfig(
     const std::map<ara::core::StringView, ara::core::StringView>& parms);
 
@@ -66,5 +68,4 @@ class EnvService final : public ara::exec::AdaptiveApplication {
 }  // namespace envService
 }  // namespace srp
 
-
-#endif  // APPS_EC_ENV_SERVICE_ENV_SERVICE_HPP_
+#endif  // APPS_FC_ENV_SERVICE_ENV_SERVICE_HPP_

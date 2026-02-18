@@ -22,8 +22,6 @@ cpu_def(
 
         # "//deployment/example_adaptive/ExampleApp",
         "//deployment/apps/fc/env_service:EnvApp",
-        "//deployment/mw/i2c:i2cMWService",
-        "//deployment/mw/gpio:gpio_service",
         "//deployment/apps/fc/gps_app:GPSApp",
         "//deployment/apps/fc/recovery_service:RecoveryService",
         "//deployment/apps/fc/radio_app:RadioApp",

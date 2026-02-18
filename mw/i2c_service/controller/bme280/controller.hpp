@@ -61,19 +61,23 @@ class BME280 {
  protected:
   core::ErrorCode setI2C(std::unique_ptr<II2CController> adc_);
   std::optional<std::vector<uint8_t>> readOutputData();
-  std::optional<int32_t> extractBits(const std::optional<std::vector<uint8_t>>& input, uint8_t startBit, uint8_t length);
+  std::optional<int32_t> extractBits(const std::optional<std::vector<uint8_t>>& input,
+                                       uint8_t startBit, uint8_t length);
 
 
  private:
   core::ErrorCode InitializeBME();
   core::ErrorCode readTrimmingParameters();
+  core::ErrorCode calcPressure(uint32_t* press);
+  core::ErrorCode calcTemperature(int32_t* temp);
+  core::ErrorCode calcHumidity(uint32_t* hum);
 
  public:
   BME280();
   core::ErrorCode Init(std::unique_ptr<II2CController> i2c = std::make_unique<I2CController>());
-  uint32_t getPressure();
-  int32_t getTemperature();
-  uint32_t getHumidity();
+  core::ErrorCode getPressure(float* result);
+  core::ErrorCode getTemperature(float* result);
+  core::ErrorCode getHumidity(float* result);
 };
 
 }  // namespace i2c
