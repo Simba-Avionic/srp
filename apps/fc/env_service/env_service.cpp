@@ -17,7 +17,8 @@
 #include "apps/fc/env_service/env_service.hpp"
 #include "core/common/condition.h"
 #include "ara/log/log.h"
-#include "srp/env/EnvAppSkeleton.h"
+#include "srp/env/EnvAppFcSkeleton.h"
+#include "core/json/json_parser.h"
 // #include "mw/i2c_service/controller/ads7828/controller.hpp"
 #include "mw/i2c_service/controller/bme280/controller.hpp"
 
@@ -30,6 +31,9 @@ namespace {
     constexpr auto kDelay = 500;
 }
 
+EnvService::EnvService(): service_ipc(ara::core::InstanceSpecifier{"srp/fc/env/EnvApp/envService_ipc"}),
+                  service_udp(ara::core::InstanceSpecifier{"srp/fc/env/EnvApp/envService_udp"}) {
+}
 
 
 core::ErrorCode EnvService::Init(std::unique_ptr<mw::temp::TempController> temp) {
@@ -53,16 +57,18 @@ int EnvService::Initialize(const std::map<ara::core::StringView, ara::core::Stri
     }
 
     // Initialize pressure sensor
+    bme = std::make_unique<i2c::BME280>();
     auto i2c = std::make_unique<i2c::I2CController>();
-    i2c->Init(std::make_unique<com::soc::StreamIpcSocket>());
-    auto press_init_res = this->press_->Init(app_path_str, std::move(i2c));
-
-    // Convert StringView to string for Init
-    std::string app_path_str(app_path_it->second.data(), app_path_it->second.size());
-    if (press_init_res != core::ErrorCode::kOk) {
-        ara::log::LogError() << "Failed to initialize pressure sensor controller";
-        return core::ErrorCode::kInitializeError;
+    if(i2c->Init(std::make_unique<com::soc::StreamIpcSocket>()) != core::ErrorCode::kOk){
+        ara::log::LogError() << "EnvApp: Failed to initialize i2c pointer";
+    } else {
+        ara::log::LogDebug() << "EnvApp: Initialized i2c pointer";
     }
+    ara::log::LogDebug() << "EnvApp: init Complete";
+    if(bme->Init(std::move(i2c)) != core::ErrorCode::kOk){
+        ara::log::LogWarn() << "EnvApp: Failed to initialize BME280 sensor";
+    }
+    ara::log::LogInfo() << "EnvApp: Pressure initialization Complete";
 
     auto temp_init_res = this->Init(std::make_unique<mw::temp::TempController>());
     if (temp_init_res != core::ErrorCode::kOk) {
@@ -124,24 +130,19 @@ int EnvService::LoadTempConfig(const std::map<ara::core::StringView, ara::core::
 int EnvService::Run(const std::stop_token& token) {
     while (!token.stop_requested()) {
         auto start = std::chrono::high_resolution_clock::now();
-        float press_sum = 0.0f;
-        float num = 0.0f;
-        for (uint8_t i = 0; i < PRESS_SENSOR_SAMPLING; i++) {
-            auto pressValue = this->press_->GetValue(PRESS_SENSOR_ID);
-            if (pressValue.has_value()) {
-                press_sum += pressValue.value();
-                num += 1.0f;
-            } else {
-                ara::log::LogWarn() << "dont receive new pressure";
-            }
-        }
-        if (num > 0.0f) {
-            float mean_press = press_sum / num;
+        float pressValue = 0.0f, tempValue = 0.0f, humValue = 0.0f;
+        auto pressErr = this->bme->getPressure(pressValue);
+        auto tempErr = this->bme->getTemperature(tempValue);
+        auto humErr = this->bme->getHumidity(humValue);
+        if (pressErr == core::ErrorCode::kOk && tempErr == core::ErrorCode::kOk && humErr == core::ErrorCode::kOk) {
+            //TODO(gregority9@gmail.com) calculate altitude from pressure and broadcast altitude
             std::ostringstream ss;
-            ss << std::fixed << std::setprecision(2) << mean_press;
+            ss << std::fixed << std::setprecision(2) << pressValue;
             ara::log::LogInfo() << "Receive new Tank Pressure: " << ss.str() << " Bar";
-            this->service_ipc.newPressEvent.Update(static_cast<uint16_t>(mean_press * 100));
-            this->service_udp.newPressEvent.Update(static_cast<uint16_t>(mean_press * 100));
+            this->service_ipc.newBME280Event.Update({tempValue, humValue, pressValue});
+            this->service_udp.newBME280Event.Update({tempValue, humValue, pressValue});
+        } else {
+            ara::log::LogWarn() << "Error getting data from BME sensor";
         }
         auto end = std::chrono::high_resolution_clock::now();
         auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
@@ -158,16 +159,16 @@ void EnvService::TempRxCallback(const std::vector<srp::mw::temp::TempReadHdr>& d
         const int16_t value = static_cast<int16_t>(hdr.value * 10);
         ara::log::LogDebug() << "Receive temp id: " << hdr.actuator_id << ", name: " << sensorIdsToPaths[hdr.actuator_id].first << ", temp: " << static_cast<float>(value/10);
         if(sensorIdsToPaths[hdr.actuator_id].first == "sensor_temp_1"){
-            this->service_ipc.newTempEvent_1.Update(value);
-            this->service_udp.newTempEvent_1.Update(value);
+            this->service_ipc.newBoardTempEvent_1.Update(value);
+            this->service_udp.newBoardTempEvent_1.Update(value);
         }
         else if(sensorIdsToPaths[hdr.actuator_id].first == "sensor_temp_2"){
-            this->service_ipc.newTempEvent_2.Update(value);
-            this->service_udp.newTempEvent_2.Update(value);
+            this->service_ipc.newBoardTempEvent_2.Update(value);
+            this->service_udp.newBoardTempEvent_2.Update(value);
         }
         else if(sensorIdsToPaths[hdr.actuator_id].first == "sensor_temp_3"){
-            this->service_ipc.newTempEvent_3.Update(value);
-            this->service_udp.newTempEvent_3.Update(value);
+            this->service_ipc.newBoardTempEvent_3.Update(value);
+            this->service_udp.newBoardTempEvent_3.Update(value);
         }
         else {
             ara::log::LogWarn() << "ID spoza zakresu:" << hdr.actuator_id;

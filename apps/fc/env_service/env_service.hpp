@@ -20,7 +20,8 @@
 
 #include "mw/temp/controller/temp_controller.h"
 #include "ara/exec/adaptive_application.h"
-#include "apps/fc/env_service/service.hpp"
+#include "srp/env/EnvAppFcSkeleton.h"
+// #include "apps/fc/env_service/service.hpp"
 // #include "mw/i2c_service/controller/adcsensor/controller.hpp"
 #include "mw/i2c_service/controller/bme280/controller.hpp"
 
@@ -30,13 +31,13 @@ namespace envService {
 class EnvService final : public ara::exec::AdaptiveApplication {
  private:
   std::unique_ptr<mw::temp::TempController> temp_{};
-  std::shared_ptr<i2c::BME280> press_{};
+  std::shared_ptr<i2c::BME280> bme{};
 
   std::unordered_map<std::uint8_t, std::pair<std::string, std::string>> sensorIdsToPaths{}; // [sensor_id] = {name, physical_id}
 
 
-  apps::MyEnvAppSkeleton service_ipc;
-  apps::MyEnvAppSkeleton service_udp;
+  env::EnvAppFcSkeleton service_ipc;
+  env::EnvAppFcSkeleton service_udp;
   int LoadTempConfig(
     const std::map<ara::core::StringView, ara::core::StringView>& parms);
 

@@ -24,7 +24,7 @@ cpu_def(
         "@srp_platform//platform/common/someip_demon/model:someip_demon",
         "@srp_platform//platform/common/state_manager/model:state_manager",
         # "//deployment/example_adaptive/ExampleApp",
-        "//deployment/apps/fc/env_service:EnvApp",
+        "//deployment/apps/fc/env_service:EnvAppFc",
         "//deployment/mw/i2c:i2cMWService",
         "//deployment/mw/gpio:gpio_service",
         "//deployment/apps/fc/gps_app:GPSApp",

@@ -37,6 +37,10 @@ namespace {
     static constexpr uint8_t SIZE_OF_TRIMMING_REGISTER_2 = 1;
     static constexpr uint8_t SIZE_OF_TRIMMING_REGISTER_3 = 8;
     static constexpr int32_t HUMIDITY_MAX = 419430400;
+
+    static constexpr float BME_PRESSURE_SCALING = 25600.0f;
+    static constexpr float BME_TEMP_SCALING = 100.0f;
+    static constexpr float BME_HUM_SCALING = 1024.0f;
 }
 
 BME280::BME280(): pac_logger_{
@@ -100,11 +104,11 @@ core::ErrorCode BME280::setI2C(std::unique_ptr<II2CController> i2c) {
   return core::ErrorCode::kOk;
 }
 
-int32_t BME280::getTemperature(){
+core::ErrorCode BME280::calcTemperature(int32_t& temp){
     auto tempRawData = extractBits(readOutputData(), 20, 20);
     if(!tempRawData.has_value()){
         pac_logger_.LogDebug() << "BME280.getTemperature: Error getting data for conversion";
-        return 0;
+        return core::ErrorCode::kError;
     }
     int32_t var1, var2, T;
     var1 = ((((tempRawData.value()>>3) - (static_cast<int32_t>(param.dig_T1<<1)))) * (static_cast<int32_t>(param.dig_T2))) >> 11;
@@ -112,23 +116,25 @@ int32_t BME280::getTemperature(){
     
     this->t_fine = var1 + var2;
 
-    return (((var1 + var2) * 5 + 128) >> 8);
+    temp = (((var1 + var2) * 5 + 128) >> 8);
+    return core::ErrorCode::kOk;
 }
 
 
 
-uint32_t BME280::getPressure(){
+core::ErrorCode BME280::calcPressure(uint32_t& press){
     auto pressRawData = extractBits(readOutputData(), 44, 20);
     if(!pressRawData.has_value()){
         pac_logger_.LogDebug() << "BME280.getPressure: Error getting data for conversion";
-        return 0;
+        return core::ErrorCode::kError;
     }
     int64_t var1, var2, p;
-    getTemperature();;
-    int32_t temp = this->t_fine;
-    if(temp == 0){
+    int32_t temp;
+    auto tempError = calcTemperature(temp);
+    temp = this->t_fine;
+    if(tempError != core::ErrorCode::kOk){
         pac_logger_.LogDebug() << "BME280.getPressure: Error getting data for conversion";
-        return 0;
+        return core::ErrorCode::kError;
     }
     var1 = (static_cast<int64_t>(temp)) - 128000;
     var2 = var1 * var1 * static_cast<int64_t>(param.dig_P6);
@@ -136,23 +142,31 @@ uint32_t BME280::getPressure(){
     var2 = var2 + ((static_cast<int64_t>(param.dig_P4))<<35);
     var1 = ((var1 * var1 * static_cast<int64_t>(param.dig_P3))>>8) + ((var1 + static_cast<int64_t>(param.dig_P2))<<12);
     var1 = ((((static_cast<int64_t>(1))<<47)+ var1)) * (static_cast<int64_t>(param.dig_P1))>>33;
-    if(var1 == 0) return 0;
+    if(var1 == 0){
+        press = 0;
+        return core::ErrorCode::kError;   
+    }
     p = 1048576 - pressRawData.value();
     p = (((p<<31)-var2)*3125)/var1;
     var1 = ((static_cast<int64_t>(param.dig_P9)) * (p>>13) * (p>>13)) >> 25;
     var2 = ((static_cast<int64_t>(param.dig_P8)) * p) >> 19;
     p = ((p + var1 + var2) >> 8) + ((static_cast<int64_t>(param.dig_P7)) << 4);
-    return static_cast<uint32_t>(p);
+    press = static_cast<uint32_t>(p);
+    return core::ErrorCode::kOk;
 }
 
-uint32_t BME280::getHumidity(){
+core::ErrorCode BME280::calcHumidity(uint32_t& hum){
     auto humidityRawData = extractBits(readOutputData(), 0, 16);
     if(!humidityRawData.has_value()){
         pac_logger_.LogDebug() << "BME280.getHumidity: Error getting data for conversion";
-        return 0;
+        return core::ErrorCode::kError;
     }
 
-    getTemperature();
+    int32_t temp;
+    auto tempError = calcTemperature(temp);
+    if(tempError != core::ErrorCode::kOk){
+        return core::ErrorCode::kError;
+    }
 
     int32_t t_fine_adj = this->t_fine - 76800;
     int32_t part1 = (humidityRawData.value() << 14) - (static_cast<int32_t>(param.dig_H4) << 20) - (static_cast<int32_t>(param.dig_H5) * t_fine_adj);
@@ -166,8 +180,47 @@ uint32_t BME280::getHumidity(){
     v_x1_u32r = (v_x1_u32r - (((((v_x1_u32r >> 15) * (v_x1_u32r >> 15)) >> 7) * (static_cast<int32_t>(param.dig_H1))) >> 4));
     v_x1_u32r = std::max(0, v_x1_u32r);
     v_x1_u32r = std::min(v_x1_u32r, HUMIDITY_MAX);
-    return (uint32_t)(v_x1_u32r >> 12);
+    hum = static_cast<uint32_t>(v_x1_u32r >> 12);
+    return core::ErrorCode::kOk;
 }
+
+core::ErrorCode BME280::getTemperature(float& result){
+    int32_t temp;
+    auto tempError = calcTemperature(temp);
+    if(tempError != core::ErrorCode::kOk){
+        result = 0.0f;
+        return core::ErrorCode::kError;
+    }
+
+    result = static_cast<float>(temp) / BME_TEMP_SCALING;
+    return core::ErrorCode::kOk;
+}
+
+core::ErrorCode BME280::getPressure(float& result){
+    uint32_t press;
+    auto pressError = calcPressure(press);
+    if(pressError != core::ErrorCode::kOk){
+        result = 0.0f;
+        return core::ErrorCode::kError;
+    }
+
+    result = static_cast<float>(press) / BME_PRESSURE_SCALING;
+    return core::ErrorCode::kOk;
+}
+
+core::ErrorCode BME280::getHumidity(float& result){
+    uint32_t hum;
+    auto humError = calcHumidity(hum);
+    if(humError != core::ErrorCode::kOk){
+        result = 0.0f;
+        return core::ErrorCode::kError;
+    }
+
+    result = static_cast<float>(hum) / BME_HUM_SCALING;
+    return core::ErrorCode::kOk; 
+}
+
+
 
 std::optional<int32_t> BME280::extractBits(const std::optional<std::vector<uint8_t>>& input, uint8_t startBit, uint8_t length) {
     if (!input.has_value() || input->size() != 8) {

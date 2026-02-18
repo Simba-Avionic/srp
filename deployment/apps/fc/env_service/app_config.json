@@ -1,10 +1,10 @@
 {
     "include": [
-        "deployment/system_definition/someip/env_service/service.json"
+        "deployment/system_definition/someip/fc/env_service/service.json"
     ],
     "package": "srp.env",
     "adaptive_application": {
-        "EnvApp": {
+        "EnvAppFc": {
             "app": {
                 "functional_groups":[
                     "Running",
@@ -42,13 +42,13 @@
             },
             "provide": [
                 {
-                    "name": "EnvApp as envService_udp",
+                    "name": "EnvAppFc as envService_udp",
                     "on": "udp",
                     "port": "10001",
                     "instance": 1
                 },
                 {
-                    "name": "EnvApp as envService_ipc",
+                    "name": "EnvAppFc as envService_ipc",
                     "on": "ipc",
                     "instance": 2
                 }
