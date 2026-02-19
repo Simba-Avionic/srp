@@ -38,7 +38,7 @@ namespace {
     };
 }  // namespace
 PCA9685::PCA9685(): pac_logger_{
-    ara::log::LoggingMenager::GetInstance()->CreateLogger("pca9", "", ara::log::LogLevel::kDebug)} {
+    ara::log::LoggingMenager::GetInstance()->CreateLogger("pca9", "", ara::log::LogLevel::kInfo)} {
 }
 core::ErrorCode PCA9685::Init(std::unique_ptr<II2CController> i2c) {
   pac_logger_.LogInfo() << "PCA9685.Init: starting initialization";
