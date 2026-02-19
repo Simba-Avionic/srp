@@ -74,6 +74,7 @@ ara::core::Result<bool> MyEngineServiceSkeleton::SetMode(const std::uint8_t& in_
                         ", to: " <<RocketState::GetStringState(static_cast<RocketState_t>(in_parm));
         return ara::core::Result<bool>{false};
     }
+
     CurrentMode.Update(static_cast<uint8_t>(in_parm));
     ara::log::LogInfo() << "Change Mode from: " << RocketState::GetStringState(old_state) <<
                         ", to: " <<RocketState::GetStringState(static_cast<RocketState_t>(in_parm));
