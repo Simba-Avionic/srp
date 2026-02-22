@@ -19,7 +19,7 @@ namespace service {
 namespace {
     constexpr uint8_t OPEN_SERVO = 1;
     constexpr uint8_t CLOSE_SERVO = 0;
-    constexpr uint16_t PRIMER_DELAY = 200;
+    constexpr uint16_t PRIMER_DELAY = 2000;
 }
 
 
@@ -74,6 +74,7 @@ ara::core::Result<bool> MyEngineServiceSkeleton::SetMode(const std::uint8_t& in_
                         ", to: " <<RocketState::GetStringState(static_cast<RocketState_t>(in_parm));
         return ara::core::Result<bool>{false};
     }
+
     CurrentMode.Update(static_cast<uint8_t>(in_parm));
     ara::log::LogInfo() << "Change Mode from: " << RocketState::GetStringState(old_state) <<
                         ", to: " <<RocketState::GetStringState(static_cast<RocketState_t>(in_parm));
