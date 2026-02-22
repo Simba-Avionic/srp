@@ -44,11 +44,7 @@ void LoggerService::SaveLoop(const std::stop_token& token,
 
   auto prefix = core::time::TimeChanger::ReadSystemTimeAsString();
   std::string filename;
-  if (!prefix.has_value()) {
-    filename = kCsv_filename_prefix + kCsv_filename;
-  } else {
-    filename = kCsv_filename_prefix + prefix.value() + kCsv_filename;
-  }
+  filename = kCsv_filename_prefix + prefix.value_or("") + kCsv_filename;
 
   if (csv_.Open(filename, kCsv_header) != 0) {
     ara::log::LogError() << "LoggerService::SaveLoop: Failed to open CSV file: " << filename;
