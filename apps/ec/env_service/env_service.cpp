@@ -155,7 +155,7 @@ int EnvService::Run(const std::stop_token& token) {
         //////////////////////////
         float press_sum_2 = 0.0f;
         uint8_t num_2 = 0;
-        for (uint8_t k = 0;k < PRESS_SENSOR_SAMPLING; k++) {
+        for (uint8_t k = 0; k < PRESS_SENSOR_SAMPLING; k++) {
             auto pressValue = this->press_->GetValue(11);
             if (pressValue.has_value()) {
                 press_sum_2 += pressValue.value();
