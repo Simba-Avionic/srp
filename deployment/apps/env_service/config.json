@@ -5,6 +5,12 @@
             "channel":2,
             "a": 41.25,
             "b": -23.75
+        },
+        {
+            "sensor_id": 11,
+            "channel":0,
+            "a": 41.25,
+            "b": -23.75
         }
     ],
     "sensors-temp": [

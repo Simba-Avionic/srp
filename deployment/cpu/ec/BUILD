@@ -29,7 +29,7 @@ cpu_def(
         "//deployment/mw/gpio:gpio_service",
         "//deployment/apps/servo_service:servoService",
         "//deployment/apps/engine_app:EngineService",
-        "//deployment/apps/gh_service:GhApp",
+        # "//deployment/apps/gh_service:GhApp",
         "//deployment/apps/env_service:EnvApp",
         "//deployment/apps/logger_service:FileLoggerApp",
         "//deployment/apps/prim_service:PrimerService",
