@@ -25,7 +25,7 @@ class FileHandler: public IFileHandler {
     FileHandler();
     bool open(const std::string& path, const FileMode& mode) override;
     void close() override;
-    bool write(const std::string& data) override;
+    bool write(const std::string& data, const bool flush_after_write = true) override;
     std::optional<std::string> read() override;
 };
 }  // namespace core

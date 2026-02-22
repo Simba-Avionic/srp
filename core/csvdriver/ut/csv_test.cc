@@ -29,7 +29,7 @@ class CSVDriverTest : public ::testing::Test {
 TEST_F(CSVDriverTest, Open_Success) {
     EXPECT_CALL(*mockFileHandler, open("test.csv", srp::core::FileMode::WRITE))
         .WillOnce(Return(true));
-    EXPECT_CALL(*mockFileHandler, write("HEADER\n"))
+    EXPECT_CALL(*mockFileHandler, write("HEADER\n", true))
         .WillOnce(Return(true));
     csvDriver.Init(std::move(mockFileHandler));
     EXPECT_EQ(csvDriver.Open("test.csv", "HEADER"), 0);
@@ -43,19 +43,19 @@ TEST_F(CSVDriverTest, Open_FailureOnOpen) {
 
 TEST_F(CSVDriverTest, Open_FailureOnWriteHeader) {
     EXPECT_CALL(*mockFileHandler, open(_, _)).WillOnce(Return(true));
-    EXPECT_CALL(*mockFileHandler, write(_)).WillOnce(Return(false));
+    EXPECT_CALL(*mockFileHandler, write(_, _)).WillOnce(Return(false));
     csvDriver.Init(std::move(mockFileHandler));
     EXPECT_EQ(csvDriver.Open("test.csv", "HEADER"), -1);
 }
 
 TEST_F(CSVDriverTest, WriteLine_Success) {
-    EXPECT_CALL(*mockFileHandler, write("data\n")).WillOnce(Return(true));
+    EXPECT_CALL(*mockFileHandler, write("data\n", true)).WillOnce(Return(true));
     csvDriver.Init(std::move(mockFileHandler));
     EXPECT_EQ(csvDriver.WriteLine("data"), 0);
 }
 
 TEST_F(CSVDriverTest, WriteLine_Failure) {
-    EXPECT_CALL(*mockFileHandler, write("data\n")).WillOnce(Return(false));
+    EXPECT_CALL(*mockFileHandler, write("data\n", true)).WillOnce(Return(false));
     csvDriver.Init(std::move(mockFileHandler));
     EXPECT_EQ(csvDriver.WriteLine("data"), -1);
 }

@@ -33,8 +33,8 @@ int CSVDriver::Open(const std::string& fileName, const std::string& HEADER) {
     return 0;
 }
 
-int CSVDriver::WriteLine(const std::string& line) {
-  if (!file_->write(line + "\n")) {
+int CSVDriver::WriteLine(const std::string& line, const bool flush_after_write) {
+  if (!file_->write(line + "\n", flush_after_write)) {
     return -1;
   }
   return 0;

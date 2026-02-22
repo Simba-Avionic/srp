@@ -19,7 +19,7 @@ namespace csv {
 class ICSVDriver {
  public:
   virtual void Init(std::unique_ptr<core::IFileHandler> handler_ = std::make_unique<core::FileHandler>()) = 0;
-  virtual int WriteLine(const std::string& line) = 0;
+  virtual int WriteLine(const std::string& line, const bool flush_after_write = true) = 0;
   virtual int Open(const std::string& fileName, const std::string& HEADER) = 0;
   virtual void Close() = 0;
 };
