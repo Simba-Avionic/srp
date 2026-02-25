@@ -42,6 +42,7 @@
                 "EnvApp/newTempEvent_2 as newTempEvent_2",
                 "EnvApp/newTempEvent_3 as newTempEvent_3",
                 "EnvApp/newPressEvent as newPressEvent",
+                "EnvApp/newDPressEvent as newDPressEvent",
                 "PrimerApp/primeStatusEvent as primeStatusEvent",
                 "EC_DiagOtaApp/newDTCEvent as EC_newDTCEvent",
                 "FC_DiagOtaApp/currentMode as FC_currentCPUMode",

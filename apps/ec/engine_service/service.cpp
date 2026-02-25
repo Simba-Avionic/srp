@@ -19,7 +19,7 @@ namespace service {
 namespace {
     constexpr uint8_t OPEN_SERVO = 1;
     constexpr uint8_t CLOSE_SERVO = 0;
-    constexpr uint16_t PRIMER_DELAY = 200;
+    constexpr uint16_t PRIMER_DELAY = 2000;
 }
 
 

@@ -44,11 +44,7 @@ void LoggerService::SaveLoop(const std::stop_token& token,
 
   auto prefix = core::time::TimeChanger::ReadSystemTimeAsString();
   std::string filename;
-  if (!prefix.has_value()) {
-    filename = kCsv_filename_prefix + kCsv_filename;
-  } else {
-    filename = kCsv_filename_prefix + prefix.value() + kCsv_filename;
-  }
+  filename = kCsv_filename_prefix + prefix.value_or("") + kCsv_filename;
 
   if (csv_.Open(filename, kCsv_header) != 0) {
     ara::log::LogError() << "LoggerService::SaveLoop: Failed to open CSV file: " << filename;
@@ -176,15 +172,15 @@ void LoggerService::SomeIpInit() {
         this->data.SetTemp3(res.Value());
       });
     });
-    // env_service_handler->newDPressEvent.Subscribe(1, [this](const uint8_t status) {
-    //   env_service_handler->newDPressEvent.SetReceiveHandler([this] () {
-    //     auto res = env_service_handler->newDPressEvent.GetNewSamples();
-    //     if (!res.HasValue()) {
-    //       return;
-    //     }
-    //     this->data.SetTankDPress(res.Value());
-    //   });
-    // });
+    env_service_handler->newDPressEvent.Subscribe(1, [this](const uint8_t status) {
+      env_service_handler->newDPressEvent.SetReceiveHandler([this] () {
+        auto res = env_service_handler->newDPressEvent.GetNewSamples();
+        if (!res.HasValue()) {
+          return;
+        }
+        this->data.SetTankDPress(res.Value());
+      });
+    });
     env_service_handler->newPressEvent.Subscribe(1, [this](const uint8_t status) {
       env_service_handler->newPressEvent.SetReceiveHandler([this] () {
         auto res = env_service_handler->newPressEvent.GetNewSamples();

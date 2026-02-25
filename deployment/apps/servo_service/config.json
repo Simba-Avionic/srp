@@ -11,7 +11,7 @@
         {
         "actuator_id":61,
         "channel": 3,
-        "on_pos" : 253,
+        "on_pos" : 255,
         "off_pos" : 102,
         "mosfet_id" : 6,
         "desc": "on devboard have name C69, VENT VALVE, off: 102 - on: 404, calculate open % by changing on pos"

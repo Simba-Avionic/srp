@@ -26,7 +26,7 @@ namespace envService {
 namespace {
     constexpr uint8_t PRESS_SENSOR_ID = 10;
     constexpr uint8_t PRESS_SENSOR_SAMPLING = 15;
-    constexpr auto kDelay = 1000;
+    constexpr auto kDelay = 10;
 }
 
 
@@ -134,24 +134,45 @@ int EnvService::Run(const std::stop_token& token) {
     while (!token.stop_requested()) {
         auto start = std::chrono::high_resolution_clock::now();
         float press_sum = 0.0f;
-        float num = 0.0f;
-        for (uint8_t i = 0; i < PRESS_SENSOR_SAMPLING; i++) {
+        uint8_t num = 0;
+        for (uint8_t k = 0; k < PRESS_SENSOR_SAMPLING; k++) {
             auto pressValue = this->press_->GetValue(PRESS_SENSOR_ID);
             if (pressValue.has_value()) {
                 press_sum += pressValue.value();
-                num += 1.0f;
+                num += 1;
             } else {
                 ara::log::LogWarn() << "Don't receive new pressure";
             }
         }
-        if (num > 0.0f) {
-            float mean_press = press_sum / num;
+        if (num > 0) {
+            float mean_press = press_sum / static_cast<float>(num);
             std::ostringstream ss;
             ss << std::fixed << std::setprecision(2) << mean_press;
-            ara::log::LogDebug() << "Receive new Tank Pressure: " << ss.str() << " Bar";
+            ara::log::LogInfo() << "Receive new Tank Pressure: " << ss.str() << " Bar";
             this->service_ipc.newPressEvent.Update(static_cast<uint16_t>(mean_press * 100));
             this->service_udp.newPressEvent.Update(static_cast<uint16_t>(mean_press * 100));
         }
+        //////////////////////////
+        float press_sum_2 = 0.0f;
+        uint8_t num_2 = 0;
+        for (uint8_t k = 0; k < PRESS_SENSOR_SAMPLING; k++) {
+            auto pressValue = this->press_->GetValue(11);
+            if (pressValue.has_value()) {
+                press_sum_2 += pressValue.value();
+                num_2 += 1;
+            } else {
+                ara::log::LogWarn() << "Don't receive new pressure";
+            }
+        }
+        if (num_2 > 0) {
+            float mean_press_2 = press_sum_2 / static_cast<float>(num_2);
+            std::ostringstream ss;
+            ss << std::fixed << std::setprecision(2) << mean_press_2;
+            ara::log::LogInfo() << "Receive new Tank D Pressure: " << ss.str() << " Bar";
+            this->service_ipc.newDPressEvent.Update(static_cast<uint16_t>(mean_press_2 * 100));
+            this->service_udp.newDPressEvent.Update(static_cast<uint16_t>(mean_press_2 * 100));
+        }
+        /////////////////
         auto end = std::chrono::high_resolution_clock::now();
         auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
         ara::log::LogDebug() << "loop taken:" << std::to_string(duration.count()) << "ms";
@@ -165,7 +186,7 @@ int EnvService::Run(const std::stop_token& token) {
 void EnvService::TempRxCallback(const std::vector<srp::mw::temp::TempReadHdr>& data) {
     for (auto &hdr : data) {
         const int16_t value = static_cast<int16_t>(hdr.value * 10);
-        ara::log::LogDebug() << "Receive new temp id: " << hdr.actuator_id << ", name: " <<
+        ara::log::LogInfo() << "Receive new temp id: " << hdr.actuator_id << ", name: " <<
                 sensorIdsToPaths[hdr.actuator_id].first << ", temp: " << static_cast<float>(value/10);
         if (sensorIdsToPaths[hdr.actuator_id].first == "sensor_temp_1") {
             this->service_ipc.newTempEvent_1.Update(value);
