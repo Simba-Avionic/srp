@@ -25,13 +25,17 @@
 #include "apps/ec/logger_service/data_type.hpp"
 #include "apps/ec/logger_service/service/service.hpp"
 #include "apps/ec/logger_service/service/logger_did.hpp"
+#include "srp/apps/SysStatService/SysStatServiceHandler.h"
+
 namespace srp {
 namespace logger {
 
 class LoggerService final : public ara::exec::AdaptiveApplication {
  private:
   env::EnvAppProxy env_service_proxy;
+  apps::SysStatServiceProxy stat_service_proxy;
   std::shared_ptr<env::EnvAppHandler> env_service_handler;
+  std::shared_ptr<apps::SysStatServiceHandler> stat_service_handler;
   Data_t data;
   std::unique_ptr<FileLoggerDID> logger_did_;
   const ara::core::InstanceSpecifier did_instance;

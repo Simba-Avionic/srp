@@ -22,15 +22,14 @@ namespace srp {
 namespace logger {
 
 namespace {
-  constexpr auto kCsv_header = "TIMESTAMP;TEMP1;TEMP2;TEMP3;TANK_PRESS;TANK_D_PRESS";
   constexpr std::string kCsv_filename = "log.csv";
   constexpr std::string kCsv_filename_prefix = "/home/root/";
   constexpr uint16_t kSave_interval = 200;
-  constexpr auto k_save_interval_fix = 1;
   constexpr auto kEnv_service_path_name = "srp/apps/FileLoggerApp/EnvApp";
   constexpr auto kUdp_service_path_name = "srp/apps/FileLoggerApp/logService_udp";
   constexpr auto kIpc_service_path_name = "srp/apps/FileLoggerApp/logService_ipc";
   constexpr auto kFile_did_path_name = "/srp/apps/FileLoggerApp/logger_did";
+  constexpr auto kSysStat_service_path_name = "/srp/apps/FileLoggerApp/SysStatService";
   constexpr auto kLogs_on = 1;
   constexpr auto kLogs_off = 0;
 }  // namespace
@@ -46,7 +45,7 @@ void LoggerService::SaveLoop(const std::stop_token& token,
   std::string filename;
   filename = kCsv_filename_prefix + prefix.value_or("") + kCsv_filename;
 
-  if (csv_.Open(filename, kCsv_header) != 0) {
+  if (csv_.Open(filename, data.get_header()) != 0) {
     ara::log::LogError() << "LoggerService::SaveLoop: Failed to open CSV file: " << filename;
     return;
   }
@@ -68,7 +67,7 @@ void LoggerService::SaveLoop(const std::stop_token& token,
 
       const auto now = std::chrono::high_resolution_clock::now();
       const auto elapsed = std::chrono::duration_cast<
-                  std::chrono::milliseconds>(now - start).count() +  k_save_interval_fix;
+                  std::chrono::milliseconds>(now - start).count();
       core::condition::wait_for(std::chrono::milliseconds(kSave_interval - elapsed), token);
     }
   } catch (...) {
@@ -108,7 +107,9 @@ LoggerService::~LoggerService() {}
 
 LoggerService::LoggerService():
       env_service_proxy{ara::core::InstanceSpecifier{kEnv_service_path_name}},
+      stat_service_proxy{ara::core::InstanceSpecifier{kSysStat_service_path_name}},
       env_service_handler{nullptr}, save_thread_{nullptr},
+      stat_service_handler{nullptr},
       did_instance{kFile_did_path_name},
       timestamp_{std::make_shared<core::timestamp::TimestampController>()} {
   auto builder = Builder([this](uint8_t status) { this->start_func_handler(status); });
@@ -143,6 +144,18 @@ void LoggerService::start_func_handler(const std::uint8_t status) {
 
 
 void LoggerService::SomeIpInit() {
+  this->stat_service_proxy.StartFindService([this](auto handler) {
+    this->stat_service_handler = handler;
+    stat_service_handler->NewSystemUsage.Subscribe(1, [this](const uint8_t status) {
+      stat_service_handler->NewSystemUsage.SetReceiveHandler([this] () {
+        auto res = stat_service_handler->NewSystemUsage.GetNewSamples();
+        if (!res.HasValue()) {
+          return;
+        }
+        this->data.SetSysStatus(res.Value());
+      });
+    });
+  });
   this->env_service_proxy.StartFindService([this](auto handler) {
     this->env_service_handler = handler;
     env_service_handler->newTempEvent_1.Subscribe(1, [this](const uint8_t status) {
