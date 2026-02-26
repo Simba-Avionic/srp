@@ -25,6 +25,26 @@ std::string Data_t::get_header() {
   return kCsv_header;
 }
 
+std::vector<uint8_t> Data_t::get_bytes() {
+  std::vector<uint8_t> bytes;
+  std::unique_lock<std::mutex> lock(this->mutex_);
+
+  auto append_bytes = [&bytes](auto& value) {
+    const uint8_t* ptr = reinterpret_cast<const uint8_t*>(&value);
+    bytes.push_back(ptr);
+  };
+  append_bytes(temp1);
+  append_bytes(temp2);
+  append_bytes(temp3);
+  append_bytes(tank_press);
+  append_bytes(tank_d_press);
+  append_bytes(sys_status.cpu_usage);
+  append_bytes(sys_status.mem_usage);
+  append_bytes(sys_status.disk_utilization);
+
+  return bytes;
+}
+
 std::string Data_t::to_string(const std::string& timestamp) {
   std::stringstream res;
   res << std::fixed << std::setprecision(2);

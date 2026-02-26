@@ -11,6 +11,7 @@ cc_binary(
     visibility = ["//deployment:__subpackages__"],
     deps = [
         "@srp_platform//ara/exec:adaptive_application_lib",
+        "//core/binary_file_writer:binary_file_lib",
         "//core/common:condition_lib",
         "//core/json:simba_json",
         "//deployment/apps/logger_service:someip_lib",
