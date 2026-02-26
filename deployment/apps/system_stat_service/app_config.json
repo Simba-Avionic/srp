@@ -1,13 +1,10 @@
 {
     "include": [
-        "deployment/system_definition/someip/logger_service/service.json",
-        "deployment/system_definition/someip/env_service/service.json",
-        "deployment/system_definition/someip/sys_stat_service/service.json",
-        "deployment/system_definition/diag/jobs/file_logger/file_logger_did.json"
+        "deployment/system_definition/someip/sys_stat_service/service.json"
     ],
     "package": "srp.apps",
     "adaptive_application": {
-        "FileLoggerApp": {
+        "SysStatService": {
             "app": {
                 "functional_groups":[
                     "Running",
@@ -15,8 +12,8 @@
                 ],
                 "parms": "",
                 "logger": {
-                    "app_id": "FLOG",
-                    "app_des": "Log data to FILE",
+                    "app_id": "STAT",
+                    "app_des": "",
                     "log_level": "kInfo",
                     "log_mode": "kRemote",
                     "ctx": [
@@ -37,7 +34,7 @@
                         },
                         {
                             "ctx_id": "exec",
-                            "log_level": "kDebug",
+                            "log_level": "kInfo",
                             "ctx_des": "Default ctx for ara::exec"
                         }
                     ]
@@ -45,34 +42,17 @@
             },
             "provide": [
                 {
-                    "name": "FileLoggerApp as logService_udp",
+                    "name": "SysStatService as SysStatService_ipc",
+                    "on": "ipc",
+                    "instance": 2
+                },
+                {
+                    "name": "SysStatService as SysStatService_udp",
                     "on": "udp",
-                    "port": "10002",
+                    "port": "10001",
                     "instance": 1
-                },
-                {
-                    "name": "FileLoggerApp as logService_ipc",
-                    "on": "ipc",
-                    "instance": 2
-                },
-                {
-                    "name": "file_logger_did as logger_did",
-                    "on": "diag"
-                }
-            ],
-            "require": [
-                {
-                    "name": "srp.env.EnvApp as EnvApp",
-                    "on": "ipc",
-                    "instance": 2
-                },
-                {
-                    "name": "srp.apps.SysStatService as SysStatService",
-                    "on": "ipc",
-                    "instance": 2
                 }
             ]
         }
     }
 }
-

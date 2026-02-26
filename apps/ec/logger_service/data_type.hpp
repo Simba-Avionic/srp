@@ -17,6 +17,7 @@
 #include <cstdint>
 #include <memory>
 #include <string>
+#include "srp/apps/SysStatType.h"
 
 namespace srp {
 namespace logger {
@@ -32,8 +33,11 @@ class Data_t {
   tempType temp3;
   pressType tank_press;
   dPressType tank_d_press;
+  apps::SysStatType sys_status;
  public:
+  std::string get_header();
   std::string to_string(const std::string& timestamp);
+  void SetSysStatus(const apps::SysStatType& sys_stat);
   void SetTemp1(const tempType& temp);
   void SetTemp2(const tempType& temp);
   void SetTemp3(const tempType& temp);
