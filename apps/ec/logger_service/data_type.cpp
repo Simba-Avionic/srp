@@ -31,7 +31,7 @@ std::vector<uint8_t> Data_t::get_bytes() {
 
   auto append_bytes = [&bytes](auto& value) {
     const uint8_t* ptr = reinterpret_cast<const uint8_t*>(&value);
-    bytes.push_back(ptr);
+    bytes.insert(bytes.end(), ptr, ptr + sizeof(value));
   };
   append_bytes(temp1);
   append_bytes(temp2);
