@@ -3,14 +3,14 @@
         {
             "sensor_id": 10,
             "channel":2,
-            "a": 41.25,
-            "b": -23.75
+            "a":  41.66667,
+            "b": -23.98677
         },
         {
             "sensor_id": 11,
             "channel":0,
-            "a": 41.25,
-            "b": -23.75
+            "a":  41.66667,
+            "b": -23.98677
         }
     ],
     "sensors-temp": [
@@ -25,6 +25,18 @@
       {
         "physical_id" : "28-3c29e381356d",
         "name" : "sensor_temp_3"
+      },
+            {
+        "physical_id" : "28-062018f00884",
+        "name" : "board_1"
+      },
+      {
+        "physical_id" : "28-3c01e076e765",
+        "name" : "board_2"
+      },
+      {
+        "physical_id" : "28-3c29e3813566",
+        "name" : "board_3"
       }
     ]
 }

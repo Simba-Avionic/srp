@@ -36,7 +36,7 @@ class EnvService final : public ara::exec::AdaptiveApplication {
 
   apps::MyEnvAppSkeleton service_ipc;
   apps::MyEnvAppSkeleton service_udp;
-  int LoadTempConfig(
+  core::ErrorCode LoadTempConfig(
     const std::map<ara::core::StringView, ara::core::StringView>& parms);
 
  protected:

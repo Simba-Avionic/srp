@@ -34,17 +34,6 @@ class MyEnvAppSkeleton: public EnvAppSkeleton {
   }
 
  protected:
-  ara::core::Result<srp::apps::PressCalibrationRes> calPressureSensor() override {
-    auto res = press_sensor->MakeCalibration(press_sensor_id);
-    if (!res.has_value()) {
-      return  ara::com::MakeErrorCode(
-            ara::com::ComErrc::kWrongMethodCallProcessingMode, "Invalid request to Calibration PressureSensor ");
-    }
-    srp::apps::PressCalibrationRes someip_res;
-    someip_res.a = res.value().a;
-    someip_res.b = res.value().b;
-    return someip_res;
-  }
 };
 
 }  // namespace apps

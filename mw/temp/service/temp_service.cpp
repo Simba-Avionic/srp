@@ -76,6 +76,16 @@ int TempService::Initialize(const std::map<ara::core::StringView, ara::core::Str
     for (const auto& id : sensorPathsToIds) {
         sensors_id.push_back(id.second);
     }
+    auto sensors = temp_driver_->GetAllAccessibleSensor();
+    if (!sensors.HasValue()) {
+        ara::log::LogWarn() << "Cant get avaliable temp sensors";
+    }
+    std::stringstream ss;
+    ss << "sensors: ";
+    for (const auto& name : sensors.Value()) {
+        ss << name << ", ";
+    }
+    ara::log::LogInfo() << ss.str();
     this->temp_did_ = std::make_unique<TempMWDID>(did_instance, sensors_id);
     this->temp_did_->Offer();
     return srp::core::ErrorCode::kOk;
