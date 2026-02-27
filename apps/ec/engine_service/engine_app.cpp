@@ -21,7 +21,7 @@ namespace {
   constexpr auto kServo_path_name = "srp/apps/EngineService/ServoService";
   constexpr auto kEngine_path_name = "srp/apps/EngineService/EngineService_ipc";
   constexpr auto kEngine_udp_path_name = "srp/apps/EngineService/EngineService_udp";
-  constexpr auto kInit_max_intervals = 10;
+  constexpr auto kInit_max_intervals = 20;
 }
 
 EngineApp::EngineApp():
@@ -33,9 +33,6 @@ EngineApp::EngineApp():
 }
 
 int EngineApp::Run(const std::stop_token& token) {
-  this->service_ipc.Init(primer_handler_, servo_handler_);
-  this->service_udp.Init(primer_handler_, servo_handler_);
-  state_ctr_->SetEngineState(apps::RocketState_t::DISARM);
   while (!token.stop_requested()) {
     service_ipc.CurrentMode.Update(static_cast<uint8_t>(state_ctr_->GetEngineState()));
     service_udp.CurrentMode.Update(static_cast<uint8_t>(state_ctr_->GetEngineState()));
@@ -52,6 +49,7 @@ int EngineApp::Run(const std::stop_token& token) {
 int EngineApp::Initialize(const std::map<ara::core::StringView, ara::core::StringView>
                       parms) {
   state_ctr_ = engineApp::EngineStateController::GetInstance();
+  state_ctr_->SetEngineState(apps::RocketState_t::DISARM);
   servo_proxy.StartFindService([this](auto handler) {
     servo_handler_ = handler;
   });
@@ -61,12 +59,15 @@ int EngineApp::Initialize(const std::map<ara::core::StringView, ara::core::Strin
   int i = 0;
   while ((servo_handler_ == nullptr || primer_handler_ == nullptr) && i < kInit_max_intervals) {
     i += 1;
-    std::this_thread::sleep_for(std::chrono::milliseconds(5000));
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
   }
   if (i >= kInit_max_intervals) {
     ara::log::LogFatal() << "Cant initialize servo handler or primer handler, closing app";
     return 1;
   }
+  this->service_ipc.Init(primer_handler_, servo_handler_);
+  this->service_udp.Init(primer_handler_, servo_handler_);
+
   service_ipc.StartOffer();
   service_udp.StartOffer();
 
@@ -75,9 +76,6 @@ int EngineApp::Initialize(const std::map<ara::core::StringView, ara::core::Strin
     ara::log::LogError() << "EngineApp::Initialize: state_ctr_ is nullptr!";
     return 1;
   }
-
-  service_ipc.CurrentMode.Update(static_cast<uint8_t>(state_ctr_->GetEngineState()));
-  service_udp.CurrentMode.Update(static_cast<uint8_t>(state_ctr_->GetEngineState()));
   ara::log::LogInfo() << "Initialize Complete";
   return 0;
 }
