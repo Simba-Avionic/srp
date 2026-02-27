@@ -15,7 +15,7 @@
 #include <mutex>  // NOLINT
 #include <memory>
 #include <cstdint>
-#include "lib/simba/mavlink.h"
+#include "simba/mavlink.h"
 
 namespace srp {
 namespace apps {
