@@ -17,7 +17,7 @@
 #include <map>
 
 #include "ara/exec/adaptive_application.h"
-#include "lib/simba/mavlink.h"
+#include "simba/mavlink.h"
 #include "apps/fc/radio_service/event_data.h"
 #include "srp/env/EnvApp/EnvAppHandler.h"
 #include "srp/apps/GPSService/GPSServiceHandler.h"
@@ -62,7 +62,6 @@ class RadioApp : public ara::exec::AdaptiveApplication {
   void TransmittingLoop(const std::stop_token& token);
   void ListeningLoop(const std::stop_token& token);
   SIMBA_STATUS ActuatorCMD(uint8_t actuator_id, uint8_t value);
-  void SendAck(SIMBA_STATUS status);
   std::shared_ptr<EventData> event_data;
 
  public:

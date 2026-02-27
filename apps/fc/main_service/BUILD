@@ -19,7 +19,7 @@ cc_binary(
         "//deployment/apps/fc/main_app:ara",
         "//core/common:common_types",
         "//core/timestamp:timestamp_controller",
-        "@srp_mavlink//lib:mavlink_lib",
+        "@srp_mavlink//:simba_mavlink",
         "//apps/fc/main_service:rocket_states",
     ],
 )
@@ -34,7 +34,7 @@ cc_library(
         "rocketController.hpp",
     ],
     deps = [
-        "@srp_mavlink//lib:mavlink_lib",
+        "@srp_mavlink//:simba_mavlink",
         "//core/common:condition_lib",
         "//core/timestamp:timestamp_controller",
     ],
