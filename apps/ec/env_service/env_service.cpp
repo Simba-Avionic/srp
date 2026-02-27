@@ -25,9 +25,11 @@ namespace envService {
 
 namespace {
     constexpr uint8_t PRESS_SENSOR_ID = 10;
-    constexpr uint8_t PRESS_SENSOR_SAMPLING = 15;
-    constexpr auto kDelay = 10;
-}
+    constexpr uint8_t D_PRESS_SENSOR_ID = 11;
+    constexpr uint8_t PRESS_SENSOR_SAMPLING = 1;
+    constexpr auto kPressureDelayMs = 100;
+    constexpr auto kDifferentialPressureDelayMs = 1;
+}  // namespace
 
 
 
@@ -47,15 +49,12 @@ EnvService::EnvService(): press_{std::move(std::make_shared<i2c::ADCSensorContro
 
 int EnvService::Initialize(const std::map<ara::core::StringView, ara::core::StringView>
                       parms) {
-    ara::log::LogInfo() << "EnvService has been started";
-    // Check if app_path exists in parameters
     auto app_path_it = parms.find("app_path");
     if (app_path_it == parms.end()) {
         ara::log::LogError() << "app_path parameter not found in parms";
         return core::ErrorCode::kInitializeError;
     }
 
-    // Initialize pressure sensor
     auto adc = std::make_unique<i2c::ADS7828>();
     auto i2c = std::make_unique<i2c::I2CController>();
     i2c->Init(std::make_unique<com::soc::StreamIpcSocket>());
@@ -65,7 +64,6 @@ int EnvService::Initialize(const std::map<ara::core::StringView, ara::core::Stri
         return core::ErrorCode::kInitializeError;
     }
 
-    // Convert StringView to string for Init
     std::string app_path_str(app_path_it->second.data(), app_path_it->second.size());
     auto press_init_res = this->press_->Init(app_path_str, std::move(adc));
     if (press_init_res != core::ErrorCode::kOk) {
@@ -130,54 +128,60 @@ int EnvService::LoadTempConfig(const std::map<ara::core::StringView, ara::core::
     return srp::core::ErrorCode::kOk;
 }
 
-int EnvService::Run(const std::stop_token& token) {
+void EnvService::GenericPressureLoop(
+            const std::stop_token& token,
+            uint8_t sensorId,
+            std::chrono::milliseconds delay,
+            const std::string& label,
+            auto& eventIpc,
+            auto& eventUdp) {
     while (!token.stop_requested()) {
         auto start = std::chrono::high_resolution_clock::now();
-        float press_sum = 0.0f;
-        uint8_t num = 0;
-        for (uint8_t k = 0; k < PRESS_SENSOR_SAMPLING; k++) {
-            auto pressValue = this->press_->GetValue(PRESS_SENSOR_ID);
-            if (pressValue.has_value()) {
-                press_sum += pressValue.value();
-                num += 1;
-            } else {
-                ara::log::LogWarn() << "Don't receive new pressure";
-            }
-        }
-        if (num > 0) {
-            float mean_press = press_sum / static_cast<float>(num);
+        auto pressValue = this->press_->GetValue(sensorId);
+
+        if (pressValue.has_value()) {
+            float val = pressValue.value();
+
             std::ostringstream ss;
-            ss << std::fixed << std::setprecision(2) << mean_press;
-            ara::log::LogInfo() << "Receive new Tank Pressure: " << ss.str() << " Bar";
-            this->service_ipc.newPressEvent.Update(static_cast<uint16_t>(mean_press * 100));
-            this->service_udp.newPressEvent.Update(static_cast<uint16_t>(mean_press * 100));
+            ss << std::fixed << std::setprecision(2) << val;
+            ara::log::LogInfo() << "Receive new " << label << ": " << ss.str() << " Bar";
+
+            uint16_t encodedVal = static_cast<uint16_t>(val * 100);
+            eventIpc.Update(encodedVal);
+            eventUdp.Update(encodedVal);
+        } else {
+            ara::log::LogWarn() << "Don't receive new " << label;
         }
-        //////////////////////////
-        float press_sum_2 = 0.0f;
-        uint8_t num_2 = 0;
-        for (uint8_t k = 0; k < PRESS_SENSOR_SAMPLING; k++) {
-            auto pressValue = this->press_->GetValue(11);
-            if (pressValue.has_value()) {
-                press_sum_2 += pressValue.value();
-                num_2 += 1;
-            } else {
-                ara::log::LogWarn() << "Don't receive new pressure";
-            }
-        }
-        if (num_2 > 0) {
-            float mean_press_2 = press_sum_2 / static_cast<float>(num_2);
-            std::ostringstream ss;
-            ss << std::fixed << std::setprecision(2) << mean_press_2;
-            ara::log::LogInfo() << "Receive new Tank D Pressure: " << ss.str() << " Bar";
-            this->service_ipc.newDPressEvent.Update(static_cast<uint16_t>(mean_press_2 * 100));
-            this->service_udp.newDPressEvent.Update(static_cast<uint16_t>(mean_press_2 * 100));
-        }
-        /////////////////
+
         auto end = std::chrono::high_resolution_clock::now();
         auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-        ara::log::LogDebug() << "loop taken:" << std::to_string(duration.count()) << "ms";
-        core::condition::wait_for(std::chrono::milliseconds(kDelay - duration.count()), token);  // 1 Hz
+
+        ara::log::LogDebug() << label << " loop taken: " << std::to_string(duration.count()) << "ms";
+
+        if (duration < delay) {
+            core::condition::wait_for(delay - duration, token);
+        }
     }
+}
+
+int EnvService::Run(const std::stop_token& token) {
+    std::jthread pressure_thread([this, token] {
+        GenericPressureLoop(token, PRESS_SENSOR_ID,
+                            std::chrono::milliseconds(kPressureDelayMs),
+                            "Tank Pressure",
+                            service_ipc.newPressEvent,
+                            service_udp.newPressEvent);
+    });
+
+    std::jthread differential_pressure_thread([this, token] {
+        GenericPressureLoop(token, D_PRESS_SENSOR_ID,
+                            std::chrono::milliseconds(kDifferentialPressureDelayMs),
+                            "Tank D Pressure",
+                            service_ipc.newDPressEvent,
+                            service_udp.newDPressEvent);
+    });
+    core::condition::wait(token);
+
     service_ipc.StopOffer();
     service_udp.StopOffer();
     return core::ErrorCode::kOk;
