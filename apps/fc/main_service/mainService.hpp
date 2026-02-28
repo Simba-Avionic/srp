@@ -17,16 +17,18 @@
 
 #include "ara/exec/adaptive_application.h"
 #include "apps/fc/main_service/service.hpp"
-#include "apps/fc/main_service/rocket_state.h"
+#include "core/rocket_machine_state/rocket_state.hpp"
 #include "core/common/error_code.h"
-#include "apps/fc/main_service/rocketController.hpp"
 namespace srp {
 namespace service {
 class MainService final : public ara::exec::AdaptiveApplication {
  private:
+  std::shared_ptr<core::rocketState::RocketStateController> state_ctr;
   std::unique_ptr<apps::MyMainServiceSkeleton> service_ipc;
   std::unique_ptr<apps::MyMainServiceSkeleton> service_udp;
-  apps::RocketController controller;
+  void OnArm();
+  void OnStateChange(core::rocketState::RocketState_t state);
+
  protected:
   /**
    * @brief This function is called to initialiaze the application

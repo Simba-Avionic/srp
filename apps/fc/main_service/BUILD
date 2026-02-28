@@ -20,23 +20,6 @@ cc_binary(
         "//core/common:common_types",
         "//core/timestamp:timestamp_controller",
         "@srp_mavlink//:simba_mavlink",
-        "//apps/fc/main_service:rocket_states",
+        "//core/rocket_machine_state:rocket_state_base",
     ],
-)
-
-cc_library(
-    name = "rocket_states",
-    srcs = [
-        "rocketController.cpp",
-    ],
-    hdrs = [
-        "rocket_state.h",
-        "rocketController.hpp",
-    ],
-    deps = [
-        "@srp_mavlink//:simba_mavlink",
-        "//core/common:condition_lib",
-        "//core/timestamp:timestamp_controller",
-    ],
-    visibility = ["//visibility:public"],
 )

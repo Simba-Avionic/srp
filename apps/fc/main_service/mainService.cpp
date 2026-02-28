@@ -17,7 +17,7 @@
 #include "apps/fc/main_service/service.hpp"
 #include "apps/fc/main_service/mainService.hpp"
 #include "core/common/condition.h"
-#include "apps/fc/main_service/rocket_state.h"
+#include "core/rocket_machine_state/rocket_state.hpp"
 namespace srp {
 namespace service {
 namespace {
@@ -26,39 +26,45 @@ constexpr auto kService_udp_name = "srp/apps/RecoveryService/MainService_udp";
 const auto kMain_loop_delay_ms = 10;
 const auto kSend_event_time = 1000;
 }
-using RocketState_t = apps::RocketState_t;
+using RocketState_t = core::rocketState::RocketState_t;
 
 MainService::MainService() {}
 
 int MainService::Initialize(const std::map<ara::core::StringView, ara::core::StringView>
                     parms) {
+    state_ctr = core::rocketState::RocketStateController::GetInstance();
+
     service_ipc = std::make_unique<apps::MyMainServiceSkeleton>(
         ara::core::InstanceSpecifier(kService_ipc_name));
     service_udp = std::make_unique<apps::MyMainServiceSkeleton>(
         ara::core::InstanceSpecifier(kService_udp_name));
-    controller.Init();
-    service_ipc->StartOffer();
-    service_udp->StartOffer();
+
+    state_ctr->RegisterCallback(RocketState_t::ARM, [this]() {
+        this->OnArm();
+    });
+    state_ctr->RegisterOnStateChangeCallback([this](core::rocketState::RocketState_t state) {
+            this->OnStateChange(state);
+    });
     return 0;
 }
+
+void MainService::OnStateChange(core::rocketState::RocketState_t state) {
+    service_ipc->CurrentModeStatusEvent.Update(static_cast<uint8_t>(state));
+    service_udp->CurrentModeStatusEvent.Update(static_cast<uint8_t>(state));
+}
+
 int MainService::Run(const std::stop_token& token) {
-    auto last_send = std::chrono::high_resolution_clock::now();
-    auto state = apps::RocketState::GetInstance();
-    while (!token.stop_requested()) {
-        controller.SecureLoop();
-        auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
-            std::chrono::high_resolution_clock::now() - last_send);
-        if (elapsed.count() > kSend_event_time) {
-            auto val = static_cast<uint8_t>(state->GetState());
-            this->service_ipc->CurrentModeStatusEvent.Update(val);
-            this->service_udp->CurrentModeStatusEvent.Update(val);
-            last_send = std::chrono::high_resolution_clock::now();
-        }
-        core::condition::wait_for(std::chrono::milliseconds(kMain_loop_delay_ms), token);
-    }
+    service_ipc->StartOffer();
+    service_udp->StartOffer();
+    state_ctr->SetState(RocketState_t::DISARM);
+
     service_ipc->StopOffer();
     service_udp->StopOffer();
     return 0;
 }
+
+void MainService::OnArm() {
+}
+
 }  // namespace service
 }  // namespace srp
