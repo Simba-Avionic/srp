@@ -15,6 +15,7 @@
 #include <shared_mutex>
 #include <mutex>  // NOLINT
 #include <cstdint>
+#include <vector>
 #include <memory>
 #include <string>
 #include "srp/apps/SysStatType.h"
@@ -37,6 +38,7 @@ class Data_t {
  public:
   std::string get_header();
   std::string to_string(const std::string& timestamp);
+  std::vector<uint8_t> get_bytes();
   void SetSysStatus(const apps::SysStatType& sys_stat);
   void SetTemp1(const tempType& temp);
   void SetTemp2(const tempType& temp);

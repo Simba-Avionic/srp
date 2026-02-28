@@ -14,7 +14,7 @@
 #include "core/common/condition.h"
 #include "ara/log/log.h"
 #include "core/time/sys_time.hpp"
-#include "core/file/file.hpp"
+#include "core/binary_file_writer/writer.hpp"
 #include "apps/ec/logger_service/service/logger_builder.hpp"
 
 
@@ -22,9 +22,9 @@ namespace srp {
 namespace logger {
 
 namespace {
-  constexpr std::string kCsv_filename = "log.csv";
-  constexpr std::string kCsv_filename_prefix = "/home/root/";
-  constexpr uint16_t kSave_interval = 200;
+  constexpr std::string kloger_filename = "log.bin";
+  constexpr std::string kloger_filename_prefix = "/home/root/";
+  constexpr uint16_t kSave_interval = 1;
   constexpr auto kEnv_service_path_name = "srp/apps/FileLoggerApp/EnvApp";
   constexpr auto kUdp_service_path_name = "srp/apps/FileLoggerApp/logService_udp";
   constexpr auto kIpc_service_path_name = "srp/apps/FileLoggerApp/logService_ipc";
@@ -37,16 +37,14 @@ namespace {
 
 void LoggerService::SaveLoop(const std::stop_token& token,
             std::shared_ptr<core::timestamp::TimestampController> timestamp) {
-  csv::CSVDriver csv_;
-
-  csv_.Init(std::make_unique<core::FileHandler>());
+  core::binaryWriter::BinaryFileWriter writer_;
 
   auto prefix = core::time::TimeChanger::ReadSystemTimeAsString();
   std::string filename;
-  filename = kCsv_filename_prefix + prefix.value_or("") + kCsv_filename;
+  filename = kloger_filename_prefix + prefix.value_or("") + kloger_filename;
 
-  if (csv_.Open(filename, data.get_header()) != 0) {
-    ara::log::LogError() << "LoggerService::SaveLoop: Failed to open CSV file: " << filename;
+  if (!writer_.open(filename)) {
+    ara::log::LogError() << "LoggerService::SaveLoop: Failed to open file: " << filename;
     return;
   }
 
@@ -60,9 +58,8 @@ void LoggerService::SaveLoop(const std::stop_token& token,
         core::condition::wait_for(std::chrono::milliseconds(kSave_interval), token);
         continue;
       }
-
-      if (csv_.WriteLine(this->data.to_string(std::to_string(val.value()))) != 0) {
-        ara::log::LogWarn() << "LoggerService::SaveLoop: Failed to write line to CSV";
+      if (!writer_.write(this->data.get_bytes())) {
+        ara::log::LogWarn() << "LoggerService::SaveLoop: Failed to write line";
       }
 
       const auto now = std::chrono::high_resolution_clock::now();
@@ -71,12 +68,12 @@ void LoggerService::SaveLoop(const std::stop_token& token,
       core::condition::wait_for(std::chrono::milliseconds(kSave_interval - elapsed), token);
     }
   } catch (...) {
-    csv_.Close();
+    writer_.close();
     save_state = kLogs_off;
     ara::log::LogFatal() << "LoggerService::SaveLoop: Stopped logging due to Fatal error";
   }
 
-  csv_.Close();
+  writer_.close();
   save_state = kLogs_off;
   ara::log::LogInfo() << "LoggerService::SaveLoop: Stopped logging, file closed";
 }

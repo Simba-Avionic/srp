@@ -38,6 +38,13 @@ class EnvService final : public ara::exec::AdaptiveApplication {
   apps::MyEnvAppSkeleton service_udp;
   core::ErrorCode LoadTempConfig(
     const std::map<ara::core::StringView, ara::core::StringView>& parms);
+  void GenericPressureLoop(
+    const std::stop_token& token,
+    uint8_t sensorId,
+    std::chrono::milliseconds delay,
+    const std::string& label,
+    auto& eventIpc, // NOLINT
+    auto& eventUdp);  // NOLINT
 
  protected:
   /**
