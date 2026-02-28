@@ -9,6 +9,7 @@ filegroup(
         "//deployment/apps/env_service:instance",
         "//deployment/apps/fc/gps_app:instance",
         "//deployment/apps/prim_service:instance",
+        "//deployment/apps/engine_app:instance",
         "//deployment/apps/servo_service:instance",
         "//deployment/apps/fc/recovery_service:instance",
         "//deployment/apps/fc/main_app:instance"

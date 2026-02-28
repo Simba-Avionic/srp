@@ -13,7 +13,6 @@
 #include "apps/fc/radio_service/radio_app.h"
 #include "ara/log/log.h"
 #include "core/common/condition.h"
-#include "apps/fc/main_service/rocket_state.h"
 
 namespace srp {
 namespace apps {
@@ -31,6 +30,8 @@ namespace {
   constexpr auto kSystemId = 1;
   constexpr auto kComponentId = 200;
   constexpr auto kTime = 990;  // Should be 1 Hz but better make it 1.1Hz than 0.9 wchich can trigger error on GS
+  constexpr auto kSendWaifAfterMs = 50;  // Work ok but if you have more than 15 Frames in Transmiting Loop you need
+                                        // to reduce sending frequency or this delay
 }  // namespace
 
 void RadioApp::TransmittingLoop(const std::stop_token& token) {
@@ -45,7 +46,7 @@ void RadioApp::TransmittingLoop(const std::stop_token& token) {
     uint16_t len = mavlink_msg_to_send_buffer(buffer, &msg);
     mavl_logger.LogDebug() << std::vector<uint8_t>(buffer, buffer + len);
     uart_->Write(std::vector<uint8_t>(buffer, buffer + len));
-    core::condition::wait_for(std::chrono::milliseconds(20), token);
+    core::condition::wait_for(std::chrono::milliseconds(kSendWaifAfterMs), token);
   };
   while (!token.stop_requested()) {
     auto start = std::chrono::high_resolution_clock::now();
@@ -53,16 +54,19 @@ void RadioApp::TransmittingLoop(const std::stop_token& token) {
       // Send Heartbeat msg
       auto val = timestamp_->GetNewTimeStamp();
       if (val.has_value()) {
-        // TODO(matikrajek42@gmail.com): add later the status of both computers
-        // TODO(matikrajek42@gmail.com): add boards temperature
         send([&] {
           mavlink_msg_simba_rocket_heartbeat_pack(kSystemId, kComponentId, &msg,
-            static_cast<uint64_t>(val.value()), static_cast<uint8_t>(event_data->GetRocketState()),
-                                0, 0, static_cast<uint8_t>(event_data->GetActuatorStates()), 32, 32);
+                    static_cast<uint64_t>(val.value()), event_data->GetMBState(),
+                    event_data->GetEBState(), event_data->GetActuatorStates());
         });
       } else {
         ara::log::LogWarn() << "Cant Get Timestamp";
       }
+
+      send([&] {
+        mavlink_msg_simba_computer_temperature_pack(kSystemId, kComponentId, &msg,
+            event_data->GetEBTemp(), event_data->GetMBTemp());
+      });
 
       // // Send Max Altitude MSG
       // send([&] {
@@ -92,121 +96,56 @@ void RadioApp::TransmittingLoop(const std::stop_token& token) {
   }
 }
 
-SIMBA_ROCKET_STATE RadioApp::GetStateFromMsg(const uint8_t values) {
-  if (values & SIMBA_GS_FLAGS::SIMBA_GS_ABORT) {
-    return SIMBA_ROCKET_STATE::SIMBA_ROCKET_STATE_ABORT;
-  }
-  if (values & SIMBA_GS_FLAGS::SIMBA_GS_LAUNCH) {
-    return SIMBA_ROCKET_STATE::SIMBA_ROCKET_STATE_LAUNCH;
-  }
-  if (values & SIMBA_GS_FLAGS::SIMBA_GS_ARM) {
-    return SIMBA_ROCKET_STATE::SIMBA_ROCKET_STATE_ARM;
-  }
-  if (values & SIMBA_GS_FLAGS::SIMBA_GS_DISARM) {
-    return SIMBA_ROCKET_STATE::SIMBA_ROCKET_STATE_DISARM;
-  }
-}
 
 void RadioApp::ListeningLoop(const std::stop_token& token) {
-  mavlink_message_t msg;
-  mavlink_status_t status;
+  // TODO(matikrajek42@gmail.com) revrite on msg
+  // mavlink_message_t msg;
+  // mavlink_status_t status;
 
-  while (!token.stop_requested()) {
-    auto bytes_read_opt = uart_->Read(1);
-    if (!bytes_read_opt.has_value()) {
-      continue;
-    }
-    auto byte = bytes_read_opt.value();
-    if (!mavlink_parse_char(MAVLINK_COMM_0, byte[0], &msg, &status)) {
-      continue;
-    }
-    switch (msg.msgid) {
-      case MAVLINK_MSG_ID_SIMBA_ACTUATOR_CMD: {
-        uint8_t actuator_id = mavlink_msg_simba_actuator_cmd_get_actuator_id(&msg);
-        uint8_t value = mavlink_msg_simba_actuator_cmd_get_value(&msg);
-        ActuatorCMD(actuator_id, value);
-        break;
-      }
-      case MAVLINK_MSG_ID_SIMBA_GS_HEARTBEAT: {
-        // add some validation if gs restarted
-        auto timestamp = mavlink_msg_simba_gs_heartbeat_get_timestamp(&msg);
-        auto values = mavlink_msg_simba_gs_heartbeat_get_values(&msg);
+  // while (!token.stop_requested()) {
+  //   auto bytes_read_opt = uart_->Read(1);
+  //   if (!bytes_read_opt.has_value()) {
+  //     continue;
+  //   }
+  //   auto byte = bytes_read_opt.value();
+  //   if (!mavlink_parse_char(MAVLINK_COMM_0, byte[0], &msg, &status)) {
+  //     continue;
+  //   }
+  //   switch (msg.msgid) {
+  //     case MAVLINK_MSG_ID_SIMBA_ACTUATOR_CMD: {
+  //       uint8_t actuator_id = mavlink_msg_simba_actuator_cmd_get_actuator_id(&msg);
+  //       uint8_t value = mavlink_msg_simba_actuator_cmd_get_value(&msg);
+  //       // TODO add some function for actuator movement
+  //       break;
+  //     }
+  //     case MAVLINK_MSG_ID_SIMBA_GS_HEARTBEAT: {
+  //       // add some validation if gs restarted
+  //       auto timestamp = mavlink_msg_simba_gs_heartbeat_get_timestamp(&msg);
+  //       auto values = mavlink_msg_simba_gs_heartbeat_get_values(&msg);
 
-        // React on Requested Change of Rocket State
-        auto req_state = GetStateFromMsg(values);
-        if (req_state != rocket_state->GetState()) {
-          this->main_service_handler->setMode(req_state);
-        }
-        // Actuatory
-        this->servo_service_handler->SetVentServoValue(values & SIMBA_GS_FLAGS::SIMBA_GS_VENT_VALVE);
-        this->servo_service_handler->SetDumpValue(values & SIMBA_GS_FLAGS::SIMBA_GS_DUMP_VALVE);
-        // TODO(matikrajek42@gmail.com) add function to enable camera from gs
-        // values & SIMBA_GS_FLAGS::SIMBA_GS_CAMERAS
+  //       // // React on Requested Change of Rocket State
+  //       // auto req_state = GetStateFromMsg(values);
+  //       // if (req_state != event_data->GetMBState()) {
+  //       //   this->main_service_handler->setMode(req_state);
+  //       // }
+  //       // Actuatory
+  //       if ((values & SIMBA_GS_FLAGS::SIMBA_GS_VENT_VALVE) !=
+  //                 (event_data->GetActuatorStates() & SIMBA_GS_FLAGS::SIMBA_GS_VENT_VALVE)) {
+  //         this->servo_service_handler->SetVentServoValue(values & SIMBA_GS_FLAGS::SIMBA_GS_VENT_VALVE);
+  //       }
+  //       if ((values & SIMBA_GS_FLAGS::SIMBA_GS_DUMP_VALVE) !=
+  //               (event_data->GetActuatorStates() & SIMBA_GS_FLAGS::SIMBA_GS_DUMP_VALVE)) {
+  //         this->servo_service_handler->SetDumpValue(values & SIMBA_GS_FLAGS::SIMBA_GS_DUMP_VALVE);
+  //       }
+  //       // TODO(matikrajek42@gmail.com) add function to enable camera from gs
+  //       // values & SIMBA_GS_FLAGS::SIMBA_GS_CAMERAS
 
-        break;
-      }
-    }
-  }
+  //       break;
+  //     }
+  //   }
+  // }
 }
 
-
-SIMBA_STATUS RadioApp::ActuatorCMD(uint8_t actuator_id, uint8_t value) {
-  switch (actuator_id) {
-    case SIMBA_ROCKET_MAIN_VALVE: {
-      auto result = this->servo_service_handler->SetMainServoValue(value);
-      if (result.HasValue()) {
-        if (result.Value() == true) {
-          return SIMBA_OK;
-        }
-        return SIMBA_ERROR;
-      }
-      return SIMBA_CONNECTION_ERROR;
-      break;
-    }
-    case SIMBA_ROCKET_VENT_VALVE: {
-      auto result = this->servo_service_handler->SetVentServoValue(value);
-      if (result.HasValue()) {
-        if (result.Value() == true) {
-          return SIMBA_OK;
-        }
-      return SIMBA_ERROR;
-      }
-      return SIMBA_CONNECTION_ERROR;
-      break;
-    }
-    case SIMBA_ROCKET_DUMP_VALVE: {
-      // TODO(matikrajek42@gmail.com) add dump valve logic
-      break;
-    }
-    case SIMBA_ROCKET_RECOVERY_SERVO: {
-      if (value == 1) {
-        auto result = this->recovery_service_handler->OpenReefedParachute();
-        if (result.HasValue()) {
-          if (result.Value() == true) {
-            return SIMBA_OK;
-          }
-        return SIMBA_ERROR;
-        }
-        return SIMBA_CONNECTION_ERROR;
-      }
-      break;
-    }
-    case SIMBA_ROCKET_RECOVERY_LINECUTTER: {
-      if (value == 1) {
-        auto result = this->recovery_service_handler->UnreefeParachute();
-        if (result.HasValue()) {
-          if (result.Value() == true) {
-            return SIMBA_OK;
-          }
-        return SIMBA_ERROR;
-        }
-        return SIMBA_CONNECTION_ERROR;
-      }
-      break;
-    }
-  }
-  return SIMBA_NOT_DEFINED;
-}
 int RadioApp::Run(const std::stop_token& token) {
   std::jthread transmitting_thread([this](const std::stop_token& t) {
     this->TransmittingLoop(t);
@@ -331,11 +270,12 @@ void RadioApp::SomeIpInit() {
           if (!res.HasValue()) {
             return;
           }
-          this->current_state = static_cast<SIMBA_ROCKET_STATE>(res.Value());
+          this->event_data->SetMBState(static_cast<core::rocketState::RocketState_t>(res.Value()));
         });
       });
     });
     // TODO(m.mankowski2004@gmail.com): Finish actuators
+    // TODO(matikrajek42@gmail.com): Add EC State
   }
 RadioApp::~RadioApp() {
 }
@@ -352,7 +292,7 @@ servo_service_handler{nullptr},
 main_service_proxy{ara::core::InstanceSpecifier{kMain_service_path_name}},
 main_service_handler{nullptr},
 recovery_service_handler{nullptr},
-mavl_logger{ara::log::LoggingMenager::GetInstance()->CreateLogger("MAVL", "", ara::log::LogLevel::kDebug)}
+mavl_logger{ara::log::LoggingMenager::GetInstance()->CreateLogger("MAVL", "", ara::log::LogLevel::kInfo)}
 {
 }
 }  // namespace apps

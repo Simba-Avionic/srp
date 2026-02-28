@@ -34,7 +34,6 @@ namespace srp {
 namespace apps {
 class RadioApp : public ara::exec::AdaptiveApplication {
  private:
-  SIMBA_ROCKET_STATE current_state;
   const ara::log::Logger& mavl_logger;
 
   PrimerServiceProxy primer_service_proxy;
@@ -65,10 +64,8 @@ class RadioApp : public ara::exec::AdaptiveApplication {
 
   void TransmittingLoop(const std::stop_token& token);
   void ListeningLoop(const std::stop_token& token);
-  SIMBA_STATUS ActuatorCMD(uint8_t actuator_id, uint8_t value);
   std::shared_ptr<EventData> event_data;
 
-  SIMBA_ROCKET_STATE GetStateFromMsg(const uint8_t values);
 
  public:
   int Run(const std::stop_token& token) override;

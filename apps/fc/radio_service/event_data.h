@@ -16,29 +16,37 @@
 #include <memory>
 #include <cstdint>
 #include "simba/mavlink.h"
+#include "core/rocket_machine_state/rocket_state.hpp"
 
 namespace srp {
 namespace apps {
 
 class EventData {
  private:
-  __mavlink_simba_tank_temperature_t temp;
-  __mavlink_simba_tank_pressure_t press;
-  __mavlink_simba_gps_t gps;
-  __mavlink_simba_imu_t imu;
-  __mavlink_simba_max_altitude_t max_altitude;
-  SIMBA_ROCKET_STATE rocket_state;
+  mavlink_simba_tank_temperature_t temp;
+  mavlink_simba_tank_pressure_t press;
+  mavlink_simba_gps_t gps;
+  mavlink_simba_imu_t imu;
+  mavlink_simba_max_altitude_t max_altitude;
+  mavlink_simba_rocket_heartbeat_t hb;
+  mavlink_simba_computer_temperature_t board_temp;
   uint8_t actuator_state;
   std::shared_mutex mtx_;
 
   template <typename T>
   void SetValue(T res, T* field);
 
+  template <typename T>
+  T GetValue(const T* field);
+
  public:
   static std::shared_ptr<EventData> GetInstance();
 
-  SIMBA_ROCKET_STATE GetRocketState();
-  void SetRocketState(const SIMBA_ROCKET_STATE state);
+  core::rocketState::RocketState_t GetEBState();
+  void SetEBState(const core::rocketState::RocketState_t state);
+  core::rocketState::RocketState_t GetMBState();
+  void SetMBState(const core::rocketState::RocketState_t state);
+
 
   uint8_t GetActuatorStates();
   void SetActuatorState(const uint8_t actuator, const uint8_t state);
@@ -46,6 +54,11 @@ class EventData {
   void SetTemp1(int16_t res);
   void SetTemp2(int16_t res);
   void SetTemp3(int16_t res);
+
+  void SetMBTemp(int16_t temp);
+  void SetEBTemp(int16_t temp);
+  int16_t GetMBTemp();
+  int16_t GetEBTemp();
 
   void SetPress(uint16_t res);
 
