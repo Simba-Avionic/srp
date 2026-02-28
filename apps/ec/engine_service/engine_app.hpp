@@ -21,7 +21,7 @@
 #include "srp/apps/PrimerService/PrimerServiceHandler.h"
 #include "srp/apps/ServoService/ServoServiceHandler.h"
 #include "apps/ec/engine_service/service.hpp"
-#include "apps/ec/engine_service/state_controller.hpp"
+#include "core/rocket_machine_state/rocket_state.hpp"
 
 namespace srp {
 namespace apps {
@@ -32,12 +32,23 @@ class EngineApp final : public ara::exec::AdaptiveApplication {
   std::shared_ptr<ServoServiceHandler> servo_handler_;
   PrimerServiceProxy primer_proxy;
   ServoServiceProxy servo_proxy;
-  std::shared_ptr<engineApp::EngineStateController> state_ctr_;
+  std::shared_ptr<core::rocketState::RocketStateController> state_ctr;
 
   service::MyEngineServiceSkeleton service_ipc;
   service::MyEngineServiceSkeleton service_udp;
 
  protected:
+  bool CheckLaunchRequirements();
+  void OnLaunch();
+  void OnArm();
+  void OnDisarm();
+  void OnApogee();
+
+  /**
+   * @brief Update IPC and UDP state of State
+   * 
+   */
+  void OnStateChange(core::rocketState::RocketState_t new_state);
   /**
    * @brief This function is called to launch the application
    *

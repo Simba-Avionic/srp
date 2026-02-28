@@ -7,8 +7,6 @@ cc_binary(
         "engine_app.hpp",
         "service.hpp",
         "service.cpp",
-        "state_controller.hpp",
-        "state_controller.cpp",
     ],
     visibility = [
         "//deployment/apps:__subpackages__"
@@ -18,7 +16,7 @@ cc_binary(
         "//core/common:condition_lib",
         "//deployment/apps/engine_app:ara",
         "//deployment/apps/engine_app:someip_lib",
-        "//apps/fc/main_service:rocket_states",
         "//mw/gpio_server/controller:gpio_controller",
+        "//core/rocket_machine_state:rocket_state_base",
     ],
 )
