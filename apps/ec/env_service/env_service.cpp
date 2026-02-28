@@ -84,26 +84,33 @@ int EnvService::Initialize(const std::map<ara::core::StringView, ara::core::Stri
             this, std::placeholders::_1), std::make_unique<com::soc::StreamIpcSocket>());
         i++;
     } while (res != core::ErrorCode::kOk && i < 6);
-    LoadTempConfig(parms);
+    if (res != core::ErrorCode::kOk) {
+        ara::log::LogError() << "TempController failed to initialize after retries";
+        return core::ErrorCode::kInitializeError;
+    }
+    if (LoadTempConfig(parms) != core::ErrorCode::kOk) {
+        ara::log::LogError() << "Failed to load temperature configuration";
+        return core::ErrorCode::kInitializeError;
+    }
     service_ipc.StartOffer();
     service_udp.StartOffer();
     return core::ErrorCode::kOk;
 }
 
-int EnvService::LoadTempConfig(const std::map<ara::core::StringView, ara::core::StringView>& parms) {
+core::ErrorCode EnvService::LoadTempConfig(const std::map<ara::core::StringView, ara::core::StringView>& parms) {
     ara::log::LogInfo() << "Starting function LoadTempConfig";
     const std::string path = parms.at("app_path") + "etc/config.json";
     auto parser_opt = core::json::JsonParser::Parser(path);
     ara::log::LogInfo() << path;
     if (!parser_opt.has_value()) {
-        ara::log::LogError() <<("Failed to open temp_Service config file");
-        exit(1);
+        ara::log::LogError() << "Failed to open temp_Service config file";
+        return core::ErrorCode::kInitializeError;
     }
     ara::log::LogInfo() << "Opened file";
     auto temp_opt = parser_opt.value().GetArray<nlohmann::json>("sensors-temp");
     if (!temp_opt.has_value()) {
-        ara::log::LogError() <<("Invalid temp_Service config format");
-        exit(2);
+        ara::log::LogError() << "Invalid temp_Service config format";
+        return core::ErrorCode::kInitializeError;
     }
     for (const auto &data : temp_opt.value()) {
         auto parser_opt = core::json::JsonParser::Parser(data);
@@ -125,7 +132,7 @@ int EnvService::LoadTempConfig(const std::map<ara::core::StringView, ara::core::
         }
         sensorIdsToPaths[sensor_id.value()] = std::make_pair(name.value(), physical_id.value());
     }
-    return srp::core::ErrorCode::kOk;
+    return core::ErrorCode::kOk;
 }
 
 void EnvService::GenericPressureLoop(
@@ -189,20 +196,51 @@ int EnvService::Run(const std::stop_token& token) {
 
 void EnvService::TempRxCallback(const std::vector<srp::mw::temp::TempReadHdr>& data) {
     for (auto &hdr : data) {
+        auto pathIt = sensorIdsToPaths.find(hdr.actuator_id);
+        if (pathIt == sensorIdsToPaths.end()) {
+            ara::log::LogWarn() << "Unknown sensor id: " << hdr.actuator_id;
+            continue;
+        }
+        const auto& sensorName = pathIt->second.first;
         const int16_t value = static_cast<int16_t>(hdr.value * 10);
-        ara::log::LogInfo() << "Receive new temp id: " << hdr.actuator_id << ", name: " <<
-                sensorIdsToPaths[hdr.actuator_id].first << ", temp: " << static_cast<float>(value/10);
-        if (sensorIdsToPaths[hdr.actuator_id].first == "sensor_temp_1") {
-            this->service_ipc.newTempEvent_1.Update(value);
-            this->service_udp.newTempEvent_1.Update(value);
-        } else if (sensorIdsToPaths[hdr.actuator_id].first == "sensor_temp_2") {
-            this->service_ipc.newTempEvent_2.Update(value);
-            this->service_udp.newTempEvent_2.Update(value);
-        } else if (sensorIdsToPaths[hdr.actuator_id].first == "sensor_temp_3") {
-            this->service_ipc.newTempEvent_3.Update(value);
-            this->service_udp.newTempEvent_3.Update(value);
+
+        ara::log::LogInfo() << "Receive new temp id: " << hdr.actuator_id
+                            << ", name: " << sensorName << ", temp: " << hdr.value;
+
+        using UpdateFn = std::function<void(int16_t)>;
+        static const std::unordered_map<std::string, UpdateFn> eventMap = {
+            {"sensor_temp_1", [this](int16_t v) {
+                service_ipc.newTempEvent_1.Update(v);
+                service_udp.newTempEvent_1.Update(v);
+            }},
+            {"sensor_temp_2", [this](int16_t v) {
+                service_ipc.newTempEvent_2.Update(v);
+                service_udp.newTempEvent_2.Update(v);
+            }},
+            {"sensor_temp_3", [this](int16_t v) {
+                service_ipc.newTempEvent_3.Update(v);
+                service_udp.newTempEvent_3.Update(v);
+            }},
+            {"board_1",       [this](int16_t v) {
+                service_ipc.newBoardTempEvent1.Update(v);
+                service_udp.newBoardTempEvent1.Update(v);
+            }},
+            {"board_2",       [this](int16_t v) {
+                service_ipc.newBoardTempEvent2.Update(v);
+                service_udp.newBoardTempEvent2.Update(v);
+            }},
+            {"board_3",       [this](int16_t v) {
+                service_ipc.newBoardTempEvent3.Update(v);
+                service_udp.newBoardTempEvent3.Update(v);
+            }}
+        };
+
+        auto it = eventMap.find(sensorName);
+        if (it != eventMap.end()) {
+            it->second(value);
         } else {
-            ara::log::LogWarn() << "ID spoza zakresu:" << hdr.actuator_id;
+            ara::log::LogWarn() << "No mapping for sensor name: " << sensorName
+                                << " (id=" << hdr.actuator_id << ")";
         }
     }
 }
