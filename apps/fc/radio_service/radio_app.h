@@ -69,6 +69,7 @@ class RadioApp : public ara::exec::AdaptiveApplication {
   std::shared_ptr<EventData> event_data;
 
   SIMBA_ROCKET_STATE GetStateFromMsg(const uint8_t values);
+
  public:
   int Run(const std::stop_token& token) override;
   int Initialize(const std::map<ara::core::StringView, ara::core::StringView>

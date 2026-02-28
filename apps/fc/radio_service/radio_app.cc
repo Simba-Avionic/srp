@@ -45,6 +45,7 @@ void RadioApp::TransmittingLoop(const std::stop_token& token) {
     uint16_t len = mavlink_msg_to_send_buffer(buffer, &msg);
     mavl_logger.LogDebug() << std::vector<uint8_t>(buffer, buffer + len);
     uart_->Write(std::vector<uint8_t>(buffer, buffer + len));
+    core::condition::wait_for(std::chrono::milliseconds(1), token);
   };
   while (!token.stop_requested()) {
     auto start = std::chrono::high_resolution_clock::now();
@@ -56,7 +57,8 @@ void RadioApp::TransmittingLoop(const std::stop_token& token) {
         // TODO(matikrajek42@gmail.com): add boards temperature
         send([&] {
           mavlink_msg_simba_rocket_heartbeat_pack(kSystemId, kComponentId, &msg,
-            static_cast<uint64_t>(val.value()), static_cast<uint8_t>(event_data->GetRocketState()), 0, 0, static_cast<uint8_t>(event_data->GetActuatorStates()), 32, 32);
+            static_cast<uint64_t>(val.value()), static_cast<uint8_t>(event_data->GetRocketState()),
+                                0, 0, static_cast<uint8_t>(event_data->GetActuatorStates()), 32, 32);
         });
       } else {
         ara::log::LogWarn() << "Cant Get Timestamp";
@@ -72,10 +74,12 @@ void RadioApp::TransmittingLoop(const std::stop_token& token) {
 
       // Send Tank Temps
       send([&] { mavlink_msg_simba_tank_temperature_pack(kSystemId, kComponentId, &msg,
-                                      static_cast<int16_t>(event_data->GetTemp1()), static_cast<int16_t>(event_data->GetTemp2()), static_cast<int16_t>(event_data->GetTemp3())); });
+              static_cast<int16_t>(event_data->GetTemp1()), static_cast<int16_t>(event_data->GetTemp2()),
+              static_cast<int16_t>(event_data->GetTemp3())); });
 
       // Send Tank pressure
-      send([&] { mavlink_msg_simba_tank_pressure_pack(kSystemId, kComponentId, &msg, static_cast<uint16_t>(event_data->GetPress())); });
+      send([&] { mavlink_msg_simba_tank_pressure_pack(kSystemId, kComponentId, &msg,
+                                                  static_cast<uint16_t>(event_data->GetPress())); });
 
       // // // Send
       // // TODO(m.mankowski2004@gmail.com): change altitude
@@ -136,8 +140,8 @@ void RadioApp::ListeningLoop(const std::stop_token& token) {
         // Actuatory
         this->servo_service_handler->SetVentServoValue(values & SIMBA_GS_FLAGS::SIMBA_GS_VENT_VALVE);
         this->servo_service_handler->SetDumpValue(values & SIMBA_GS_FLAGS::SIMBA_GS_DUMP_VALVE);
-        //  TODO(matikrajek42@gmail.com) add function to enable camera from gs
-        //  values & SIMBA_GS_FLAGS::SIMBA_GS_CAMERAS
+        // TODO(matikrajek42@gmail.com) add function to enable camera from gs
+        // values & SIMBA_GS_FLAGS::SIMBA_GS_CAMERAS
 
         break;
       }
