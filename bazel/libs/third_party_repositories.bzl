@@ -22,9 +22,10 @@ def include_srp_platform(ver, source, sha):
 def include_srp_mavlink(ver):
         http_archive(
         name = "srp_mavlink",
-        strip_prefix = "simba_mavlink-"+ver,
-        urls = ["https://github.com/Simba-Avionic/simba_mavlink/archive/refs/tags/"+ver+".zip"],
+        strip_prefix = "mavlink",
+        urls = ["https://github.com/Simba-Avionic/simba_mavlink/releases/download/"+ver+"/simba_mavlink.zip"],
         type = "zip",
+        build_file = "//bazel/libs:simba_mavlink.BUILD",
     )
 def include_gtest_mock():
     http_archive(

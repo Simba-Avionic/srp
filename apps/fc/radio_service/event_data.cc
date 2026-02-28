@@ -54,14 +54,14 @@ void EventData::SetValue(T res, T* field) {
 }
 
 void EventData::SetTemp1(int16_t res) {
-  SetValue(res, &this->temp.temp1);
+  SetValue(res, &this->temp.upper_tank);
 }
 void EventData::SetTemp2(int16_t res) {
-  SetValue(res, &this->temp.temp2);
+  SetValue(res, &this->temp.middle_tank);
 }
 
 void EventData::SetTemp3(int16_t res) {
-  SetValue(res, &this->temp.temp3);
+  SetValue(res, &this->temp.lower_tank);
 }
 
 void EventData::SetPress(uint16_t res) {
@@ -77,17 +77,17 @@ void EventData::SetGPS(int32_t lon, int32_t lat, int32_t alt) {
 
 uint16_t EventData::GetTemp1() {
   std::shared_lock<std::shared_mutex> lock(mtx_);
-  return this->temp.temp1;
+  return this->temp.upper_tank;
 }
 
 uint16_t EventData::GetTemp2() {
   std::shared_lock<std::shared_mutex> lock(mtx_);
-  return this->temp.temp2;
+  return this->temp.middle_tank;
 }
 
 uint16_t EventData::GetTemp3() {
   std::shared_lock<std::shared_mutex> lock(mtx_);
-  return this->temp.temp3;
+  return this->temp.lower_tank;
 }
 
 float EventData::GetPress() {

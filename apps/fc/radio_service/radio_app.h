@@ -17,7 +17,7 @@
 #include <map>
 
 #include "ara/exec/adaptive_application.h"
-#include "lib/simba/mavlink.h"
+#include "simba/mavlink.h"
 #include "apps/fc/radio_service/event_data.h"
 #include "srp/env/EnvApp/EnvAppHandler.h"
 #include "srp/apps/GPSService/GPSServiceHandler.h"
@@ -36,6 +36,7 @@ class RadioApp : public ara::exec::AdaptiveApplication {
  private:
   SIMBA_ROCKET_STATE current_state;
   const ara::log::Logger& mavl_logger;
+
   PrimerServiceProxy primer_service_proxy;
   std::shared_ptr<PrimerServiceHandler> primer_service_handler;
   ServoServiceProxy servo_service_proxy;
@@ -51,7 +52,10 @@ class RadioApp : public ara::exec::AdaptiveApplication {
   const ara::core::InstanceSpecifier service_udp_instance;
   std::unique_ptr<apps::RadioServiceSkeleton> service_ipc;
   std::unique_ptr<apps::RadioServiceSkeleton> service_udp;
+
   std::unique_ptr<core::uart::IUartDriver> uart_;
+  std::mutex uart_mutex_;
+
   std::unique_ptr<core::timestamp::ITimestampController> timestamp_;
   void SomeIpInit();
 
@@ -62,8 +66,9 @@ class RadioApp : public ara::exec::AdaptiveApplication {
   void TransmittingLoop(const std::stop_token& token);
   void ListeningLoop(const std::stop_token& token);
   SIMBA_STATUS ActuatorCMD(uint8_t actuator_id, uint8_t value);
-  void SendAck(SIMBA_STATUS status);
   std::shared_ptr<EventData> event_data;
+
+  SIMBA_ROCKET_STATE GetStateFromMsg(const uint8_t values);
 
  public:
   int Run(const std::stop_token& token) override;

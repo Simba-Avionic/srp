@@ -2,7 +2,7 @@ cc_library(
     name = "radio_app_lib",
     deps = [
         "@srp_platform//ara/exec:adaptive_application_lib",
-        "@srp_mavlink//lib:mavlink_lib",
+        "@srp_mavlink//:simba_mavlink",
         "//deployment/apps/fc/radio_app:someip_lib",
         "//deployment/apps/fc/radio_app:ara",
         "//core/timestamp:timestamp_controller",

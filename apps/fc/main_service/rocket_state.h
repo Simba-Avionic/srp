@@ -15,7 +15,7 @@
 #include <memory>
 #include <utility>
 #include <string>
-#include "lib/simba/mavlink.h"
+#include "simba/mavlink.h"
 namespace srp {
 namespace apps {
 class RocketState;
