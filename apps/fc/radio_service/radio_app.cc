@@ -45,7 +45,7 @@ void RadioApp::TransmittingLoop(const std::stop_token& token) {
     uint16_t len = mavlink_msg_to_send_buffer(buffer, &msg);
     mavl_logger.LogDebug() << std::vector<uint8_t>(buffer, buffer + len);
     uart_->Write(std::vector<uint8_t>(buffer, buffer + len));
-    core::condition::wait_for(std::chrono::milliseconds(1), token);
+    core::condition::wait_for(std::chrono::milliseconds(20), token);
   };
   while (!token.stop_requested()) {
     auto start = std::chrono::high_resolution_clock::now();
