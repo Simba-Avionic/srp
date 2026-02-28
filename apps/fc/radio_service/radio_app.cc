@@ -11,6 +11,7 @@
 #include <utility>
 #include <vector>
 #include "apps/fc/radio_service/radio_app.h"
+#include "ara/log/log.h"
 #include "core/common/condition.h"
 #include "apps/fc/main_service/rocket_state.h"
 
@@ -35,7 +36,9 @@ namespace {
 void RadioApp::TransmittingLoop(const std::stop_token& token) {
   mavlink_message_t msg;
   uint8_t buffer[MAVLINK_MAX_PACKET_LEN];
-  timestamp_->Init();
+  if (!timestamp_->Init()) {
+    ara::log::LogWarn() << "Cant initialize app time";
+  }
   event_data = EventData::GetInstance();
   auto send = [&](auto pack_func) {
     pack_func();
@@ -53,8 +56,10 @@ void RadioApp::TransmittingLoop(const std::stop_token& token) {
         // TODO(matikrajek42@gmail.com): add boards temperature
         send([&] {
           mavlink_msg_simba_rocket_heartbeat_pack(kSystemId, kComponentId, &msg,
-            static_cast<uint64_t>(val.value()), event_data->GetRocketState(), 0, 0, event_data->GetActuatorStates(), 32.3, 32.3);
+            static_cast<uint64_t>(val.value()), static_cast<uint8_t>(event_data->GetRocketState()), 0, 0, static_cast<uint8_t>(event_data->GetActuatorStates()), 32, 32);
         });
+      } else {
+        ara::log::LogWarn() << "Cant Get Timestamp";
       }
 
       // // Send Max Altitude MSG
@@ -67,12 +72,12 @@ void RadioApp::TransmittingLoop(const std::stop_token& token) {
 
       // Send Tank Temps
       send([&] { mavlink_msg_simba_tank_temperature_pack(kSystemId, kComponentId, &msg,
-                                      event_data->GetTemp1(), event_data->GetTemp2(), event_data->GetTemp3()); });
+                                      static_cast<int16_t>(event_data->GetTemp1()), static_cast<int16_t>(event_data->GetTemp2()), static_cast<int16_t>(event_data->GetTemp3())); });
 
       // Send Tank pressure
-      send([&] { mavlink_msg_simba_tank_pressure_pack(kSystemId, kComponentId, &msg, event_data->GetPress()); });
+      send([&] { mavlink_msg_simba_tank_pressure_pack(kSystemId, kComponentId, &msg, static_cast<uint16_t>(event_data->GetPress())); });
 
-      // // Send
+      // // // Send
       // // TODO(m.mankowski2004@gmail.com): change altitude
       // send([&] { mavlink_msg_simba_gps_pack(kSystemId, kComponentId, &msg,
       //                                                     event_data->GetGPSLon(), event_data->GetGPSLat(), 0); });
@@ -230,8 +235,7 @@ int RadioApp::Initialize(const std::map<ara::core::StringView,
         return 1;
       }
     if (!this->timestamp_) {
-        auto timestamp_d = std::make_unique<core::timestamp::TimestampController>();
-        InitTimestamp(std::move(timestamp_d));
+        InitTimestamp(std::make_unique<core::timestamp::TimestampController>());
     }
     service_ipc = std::make_unique<apps::RadioServiceSkeleton>(service_ipc_instance);
     service_udp = std::make_unique<apps::RadioServiceSkeleton>(service_udp_instance);
