@@ -10,6 +10,8 @@
  */
 #include <utility>
 #include <vector>
+#include "simba/mavlink.h"
+#include "simba/simba.h"
 #include "apps/fc/radio_service/radio_app.h"
 #include "ara/log/log.h"
 #include "core/common/condition.h"
@@ -34,6 +36,14 @@ namespace {
   static constexpr auto kSendWaifAfterMs = 50;  // Work ok but if you have more than
                                                 // 15 Frames in Transmiting Loop you need
                                                 // to reduce sending frequency or this delay
+
+  static constexpr std::pair<uint8_t, core::rocketState::RocketState_t> gs_rocket_state_mapping[] = {
+        {SIMBA_GS_ABORT,  core::rocketState::RocketState_t::ABORT},
+        {SIMBA_GS_DISARM, core::rocketState::RocketState_t::DISARM},
+        {SIMBA_GS_ARM,    core::rocketState::RocketState_t::ARM},
+        {SIMBA_GS_LAUNCH, core::rocketState::RocketState_t::LAUNCH}
+    };
+  using RocketState_t = core::rocketState::RocketState_t;
 }  // namespace
 
 void RadioApp::TransmittingLoop(const std::stop_token& token) {
@@ -97,54 +107,50 @@ void RadioApp::TransmittingLoop(const std::stop_token& token) {
   }
 }
 
+std::optional<RocketState_t> RadioApp::GetReqRocketStateFromGSFlags(const uint8_t flags) {
+    for (const auto& [mask, state] : gs_rocket_state_mapping) {
+        if (flags & mask) return state;
+    }
+
+    return std::nullopt;
+}
 
 void RadioApp::ListeningLoop(const std::stop_token& token) {
-  // TODO(matikrajek42@gmail.com) revrite on msg
-  // mavlink_message_t msg;
-  // mavlink_status_t status;
+  mavlink_message_t msg;
+  mavlink_status_t status;
+  while (!token.stop_requested()) {
+    auto bytes_opt = uart_->Read(1);
+    if (!bytes_opt.has_value()) {
+      continue;
+    }
+    if (!mavlink_parse_char(MAVLINK_COMM_0, bytes_opt.value()[0], &msg, &status)) {
+      continue;
+    }
+    switch (msg.msgid) {
+      case MAVLINK_MSG_ID_SIMBA_ACTUATOR_CMD:
+        // TODO(matikrajek42@gmail.com) Add support for CMD command
+        break;
+      case MAVLINK_MSG_ID_SIMBA_GS_HEARTBEAT:
+        auto timestamp = mavlink_msg_simba_gs_heartbeat_get_timestamp(&msg);
+        auto values = mavlink_msg_simba_gs_heartbeat_get_values(&msg);
 
-  // while (!token.stop_requested()) {
-  //   auto bytes_read_opt = uart_->Read(1);
-  //   if (!bytes_read_opt.has_value()) {
-  //     continue;
-  //   }
-  //   auto byte = bytes_read_opt.value();
-  //   if (!mavlink_parse_char(MAVLINK_COMM_0, byte[0], &msg, &status)) {
-  //     continue;
-  //   }
-  //   switch (msg.msgid) {
-  //     case MAVLINK_MSG_ID_SIMBA_ACTUATOR_CMD: {
-  //       uint8_t actuator_id = mavlink_msg_simba_actuator_cmd_get_actuator_id(&msg);
-  //       uint8_t value = mavlink_msg_simba_actuator_cmd_get_value(&msg);
-  //       // TODO add some function for actuator movement
-  //       break;
-  //     }
-  //     case MAVLINK_MSG_ID_SIMBA_GS_HEARTBEAT: {
-  //       // add some validation if gs restarted
-  //       auto timestamp = mavlink_msg_simba_gs_heartbeat_get_timestamp(&msg);
-  //       auto values = mavlink_msg_simba_gs_heartbeat_get_values(&msg);
-
-  //       // // React on Requested Change of Rocket State
-  //       // auto req_state = GetStateFromMsg(values);
-  //       // if (req_state != event_data->GetMBState()) {
-  //       //   this->main_service_handler->setMode(req_state);
-  //       // }
-  //       // Actuatory
-  //       if ((values & SIMBA_GS_FLAGS::SIMBA_GS_VENT_VALVE) !=
-  //                 (event_data->GetActuatorStates() & SIMBA_GS_FLAGS::SIMBA_GS_VENT_VALVE)) {
-  //         this->servo_service_handler->SetVentServoValue(values & SIMBA_GS_FLAGS::SIMBA_GS_VENT_VALVE);
-  //       }
-  //       if ((values & SIMBA_GS_FLAGS::SIMBA_GS_DUMP_VALVE) !=
-  //               (event_data->GetActuatorStates() & SIMBA_GS_FLAGS::SIMBA_GS_DUMP_VALVE)) {
-  //         this->servo_service_handler->SetDumpValue(values & SIMBA_GS_FLAGS::SIMBA_GS_DUMP_VALVE);
-  //       }
-  //       // TODO(matikrajek42@gmail.com) add function to enable camera from gs
-  //       // values & SIMBA_GS_FLAGS::SIMBA_GS_CAMERAS
-
-  //       break;
-  //     }
-  //   }
-  // }
+        auto req_state = GetReqRocketStateFromGSFlags(values);
+        if (req_state.has_value()) {
+          if (req_state.value() != event_data->GetEBState() &&
+                  req_state.value() != event_data->GetMBState()) {
+            main_service_handler->setMode(static_cast<uint8_t>(req_state.value()));
+            engine_service_handler->SetMode(static_cast<uint8_t>(req_state.value()));
+          }
+        }
+        if (values & SIMBA_GS_VENT_VALVE != event_data->GetActuatorStates() & SIMBA_GS_VENT_VALVE) {
+          servo_service_handler->SetVentServoValue(values & SIMBA_GS_VENT_VALVE);
+        }
+        if (values & SIMBA_GS_DUMP_VALVE != event_data->GetActuatorStates() & SIMBA_GS_DUMP_VALVE) {
+          servo_service_handler->SetDumpValue(values & SIMBA_GS_DUMP_VALVE);
+        }
+        // TODO(matikrajek42@gmail.com) Add missing Cameras handler
+    }
+  }
 }
 
 int RadioApp::Run(const std::stop_token& token) {

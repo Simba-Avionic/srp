@@ -22,6 +22,7 @@
 #include "srp/apps/ServoService/ServoServiceHandler.h"
 #include "apps/ec/engine_service/service.hpp"
 #include "core/rocket_machine_state/rocket_state.hpp"
+#include "mw/gpio_server/controller/gpio_controller.hpp"
 
 namespace srp {
 namespace apps {
@@ -30,6 +31,7 @@ class EngineApp final : public ara::exec::AdaptiveApplication {
  private:
   std::shared_ptr<PrimerServiceHandler> primer_handler_;
   std::shared_ptr<ServoServiceHandler> servo_handler_;
+  gpio::GPIOController gpio_;
   PrimerServiceProxy primer_proxy;
   ServoServiceProxy servo_proxy;
   std::shared_ptr<core::rocketState::RocketStateController> state_ctr;
@@ -43,6 +45,7 @@ class EngineApp final : public ara::exec::AdaptiveApplication {
   void OnArm();
   void OnDisarm();
   void OnApogee();
+  void OnAbort();
 
   /**
    * @brief Update IPC and UDP state of State

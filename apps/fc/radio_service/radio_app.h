@@ -34,6 +34,8 @@
 namespace srp {
 namespace apps {
 class RadioApp : public ara::exec::AdaptiveApplication {
+  using RocketState_t = core::rocketState::RocketState_t;
+
  private:
   const ara::log::Logger& mavl_logger;
 
@@ -60,6 +62,8 @@ class RadioApp : public ara::exec::AdaptiveApplication {
 
   std::unique_ptr<core::timestamp::ITimestampController> timestamp_;
   void SomeIpInit();
+
+  std::optional<RocketState_t> GetReqRocketStateFromGSFlags(const uint8_t flags);
 
  protected:
   void InitUart(std::unique_ptr<core::uart::IUartDriver> uart);

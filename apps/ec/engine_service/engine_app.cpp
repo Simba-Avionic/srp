@@ -60,7 +60,9 @@ int EngineApp::Initialize(const std::map<ara::core::StringView, ara::core::Strin
   state_ctr->RegisterCallback(core::rocketState::RocketState_t::APOGEE, [this]() {
       this->OnApogee();
   });
-
+  state_ctr->RegisterCallback(core::rocketState::RocketState_t::ABORT, [this]() {
+      this->OnAbort();
+  });
 
   service_ipc.StartOffer();
   service_udp.StartOffer();
@@ -124,13 +126,16 @@ void EngineApp::OnLaunch() {
 }
 
 void EngineApp::OnArm() {
-  // TODO(matikrajek42@gmail.com) Add ARM
+// TODO(matikrajek42@gmail.com) Add OnArm
 }
 void EngineApp::OnDisarm() {
-  // TODO(matikrajek42@gmail.com) DISARM
+// TODO(matikrajek42@gmail.com) Add OnDisarm
 }
 void EngineApp::OnApogee() {
   // TODO(matikrajek42@gmail.com) Vent Valve & Dump Valve
+}
+void EngineApp::OnAbort() {
+  // TODO(matikrajek42@gmail.com) Add OnAbort
 }
 
 }  // namespace apps
