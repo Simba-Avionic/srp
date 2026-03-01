@@ -17,21 +17,23 @@
 namespace srp {
 namespace apps {
 namespace {
-  constexpr auto kService_ipc_instance = "srp/apps/RadioApp/RadioService_ipc";
-  constexpr auto kService_udp_instance = "srp/apps/RadioApp/RadioService_udp";
-  constexpr auto kEnv_service_path_name = "srp/apps/RadioApp/EnvApp";
-  constexpr auto kGPS_service_path_name = "srp/apps/RadioApp/GPSService";
-  constexpr auto kPrimer_service_path_name = "srp/apps/RadioApp/PrimerService";
-  constexpr auto kServo_service_path_name = "srp/apps/RadioApp/ServoService";
-  constexpr auto kRecovery_service_path_name = "srp/apps/RadioApp/RecoveryService";
-  constexpr auto kMain_service_path_name = "srp/apps/RadioApp/MainService";
-  constexpr auto KGPS_UART_path = "/dev/ttyS1";
-  constexpr auto KGPS_UART_baudrate = B115200;
-  constexpr auto kSystemId = 1;
-  constexpr auto kComponentId = 200;
-  constexpr auto kTime = 990;  // Should be 1 Hz but better make it 1.1Hz than 0.9 wchich can trigger error on GS
-  constexpr auto kSendWaifAfterMs = 50;  // Work ok but if you have more than 15 Frames in Transmiting Loop you need
-                                        // to reduce sending frequency or this delay
+  static constexpr auto kService_ipc_instance = "srp/apps/RadioApp/RadioService_ipc";
+  static constexpr auto kService_udp_instance = "srp/apps/RadioApp/RadioService_udp";
+  static constexpr auto kEnv_service_path_name = "srp/apps/RadioApp/EnvApp";
+  static constexpr auto kGPS_service_path_name = "srp/apps/RadioApp/GPSService";
+  static constexpr auto kPrimer_service_path_name = "srp/apps/RadioApp/PrimerService";
+  static constexpr auto kServo_service_path_name = "srp/apps/RadioApp/ServoService";
+  static constexpr auto kRecovery_service_path_name = "srp/apps/RadioApp/RecoveryService";
+  static constexpr auto kMain_service_path_name = "srp/apps/RadioApp/MainService";
+  static constexpr auto kEngine_service_path_name = "srp/apps/RadioApp/EngineService";
+  static constexpr auto KGPS_UART_path = "/dev/ttyS1";
+  static constexpr auto KGPS_UART_baudrate = B115200;
+  static constexpr auto kSystemId = 1;
+  static constexpr auto kComponentId = 200;
+  static constexpr auto kTime = 990;  // Should be 1 Hz but better make it 1.1Hz than 0.9 wchich can trigger error on GS
+  static constexpr auto kSendWaifAfterMs = 50;  // Work ok but if you have more than
+                                                // 15 Frames in Transmiting Loop you need
+                                                // to reduce sending frequency or this delay
 }  // namespace
 
 void RadioApp::TransmittingLoop(const std::stop_token& token) {
@@ -68,10 +70,10 @@ void RadioApp::TransmittingLoop(const std::stop_token& token) {
             event_data->GetEBTemp(), event_data->GetMBTemp());
       });
 
-      // // Send Max Altitude MSG
-      // send([&] {
-      //   mavlink_msg_simba_max_altitude_pack(kSystemId, kComponentId, &msg, event_data->GetMaxAltitude());
-      // });
+      // Send Max Altitude MSG
+      send([&] {
+        mavlink_msg_simba_max_altitude_pack(kSystemId, kComponentId, &msg, event_data->GetMaxAltitude());
+      });
 
 
       // TODO(matikrajek42@gmail.com) Add send IMU data
@@ -85,10 +87,9 @@ void RadioApp::TransmittingLoop(const std::stop_token& token) {
       send([&] { mavlink_msg_simba_tank_pressure_pack(kSystemId, kComponentId, &msg,
                                                   static_cast<uint16_t>(event_data->GetPress())); });
 
-      // // // Send
-      // // TODO(m.mankowski2004@gmail.com): change altitude
-      // send([&] { mavlink_msg_simba_gps_pack(kSystemId, kComponentId, &msg,
-      //                                                     event_data->GetGPSLon(), event_data->GetGPSLat(), 0); });
+      //  Send
+      send([&] { mavlink_msg_simba_gps_pack(kSystemId, kComponentId, &msg,
+                            event_data->GetGPSLat(), event_data->GetGPSLon(), event_data->GetGPSAlt()); });
     }
     auto end = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
@@ -226,21 +227,47 @@ void RadioApp::SomeIpInit() {
           event_data->SetPress(res.Value());
         });
       });
+      env_service_handler->newBoardTempEvent1.Subscribe(1, [this](const uint8_t status) {
+        env_service_handler->newBoardTempEvent1.SetReceiveHandler([this] () {
+          auto res = env_service_handler->newBoardTempEvent1.GetNewSamples();
+          if (!res.HasValue()) {
+            return;
+          }
+          event_data->SetEBTemp(1, res.Value());
+        });
+      });
+      env_service_handler->newBoardTempEvent2.Subscribe(1, [this](const uint8_t status) {
+        env_service_handler->newBoardTempEvent2.SetReceiveHandler([this] () {
+          auto res = env_service_handler->newBoardTempEvent2.GetNewSamples();
+          if (!res.HasValue()) {
+            return;
+          }
+          event_data->SetEBTemp(2, res.Value());
+        });
+      });
+      env_service_handler->newBoardTempEvent3.Subscribe(1, [this](const uint8_t status) {
+        env_service_handler->newBoardTempEvent3.SetReceiveHandler([this] () {
+          auto res = env_service_handler->newBoardTempEvent3.GetNewSamples();
+          if (!res.HasValue()) {
+            return;
+          }
+          event_data->SetEBTemp(3, res.Value());
+        });
+      });
     });
     this->gps_service_proxy.StartFindService([this](auto handler) {
       this->gps_service_handler = handler;
       gps_service_handler->GPSStatusEvent.Subscribe(1, [this](const uint8_t status) {
         gps_service_handler->GPSStatusEvent.SetReceiveHandler([this] () {
-          auto res = gps_service_handler->GPSStatusEvent.GetNewSamples();
-          if (!res.HasValue()) {
+          auto res_opt = gps_service_handler->GPSStatusEvent.GetNewSamples();
+          if (!res_opt.HasValue()) {
             return;
           }
-          // TODO(matikrajek42@gmail.com) change 0 to GPS altitude after fix
-          event_data->SetGPS(res.Value().longitude, res.Value().latitude, 0);
+          auto res = res_opt.Value();
+          event_data->SetGPS(res.longitude, res.latitude, res.altitude);
         });
       });
     });
-    // TODO(matikrajek42@gmail.com) add rest of actuators
     this->servo_service_proxy.StartFindService([this](auto handler) {
       this->servo_service_handler = handler;
       servo_service_handler->ServoStatusEvent.Subscribe(1, [this](const uint8_t status) {
@@ -261,7 +288,17 @@ void RadioApp::SomeIpInit() {
           event_data->SetActuatorState(SIMBA_ROCKET_VENT_VALVE, res.Value());
         });
       });
+      servo_service_handler->ServoDumpStatusEvent.Subscribe(1, [this](const uint8_t status) {
+        servo_service_handler->ServoDumpStatusEvent.SetReceiveHandler([this] () {
+          auto res = servo_service_handler->ServoDumpStatusEvent.GetNewSamples();
+          if (!res.HasValue()) {
+            return;
+          }
+          event_data->SetActuatorState(SIMBA_ROCKET_DUMP_VALVE, res.Value());
+        });
+      });
     });
+    // TODO(matikrajek42@gmail.com) add RECOVERY_SERVO, RECOVERY_LINECUTTER, ROCKET_CAMERAS
     this->main_service_proxy.StartFindService([this](auto handler) {
       this->main_service_handler = handler;
       main_service_handler->CurrentModeStatusEvent.Subscribe(1, [this](const uint8_t status) {
@@ -274,8 +311,19 @@ void RadioApp::SomeIpInit() {
         });
       });
     });
-    // TODO(m.mankowski2004@gmail.com): Finish actuators
-    // TODO(matikrajek42@gmail.com): Add EC State
+    this->engine_service_proxy.StartFindService(([this](auto handler) {
+      this->engine_service_handler = handler;
+      engine_service_handler->CurrentMode.Subscribe(1, [this](const uint8_t status) {
+        engine_service_handler->CurrentMode.SetReceiveHandler([this] () {
+          auto res = engine_service_handler->CurrentMode.GetNewSamples();
+          if (!res.HasValue()) {
+            return;
+          }
+          this->event_data->SetEBState(static_cast<core::rocketState::RocketState_t>(res.Value()));
+        });
+      });
+    }));
+    // TODO(matikrajek42@gmail.com) Write MB Temp After GrKo write Env App for FC
   }
 RadioApp::~RadioApp() {
 }
@@ -292,6 +340,8 @@ servo_service_handler{nullptr},
 main_service_proxy{ara::core::InstanceSpecifier{kMain_service_path_name}},
 main_service_handler{nullptr},
 recovery_service_handler{nullptr},
+engine_service_handler{nullptr},
+engine_service_proxy{ara::core::InstanceSpecifier{kEngine_service_path_name}},
 mavl_logger{ara::log::LoggingMenager::GetInstance()->CreateLogger("MAVL", "", ara::log::LogLevel::kInfo)}
 {
 }
