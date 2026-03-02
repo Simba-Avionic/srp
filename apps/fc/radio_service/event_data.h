@@ -23,15 +23,20 @@ namespace apps {
 
 class EventData {
  private:
+  std::shared_mutex mtx_;
+
   mavlink_simba_tank_temperature_t temp;
   mavlink_simba_tank_pressure_t press;
+
   mavlink_simba_gps_t gps;
   mavlink_simba_imu_t imu;
   mavlink_simba_max_altitude_t max_altitude;
+
   mavlink_simba_rocket_heartbeat_t hb;
-  mavlink_simba_computer_temperature_t board_temp;
   uint8_t actuator_state;
-  std::shared_mutex mtx_;
+
+  int16_t EB_Temp_sensors_data[3];
+  int16_t MB_Temp_sensors_data[3];
 
   template <typename T>
   void SetValue(T res, T* field);
@@ -55,8 +60,8 @@ class EventData {
   void SetTemp2(int16_t res);
   void SetTemp3(int16_t res);
 
-  void SetMBTemp(int16_t temp);
-  void SetEBTemp(int16_t temp);
+  void SetMBTemp(uint8_t sensor, int16_t temp);
+  void SetEBTemp(uint8_t sensor, int16_t temp);
   int16_t GetMBTemp();
   int16_t GetEBTemp();
 

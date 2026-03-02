@@ -77,10 +77,36 @@ void EventData::SetMBState(const core::rocketState::RocketState_t state) {
 
 //  --- Temperatury Płyt (MB/EB) ---
 
-void EventData::SetMBTemp(int16_t temp) { SetValue(temp, &this->board_temp.mb_temp); }
-void EventData::SetEBTemp(int16_t temp) { SetValue(temp, &this->board_temp.eb_temp); }
-int16_t EventData::GetMBTemp() { return GetValue(&this->board_temp.mb_temp); }
-int16_t EventData::GetEBTemp() { return GetValue(&this->board_temp.eb_temp); }
+void EventData::SetMBTemp(uint8_t sensor, int16_t temp) {
+    if (sensor > 3) {
+        return;
+    }
+    std::unique_lock<std::shared_mutex> lock(this->mtx_);
+    MB_Temp_sensors_data[sensor-1] = temp;
+}
+void EventData::SetEBTemp(uint8_t sensor, int16_t temp) {
+    if (sensor > 3) {
+        return;
+    }
+    std::unique_lock<std::shared_mutex> lock(this->mtx_);
+    EB_Temp_sensors_data[sensor-1] = temp;
+}
+int16_t EventData::GetMBTemp() {
+    std::shared_lock<std::shared_mutex> lock(this->mtx_);
+    int16_t mean_temp = MB_Temp_sensors_data[0];
+    mean_temp += MB_Temp_sensors_data[1];
+    mean_temp += MB_Temp_sensors_data[2];
+    mean_temp /= 3;
+    return mean_temp;
+}
+int16_t EventData::GetEBTemp() {
+    std::shared_lock<std::shared_mutex> lock(this->mtx_);
+    int16_t mean_temp = EB_Temp_sensors_data[0];
+    mean_temp += EB_Temp_sensors_data[1];
+    mean_temp += EB_Temp_sensors_data[2];
+    mean_temp /= 3;
+    return mean_temp;
+}
 
 //  --- Temperatury Zbiorników ---
 

@@ -24,6 +24,7 @@
 #include "srp/apps/PrimerService/PrimerServiceHandler.h"
 #include "srp/apps/ServoService/ServoServiceHandler.h"
 #include "srp/apps/MainService/MainServiceHandler.h"
+#include "srp/apps/EngineService/EngineServiceHandler.h"
 #include "srp/apps/RecoveryService/RecoveryServiceHandler.h"
 #include "core/timestamp/timestamp_driver.hpp"
 #include "srp/apps/RadioServiceSkeleton.h"
@@ -33,6 +34,8 @@
 namespace srp {
 namespace apps {
 class RadioApp : public ara::exec::AdaptiveApplication {
+  using RocketState_t = core::rocketState::RocketState_t;
+
  private:
   const ara::log::Logger& mavl_logger;
 
@@ -46,6 +49,8 @@ class RadioApp : public ara::exec::AdaptiveApplication {
   std::shared_ptr<GPSServiceHandler> gps_service_handler;
   std::shared_ptr<MainServiceHandler> main_service_handler;
   MainServiceProxy main_service_proxy;
+  std::shared_ptr<EngineServiceHandler> engine_service_handler;
+  EngineServiceProxy engine_service_proxy;
   std::shared_ptr<RecoveryServiceHandler> recovery_service_handler;
   const ara::core::InstanceSpecifier service_ipc_instance;
   const ara::core::InstanceSpecifier service_udp_instance;
@@ -58,6 +63,8 @@ class RadioApp : public ara::exec::AdaptiveApplication {
   std::unique_ptr<core::timestamp::ITimestampController> timestamp_;
   void SomeIpInit();
 
+  std::optional<RocketState_t> GetReqRocketStateFromGSFlags(const uint8_t flags);
+
  protected:
   void InitUart(std::unique_ptr<core::uart::IUartDriver> uart);
   void InitTimestamp(std::unique_ptr<core::timestamp::ITimestampController> timestamp);
@@ -65,7 +72,6 @@ class RadioApp : public ara::exec::AdaptiveApplication {
   void TransmittingLoop(const std::stop_token& token);
   void ListeningLoop(const std::stop_token& token);
   std::shared_ptr<EventData> event_data;
-
 
  public:
   int Run(const std::stop_token& token) override;
