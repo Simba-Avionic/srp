@@ -82,7 +82,13 @@ std::shared_ptr<RocketStateController> RocketStateController::GetInstance() {
     return instance;
 }
 
-RocketStateController::RocketStateController(): actual_state{RocketState_t::INIT}, prev_state{RocketState_t::INIT} {}
+RocketStateController::RocketStateController(): actual_state{RocketState_t::INIT}, prev_state{RocketState_t::INIT} {
+    RegisterOnStateChangeCallback([](RocketState_t new_state) {
+    });
+    RegisterRequirementsCallback([](RocketState_t new_state) {
+        return true;
+    });
+}
 
 bool RocketStateController::TransitionAllowed(const RocketState_t actual_state, const RocketState_t req_state) {
     auto it = allowed_transitions.find(actual_state);
@@ -105,6 +111,11 @@ RocketState_t RocketStateController::GetState() {
     return actual_state;
 }
 
+void RocketStateController::RegisterRequirementsCallback(ChangeRequestCallback cb) {
+    std::lock_guard<std::mutex> lock(mtx_);
+    requirements_callback_ = cb;
+}
+
 bool RocketStateController::SetState(const RocketState_t state) {
     std::lock_guard<std::mutex> lock_(mtx_);
     if (state == actual_state) {
@@ -116,6 +127,11 @@ bool RocketStateController::SetState(const RocketState_t state) {
                                 " To state: " << to_string(state) << "rejected";
         return false;
     }
+    if (!requirements_callback_(state)) {
+        ara::log::LogWarn() << "Requirements were not met to change state";
+        return false;
+    }
+
     this->prev_state = actual_state;
     this->actual_state = state;
 

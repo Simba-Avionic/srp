@@ -10,6 +10,9 @@
  */
 
 #include "apps/ec/engine_service/engine_app.hpp"
+
+#include <utility>
+
 #include "srp/apps/PrimerService/PrimerServiceHandler.h"
 #include "srp/apps/ServoService/ServoServiceHandler.h"
 #include "core/common/condition.h"
@@ -50,13 +53,12 @@ std::optional<std::vector<ArmPinConfig_t>> EngineApp::LoadArmPinConfig(const std
       if (arm_pin_desc.has_value() || arm_pin_id.has_value()) {
         continue;
       }
-      respons.push_back(ArmPinConfig_t{arm_pin_id.value(), arm_pin_desc.value());
+      respons.push_back(ArmPinConfig_t{arm_pin_id.value(), arm_pin_desc.value()});
     }
     if (respons.size() == 0) {
       return std::nullopt;
     }
     return respons;
-
 }
 
 EngineApp::EngineApp():
@@ -89,7 +91,7 @@ int EngineApp::Initialize(const std::map<ara::core::StringView, ara::core::Strin
     return 1;
   }
   this->arm_pins_id = std::move(arm_pins.value());
-    
+
   state_ctr = core::rocketState::RocketStateController::GetInstance();
   state_ctr->RegisterRequirementsCallback([this](core::rocketState::RocketState_t state) {
     switch (state) {
@@ -183,6 +185,7 @@ void EngineApp::OnArm() {
     }
   }
 }
+
 void EngineApp::OnDisarm() {
   for (const auto & pin : arm_pins_id) {
     if (gpio_.SetPinValue(pin.pin_id, kPin_off) != core::ErrorCode::kOk) {
@@ -190,11 +193,12 @@ void EngineApp::OnDisarm() {
     }
   }
 }
-void EngineApp::OnApogee() {
 
+void EngineApp::OnApogee() {
 }
+
 void EngineApp::OnAbort() {
-  for (const ArmPinConfig_t& pin: arm_pins_id) {
+  for (const ArmPinConfig_t& pin : arm_pins_id) {
     if (pin.name == "Vent Servo Power" || pin.name == "Dump Valve Servo Power") {
       if (gpio_.SetPinValue(pin.pin_id, kPin_on) != core::ErrorCode::kOk) {
         ara::log::LogError() << "cant arm pin: " << pin.name;
@@ -204,7 +208,7 @@ void EngineApp::OnAbort() {
   servo_handler_->SetDumpValue(1);
   servo_handler_->SetVentServoValue(1);
   std::this_thread::sleep_for(std::chrono::seconds(2));
-  for (const ArmPinConfig_t& pin: arm_pins_id) {
+  for (const ArmPinConfig_t& pin : arm_pins_id) {
     if (pin.name == "Vent Servo Power" || pin.name == "Dump Valve Servo Power") {
       if (gpio_.SetPinValue(pin.pin_id, kPin_off) != core::ErrorCode::kOk) {
         ara::log::LogError() << "cant disarm pin: " << pin.name;
