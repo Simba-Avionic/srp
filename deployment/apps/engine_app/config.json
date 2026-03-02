@@ -1,0 +1,34 @@
+{
+    "arm_pins": [ 
+        {
+            "id": 9,
+            "name": "P8_11",
+            "desc": "Pressure Feed Vent Servo Power"
+        },
+        {
+            "id": 5,
+            "name": "P8_7",
+            "desc": "Main Servo Power"
+        },
+        {
+            "id": 6,
+            "name": "P8_8",
+            "desc": "Vent Servo Power"
+        },
+        {
+            "id": 7,
+            "name": "P8_9",
+            "desc": "Pressure Feed Main Servo Power"
+        },
+        {
+            "id": 14,
+            "name": "P8_17",
+            "desc": "Dump Valve Servo Power"
+        },
+        {
+            "id": 8,
+            "name": "P8_10",
+            "desc": "Igniter Power"
+        }
+    ]
+}

@@ -99,16 +99,9 @@ void ServoController::ExecuteServoMovement(const uint8_t actuator_id, const uint
     return;
   }
   auto& servo = it->second;
-  if (servo.need_mosfet || servo.need_aux_power) {
+  if (servo.need_mosfet) {
     if (gpio_ == nullptr) {
       logger_.LogError() << "ServoController.ExecuteServoMovement: GPIO controller not available";
-      return;
-    }
-  }
-  if (servo.need_aux_power) {
-    if (gpio_->SetPinValue(servo.aux_power_id, kOpenState) != core::ErrorCode::kOk) {
-      logger_.LogError() << "ServoController.ExecuteServoMovement: failed to enable MOSFET " <<
-                             std::to_string(static_cast<int>(servo.mosfet_id));
       return;
     }
   }
@@ -121,7 +114,7 @@ void ServoController::ExecuteServoMovement(const uint8_t actuator_id, const uint
     }
   }
 
-  if (servo.need_mosfet || servo.need_aux_power) {
+  if (servo.need_mosfet) {
     std::this_thread::sleep_for(
         std::chrono::milliseconds(servo.timing.mosfet_power_on_delay_ms));
   }
@@ -303,12 +296,6 @@ ServoController::LoadConfig(const std::string& file_path) {
     if (mosfet_id.has_value()) {
       cfg.need_mosfet = true;
       cfg.mosfet_id = mosfet_id.value();
-    }
-
-    auto switch_id = servo_parser.GetNumber<uint8_t>("aux_power_id");
-    if (switch_id.has_value()) {
-      cfg.need_aux_power = true;
-      cfg.aux_power_id = switch_id.value();
     }
 
     cfg.timing.mosfet_power_on_delay_ms =

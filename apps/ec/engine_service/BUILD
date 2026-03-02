@@ -14,6 +14,7 @@ cc_binary(
     deps = [
         "@srp_platform//ara/exec:adaptive_application_lib",
         "//core/common:condition_lib",
+        "//core/json:simba_json",
         "//deployment/apps/engine_app:ara",
         "//deployment/apps/engine_app:someip_lib",
         "//mw/gpio_server/controller:gpio_controller",

@@ -10,19 +10,55 @@
  */
 
 #include "apps/ec/engine_service/engine_app.hpp"
+
+#include <utility>
+
+#include "srp/apps/PrimerService/PrimerServiceHandler.h"
+#include "srp/apps/ServoService/ServoServiceHandler.h"
 #include "core/common/condition.h"
 #include "ara/log/log.h"
+#include "core/json/json_parser.h"
 
 namespace srp {
 namespace apps {
 
 namespace {
-  constexpr auto kPrimer_path_name = "srp/apps/EngineService/PrimerService";
-  constexpr auto kServo_path_name = "srp/apps/EngineService/ServoService";
-  constexpr auto kEngine_path_name = "srp/apps/EngineService/EngineService_ipc";
-  constexpr auto kEngine_udp_path_name = "srp/apps/EngineService/EngineService_udp";
-  constexpr auto kInit_max_intervals = 20;
-  constexpr auto kPrimerDelay = 1000;
+  static constexpr auto kPrimer_path_name = "srp/apps/EngineService/PrimerService";
+  static constexpr auto kServo_path_name = "srp/apps/EngineService/ServoService";
+  static constexpr auto kEngine_path_name = "srp/apps/EngineService/EngineService_ipc";
+  static constexpr auto kEngine_udp_path_name = "srp/apps/EngineService/EngineService_udp";
+  static constexpr auto kInit_max_intervals = 20;
+  static constexpr auto kPrimerDelay = 1000;
+  static constexpr auto kPin_off = 0;
+  static constexpr auto kPin_on = 1;
+}
+
+std::optional<std::vector<ArmPinConfig_t>> EngineApp::LoadArmPinConfig(const std::string& path) {
+    auto parser = core::json::JsonParser::Parser(path);
+    if (!parser.has_value()) {
+      return std::nullopt;
+    }
+    auto pins = parser.value().GetArray<nlohmann::json>("arm_pins");
+    if (!pins.has_value()) {
+      return std::nullopt;
+    }
+    std::vector<ArmPinConfig_t> respons;
+    for (auto& entry : pins.value()) {
+      auto pin_config = core::json::JsonParser::Parser(entry);
+      if (!pin_config.has_value()) {
+        continue;
+      }
+      auto arm_pin_id = pin_config.value().GetNumber<uint8_t>("id");
+      auto arm_pin_desc = pin_config.value().GetString("desc");
+      if (arm_pin_desc.has_value() || arm_pin_id.has_value()) {
+        continue;
+      }
+      respons.push_back(ArmPinConfig_t{arm_pin_id.value(), arm_pin_desc.value()});
+    }
+    if (respons.size() == 0) {
+      return std::nullopt;
+    }
+    return respons;
 }
 
 EngineApp::EngineApp():
@@ -44,7 +80,34 @@ int EngineApp::Run(const std::stop_token& token) {
 
 int EngineApp::Initialize(const std::map<ara::core::StringView, ara::core::StringView>
                       parms) {
+  if (parms.find("app_path") == parms.end()) {
+      return 1;
+  }
+  std::string path(parms.at("app_path"));
+  path += "etc/config.json";
+  auto arm_pins = LoadArmPinConfig(path);
+  if (!arm_pins.has_value()) {
+    ara::log::LogError() << "cant load arm pins";
+    return 1;
+  }
+  this->arm_pins_id = std::move(arm_pins.value());
+
   state_ctr = core::rocketState::RocketStateController::GetInstance();
+  state_ctr->RegisterRequirementsCallback([this](core::rocketState::RocketState_t state) {
+    switch (state) {
+      case core::rocketState::RocketState_t::LAUNCH:
+        break;
+      case core::rocketState::RocketState_t::ARM:
+        if ((primer_handler_ == nullptr || servo_handler_ == nullptr)) {
+          ara::log::LogError() << "Invalid pointer to Primer or Servo";
+          return false;
+        }
+        break;
+      default:
+        break;
+    }
+    return true;
+  });
   state_ctr->RegisterOnStateChangeCallback([this](core::rocketState::RocketState_t state) {
         this->OnStateChange(state);
   });
@@ -64,15 +127,15 @@ int EngineApp::Initialize(const std::map<ara::core::StringView, ara::core::Strin
       this->OnAbort();
   });
 
-  service_ipc.StartOffer();
-  service_udp.StartOffer();
-
   servo_proxy.StartFindService([this](auto handler) {
     servo_handler_ = handler;
   });
   primer_proxy.StartFindService([this](auto handler) {
     this->primer_handler_ = handler;
   });
+
+  service_ipc.StartOffer();
+  service_udp.StartOffer();
 
   int i = 0;
   while ((servo_handler_ == nullptr || primer_handler_ == nullptr) && i < kInit_max_intervals) {
@@ -98,18 +161,8 @@ void EngineApp::OnStateChange(core::rocketState::RocketState_t new_state) {
   service_udp.CurrentMode.Update(static_cast<uint8_t>(new_state));
 }
 
-bool EngineApp::CheckLaunchRequirements() {
-  if ((primer_handler_ == nullptr || servo_handler_ == nullptr)) {
-      ara::log::LogError() << "Invalid pointer to Primer or Servo";
-      return false;
-  }
-}
 
 void EngineApp::OnLaunch() {
-  if (!CheckLaunchRequirements()) {
-    state_ctr->SetState(core::rocketState::RocketState_t::ABORT);
-    return;
-  }
   auto res = this->primer_handler_->OnPrime();
   if (!res.HasValue()) {
     ara::log::LogError() << "Invalid request to MW:GPIOService";
@@ -126,16 +179,42 @@ void EngineApp::OnLaunch() {
 }
 
 void EngineApp::OnArm() {
-// TODO(matikrajek42@gmail.com) Add OnArm
+  for (const auto & pin : arm_pins_id) {
+    if (gpio_.SetPinValue(pin.pin_id, kPin_on) != core::ErrorCode::kOk) {
+      ara::log::LogError() << "cant arm pin: " << pin.name;
+    }
+  }
 }
+
 void EngineApp::OnDisarm() {
-// TODO(matikrajek42@gmail.com) Add OnDisarm
+  for (const auto & pin : arm_pins_id) {
+    if (gpio_.SetPinValue(pin.pin_id, kPin_off) != core::ErrorCode::kOk) {
+      ara::log::LogError() << "cant disarm pin: " << pin.name;
+    }
+  }
 }
+
 void EngineApp::OnApogee() {
-  // TODO(matikrajek42@gmail.com) Vent Valve & Dump Valve
 }
+
 void EngineApp::OnAbort() {
-  // TODO(matikrajek42@gmail.com) Add OnAbort
+  for (const ArmPinConfig_t& pin : arm_pins_id) {
+    if (pin.name == "Vent Servo Power" || pin.name == "Dump Valve Servo Power") {
+      if (gpio_.SetPinValue(pin.pin_id, kPin_on) != core::ErrorCode::kOk) {
+        ara::log::LogError() << "cant arm pin: " << pin.name;
+      }
+    }
+  }
+  servo_handler_->SetDumpValue(1);
+  servo_handler_->SetVentServoValue(1);
+  std::this_thread::sleep_for(std::chrono::seconds(2));
+  for (const ArmPinConfig_t& pin : arm_pins_id) {
+    if (pin.name == "Vent Servo Power" || pin.name == "Dump Valve Servo Power") {
+      if (gpio_.SetPinValue(pin.pin_id, kPin_off) != core::ErrorCode::kOk) {
+        ara::log::LogError() << "cant disarm pin: " << pin.name;
+      }
+    }
+  }
 }
 
 }  // namespace apps

@@ -35,6 +35,7 @@ enum RocketState_t: uint8_t {
 };
 
 using StateCallback = std::function<void()>;
+using ChangeRequestCallback = std::function<bool(RocketState_t new_state)>;
 using OnStateChangeCallback = std::function<void(RocketState_t new_state)>;
 
 class RocketStateController {
@@ -47,8 +48,12 @@ class RocketStateController {
     // use for status update
     OnStateChangeCallback on_change_callback_;
 
+    ChangeRequestCallback requirements_callback_;
+
+
     static bool TransitionAllowed(const RocketState_t actual_stete, const RocketState_t req_state);
  public:
+    void RegisterRequirementsCallback(ChangeRequestCallback cb);
     void RegisterCallback(RocketState_t state, StateCallback cb);
     void RegisterOnStateChangeCallback(OnStateChangeCallback cb);
     static std::shared_ptr<RocketStateController> GetInstance();
