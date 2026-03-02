@@ -26,12 +26,19 @@
 
 namespace srp {
 namespace apps {
+
+struct ArmPinConfig_t {
+    uint8_t pin_id;
+    std::string name;
+};
+
 using instace_t = ara::core::InstanceSpecifier;
 class EngineApp final : public ara::exec::AdaptiveApplication {
  private:
+  gpio::GPIOController gpio_;
+  std::vector<ArmPinConfig_t> arm_pins_id;
   std::shared_ptr<PrimerServiceHandler> primer_handler_;
   std::shared_ptr<ServoServiceHandler> servo_handler_;
-  gpio::GPIOController gpio_;
   PrimerServiceProxy primer_proxy;
   ServoServiceProxy servo_proxy;
   std::shared_ptr<core::rocketState::RocketStateController> state_ctr;
@@ -40,7 +47,6 @@ class EngineApp final : public ara::exec::AdaptiveApplication {
   service::MyEngineServiceSkeleton service_udp;
 
  protected:
-  bool CheckLaunchRequirements();
   void OnLaunch();
   void OnArm();
   void OnDisarm();
@@ -52,6 +58,7 @@ class EngineApp final : public ara::exec::AdaptiveApplication {
    * 
    */
   void OnStateChange(core::rocketState::RocketState_t new_state);
+    std::optional<std::vector<ArmPinConfig_t>> LoadArmPinConfig(const std::string& path);
   /**
    * @brief This function is called to launch the application
    *
