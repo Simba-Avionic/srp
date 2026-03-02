@@ -7,7 +7,8 @@ register_all_toolchains()
 load("//third_party:deps.bzl", "deps")
 deps()
 
-load("//bazel/libs:third_party_repositories.bzl", "include_srp_platform", "include_srp_mavlink", "include_gtest_mock", "include_json")
+load("//bazel/libs:third_party_repositories.bzl", "include_srp_platform",
+    "include_srp_mavlink", "include_gtest_mock", "include_simdjson")
 include_srp_platform("0.0.7-beta-patch-4", "Simba-Avionic/srp_platform", "e33efcd32410dc6d6cfe070a5a6fd60798fd7bf7d8dcbe3649fb9870e6ae070d")
 load("@srp_platform//:download.bzl", "download")
 download()
@@ -25,7 +26,7 @@ pip_install()
 
 include_srp_mavlink("0.9.0")
 include_gtest_mock()
-include_json("3.11.3")
+include_simdjson("4.3.1")
 
 ##### PYTHON
 
