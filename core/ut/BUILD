@@ -52,3 +52,24 @@ cc_test(
         "@com_google_googletest//:gtest_main",
     ],
 )
+
+cc_test(
+    name="simdjson_ut",
+    srcs = ["simdjson.cc"],
+    deps = [
+        "//core/json:simdjson_json",
+         "@com_google_googletest//:gtest_main",
+         "@simdjson//:simdjson"
+    ]
+)
+
+cc_binary(
+    name = "json_benchmark",
+    srcs = ["json_benchmark.cc"],
+    deps = [
+        "//core/json:simdjson_json",
+        "//core/json:simba_json",
+        "@com_google_benchmark//:benchmark",
+    ],
+    linkopts = ["-lm"],
+)

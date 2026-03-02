@@ -7,3 +7,15 @@ cc_library(
         "@com_json//:json",
     ],
 )
+
+
+cc_library(
+    name = "simdjson_json",
+    srcs = ["simdjson_parser.cc"],
+    hdrs = ["simdjson_parser.h"],
+    visibility = ["//visibility:public"],
+    deps = [
+        "@simdjson//:simdjson",
+    ],
+)
+
