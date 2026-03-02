@@ -36,21 +36,23 @@ namespace {
 std::optional<std::vector<ArmPinConfig_t>> EngineApp::LoadArmPinConfig(const std::string& path) {
     auto parser = core::json::JsonParser::Parser(path);
     if (!parser.has_value()) {
+      ara::log::LogDebug() << "Cant load arm config";
       return std::nullopt;
     }
     auto pins = parser.value().GetArray<nlohmann::json>("arm_pins");
     if (!pins.has_value()) {
+      ara::log::LogDebug() << "Cant find arm_pins in config";
       return std::nullopt;
     }
     std::vector<ArmPinConfig_t> respons;
-    for (auto& entry : pins.value()) {
+    for (const auto& entry : pins.value()) {
       auto pin_config = core::json::JsonParser::Parser(entry);
       if (!pin_config.has_value()) {
         continue;
       }
       auto arm_pin_id = pin_config.value().GetNumber<uint8_t>("id");
       auto arm_pin_desc = pin_config.value().GetString("desc");
-      if (arm_pin_desc.has_value() || arm_pin_id.has_value()) {
+      if (!arm_pin_desc.has_value() || !arm_pin_id.has_value()) {
         continue;
       }
       respons.push_back(ArmPinConfig_t{arm_pin_id.value(), arm_pin_desc.value()});
@@ -83,9 +85,7 @@ int EngineApp::Initialize(const std::map<ara::core::StringView, ara::core::Strin
   if (parms.find("app_path") == parms.end()) {
       return 1;
   }
-  std::string path(parms.at("app_path"));
-  path += "etc/config.json";
-  auto arm_pins = LoadArmPinConfig(path);
+  auto arm_pins = LoadArmPinConfig(parms.at("app_path") + "etc/config.json");
   if (!arm_pins.has_value()) {
     ara::log::LogError() << "cant load arm pins";
     return 1;

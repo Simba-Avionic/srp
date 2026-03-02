@@ -31,6 +31,7 @@ adaptive_application(
     name = "EngineService",
     bin = "//apps/ec/engine_service",
     model_src = ["//deployment/apps/engine_app:instance"],
+    etcs = ["config.json"],
     visibility = ["//deployment/cpu/ec:__subpackages__"],
 )
 
