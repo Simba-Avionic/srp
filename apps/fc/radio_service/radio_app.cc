@@ -153,8 +153,7 @@ void RadioApp::ListeningLoop(const std::stop_token& token) {
       }
       default:
         ara::log::LogInfo() << "Received unknown msg with ID: " <<
-                            std::to_string(msg.msgid) << 
-                            ", with size: " << std::to_string(msg.len);
+            std::to_string(msg.msgid) << ", with size: " << std::to_string(msg.len);
         break;
     }
   }

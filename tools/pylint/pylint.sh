@@ -1,5 +1,10 @@
 #!/bin/bash
 
+if ! command -v pylint &> /dev/null; then
+    echo "pylint is not installed, use `apt install python3-pylint-common` to fix this"
+    exit 1
+fi
+
 # Uruchom Pylinta dla wszystkich plików .py i zapisz wynik w zmiennej
 output=$(find . -name "*.py" | xargs pylint 2>&1)
 

@@ -1,6 +1,12 @@
 #!/bin/bash
 export GCOV=/usr/bin/gcov-13
 
+if ! command -v bazel &> /dev/null; then
+    echo "Bazel is not installed"
+    exit 1
+fi
+
+
 # Weryfikacja lcov
 echo "🔍 Verifying lcov availability..."
 if command -v lcov &> /dev/null; then

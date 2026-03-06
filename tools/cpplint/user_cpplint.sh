@@ -1,5 +1,10 @@
 #!/bin/bash
 
+if ! command -v cpplint &> /dev/null; then
+    echo "cpplint is not installed, use apt-get install cpplint to fix this"
+    exit 1
+fi
+
 cpp_files=$(find . -type f \( -name "*.cc" -o -name "*.cpp" -o -name "*.h" -o -name "*.hpp" \) -not -path "./libdoip/*" -not -path "./tools/diag_app_frontend/*")
 
 total_errors=0
