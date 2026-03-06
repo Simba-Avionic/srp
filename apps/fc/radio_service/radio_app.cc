@@ -130,7 +130,7 @@ void RadioApp::ListeningLoop(const std::stop_token& token) {
       case MAVLINK_MSG_ID_SIMBA_ACTUATOR_CMD:
         // TODO(matikrajek42@gmail.com) Add support for CMD command
         break;
-      case MAVLINK_MSG_ID_SIMBA_GS_HEARTBEAT:
+      case MAVLINK_MSG_ID_SIMBA_GS_HEARTBEAT: {
         auto timestamp = mavlink_msg_simba_gs_heartbeat_get_timestamp(&msg);
         auto values = mavlink_msg_simba_gs_heartbeat_get_values(&msg);
 
@@ -149,6 +149,13 @@ void RadioApp::ListeningLoop(const std::stop_token& token) {
           servo_service_handler->SetDumpValue(values & SIMBA_GS_DUMP_VALVE);
         }
         // TODO(matikrajek42@gmail.com) Add missing Cameras handler
+        break;
+      }
+      default:
+        ara::log::LogInfo() << "Received unknown msg with ID: " <<
+                            std::to_string(msg.msgid) << 
+                            ", with size: " << std::to_string(msg.len);
+        break;
     }
   }
 }
