@@ -22,12 +22,11 @@ int TimestampService::Run(const std::stop_token& token) {
 }
 int TimestampService::Initialize(const std::map<ara::core::StringView, ara::core::StringView>
                     parms) {
-    ara::log::LogWarn() << "Starting app";
     if (!this->ntp_controller.Init()) {
         ara::log::LogError() << "NTP controller initialization failed.";
         return -1;
     }
-    ara::log::LogWarn() << "Init completed";
+    ara::log::LogInfo() << "Init completed";
     return 0;
 }
 

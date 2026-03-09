@@ -2,12 +2,13 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 all_content = """filegroup(name = "all", srcs = glob(["**"]), visibility = ["//visibility:public"])"""
 
-def include_json(ver):
+def include_simdjson(ver):
     http_archive(
-        name = "com_json",
-        strip_prefix = "json-"+ver,
-        urls = ["https://github.com/nlohmann/json/archive/refs/tags/v"+ver+".zip"],
-        sha256 = "04022b05d806eb5ff73023c280b68697d12b93e1b7267a0b22a1a39ec7578069"
+        name = "simdjson",
+        urls = ["https://github.com/simdjson/simdjson/releases/download/v" + ver + "/singleheader.zip"],
+        type = "zip",
+        build_file = "//bazel/libs:simdjson.BUILD",
+        sha256 = "fc70a9535066841be913eafaef498a608f03154a3137b8a7d576e2234df13aba",
     )
 
 def include_srp_platform(ver, source, sha):
