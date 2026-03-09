@@ -1,5 +1,7 @@
 load("@srp_platform//tools/common:cpu_def.bzl", "cpu_def")
 load("@srp_platform//tools/model_generator/ara:adaptive.bzl", "ara_json2sm_config")
+load("//deployment/cpu:defs.bzl", "SIMBA_COMPUTER_BASE_APPS")
+
 
 ara_json2sm_config(
     name = "sm_config",
@@ -17,17 +19,7 @@ cpu_def(
         "//deployment/cpu/ec:sm_config",
         "platform_config.json",
     ],
-    srp_components = [
-        "@srp_platform//platform/common/diag_demon/model:diag_demon",
-        "@srp_platform//platform/common/em/model:em",
-        "@srp_platform//platform/common/logger/model:logger",
-        "@srp_platform//platform/common/someip_demon/model:someip_demon",
-        "@srp_platform//platform/common/state_manager/model:state_manager",
-        "//deployment/mw/timestamp_mw:timestamp_service",
-        "//deployment/mw/i2c:i2cMWService",
-        "//deployment/mw/gpio:gpio_service",
-        "//deployment/mw/temp:temp_service",
-
+    srp_components = SIMBA_COMPUTER_BASE_APPS + [
         "//deployment/apps/servo_service:servoService",
         "//deployment/apps/engine_app:EngineService",
         "//deployment/apps/env_service:EnvApp",

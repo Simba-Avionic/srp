@@ -1,4 +1,11 @@
 #!/bin/bash
+
+if ! command -v bazel &> /dev/null; then
+    echo "Bazel is not installed"
+    exit 1
+fi
+
+
 export GCOV=/usr/bin/gcov-13
 bazel coverage --config=ut `bazel query 'kind(cc_test, //...)'`  -s \
   --instrument_test_targets \

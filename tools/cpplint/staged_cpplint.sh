@@ -1,5 +1,10 @@
 #!/bin/bash
 
+if ! command -v cpplint &> /dev/null; then
+    echo "cpplint is not installed, use apt-get install cpplint to fix this"
+    exit 1
+fi
+
 filetypes="\.cpp$|\.cc$|\.h$|\.hpp$"
 skip="libdoip|tools/diag_app_frontend"
 
