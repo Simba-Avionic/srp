@@ -151,7 +151,7 @@ void EnvService::GenericPressureLoop(
 
             std::ostringstream ss;
             ss << std::fixed << std::setprecision(2) << val;
-            ara::log::LogInfo() << "Receive new " << label << ": " << ss.str() << " Bar";
+            ara::log::LogDebug() << "Receive new " << label << ": " << ss.str() << " Bar";
 
             uint16_t encodedVal = static_cast<uint16_t>(val * 100);
             eventIpc.Update(encodedVal);

@@ -30,7 +30,7 @@ ServoController::ServoController()
     : driver_(nullptr),
       gpio_(nullptr),
       logger_(ara::log::LoggingMenager::GetInstance()->CreateLogger(
-          "srvServo", "", ara::log::LogLevel::kDebug)) {}
+          "srvc", "", ara::log::LogLevel::kDebug)) {}
 
 core::ErrorCode ServoController::Init(
     const std::string& app_path, std::shared_ptr<srp::i2c::PCA9685> driver,
