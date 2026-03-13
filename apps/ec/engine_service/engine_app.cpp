@@ -163,19 +163,21 @@ void EngineApp::OnStateChange(core::rocketState::RocketState_t new_state) {
 
 
 void EngineApp::OnLaunch() {
-  auto res = this->primer_handler_->OnPrime();
-  if (!res.HasValue()) {
-    ara::log::LogError() << "Invalid request to MW:GPIOService";
-    return;
-  }
-  std::this_thread::sleep_for(std::chrono::milliseconds(kPrimerDelay));
-  auto res2 = this->servo_handler_->SetMainServoValue(1);
-  this->primer_handler_->OffPrime();
-  if (!res2.HasValue()) {
-    ara::log::LogError() << "Invalid request to MW:I2CService";
-    return;
-  }
-  state_ctr->SetState(core::rocketState::RocketState_t::FLIGHT);
+  std::thread([this]() {
+    auto res = this->primer_handler_->OnPrime();
+    if (!res.HasValue()) {
+      ara::log::LogError() << "Invalid request to MW:GPIOService";
+      return;
+    }
+    std::this_thread::sleep_for(std::chrono::milliseconds(kPrimerDelay));
+    auto res2 = this->servo_handler_->SetMainServoValue(1);
+    this->primer_handler_->OffPrime();
+    if (!res2.HasValue()) {
+      ara::log::LogError() << "Invalid request to MW:I2CService";
+      return;
+    }
+    state_ctr->SetState(core::rocketState::RocketState_t::FLIGHT);
+  }).detach();
 }
 
 void EngineApp::OnArm() {
