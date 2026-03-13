@@ -12,14 +12,16 @@
 #ifndef CORE_SYS_SYSTEM_STAT_HPP_
 #define CORE_SYS_SYSTEM_STAT_HPP_
 
+#include <optional>
+
 namespace srp {
 namespace core {
 namespace stat {
 
 class SystemStats {
  public:
-  static float get_ram_usage();
-  static double get_cpu_usage();
+  static std::optional<float> get_ram_usage();
+  static std::optional<double> get_cpu_usage();
   static double get_disk_space();
 };
 

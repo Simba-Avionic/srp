@@ -14,9 +14,11 @@
 #include <fstream>
 #include <cstdio>
 #include <memory>
+#include <optional>
 #include <array>
 #include <string>
 #include <filesystem>
+#include <cmath>
 #include "ara/log/log.h"
 
 namespace srp {
@@ -27,16 +29,21 @@ namespace {
     constexpr auto kMemInfoPath = "/proc/meminfo";
 }
 
+
 namespace fs = std::filesystem;
+
+static double round2(double val) {
+    return std::round(val * 100.0) / 100.0;
+}
 
 double SystemStats::get_disk_space() {
     fs::space_info si = fs::space("/");
     double usage = 100.0 * (si.capacity - si.available) / si.capacity;
-    ara::log::LogDebug() << "Zużycie dysku: " << std::to_string(usage) << " %";
+    usage = round2(usage);
     return usage;
 }
 
-float SystemStats::get_ram_usage() {
+std::optional<float> SystemStats::get_ram_usage() {
     std::ifstream file(kMemInfoPath);
     std::string line;
     int64_t total = 0, available = 0;
@@ -47,22 +54,21 @@ float SystemStats::get_ram_usage() {
         } else if (line.compare(0, 12, "MemAvailable") == 0) {
             sscanf(line.c_str(), "MemAvailable: %ld kB", &available);
         }
+        if (total == 0 && available == 0) {
+            return std::nullopt;
+        }
     }
     float ram_usage = 100.0f * static_cast<float>(total - available) / static_cast<float>(total);
-    ara::log::LogDebug() << "USED RAM: " << ram_usage << "%" << "from: " << std::to_string(total / 1024) << " MB";
+    ram_usage = static_cast<float>(round2(ram_usage));
     return ram_usage;
 }
 
-double SystemStats::get_cpu_usage() {
-    double load[3];
-    if (getloadavg(load, 3) != -1) {
-        ara::log::LogInfo() << "Load Average (1 min):  " << std::to_string(load[0])
-                            << ", Load Average (5 min):  " << std::to_string(load[1])
-                            << ", Load Average (15 min): " << std::to_string(load[2]);
-    } else {
-        ara::log::LogWarn() << "Błąd pobierania Load Average";
+std::optional<double> SystemStats::get_cpu_usage() {
+    double load;
+    if (getloadavg(&load, 1) <= 0) {
+        return std::nullopt;
     }
-    return load[0];
+    return round2(load);
 }
 
 }  // namespace stat
