@@ -61,7 +61,7 @@ int SystemStatService::Run(const std::stop_token& token) {
                             << "%, mem usage: " << stats.mem_usage
                             << "%, disk usage: " << stats.disk_utilization << "%";
 
-        ara::log::LogWarn() << ss.str();
+        ara::log::LogDebug() << ss.str();
         service_ipc.NewSystemUsage.Update(stats);
         service_udp.NewSystemUsage.Update(stats);
         core::condition::wait_for(std::chrono::milliseconds(kDelay), token);

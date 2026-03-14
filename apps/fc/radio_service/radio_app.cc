@@ -104,7 +104,7 @@ void RadioApp::TransmittingLoop(const std::stop_token& token) {
       send([&] { mavlink_msg_simba_gps_pack(kSystemId, kComponentId, &msg,
                             event_data->GetGPSLat(), event_data->GetGPSLon(), event_data->GetGPSAlt()); });
     }
-    ara::log::LogInfo() << "send full Mavlink packets";
+    ara::log::LogDebug() << "send full Mavlink packets";
     auto end = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
     core::condition::wait_for(std::chrono::milliseconds(kTime - duration.count()), token);  // 1 Hz

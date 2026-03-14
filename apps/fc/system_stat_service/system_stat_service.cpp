@@ -63,7 +63,7 @@ int FcSystemStatService::Run(const std::stop_token& token) {
                             << "%, mem usage: " << std::to_string(stats.mem_usage)
                             << "%, disk usage: " << std::to_string(stats.disk_utilization) << "%";
 
-        ara::log::LogInfo() << ss.str();
+        ara::log::LogDebug() << ss.str();
 
         service_ipc.NewSystemUsage.Update(stats);
         service_udp.NewSystemUsage.Update(stats);
