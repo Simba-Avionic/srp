@@ -8,8 +8,8 @@
  * @copyright Copyright (c) 2026
  * 
  */
-#ifndef APPS_EC_SYSTEM_STAT_SERVICE_SYSTEM_STAT_SERVICE_HPP_
-#define APPS_EC_SYSTEM_STAT_SERVICE_SYSTEM_STAT_SERVICE_HPP_
+#ifndef APPS_FC_SYSTEM_STAT_SERVICE_SYSTEM_STAT_SERVICE_HPP_
+#define APPS_FC_SYSTEM_STAT_SERVICE_SYSTEM_STAT_SERVICE_HPP_
 
 #include <string>
 #include <unordered_map>
@@ -51,4 +51,4 @@ class FcSystemStatService final : public ara::exec::AdaptiveApplication {
 }  // namespace srp
 
 
-#endif  // APPS_EC_SYSTEM_STAT_SERVICE_SYSTEM_STAT_SERVICE_HPP_
+#endif  // APPS_FC_SYSTEM_STAT_SERVICE_SYSTEM_STAT_SERVICE_HPP_

@@ -6,9 +6,9 @@ cc_library(
         "//deployment/apps/fc/radio_app:someip_lib",
         "//deployment/apps/fc/radio_app:ara",
         "//core/timestamp:timestamp_controller",
-        "//core/uart:uart_driver",
         "@srp_platform//ara/log",
         "//apps/fc/main_service:MainService",
+        "//apps/fc/radio_service:uart_driver",
     ],
     srcs = [
         "radio_app.cc",
@@ -32,4 +32,13 @@ cc_binary(
     deps = [
         "//apps/fc/radio_service:radio_app_lib",
     ],
+)
+
+cc_library(
+    name = "uart_driver",
+    deps = [
+        "//core/uart:Iuart_driver",
+    ],
+    srcs = ["mavlink_uart_driver.cpp"],
+    visibility = ["//visibility:public"],
 )
