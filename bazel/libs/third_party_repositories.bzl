@@ -22,8 +22,8 @@ def include_srp_platform(ver, source, sha):
 def include_srp_mavlink(ver):
         http_archive(
         name = "srp_mavlink",
-        strip_prefix = "mavlink",
-        urls = ["https://github.com/Simba-Avionic/simba_mavlink/releases/download/"+ver+"/simba_mavlink.zip"],
+        strip_prefix = "mavlink_c",
+        urls = ["https://github.com/Simba-Avionic/simba_mavlink/releases/download/v"+ver+"/simba_mavlink.zip"],
         type = "zip",
         build_file = "//bazel/libs:simba_mavlink.BUILD",
     )

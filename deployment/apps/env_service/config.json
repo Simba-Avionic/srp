@@ -27,15 +27,15 @@
         "name" : "sensor_temp_3"
       },
             {
-        "physical_id" : "28-062018f00884",
+        "physical_id" : "28-000011105db5",
         "name" : "board_1"
       },
       {
-        "physical_id" : "28-3c01e076e765",
+        "physical_id" : "28-00001110db5a",
         "name" : "board_2"
       },
       {
-        "physical_id" : "28-3c29e3813566",
+        "physical_id" : "28-00001110e849",
         "name" : "board_3"
       }
     ]

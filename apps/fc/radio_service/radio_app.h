@@ -38,6 +38,7 @@ class RadioApp : public ara::exec::AdaptiveApplication {
 
  private:
   const ara::log::Logger& mavl_logger;
+  const ara::log::Logger& someip_logger;
 
   PrimerServiceProxy primer_service_proxy;
   std::shared_ptr<PrimerServiceHandler> primer_service_handler;
@@ -57,18 +58,14 @@ class RadioApp : public ara::exec::AdaptiveApplication {
   std::unique_ptr<apps::RadioServiceSkeleton> service_ipc;
   std::unique_ptr<apps::RadioServiceSkeleton> service_udp;
 
-  std::unique_ptr<core::uart::IUartDriver> uart_;
-  std::mutex uart_mutex_;
+  core::uart::UartDriver uart_;
 
-  std::unique_ptr<core::timestamp::ITimestampController> timestamp_;
+  core::timestamp::TimestampController timestamp_;
   void SomeIpInit();
 
   std::optional<RocketState_t> GetReqRocketStateFromGSFlags(const uint8_t flags);
 
  protected:
-  void InitUart(std::unique_ptr<core::uart::IUartDriver> uart);
-  void InitTimestamp(std::unique_ptr<core::timestamp::ITimestampController> timestamp);
-
   void TransmittingLoop(const std::stop_token& token);
   void ListeningLoop(const std::stop_token& token);
   std::shared_ptr<EventData> event_data;

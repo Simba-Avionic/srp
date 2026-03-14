@@ -26,7 +26,6 @@ namespace envService {
 namespace {
     constexpr uint8_t PRESS_SENSOR_ID = 10;
     constexpr uint8_t D_PRESS_SENSOR_ID = 11;
-    constexpr uint8_t PRESS_SENSOR_SAMPLING = 1;
     constexpr auto kPressureDelayMs = 100;
     constexpr auto kDifferentialPressureDelayMs = 1;
 }  // namespace
@@ -151,7 +150,7 @@ void EnvService::GenericPressureLoop(
 
             std::ostringstream ss;
             ss << std::fixed << std::setprecision(2) << val;
-            ara::log::LogInfo() << "Receive new " << label << ": " << ss.str() << " Bar";
+            ara::log::LogDebug() << "Receive new " << label << ": " << ss.str() << " Bar";
 
             uint16_t encodedVal = static_cast<uint16_t>(val * 100);
             eventIpc.Update(encodedVal);
@@ -204,7 +203,7 @@ void EnvService::TempRxCallback(const std::vector<srp::mw::temp::TempReadHdr>& d
         const auto& sensorName = pathIt->second.first;
         const int16_t value = static_cast<int16_t>(hdr.value * 10);
 
-        ara::log::LogInfo() << "Receive new temp id: " << hdr.actuator_id
+        ara::log::LogDebug() << "Receive new temp id: " << hdr.actuator_id
                             << ", name: " << sensorName << ", temp: " << hdr.value;
 
         using UpdateFn = std::function<void(int16_t)>;

@@ -25,7 +25,7 @@
                         },
                         {
                             "ctx_id": "acom",
-                            "log_level": "kDebug",
+                            "log_level": "kInfo",
                             "ctx_des": "Default ctx for ara::com"
                         },
                         {
@@ -35,7 +35,7 @@
                         },
                         {
                             "ctx_id": "exec",
-                            "log_level": "kDebug",
+                            "log_level": "kInfo",
                             "ctx_des": "Default ctx for ara::exec"
                         }
                     ]

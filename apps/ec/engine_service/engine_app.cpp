@@ -12,6 +12,7 @@
 #include "apps/ec/engine_service/engine_app.hpp"
 
 #include <utility>
+#include <chrono>  // NOLINT
 
 #include "srp/apps/PrimerService/PrimerServiceHandler.h"
 #include "srp/apps/ServoService/ServoServiceHandler.h"
@@ -31,7 +32,8 @@ namespace {
   static constexpr auto kPrimerDelay = 1000;
   static constexpr auto kPin_off = 0;
   static constexpr auto kPin_on = 1;
-}
+  static constexpr auto kHeartBeatPinID = 3;
+}  // namespace
 
 std::optional<std::vector<ArmPinConfig_t>> EngineApp::LoadArmPinConfig(const std::string& path) {
     auto parser = core::json::JsonParser::Parser(path);
@@ -72,7 +74,13 @@ EngineApp::EngineApp():
 }
 
 int EngineApp::Run(const std::stop_token& token) {
-  core::condition::wait(token);
+  bool pinState = 0;
+  while (!token.stop_requested()) {
+    pinState = !pinState;
+    gpio_.SetPinValue(kHeartBeatPinID, (pinState) ? kPin_on : kPin_off);
+    core::condition::wait_for(std::chrono::seconds(1), token);
+  }
+
   service_ipc.StopOffer();
   service_udp.StopOffer();
   servo_proxy.StopFindService();
@@ -163,19 +171,21 @@ void EngineApp::OnStateChange(core::rocketState::RocketState_t new_state) {
 
 
 void EngineApp::OnLaunch() {
-  auto res = this->primer_handler_->OnPrime();
-  if (!res.HasValue()) {
-    ara::log::LogError() << "Invalid request to MW:GPIOService";
-    return;
-  }
-  std::this_thread::sleep_for(std::chrono::milliseconds(kPrimerDelay));
-  auto res2 = this->servo_handler_->SetMainServoValue(1);
-  this->primer_handler_->OffPrime();
-  if (!res2.HasValue()) {
-    ara::log::LogError() << "Invalid request to MW:I2CService";
-    return;
-  }
-  state_ctr->SetState(core::rocketState::RocketState_t::FLIGHT);
+  std::thread([this]() {
+    auto res = this->primer_handler_->OnPrime();
+    if (!res.HasValue()) {
+      ara::log::LogError() << "Invalid request to MW:GPIOService";
+      return;
+    }
+    std::this_thread::sleep_for(std::chrono::milliseconds(kPrimerDelay));
+    auto res2 = this->servo_handler_->SetMainServoValue(1);
+    this->primer_handler_->OffPrime();
+    if (!res2.HasValue()) {
+      ara::log::LogError() << "Invalid request to MW:I2CService";
+      return;
+    }
+    state_ctr->SetState(core::rocketState::RocketState_t::FLIGHT);
+  }).detach();
 }
 
 void EngineApp::OnArm() {

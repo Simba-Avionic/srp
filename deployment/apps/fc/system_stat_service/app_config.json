@@ -1,10 +1,10 @@
 {
     "include": [
-        "deployment/system_definition/someip/fc/main_service/service.json"
+        "deployment/system_definition/someip/fc/sys_stat_service/service.json"
     ],
     "package": "srp.apps",
     "adaptive_application": {
-        "MainApp": {
+        "FcSysStatService": {
             "app": {
                 "functional_groups":[
                     "Running",
@@ -12,8 +12,8 @@
                 ],
                 "parms": "",
                 "logger": {
-                    "app_id": "MAIN",
-                    "app_des": "glowna aplikacji rakiety",
+                    "app_id": "STAT",
+                    "app_des": "",
                     "log_level": "kInfo",
                     "log_mode": "kRemote",
                     "ctx": [
@@ -42,14 +42,14 @@
             },
             "provide": [
                 {
-                    "name": "MainService as MainService_ipc",
+                    "name": "FcSysStatService as FcSysStatService_ipc",
                     "on": "ipc",
                     "instance": 2
                 },
                 {
-                    "name": "MainService as MainService_udp",
+                    "name": "FcSysStatService as FcSysStatService_udp",
                     "on": "udp",
-                    "port": "10002",
+                    "port": "10001",
                     "instance": 1
                 }
             ]
