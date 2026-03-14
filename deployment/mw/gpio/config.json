@@ -95,6 +95,12 @@
             "num":541,
             "direction":"out",
             "desc":"P8_26"
+        },
+        {
+            "id":17,
+            "num":542,
+            "direction":"out",
+            "desc":"P8_21"
         }
     ]
 }
