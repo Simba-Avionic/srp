@@ -37,7 +37,7 @@
                         },
                         {
                             "ctx_id": "exec",
-                            "log_level": "kDebug",
+                            "log_level": "kInfo",
                             "ctx_des": "Default ctx for ara::exec"
                         }
                     ]
@@ -67,7 +67,7 @@
                     "instance": 2
                 },
                 {
-                    "name": "srp.apps.SysStatService as SysStatService",
+                    "name": "SysStatService as SysStatService",
                     "on": "ipc",
                     "instance": 2
                 }

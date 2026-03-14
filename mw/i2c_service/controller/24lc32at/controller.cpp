@@ -31,7 +31,7 @@ namespace {
 EEPROM24LC32AT::EEPROM24LC32AT(uint8_t address)
     : device_address_{address},
       eeprom_logger_{
-          ara::log::LoggingMenager::GetInstance()->CreateLogger("24lc32at", "", ara::log::LogLevel::kDebug)} {
+          ara::log::LoggingMenager::GetInstance()->CreateLogger("24lc32at", "", ara::log::LogLevel::kInfo)} {
 }
 
 core::ErrorCode EEPROM24LC32AT::Init(std::unique_ptr<II2CController> i2c) {
