@@ -12,12 +12,15 @@
 #include "apps/ec/engine_service/engine_app.hpp"
 
 #include <utility>
+#include <chrono>
 
 #include "srp/apps/PrimerService/PrimerServiceHandler.h"
 #include "srp/apps/ServoService/ServoServiceHandler.h"
 #include "core/common/condition.h"
 #include "ara/log/log.h"
 #include "core/json/json_parser.h"
+
+using namespace std::chrono;
 
 namespace srp {
 namespace apps {
@@ -31,6 +34,7 @@ namespace {
   static constexpr auto kPrimerDelay = 1000;
   static constexpr auto kPin_off = 0;
   static constexpr auto kPin_on = 1;
+  static constexpr auto kHeartBeatPinID = 3;
 }
 
 std::optional<std::vector<ArmPinConfig_t>> EngineApp::LoadArmPinConfig(const std::string& path) {
@@ -72,7 +76,13 @@ EngineApp::EngineApp():
 }
 
 int EngineApp::Run(const std::stop_token& token) {
-  core::condition::wait(token);
+  bool pinState = 0;
+  while (!token.stop_requested()) {
+    pinState = !pinState;
+    gpio_.SetPinValue(kHeartBeatPinID, (pinState) ? kPin_on : kPin_off);
+    core::condition::wait_for(1s, token);
+  }
+  
   service_ipc.StopOffer();
   service_udp.StopOffer();
   servo_proxy.StopFindService();
