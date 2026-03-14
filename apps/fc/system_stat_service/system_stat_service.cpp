@@ -14,7 +14,7 @@
 #include <utility>
 #include <sstream>
 #include <iomanip>
-#include "apps/ec/system_stat_service/system_stat_service.hpp"
+#include "apps/fc/system_stat_service/system_stat_service.hpp"
 #include "core/common/condition.h"
 #include "ara/log/log.h"
 #include "core/sys/system_stat.hpp"
@@ -23,18 +23,18 @@ namespace srp {
 namespace sysService {
 
 namespace {
-    constexpr auto kIpcInstanceSpecifier = "srp/apps/SysStatService/SysStatService_ipc";
-    constexpr auto kUdpInstanceSpecifier = "srp/apps/SysStatService/SysStatService_udp";
+    constexpr auto kIpcInstanceSpecifier = "srp/apps/FcSysStatService/FcSysStatService_ipc";
+    constexpr auto kUdpInstanceSpecifier = "srp/apps/FcSysStatService/FcSysStatService_udp";
     constexpr auto kDelay = 1000;
 }
 
-SystemStatService::SystemStatService():
+FcSystemStatService::FcSystemStatService():
                 service_ipc{ara::core::InstanceSpecifier{kIpcInstanceSpecifier}},
                 service_udp{ara::core::InstanceSpecifier{kUdpInstanceSpecifier}} {
 }
 
 
-int SystemStatService::Initialize(const std::map<ara::core::StringView, ara::core::StringView>
+int FcSystemStatService::Initialize(const std::map<ara::core::StringView, ara::core::StringView>
                       parms) {
     service_ipc.StartOffer();
     service_udp.StartOffer();
@@ -42,7 +42,7 @@ int SystemStatService::Initialize(const std::map<ara::core::StringView, ara::cor
 }
 
 
-int SystemStatService::Run(const std::stop_token& token) {
+int FcSystemStatService::Run(const std::stop_token& token) {
     while (!token.stop_requested()) {
         apps::SysStatType stats;
         auto cpu_usage_opt = core::stat::SystemStats::get_cpu_usage();
@@ -55,13 +55,16 @@ int SystemStatService::Run(const std::stop_token& token) {
             continue;
         }
         stats.mem_usage = mem_usage_opt.value();
-        stats.disk_utilization = static_cast<float>(core::stat::SystemStats::get_disk_space());
-        std::ostringstream ss;
-        ss << std::fixed << std::setprecision(2)  << "cpu usage(1min): " << stats.cpu_usage
-                            << "%, mem usage: " << stats.mem_usage
-                            << "%, disk usage: " << stats.disk_utilization << "%";
 
-        ara::log::LogWarn() << ss.str();
+        stats.disk_utilization = static_cast<float>(core::stat::SystemStats::get_disk_space());
+
+        std::ostringstream ss;
+        ss << std::fixed << std::setprecision(2)  << "cpu usage(1min): " << std::to_string(stats.cpu_usage)
+                            << "%, mem usage: " << std::to_string(stats.mem_usage)
+                            << "%, disk usage: " << std::to_string(stats.disk_utilization) << "%";
+
+        ara::log::LogInfo() << ss.str();
+
         service_ipc.NewSystemUsage.Update(stats);
         service_udp.NewSystemUsage.Update(stats);
         core::condition::wait_for(std::chrono::milliseconds(kDelay), token);

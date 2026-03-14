@@ -8,7 +8,7 @@ load("//third_party:deps.bzl", "deps")
 deps()
 
 load("//bazel/libs:third_party_repositories.bzl", "include_srp_platform", "include_srp_mavlink", "include_gtest_mock", "include_json")
-include_srp_platform("0.0.7-beta-patch-4", "SRP-Platform/srp_platform", "2e52be4fc426239e8008f466b0119dee5c08705652f9f21cd82fe344f8b09b8b")
+include_srp_platform("0.0.7-beta-patch-3", "SRP-Platform/srp_platform", "5418a5c934c34288cc9ed09d7afd3a653d5dace78e3f308af4cb804687211a58")
 load("@srp_platform//:download.bzl", "download")
 download()
 

@@ -29,17 +29,12 @@ namespace {
     constexpr auto kMemInfoPath = "/proc/meminfo";
 }
 
-
 namespace fs = std::filesystem;
-
-static double round2(double val) {
-    return std::round(val * 100.0) / 100.0;
-}
 
 double SystemStats::get_disk_space() {
     fs::space_info si = fs::space("/");
     double usage = 100.0 * (si.capacity - si.available) / si.capacity;
-    usage = round2(usage);
+    usage = usage;
     return usage;
 }
 
@@ -59,16 +54,16 @@ std::optional<float> SystemStats::get_ram_usage() {
         }
     }
     float ram_usage = 100.0f * static_cast<float>(total - available) / static_cast<float>(total);
-    ram_usage = static_cast<float>(round2(ram_usage));
+    ram_usage = static_cast<float>(ram_usage);
     return ram_usage;
 }
 
 std::optional<double> SystemStats::get_cpu_usage() {
-    double load;
-    if (getloadavg(&load, 1) <= 0) {
+    double load[1];
+    if (getloadavg(load, 1) <= 0) {
         return std::nullopt;
     }
-    return round2(load);
+    return load[0] * 25;
 }
 
 }  // namespace stat
