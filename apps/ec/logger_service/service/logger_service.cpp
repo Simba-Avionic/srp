@@ -28,8 +28,8 @@ namespace {
   constexpr auto kEnv_service_path_name = "srp/apps/FileLoggerApp/EnvApp";
   constexpr auto kUdp_service_path_name = "srp/apps/FileLoggerApp/logService_udp";
   constexpr auto kIpc_service_path_name = "srp/apps/FileLoggerApp/logService_ipc";
+  constexpr auto kSysStat_service_path_name = "srp/apps/FileLoggerApp/SysStatService";
   constexpr auto kFile_did_path_name = "/srp/apps/FileLoggerApp/logger_did";
-  constexpr auto kSysStat_service_path_name = "/srp/apps/FileLoggerApp/SysStatService";
   constexpr auto kLogs_on = 1;
   constexpr auto kLogs_off = 0;
 }  // namespace

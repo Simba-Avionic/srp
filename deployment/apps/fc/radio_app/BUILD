@@ -36,6 +36,9 @@ adaptive_application(
     name = "RadioApp",
     bin = "//apps/fc/radio_service",
     model_src = ["//deployment/apps/fc/radio_app:instance"],
-    visibility = ["//deployment/cpu/fc:__subpackages__"],
+    visibility = [
+        "//deployment/cpu/fc:__subpackages__",
+        "//deployment/cpu/ec:__subpackages__"
+    ],
 )
 
