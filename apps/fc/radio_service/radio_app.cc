@@ -17,7 +17,6 @@
 #include "ara/log/log.h"
 #include "core/common/condition.h"
 
-using namespace std::chrono;
 
 namespace srp {
 namespace apps {
@@ -35,11 +34,7 @@ namespace {
   static constexpr auto KGPS_UART_baudrate = B57600;
   static constexpr auto kSystemId = 1;
   static constexpr auto kComponentId = 200;
-  static constexpr auto kInitDelay = 15s;
   static constexpr auto kTime = 990;  // Should be 1 Hz but better make it 1.1Hz than 0.9 wchich can trigger error on GS
-  static constexpr auto kSendWaifAfterMs = 50;  // Work ok but if you have more than
-                                                // 15 Frames in Transmiting Loop you need
-                                                // to reduce sending frequency or this delay
 
   static constexpr std::pair<uint8_t, core::rocketState::RocketState_t> gs_rocket_state_mapping[] = {
         {SIMBA_GS_ABORT,  core::rocketState::RocketState_t::ABORT},
@@ -62,7 +57,6 @@ void RadioApp::TransmittingLoop(const std::stop_token& token) {
     uint16_t len = mavlink_msg_to_send_buffer(buffer, &msg);
     mavl_logger.LogDebug() << std::vector<uint8_t>(buffer, buffer + len);
     uart_->Write(std::vector<uint8_t>(buffer, buffer + len));
-    core::condition::wait_for(std::chrono::milliseconds(kSendWaifAfterMs), token);
   };
   while (!token.stop_requested()) {
     auto start = std::chrono::high_resolution_clock::now();
@@ -233,7 +227,6 @@ void RadioApp::InitTimestamp(std::unique_ptr<core::timestamp::ITimestampControll
 int RadioApp::Initialize(const std::map<ara::core::StringView,
    ara::core::StringView> parms) {
     ara::log::LogDebug() << "RadioApp Initialize called";
-    std::this_thread::sleep_for(kInitDelay);
     ara::log::LogDebug() << "RadioApp Initialize after artificial delay";
     event_data = EventData::GetInstance();
     ara::log::LogDebug() << "EventData instance created in Initialize";
