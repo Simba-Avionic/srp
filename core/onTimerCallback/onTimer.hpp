@@ -25,9 +25,9 @@ using OnTimerCallback = std::function<void()>;
 using time_t =  std::chrono::time_point<std::chrono::high_resolution_clock>;
 
 struct OnTimerCallback_t {
-    OnTimerCallback callback;
+    const OnTimerCallback callback;
     time_t last_call;
-    uint32_t Interval_ms;
+    const uint32_t Interval_ms;
 };
 
 
@@ -39,6 +39,9 @@ class TimerController {
 
     void Loop(const std::stop_token& token);
  public:
+    TimerController(const TimerController&) = delete;
+    TimerController& operator=(const TimerController&) = delete;
+
     void AddOnTimerCallback(OnTimerCallback callback, u_int32_t Interval_ms);
     void Start();
     void Stop();

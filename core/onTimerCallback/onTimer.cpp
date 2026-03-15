@@ -62,8 +62,10 @@ void TimerController::Start() {
 }
 
 void TimerController::Stop() {
-    loop_thread_.request_stop();
-    loop_thread_.join();
+    if (loop_thread_.joinable()) {
+        loop_thread_.request_stop();
+        loop_thread_.join();
+    }
 }
 
 }  // namespace core
