@@ -10,6 +10,7 @@
  */
 #include "core/rocket_machine_state/rocket_state.hpp"
 #include <unordered_map>
+#include <algorithm>
 #include <vector>
 #include <string>
 #include "ara/log/log.h"

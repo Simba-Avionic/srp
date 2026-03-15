@@ -1,0 +1,52 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the
+// README at: https://github.com/devcontainers/templates/tree/main/src/ubuntu
+{
+    "name": "C++ Bazel Podman (Native)",
+    "build": {
+        "dockerfile": "Dockerfile"
+    },
+	"customizations": {
+        "vscode": {
+            "extensions": [
+                "ms-vscode.cpptools-extension-pack",
+                "bazelbuild.vscode-bazel",
+				"stackbuild.bazel-stack-vscode",
+				"cschlosser.doxdocgen",
+				"ms-python.debugpy",
+				"ms-python.python",
+				"ms-python.vscode-pylance",
+				"ms-python.vscode-python-envs"
+            ],
+			"settings": {
+                "cpplint.path": "/usr/local/bin/cpplint",
+                "C_Cpp.default.cppStandard": "c++23",
+                "C_Cpp.default.cStandard": "c23"
+            }
+        }
+    },
+	// Bazel potrafi generować ogromne ilości danych w cache. 
+    // Jeśli chcesz, aby cache przeżył usunięcie kontenera, odkomentuj poniższe:
+    "runArgs": [
+        "--userns=keep-id",
+        "--security-opt", "label=disable"
+    ],
+    "mounts": [
+        "source=${localEnv:HOME}/.gitconfig,target=/home/vscode/.gitconfig,type=bind,consistency=cached",
+        "source=bazel-cache-${localWorkspaceFolderBasename},target=/home/vscode/.cache,type=volume"
+    ],
+
+	// Features to add to the dev container. More info: https://containers.dev/features.
+	// "features": {},
+
+	// Use 'forwardPorts' to make a list of ports inside the container available locally.
+	// "forwardPorts": [],
+
+	// Use 'postCreateCommand' to run commands after the container is created.
+	// "postCreateCommand": "pip install cpplint",
+
+	// Configure tool-specific properties.
+	// "customizations": {},
+
+	// Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
+	"remoteUser": "vscode"
+}
