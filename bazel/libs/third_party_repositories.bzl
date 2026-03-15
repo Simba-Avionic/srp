@@ -10,13 +10,12 @@ def include_json(ver):
         sha256 = "04022b05d806eb5ff73023c280b68697d12b93e1b7267a0b22a1a39ec7578069"
     )
 
-def include_srp_platform(ver, source, sha):
+def include_srp_platform(ver, source):
         http_archive(
         name = "srp_platform",
         strip_prefix = "srp_platform-"+ver,
         urls = ["https://github.com/"+source+"/archive/refs/tags/"+ver+".zip"],
         type = "zip",
-        sha256 = sha,
     )
     
 def include_srp_mavlink(ver):

@@ -34,7 +34,7 @@ class WaitQueue final {
   bool IsEmpty() const {
     return q.empty();
   }
-  bool push(T obj) {
+  bool Push(T obj) {
     bool flag = true;
     std::lock_guard<std::mutex> guard(add_mutex);
     if (static_cast<uint16_t>(q.size()) >= maxsize && maxsize != 0) {

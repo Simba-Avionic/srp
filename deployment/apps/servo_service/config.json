@@ -2,7 +2,7 @@
     "servos" : [
         {
         "actuator_id":60,
-        "channel": 1,
+        "channel": 3,
         "on_pos" : 102,
         "off_pos" : 540,
         "mosfet_id" : 15,
@@ -11,19 +11,19 @@
         },
         {
         "actuator_id":61,
-        "channel": 3,
+        "channel": 0,
         "on_pos" : 255,
         "off_pos" : 102,
-        "mosfet_id" : 6,
+        "mosfet_id" : 16,
         "desc": "on devboard have name C69, VENT VALVE, off: 102 - on: 404, calculate open % by changing on pos",
         "ina219_address": 69
         },
         {
         "actuator_id":62,
-        "channel": 0,
+        "channel": 4,
         "on_pos" : 540,
         "off_pos" : 102,
-        "mosfet_id" : 16,
+        "mosfet_id" : 17,
         "desc": "on devboard have name C67, DUMP VALVE",
         "ina219_address": 64
         }
