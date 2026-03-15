@@ -48,10 +48,10 @@ void TimerController::Loop(const std::stop_token& token) {
 
 void TimerController::AddOnTimerCallback(OnTimerCallback callback, u_int32_t Interval_ms) {
     std::lock_guard<std::mutex> lock(timer_mtx_);
-    OnTimerCallback_t cb;
-    cb.callback = callback;
-    cb.Interval_ms = Interval_ms;
-    cb.last_call = std::chrono::high_resolution_clock::now();
+    OnTimerCallback_t cb = {
+        .callback = callback,
+        .last_call = std::chrono::high_resolution_clock::now(),
+        .Interval_ms = Interval_ms};
     timers.push_back(cb);
 }
 
