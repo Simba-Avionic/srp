@@ -6,4 +6,5 @@ cc_library(
     srcs = ["system_stat.cpp"],
     hdrs = ["system_stat.hpp"],
     visibility = ["//visibility:public"],
+    linkopts = ["-lm"],
 )

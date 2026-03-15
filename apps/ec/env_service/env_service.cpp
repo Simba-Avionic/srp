@@ -151,7 +151,7 @@ void EnvService::GenericPressureLoop(
 
             std::ostringstream ss;
             ss << std::fixed << std::setprecision(2) << val;
-            ara::log::LogInfo() << "Receive new " << label << ": " << ss.str() << " Bar";
+            ara::log::LogDebug() << "Receive new " << label << ": " << ss.str() << " Bar";
 
             uint16_t encodedVal = static_cast<uint16_t>(val * 100);
             eventIpc.Update(encodedVal);
@@ -204,7 +204,7 @@ void EnvService::TempRxCallback(const std::vector<srp::mw::temp::TempReadHdr>& d
         const auto& sensorName = pathIt->second.first;
         const int16_t value = static_cast<int16_t>(hdr.value * 10);
 
-        ara::log::LogInfo() << "Receive new temp id: " << hdr.actuator_id
+        ara::log::LogDebug() << "Receive new temp id: " << hdr.actuator_id
                             << ", name: " << sensorName << ", temp: " << hdr.value;
 
         using UpdateFn = std::function<void(int16_t)>;
