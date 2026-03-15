@@ -1,0 +1,13 @@
+cc_library(
+    name="on_timer_callback_lib",
+    srcs=[
+        "onTimer.cpp",
+    ],
+    hdrs=[
+        "onTimer.hpp",
+    ],
+    deps=[
+        "//core/common:condition_lib",
+    ],
+    visibility=["//visibility:public"],
+)
