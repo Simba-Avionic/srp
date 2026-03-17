@@ -24,10 +24,12 @@ namespace srp {
 namespace envService {
 
 namespace {
-    constexpr uint8_t PRESS_SENSOR_ID = 10;
-    constexpr uint8_t D_PRESS_SENSOR_ID = 11;
-    constexpr auto kPressureDelayMs = 100;
-    constexpr auto kDifferentialPressureDelayMs = 2;
+    static constexpr uint8_t PRESS_SENSOR_ID = 10;
+    static constexpr uint8_t D_PRESS_SENSOR_ID = 11;
+    static constexpr uint8_t kTensoSensorID = 12;
+    static constexpr auto kPressureDelayMs = 100;
+    static constexpr auto kDifferentialPressureDelayMs = 100;
+    static constexpr auto kTensoDelayMs = 100;
 }  // namespace
 
 
@@ -188,7 +190,32 @@ int EnvService::Run(const std::stop_token& token) {
                             service_ipc.newDPressEvent,
                             service_udp.newDPressEvent);
     });
+    std::jthread tenso_thread([this, token] {
+        while (!token.stop_requested()) {
+            auto start = std::chrono::high_resolution_clock::now();
+            auto pressValue = this->press_->GetValue(kTensoSensorID);
+
+            if (pressValue.has_value()) {
+                float val = pressValue.value();
+
+                std::ostringstream ss;
+                ss << std::fixed << std::setprecision(2) << val;
+                ara::log::LogDebug() << "Receive new tenso val: " << ss.str();
+
+                service_ipc.newTensoEvent.Update(pressValue.value());
+                service_udp.newTensoEvent.Update(pressValue.value());
+            } else {
+                ara::log::LogWarn() << "Don't receive new tenso";
+            }
+
+            auto end = std::chrono::high_resolution_clock::now();
+            auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+        }
+    });
     core::condition::wait(token);
+    pressure_thread.request_stop();
+    differential_pressure_thread.request_stop();
+    tenso_thread.request_stop();
 
     service_ipc.StopOffer();
     service_udp.StopOffer();

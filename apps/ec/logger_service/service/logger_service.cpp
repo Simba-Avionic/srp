@@ -201,6 +201,15 @@ void LoggerService::SomeIpInit() {
         this->data.SetTankPress(res.Value());
       });
     });
+    env_service_handler->newTensoEvent.Subscribe(1, [this](const uint8_t status) {
+      env_service_handler->newTensoEvent.SetReceiveHandler([this] () {
+        auto res = env_service_handler->newTensoEvent.GetNewSamples();
+        if (!res.HasValue()) {
+          return;
+        }
+        this->data.SetTenso(res.Value());
+      });
+    });
   });
 }
 

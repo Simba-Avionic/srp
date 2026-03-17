@@ -28,13 +28,16 @@ class Data_t {
   using tempType = int16_t;
   using pressType = float;
   using dPressType = float;
-  std::mutex mutex_;
+  using tensoType = float;
+  std::shared_mutex mutex_;
+  tensoType tenso;
   tempType temp1;
   tempType temp2;
   tempType temp3;
   pressType tank_press;
   dPressType tank_d_press;
   apps::SysStatType sys_status;
+
  public:
   std::string get_header();
   std::string to_string(const std::string& timestamp);
@@ -45,6 +48,7 @@ class Data_t {
   void SetTemp3(const tempType& temp);
   void SetTankPress(const pressType& press);
   void SetTankDPress(const dPressType& press);
+  void SetTenso(const tensoType& tenso);
 };
 
 }  // namespace logger

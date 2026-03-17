@@ -14,6 +14,7 @@
 
 #include <memory>
 #include <mutex>  // NOLINT
+#include <vector>
 #include <map>
 
 #include "ara/exec/adaptive_application.h"

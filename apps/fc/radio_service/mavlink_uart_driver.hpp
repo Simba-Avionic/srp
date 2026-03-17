@@ -8,8 +8,8 @@
  * @copyright Copyright (c) 2026
  * 
  */
-#ifndef CORE_UART_UART_DRIVER_HPP_
-#define CORE_UART_UART_DRIVER_HPP_
+#ifndef APPS_FC_RADIO_SERVICE_MAVLINK_UART_DRIVER_HPP_
+#define APPS_FC_RADIO_SERVICE_MAVLINK_UART_DRIVER_HPP_
 
 #include <string>
 #include <vector>
@@ -37,4 +37,4 @@ class MavUartDriver{
 }  // namespace core
 }  // namespace srp
 
-#endif  // CORE_UART_UART_DRIVER_HPP_
+#endif  // APPS_FC_RADIO_SERVICE_MAVLINK_UART_DRIVER_HPP_

@@ -8,13 +8,14 @@
  * @copyright Copyright (c) 2025
  * 
  */
+#include "apps/fc/radio_service/radio_app.h"
+#include <termios.h>
 #include <utility>
 #include <vector>
+#include <string>
 #include <chrono>  // NOLINT
-#include <termios.h>
 #include "simba/mavlink.h"
 #include "simba/simba.h"
-#include "apps/fc/radio_service/radio_app.h"
 #include "ara/log/log.h"
 #include "core/common/condition.h"
 
@@ -72,7 +73,7 @@ void RadioApp::TransmittingLoop(const std::stop_token& token) {
   if (!timestamp_.Init()) {
     ara::log::LogWarn() << "Cant initialize app time";
   }
-  
+
   event_data = EventData::GetInstance();
 
   auto send = [&](auto pack_func) {
@@ -81,7 +82,7 @@ void RadioApp::TransmittingLoop(const std::stop_token& token) {
     uint16_t len = mavlink_msg_to_send_buffer(buffer.data(), &msg);
 
     std::vector<uint8_t> actual_data(buffer.begin(), buffer.begin() + len);
-    // mavl_logger.LogDebug() << "send bytes: " << actual_data; 
+    // mavl_logger.LogDebug() << "send bytes: " << actual_data;
     UartTxQueue.Push(actual_data);
   };
 
@@ -111,29 +112,29 @@ void RadioApp::TransmittingLoop(const std::stop_token& token) {
     });
 
     // Tank Temps
-    send([&] { 
+    send([&] {
       mavlink_msg_simba_tank_temperature_pack(kSystemId, kComponentId, &msg,
-          static_cast<int16_t>(event_data->GetTemp(0)), 
+          static_cast<int16_t>(event_data->GetTemp(0)),
           static_cast<int16_t>(event_data->GetTemp(1)),
-          static_cast<int16_t>(event_data->GetTemp(2))); 
+          static_cast<int16_t>(event_data->GetTemp(2)));
     });
 
     // Tank Pressure
-    send([&] { 
+    send([&] {
       mavlink_msg_simba_tank_pressure_pack(kSystemId, kComponentId, &msg,
-          static_cast<uint16_t>(event_data->GetPress())); 
+          static_cast<uint16_t>(event_data->GetPress()));
     });
 
     // GPS
     auto gps_data = event_data->GetGPS();
-    send([&] { 
+    send([&] {
       mavlink_msg_simba_gps_pack(kSystemId, kComponentId, &msg,
-          gps_data.lon, gps_data.lat, gps_data.altitude); 
+          gps_data.lon, gps_data.lat, gps_data.altitude);
     });
 
     auto end = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-    
+  
     // Zabezpieczenie przed ujemnym czasem czekania
     auto sleep_time = std::chrono::milliseconds(kTime) - duration;
     if (sleep_time > std::chrono::milliseconds(0)) {
@@ -214,13 +215,12 @@ void RadioApp::ListeningLoop(const std::stop_token& token) {
                 }
 
                 mavl_logger.LogDebug() << "Changing " << name << " to " << (requested ? "ON" : "OFF");
-                
                 setter_func(requested);
             }
           };
           update_valve(SIMBA_GS_VENT_VALVE, "VENT_VALVE",
                         [&](uint8_t val) { servo_service_handler->SetVentServoValue(val); });
-          
+
           update_valve(SIMBA_GS_DUMP_VALVE, "DUMP_VALVE",
                         [&](uint8_t val) { servo_service_handler->SetDumpValue(val); });
 
@@ -248,7 +248,7 @@ int RadioApp::Run(const std::stop_token& token) {
   std::jthread listening_thread([this](const std::stop_token& t) {
     this->ListeningLoop(t);
   });
-  
+
   while (!token.stop_requested()) {
     auto package_opt = UartTxQueue.Get(token);
     if (!package_opt.has_value()) {
@@ -456,7 +456,8 @@ void RadioApp::SomeIpInit() {
           }
           someip_logger.LogDebug() << "Main CurrentModeStatusEvent sample: "
                                + std::to_string(static_cast<int>(res.Value()));
-          this->event_data->SetComputerState(BoardType_e::MB, static_cast<core::rocketState::RocketState_t>(res.Value()));
+          this->event_data->SetComputerState(BoardType_e::MB,
+                                  static_cast<core::rocketState::RocketState_t>(res.Value()));
         });
       });
     });
@@ -473,7 +474,8 @@ void RadioApp::SomeIpInit() {
           }
           someip_logger.LogDebug() << "Engine CurrentMode sample: "
                                + std::to_string(static_cast<int>(res.Value()));
-          this->event_data->SetComputerState(BoardType_e::EB, static_cast<core::rocketState::RocketState_t>(res.Value()));
+          this->event_data->SetComputerState(BoardType_e::EB,
+                                  static_cast<core::rocketState::RocketState_t>(res.Value()));
         });
       });
     }));
@@ -481,24 +483,24 @@ void RadioApp::SomeIpInit() {
   }
 RadioApp::~RadioApp() {
 }
-RadioApp::RadioApp(): mavl_logger{ara::log::LoggingMenager::GetInstance()->CreateLogger("MAVL", "", ara::log::LogLevel::kDebug)},
-                        someip_logger{ara::log::LoggingMenager::GetInstance()->CreateLogger("SOME", "", ara::log::LogLevel::kDebug)},
-                        primer_service_proxy{ara::core::InstanceSpecifier{kPrimer_service_path_name}},
-                        primer_service_handler{nullptr},
-                        servo_service_proxy{ara::core::InstanceSpecifier{kServo_service_path_name}},
-                        servo_service_handler{nullptr},
-                        env_service_proxy{ara::core::InstanceSpecifier{kEnv_service_path_name}},
-                        env_service_handler{nullptr},
-                        gps_service_proxy{ara::core::InstanceSpecifier{kGPS_service_path_name}},
-                        gps_service_handler{nullptr},
-                        main_service_handler{nullptr},
-                        main_service_proxy{ara::core::InstanceSpecifier{kMain_service_path_name}},
-                        engine_service_handler{nullptr},
-                        engine_service_proxy{ara::core::InstanceSpecifier{kEngine_service_path_name}},
-                        recovery_service_handler{nullptr},
-                        service_ipc_instance(kService_ipc_instance),
-                        service_udp_instance(kService_udp_instance)
-{
+RadioApp::RadioApp():
+          mavl_logger{ara::log::LoggingMenager::GetInstance()->CreateLogger("MAVL", "", ara::log::LogLevel::kDebug)},
+          someip_logger{ara::log::LoggingMenager::GetInstance()->CreateLogger("SOME", "", ara::log::LogLevel::kDebug)},
+          primer_service_proxy{ara::core::InstanceSpecifier{kPrimer_service_path_name}},
+          primer_service_handler{nullptr},
+          servo_service_proxy{ara::core::InstanceSpecifier{kServo_service_path_name}},
+          servo_service_handler{nullptr},
+          env_service_proxy{ara::core::InstanceSpecifier{kEnv_service_path_name}},
+          env_service_handler{nullptr},
+          gps_service_proxy{ara::core::InstanceSpecifier{kGPS_service_path_name}},
+          gps_service_handler{nullptr},
+          main_service_handler{nullptr},
+          main_service_proxy{ara::core::InstanceSpecifier{kMain_service_path_name}},
+          engine_service_handler{nullptr},
+          engine_service_proxy{ara::core::InstanceSpecifier{kEngine_service_path_name}},
+          recovery_service_handler{nullptr},
+          service_ipc_instance(kService_ipc_instance),
+          service_udp_instance(kService_udp_instance) {
 }
 }  // namespace apps
 }  // namespace srp

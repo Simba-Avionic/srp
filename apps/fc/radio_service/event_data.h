@@ -47,7 +47,7 @@ class ThreadSafe {
 enum class BoardType_e {EB, MB};
 
 class EventData {
-private:
+ private:
     ThreadSafe<mavlink_simba_tank_temperature_t> temp_;
     ThreadSafe<mavlink_simba_tank_pressure_t> press_;
     ThreadSafe<mavlink_simba_gps_t> gps_;
@@ -55,7 +55,7 @@ private:
     ThreadSafe<mavlink_simba_max_altitude_t> max_altitude_;
     ThreadSafe<uint8_t> actuator_state_;
     ThreadSafe<mavlink_simba_rocket_heartbeat_t> hb;
-    
+
     ThreadSafe<std::array<int16_t, 3>> eb_temp_sensors_;
     ThreadSafe<std::array<int16_t, 3>> mb_temp_sensors_;
 

@@ -28,8 +28,7 @@ std::shared_ptr<EventData> EventData::GetInstance() {
 
   core::rocketState::RocketState_t EventData::GetComputerState(const BoardType_e BoardType) {
     core::rocketState::RocketState_t state;
-    switch (BoardType)
-    {
+    switch (BoardType) {
     case BoardType_e::EB:
         state = static_cast<core::rocketState::RocketState_t>(hb.get().engine_computer_state);
         break;
@@ -42,8 +41,7 @@ std::shared_ptr<EventData> EventData::GetInstance() {
 
   void EventData::SetComputerState(const BoardType_e BoardType, const core::rocketState::RocketState_t state) {
     hb.update([&](auto& hb) {
-        switch (BoardType)
-        {
+        switch (BoardType) {
         case BoardType_e::EB:
             hb.engine_computer_state = state;
             break;
@@ -106,8 +104,7 @@ std::shared_ptr<EventData> EventData::GetInstance() {
     if (index >= 3) {
         return 0;
     }
-    switch (index)
-    {
+    switch (index) {
     case 0:
         return temp_.get().lower_tank;
     case 1:
@@ -123,8 +120,7 @@ std::shared_ptr<EventData> EventData::GetInstance() {
         return;
     }
     temp_.update([&](auto& temp) {
-        switch (index)
-        {
+        switch (index) {
         case 0:
             temp.lower_tank = res;
             break;
@@ -145,7 +141,7 @@ std::shared_ptr<EventData> EventData::GetInstance() {
   }
   void EventData::SetPress(uint16_t res) {
     press_.update([&](auto& press) {
-        press.pressure = res; 
+        press.pressure = res;
     });
   }
 

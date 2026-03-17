@@ -103,9 +103,9 @@ bool MavUartDriver::Open(const std::string& portName, const uint32_t& baudrate, 
 
 std::optional<std::vector<uint8_t>> MavUartDriver::Read(uint16_t size) {
     const size_t bytes_to_read = (size == 0) ? 512 : size;
-    
+
     std::vector<uint8_t> res(bytes_to_read);
-    
+
     ssize_t n = read(serial_port, res.data(), res.size());
 
     if (n > 0) {
