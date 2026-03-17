@@ -3,7 +3,7 @@
         {
             "id": 9,
             "name": "P8_11",
-            "desc": "Pressure Feed Vent Servo Power"
+            "desc": "Pressure Feed Vent Servo Power (USED AS DUMP VALVE)"
         },
         {
             "id": 5,
@@ -23,7 +23,7 @@
         {
             "id": 14,
             "name": "P8_17",
-            "desc": "Dump Valve Servo Power"
+            "desc": "Dump Valve Servo Power (Required for Igniter)"
         },
         {
             "id": 8,

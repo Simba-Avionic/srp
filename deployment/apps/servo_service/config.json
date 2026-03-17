@@ -6,7 +6,7 @@
         "on_pos" : 102,
         "off_pos" : 540,
         "mosfet_id" : 15,
-        "desc": "on devboard have name C70, MAIN VALVE, 102 to 0.5ms, 540 prawdopodobnie 2.5ms",
+        "desc": "J11, MAIN VALVE, 102 to 0.5ms, 540 prawdopodobnie 2.5ms",
         "ina219_address": 68
         },
         {
@@ -15,16 +15,16 @@
         "on_pos" : 255,
         "off_pos" : 102,
         "mosfet_id" : 16,
-        "desc": "on devboard have name C69, VENT VALVE, off: 102 - on: 404, calculate open % by changing on pos",
+        "desc": "J12, VENT VALVE, off: 102 - on: 404, calculate open % by changing on pos",
         "ina219_address": 69
         },
         {
         "actuator_id":62,
-        "channel": 4,
+        "channel": 1,
         "on_pos" : 540,
         "off_pos" : 102,
-        "mosfet_id" : 17,
-        "desc": "on devboard have name C67, DUMP VALVE",
+        "mosfet_id" : 11,
+        "desc": "J13, DUMP VALVE",
         "ina219_address": 64
         }
 ]
