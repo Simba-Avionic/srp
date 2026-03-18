@@ -22,7 +22,7 @@ namespace srp {
 namespace logger {
 
 namespace {
-  constexpr std::string kloger_filename = "log.bin";
+  constexpr std::string kloger_filename = "_log.bin";
   constexpr std::string kloger_filename_prefix = "/home/root/";
   constexpr uint16_t kSave_interval = 1;
   constexpr auto kEnv_service_path_name = "srp/apps/FileLoggerApp/EnvApp";

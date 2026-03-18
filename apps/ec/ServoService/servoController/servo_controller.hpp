@@ -1,6 +1,6 @@
 /**
  * @file servo_controller.hpp
- * @author your name (you@domain.com)
+ * @author Mateusz Krajewski (matikrajek42@gmail.com)
  * @brief 
  * @version 0.1
  * @date 2025-11-13
@@ -21,11 +21,9 @@
 #include "ara/log/logging_menager.h"
 #include "core/common/error_code.h"
 #include "core/json/json_parser.h"
-#include "mw/gpio_server/controller/Igpio_controller.h"
 #include "mw/gpio_server/controller/gpio_controller.hpp"
-#include "mw/i2c_service/controller/Ii2c_controller.h"
-#include "mw/i2c_service/controller/i2c_controller.h"
 #include "mw/i2c_service/controller/pca9685/controller.hpp"
+#include "mw/i2c_service/controller/ina219/controller.hpp"
 
 namespace srp {
 namespace service {
@@ -48,11 +46,15 @@ struct ServoRuntimeConfig {
   uint8_t mosfet_id{0};
   bool need_loosening{false};
   ServoTimingConfig timing{};
+  bool measure_current_and_voltage{false};
+  uint8_t ina219_i2c_address;
 };
 
 class ServoController {
  private:
+  
   std::unordered_map<uint8_t, ServoRuntimeConfig> servo_db_;
+  i2c::INA219 current_measure_;
   std::shared_ptr<srp::i2c::PCA9685> driver_;
   std::unique_ptr<gpio::IGPIOController> gpio_;
   const ara::log::Logger& logger_;

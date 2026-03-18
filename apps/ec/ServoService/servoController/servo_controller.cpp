@@ -48,6 +48,8 @@ core::ErrorCode ServoController::Init(
     return core::ErrorCode::kInitializeError;
   }
 
+  current_measure_.InitDriver();
+
   auto config = LoadConfig(app_path + "etc/config.json");
   if (!config.has_value()) {
     logger_.LogError() << "ServoController.Init: unable to load servo configuration";
@@ -221,7 +223,6 @@ bool ServoController::ChangeConfigPosition(uint8_t actuator_id,
 core::ErrorCode ServoController::InitializeServosToDefault() {
   for (auto& entry : servo_db_) {
     auto& servo = entry.second;
-    EnsureTimingConsistency(&servo);
     if (AutoSetServoPosition(entry.first, entry.second.off_pos) !=
         core::ErrorCode::kOk) {
       logger_.LogWarn() << "ServoController.InitializeServosToDefault: failed to reset actuator " <<
@@ -229,6 +230,12 @@ core::ErrorCode ServoController::InitializeServosToDefault() {
       return core::ErrorCode::kError;
     }
     servo.last_state = kCloseState;
+    if (servo.measure_current_and_voltage) {
+      if (current_measure_.Initialize(servo.ina219_i2c_address) != core::ErrorCode::kOk) {
+        logger_.LogWarn() << "Failed to initialize Current Measure for actuator " <<
+                            std::to_string(static_cast<int>(entry.first));
+      }
+    }
   }
   logger_.LogInfo() << "ServoController.InitializeServosToDefault: all servos reset to default";
   return core::ErrorCode::kOk;
@@ -291,6 +298,14 @@ ServoController::LoadConfig(const std::string& file_path) {
     cfg.on_loosening = on_loosen_opt.value_or(cfg.on_pos);
     cfg.off_loosening = off_loosen_opt.value_or(cfg.off_pos);
     cfg.need_loosening = on_loosen_opt.has_value() && off_loosen_opt.has_value();
+
+    auto ina_address = servo_parser.GetNumber<uint8_t>("ina219_address");
+    if (ina_address.has_value()) {
+      cfg.measure_current_and_voltage = true;
+      cfg.ina219_i2c_address = ina_address.value();
+    } else {
+      cfg.measure_current_and_voltage = false;
+    }
 
     auto mosfet_id = servo_parser.GetNumber<uint8_t>("mosfet_id");
     if (mosfet_id.has_value()) {
