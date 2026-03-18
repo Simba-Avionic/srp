@@ -25,7 +25,7 @@ std::string Data_t::get_header() {
   return kCsv_header;
 }
 
-std::vector<uint8_t> Data_t::get_bytes() {
+std::vector<uint8_t> Data_t::get_bytes(const int64_t& timestamp) {
   std::vector<uint8_t> bytes;
   std::unique_lock<std::mutex> lock(this->mutex_);
 
@@ -33,6 +33,7 @@ std::vector<uint8_t> Data_t::get_bytes() {
     const uint8_t* ptr = reinterpret_cast<const uint8_t*>(&value);
     bytes.insert(bytes.end(), ptr, ptr + sizeof(value));
   };
+  append_bytes(timestamp);
   append_bytes(temp1);
   append_bytes(temp2);
   append_bytes(temp3);

@@ -58,7 +58,7 @@ void LoggerService::SaveLoop(const std::stop_token& token,
         core::condition::wait_for(std::chrono::milliseconds(kSave_interval), token);
         continue;
       }
-      if (!writer_.write(this->data.get_bytes())) {
+      if (!writer_.write(this->data.get_bytes(val.value()))) {
         ara::log::LogWarn() << "LoggerService::SaveLoop: Failed to write line";
       }
 
