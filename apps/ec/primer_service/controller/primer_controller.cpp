@@ -25,10 +25,9 @@ namespace srp {
 namespace primer {
 
 namespace {
-  const constexpr uint8_t kIgniter_pin_id = 1;
+  const constexpr uint8_t kIgniter_pin_id = 13;
   const constexpr uint16_t kIgniter_active_time = 1000;
   const constexpr uint8_t kOff_ignite = 0;
-  const constexpr uint8_t kIgniter_arm_pin_id = 8;
 }  // namespace
 
 PrimerController::PrimerController():
