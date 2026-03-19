@@ -82,7 +82,6 @@ void RadioApp::TransmittingLoop(const std::stop_token& token) {
     uint16_t len = mavlink_msg_to_send_buffer(buffer.data(), &msg);
 
     std::vector<uint8_t> actual_data(buffer.begin(), buffer.begin() + len);
-    mavl_logger.LogWarn() << "send bytes: " << actual_data;
     UartTxQueue.Push(actual_data);
   };
 
@@ -91,10 +90,6 @@ void RadioApp::TransmittingLoop(const std::stop_token& token) {
 
     // Heartbeat
     if (auto val = timestamp_.GetNewTimeStamp(); val.has_value()) {
-      auto computer_state = event_data->GetComputerState(BoardType_e::EB);
-      auto mav_comp_state = RocketStateToMavlinkState(computer_state);
-      ara::log::LogWarn() << " Send RocketState: " << core::rocketState::to_string(computer_state) <<
-            "and RocketStateMavlink: " << std::to_string(mav_comp_state);
       send([&] {
         mavlink_msg_simba_rocket_heartbeat_pack(kSystemId, kComponentId, &msg,
                   static_cast<uint64_t>(val.value()),
@@ -166,7 +161,7 @@ void RadioApp::OnActuatorCMD(const mavlink_message_t& msg) {
 
 void RadioApp::HBHangleActuators(const uint8_t values) {
   auto update_valve = [&](uint8_t gs_mask, uint8_t rocket_mask, const std::string& name, auto setter_func) {
-    bool requested = (values & gs_mask) != 0;
+    uint8_t requested = ((values & gs_mask) != 0);
     bool current = (event_data->GetActuatorStates() & rocket_mask) != 0;
 
     if (requested != current) {
@@ -174,12 +169,15 @@ void RadioApp::HBHangleActuators(const uint8_t values) {
         mavl_logger.LogWarn() << "Servo service handler not ready for " << name;
         return;
       }
-      mavl_logger.LogDebug() << "Changing " << name << " to " << (requested ? "ON" : "OFF");
+      mavl_logger.LogInfo() << "Changing " << name << " to " << (requested ? "ON" : "OFF");
+      event_data->SetActuatorState(static_cast<SIMBA_ACTUATOR_FLAGS>(rocket_mask), requested);
       setter_func(requested);
     }
   };
 
-  if (event_data->GetComputerState(BoardType_e::EB) == RocketState_t::ARM) {
+  // TOFIX OBEJSCIE NA STATIC PO KONKURSIE USUNAC FLIGHT JAKO DOZWOLONY
+  auto eb_state = event_data->GetComputerState(BoardType_e::EB);
+  if ( eb_state == RocketState_t::ARM || eb_state == RocketState_t::FLIGHT ) {
     update_valve(SIMBA_GS_VENT_VALVE, SIMBA_ROCKET_VENT_VALVE, "VENT_VALVE",
                   [&](uint8_t val) { servo_service_handler->SetVentServoValue(val); });
     update_valve(SIMBA_GS_DUMP_VALVE, SIMBA_ROCKET_DUMP_VALVE, "DUMP_VALVE",
@@ -500,7 +498,7 @@ void RadioApp::SomeIpInit() {
           if (!res.HasValue()) {
             return;
           }
-          someip_logger.LogError() << "Engine CurrentMode sample: "
+          someip_logger.LogDebug() << "Engine CurrentMode sample: "
                                << core::rocketState::to_string(static_cast<RocketState_t>(res.Value()));
           this->event_data->SetComputerState(BoardType_e::EB,
                                   static_cast<RocketState_t>(res.Value()));
@@ -512,7 +510,7 @@ void RadioApp::SomeIpInit() {
 RadioApp::~RadioApp() {
 }
 RadioApp::RadioApp():
-          mavl_logger{ara::log::LoggingMenager::GetInstance()->CreateLogger("MAVL", "", ara::log::LogLevel::kInfo)},
+          mavl_logger{ara::log::LoggingMenager::GetInstance()->CreateLogger("MAVL", "", ara::log::LogLevel::kWarn)},
           someip_logger{ara::log::LoggingMenager::GetInstance()->CreateLogger("SOME", "", ara::log::LogLevel::kWarn)},
           primer_service_proxy{ara::core::InstanceSpecifier{kPrimer_service_path_name}},
           primer_service_handler{nullptr},
