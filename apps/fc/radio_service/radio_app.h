@@ -66,6 +66,10 @@ class RadioApp : public ara::exec::AdaptiveApplication {
 
   core::timestamp::TimestampController timestamp_;
   void SomeIpInit();
+  void OnActuatorCMD(const mavlink_message_t& msg);
+  void HBHangleActuators(const uint8_t values);
+  void HBHangleState(const uint8_t values);
+  void OnGSHEARTBEAT(const mavlink_message_t& msg);
 
   std::optional<RocketState_t> GetReqRocketStateFromGSFlags(const uint8_t flags);
 

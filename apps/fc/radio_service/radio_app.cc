@@ -36,34 +36,34 @@ namespace {
   static constexpr auto kSystemId = 1;
   static constexpr auto kComponentId = 200;
   static constexpr auto kTime = 990;  // Should be 1 Hz but better make it 1.1Hz than 0.9 wchich can trigger error on GS
-
-    SIMBA_ROCKET_STATE RocketStateToMavlinkState(const core::rocketState::RocketState_t state) {
-        switch (state) {
-            case core::rocketState::RocketState_t::INIT:
-                return SIMBA_ROCKET_STATE_INIT;
-            case core::rocketState::RocketState_t::DISARM:
-                return SIMBA_ROCKET_STATE_DISARM;
-            case core::rocketState::RocketState_t::ARM:
-                return SIMBA_ROCKET_STATE_ARM;
-            case core::rocketState::RocketState_t::LAUNCH:
-                return SIMBA_ROCKET_STATE_LAUNCH;
-            case core::rocketState::RocketState_t::FLIGHT:
-                return SIMBA_ROCKET_STATE_FLIGHT;
-            case core::rocketState::RocketState_t::APOGEE:
-                return SIMBA_ROCKET_STATE_APOGEE;
-            case core::rocketState::RocketState_t::FIRST_PARACHUTE:
-                return SIMBA_ROCKET_STATE_FIRT_PARACHUTE_FALL;
-            case core::rocketState::RocketState_t::SECOND_PARACHUTE:
-                return SIMBA_ROCKET_STATE_SECOND_PARACHUTE_ACTIVATION;
-            case core::rocketState::RocketState_t::DROP:
-                return SIMBA_ROCKET_STATE_SECOND_PARACHUTE_FALL;
-            case core::rocketState::RocketState_t::ABORT:
-                return SIMBA_ROCKET_STATE_SIMBA_ROCKET_STATE_ABORT;
-            default:
-                return SIMBA_ROCKET_STATE_SIMBA_ROCKET_STATE_ABORT;
-        }
-    }
   using RocketState_t = core::rocketState::RocketState_t;
+
+  uint8_t RocketStateToMavlinkState(const RocketState_t state) {
+      switch (state) {
+          case RocketState_t::INIT:
+              return SIMBA_ROCKET_STATE_INIT;
+          case RocketState_t::DISARM:
+              return SIMBA_ROCKET_STATE_DISARM;
+          case RocketState_t::ARM:
+              return SIMBA_ROCKET_STATE_ARM;
+          case RocketState_t::LAUNCH:
+              return SIMBA_ROCKET_STATE_LAUNCH;
+          case RocketState_t::FLIGHT:
+              return SIMBA_ROCKET_STATE_FLIGHT;
+          case RocketState_t::APOGEE:
+              return SIMBA_ROCKET_STATE_APOGEE;
+          case RocketState_t::FIRST_PARACHUTE:
+              return SIMBA_ROCKET_STATE_FIRT_PARACHUTE_FALL;
+          case RocketState_t::SECOND_PARACHUTE:
+              return SIMBA_ROCKET_STATE_SECOND_PARACHUTE_ACTIVATION;
+          case RocketState_t::DROP:
+              return SIMBA_ROCKET_STATE_SECOND_PARACHUTE_FALL;
+          case RocketState_t::ABORT:
+              return SIMBA_ROCKET_STATE_SIMBA_ROCKET_STATE_ABORT;
+          default:
+              return SIMBA_ROCKET_STATE_SIMBA_ROCKET_STATE_ABORT;
+      }
+    }
 }  // namespace
 
 void RadioApp::TransmittingLoop(const std::stop_token& token) {
@@ -82,7 +82,7 @@ void RadioApp::TransmittingLoop(const std::stop_token& token) {
     uint16_t len = mavlink_msg_to_send_buffer(buffer.data(), &msg);
 
     std::vector<uint8_t> actual_data(buffer.begin(), buffer.begin() + len);
-    // mavl_logger.LogDebug() << "send bytes: " << actual_data;
+    mavl_logger.LogWarn() << "send bytes: " << actual_data;
     UartTxQueue.Push(actual_data);
   };
 
@@ -91,6 +91,10 @@ void RadioApp::TransmittingLoop(const std::stop_token& token) {
 
     // Heartbeat
     if (auto val = timestamp_.GetNewTimeStamp(); val.has_value()) {
+      auto computer_state = event_data->GetComputerState(BoardType_e::EB);
+      auto mav_comp_state = RocketStateToMavlinkState(computer_state);
+      ara::log::LogWarn() << " Send RocketState: " << core::rocketState::to_string(computer_state) <<
+            "and RocketStateMavlink: " << std::to_string(mav_comp_state);
       send([&] {
         mavlink_msg_simba_rocket_heartbeat_pack(kSystemId, kComponentId, &msg,
                   static_cast<uint64_t>(val.value()),
@@ -143,17 +147,84 @@ void RadioApp::TransmittingLoop(const std::stop_token& token) {
   }
 }
 std::optional<RocketState_t> RadioApp::GetReqRocketStateFromGSFlags(const uint8_t flags) {
-  static constexpr std::pair<uint8_t, core::rocketState::RocketState_t> gs_rocket_state_mapping[] = {
-      {SIMBA_GS_ABORT,  core::rocketState::RocketState_t::ABORT},
-      {SIMBA_GS_DISARM, core::rocketState::RocketState_t::DISARM},
-      {SIMBA_GS_ARM,    core::rocketState::RocketState_t::ARM},
-      {SIMBA_GS_LAUNCH, core::rocketState::RocketState_t::LAUNCH}
-  };
+  static constexpr std::pair<uint8_t, RocketState_t> gs_rocket_state_mapping[] = {
+      {SIMBA_GS_ABORT,  RocketState_t::ABORT},
+      {SIMBA_GS_LAUNCH, RocketState_t::LAUNCH},
+      {SIMBA_GS_ARM,    RocketState_t::ARM},
+      {SIMBA_GS_DISARM, RocketState_t::DISARM},
+    };
     for (const auto& [mask, state] : gs_rocket_state_mapping) {
         if ((flags & mask) != 0) return state;
     }
 
     return std::nullopt;
+}
+
+void RadioApp::OnActuatorCMD(const mavlink_message_t& msg) {
+  // TODO IMplement this maybe  
+}
+
+void RadioApp::HBHangleActuators(const uint8_t values) {
+  auto update_valve = [&](uint8_t gs_mask, uint8_t rocket_mask, const std::string& name, auto setter_func) {
+    bool requested = (values & gs_mask) != 0;
+    bool current = (event_data->GetActuatorStates() & rocket_mask) != 0;
+
+    if (requested != current) {
+      if (!servo_service_handler) {
+        mavl_logger.LogWarn() << "Servo service handler not ready for " << name;
+        return;
+      }
+      mavl_logger.LogDebug() << "Changing " << name << " to " << (requested ? "ON" : "OFF");
+      setter_func(requested);
+    }
+  };
+
+  if (event_data->GetComputerState(BoardType_e::EB) == RocketState_t::ARM) {
+    update_valve(SIMBA_GS_VENT_VALVE, SIMBA_ROCKET_VENT_VALVE, "VENT_VALVE",
+                  [&](uint8_t val) { servo_service_handler->SetVentServoValue(val); });
+    update_valve(SIMBA_GS_DUMP_VALVE, SIMBA_ROCKET_DUMP_VALVE, "DUMP_VALVE",
+                  [&](uint8_t val) { servo_service_handler->SetDumpValue(val); });
+  }
+
+  if (event_data->GetComputerState(BoardType_e::MB) == RocketState_t::ARM) {
+    // TODO(matikrajek42@gmail.com) Add missing Cameras handler
+  }
+}
+
+void RadioApp::HBHangleState(const uint8_t values) {
+  auto req_state = GetReqRocketStateFromGSFlags(values);
+  if (!req_state.has_value()) {
+    return;
+  }
+
+  auto current_mb = event_data->GetComputerState(BoardType_e::MB);
+  auto current_eb = event_data->GetComputerState(BoardType_e::EB);
+
+  if (req_state.value() != current_eb
+      // || req_state.value() != current_mb
+    ) {
+    if (engine_service_handler == nullptr) {
+      mavl_logger.LogWarn() << "Service handlers not ready in GS_HEARTBEAT (main/engine).";
+    } else {
+      mavl_logger.LogInfo() << "Changing rocket state to "
+                            + core::rocketState::to_string(req_state.value());
+        // main_service_handler->setMode(static_cast<uint8_t>(req_state.value()));
+        engine_service_handler->SetMode(static_cast<uint8_t>(req_state.value()));
+      
+    }
+  }
+}
+
+void RadioApp::OnGSHEARTBEAT(const mavlink_message_t& msg) {
+  auto timestamp = mavlink_msg_simba_gs_heartbeat_get_timestamp(&msg);
+  auto values = mavlink_msg_simba_gs_heartbeat_get_values(&msg);
+  mavl_logger.LogInfo() << "GS Heartbeat: ts="
+                      + std::to_string(static_cast<int64_t>(timestamp))
+                      + " flags=" + std::to_string(static_cast<int>(values));
+
+  HBHangleState(values);
+
+  HBHangleActuators(values);
 }
 
 void RadioApp::ListeningLoop(const std::stop_token& token) {
@@ -180,53 +251,11 @@ void RadioApp::ListeningLoop(const std::stop_token& token) {
                           + " len=" + std::to_string(msg.len);
       switch (msg.msgid) {
         case MAVLINK_MSG_ID_SIMBA_ACTUATOR_CMD:
-          // TODO(matikrajek42@gmail.com) Add support for CMD command
+          OnActuatorCMD(msg);
           break;
-        case MAVLINK_MSG_ID_SIMBA_GS_HEARTBEAT: {
-          auto timestamp = mavlink_msg_simba_gs_heartbeat_get_timestamp(&msg);
-          auto values = mavlink_msg_simba_gs_heartbeat_get_values(&msg);
-          mavl_logger.LogInfo() << "GS Heartbeat: ts="
-                              + std::to_string(static_cast<int64_t>(timestamp))
-                              + " flags=" + std::to_string(static_cast<int>(values));
-
-          auto req_state = GetReqRocketStateFromGSFlags(values);
-          if (req_state.has_value()) {
-            if (req_state.value() != event_data->GetComputerState(BoardType_e::EB) ||
-                    req_state.value() != event_data->GetComputerState(BoardType_e::MB) ) {
-                if (engine_service_handler == nullptr) {
-              // if (main_service_handler == nullptr || engine_service_handler == nullptr) {
-                mavl_logger.LogWarn() << "Service handlers not ready in GS_HEARTBEAT (main/engine).";
-              } else {
-                mavl_logger.LogInfo() << "Changing rocket state to "
-                                    + std::to_string(static_cast<int>(req_state.value()));
-                // main_service_handler->setMode(static_cast<uint8_t>(req_state.value()));
-                engine_service_handler->SetMode(static_cast<uint8_t>(req_state.value()));
-              }
-            }
-          }
-          auto update_valve = [&](uint8_t mask, const std::string& name, auto setter_func) {
-            bool requested = (values & mask) != 0;
-            bool current = (event_data->GetActuatorStates() & mask) != 0;
-
-            if (requested != current) {
-                if (!servo_service_handler) {
-                    mavl_logger.LogWarn() << "Servo service handler not ready for " << name;
-                    return;
-                }
-
-                mavl_logger.LogDebug() << "Changing " << name << " to " << (requested ? "ON" : "OFF");
-                setter_func(requested);
-            }
-          };
-          update_valve(SIMBA_GS_VENT_VALVE, "VENT_VALVE",
-                        [&](uint8_t val) { servo_service_handler->SetVentServoValue(val); });
-
-          update_valve(SIMBA_GS_DUMP_VALVE, "DUMP_VALVE",
-                        [&](uint8_t val) { servo_service_handler->SetDumpValue(val); });
-
-          // TODO(matikrajek42@gmail.com) Add missing Cameras handler
+        case MAVLINK_MSG_ID_SIMBA_GS_HEARTBEAT:
+          OnGSHEARTBEAT(msg);
           break;
-        }
         default:
           mavl_logger.LogInfo() << "Received unknown msg with ID: " <<
               std::to_string(msg.msgid) << ", with size: " << std::to_string(msg.len);
@@ -455,9 +484,9 @@ void RadioApp::SomeIpInit() {
             return;
           }
           someip_logger.LogDebug() << "Main CurrentModeStatusEvent sample: "
-                               + std::to_string(static_cast<int>(res.Value()));
+                               << core::rocketState::to_string(static_cast<RocketState_t>(res.Value()));;
           this->event_data->SetComputerState(BoardType_e::MB,
-                                  static_cast<core::rocketState::RocketState_t>(res.Value()));
+                                  static_cast<RocketState_t>(res.Value()));
         });
       });
     });
@@ -465,17 +494,16 @@ void RadioApp::SomeIpInit() {
       someip_logger.LogDebug() << "Engine service handler discovered";
       this->engine_service_handler = handler;
       engine_service_handler->CurrentMode.Subscribe(1, [this](const uint8_t status) {
-        someip_logger.LogDebug() << "Subscribed to Engine CurrentMode, status="
-                             + std::to_string(static_cast<int>(status));
+        someip_logger.LogDebug() << "Subscribed to Engine CurrentMode, status=" << std::to_string(status);
         engine_service_handler->CurrentMode.SetReceiveHandler([this] () {
           auto res = engine_service_handler->CurrentMode.GetNewSamples();
           if (!res.HasValue()) {
             return;
           }
-          someip_logger.LogDebug() << "Engine CurrentMode sample: "
-                               + std::to_string(static_cast<int>(res.Value()));
+          someip_logger.LogError() << "Engine CurrentMode sample: "
+                               << core::rocketState::to_string(static_cast<RocketState_t>(res.Value()));
           this->event_data->SetComputerState(BoardType_e::EB,
-                                  static_cast<core::rocketState::RocketState_t>(res.Value()));
+                                  static_cast<RocketState_t>(res.Value()));
         });
       });
     }));
@@ -484,8 +512,8 @@ void RadioApp::SomeIpInit() {
 RadioApp::~RadioApp() {
 }
 RadioApp::RadioApp():
-          mavl_logger{ara::log::LoggingMenager::GetInstance()->CreateLogger("MAVL", "", ara::log::LogLevel::kDebug)},
-          someip_logger{ara::log::LoggingMenager::GetInstance()->CreateLogger("SOME", "", ara::log::LogLevel::kDebug)},
+          mavl_logger{ara::log::LoggingMenager::GetInstance()->CreateLogger("MAVL", "", ara::log::LogLevel::kInfo)},
+          someip_logger{ara::log::LoggingMenager::GetInstance()->CreateLogger("SOME", "", ara::log::LogLevel::kWarn)},
           primer_service_proxy{ara::core::InstanceSpecifier{kPrimer_service_path_name}},
           primer_service_handler{nullptr},
           servo_service_proxy{ara::core::InstanceSpecifier{kServo_service_path_name}},

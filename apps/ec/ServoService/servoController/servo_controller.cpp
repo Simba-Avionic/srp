@@ -230,12 +230,12 @@ core::ErrorCode ServoController::InitializeServosToDefault() {
       return core::ErrorCode::kError;
     }
     servo.last_state = kCloseState;
-    if (servo.measure_current_and_voltage) {
-      if (current_measure_.Initialize(servo.ina219_i2c_address) != core::ErrorCode::kOk) {
-        logger_.LogWarn() << "Failed to initialize Current Measure for actuator " <<
-                            std::to_string(static_cast<int>(entry.first));
-      }
-    }
+    // if (servo.measure_current_and_voltage) {
+    //   if (current_measure_.Initialize(servo.ina219_i2c_address) != core::ErrorCode::kOk) {
+    //     logger_.LogWarn() << "Failed to initialize Current Measure for actuator " <<
+    //                         std::to_string(static_cast<int>(entry.first));
+    //   }
+    // }
   }
   logger_.LogInfo() << "ServoController.InitializeServosToDefault: all servos reset to default";
   return core::ErrorCode::kOk;
