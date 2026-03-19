@@ -54,7 +54,9 @@ class EventData {
     ThreadSafe<mavlink_simba_imu_t> imu_;
     ThreadSafe<mavlink_simba_max_altitude_t> max_altitude_;
     ThreadSafe<uint8_t> actuator_state_;
-    ThreadSafe<mavlink_simba_rocket_heartbeat_t> hb;
+
+    ThreadSafe<core::rocketState::RocketState_t> EBState_;
+    ThreadSafe<core::rocketState::RocketState_t> MBState_;
 
     ThreadSafe<std::array<int16_t, 3>> eb_temp_sensors_;
     ThreadSafe<std::array<int16_t, 3>> mb_temp_sensors_;
@@ -67,7 +69,7 @@ class EventData {
 
 
   uint8_t GetActuatorStates();
-  void SetActuatorState(const uint8_t actuator, const uint8_t state);
+  void SetActuatorState(const uint8_t actuator_mask, const uint8_t state);
 
   uint16_t GetTemp(const uint8_t index);
   void SetTemp(const uint8_t index, const int16_t res);

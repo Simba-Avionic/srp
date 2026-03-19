@@ -27,43 +27,39 @@ std::shared_ptr<EventData> EventData::GetInstance() {
 }
 
   core::rocketState::RocketState_t EventData::GetComputerState(const BoardType_e BoardType) {
-    core::rocketState::RocketState_t state;
     switch (BoardType) {
-    case BoardType_e::EB:
-        state = static_cast<core::rocketState::RocketState_t>(hb.get().engine_computer_state);
-        break;
-    case BoardType_e::MB:
-        state = static_cast<core::rocketState::RocketState_t>(hb.get().flight_computer_state);
-        break;
+      case BoardType_e::EB:
+        return EBState_.get();
+      case BoardType_e::MB:
+        return MBState_.get();
+      default:
+        return core::rocketState::RocketState_t::INIT;
     }
-    return state;
   }
 
   void EventData::SetComputerState(const BoardType_e BoardType, const core::rocketState::RocketState_t state) {
-    hb.update([&](auto& hb) {
-        switch (BoardType) {
-        case BoardType_e::EB:
-            hb.engine_computer_state = state;
-            break;
-        case BoardType_e::MB:
-            hb.flight_computer_state = state;
-            break;
-        default:
-            break;
-        }
-    });
+    switch (BoardType) {
+      case BoardType_e::EB:
+        EBState_.set(state);
+        break;
+      case BoardType_e::MB:
+        MBState_.set(state);
+        break;
+      default:
+        break;
+    }
   }
 
   uint8_t EventData::GetActuatorStates() {
     return actuator_state_.get();
   }
-  void EventData::SetActuatorState(const uint8_t actuator, const uint8_t state) {
+  void EventData::SetActuatorState(const uint8_t actuator_mask, const uint8_t state) {
     actuator_state_.update([&](uint8_t& current_mask) {
-        if (state) {
-            current_mask |= (1 << actuator);
-        } else {
-            current_mask &= ~(1 << actuator);
-        }
+      if (state) {
+        current_mask |= actuator_mask;
+      } else {
+        current_mask &= static_cast<uint8_t>(~actuator_mask);
+      }
     });
   }
 
