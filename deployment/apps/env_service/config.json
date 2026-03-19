@@ -2,13 +2,13 @@
   "sensors": [
     {
       "sensor_id": 10,
-      "channel":2,
+      "channel":0,
       "a":  41.66667,
       "b": -23.98677
     },
     {
       "sensor_id": 11,
-      "channel":0,
+      "channel":1,
       "a":  41.66667,
       "b": -23.98677
     },
