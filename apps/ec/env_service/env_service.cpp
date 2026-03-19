@@ -28,7 +28,7 @@ namespace {
     constexpr uint8_t D_PRESS_SENSOR_ID = 11;
     constexpr uint8_t PRESS_SENSOR_SAMPLING = 1;
     constexpr auto kPressureDelayMs = 100;
-    constexpr auto kDifferentialPressureDelayMs = 1;
+    constexpr auto kDifferentialPressureDelayMs = 2;
 }  // namespace
 
 
@@ -155,7 +155,9 @@ void EnvService::GenericPressureLoop(
 
             uint16_t encodedVal = static_cast<uint16_t>(val * 100);
             eventIpc.Update(encodedVal);
-            eventUdp.Update(encodedVal);
+            if (sensorId == PRESS_SENSOR_ID) {
+                eventUdp.Update(encodedVal);
+            }
         } else {
             ara::log::LogWarn() << "Don't receive new " << label;
         }
@@ -211,27 +213,27 @@ void EnvService::TempRxCallback(const std::vector<srp::mw::temp::TempReadHdr>& d
         static const std::unordered_map<std::string, UpdateFn> eventMap = {
             {"sensor_temp_1", [this](int16_t v) {
                 service_ipc.newTempEvent_1.Update(v);
-                service_udp.newTempEvent_1.Update(v);
+                // service_udp.newTempEvent_1.Update(v);
             }},
             {"sensor_temp_2", [this](int16_t v) {
                 service_ipc.newTempEvent_2.Update(v);
-                service_udp.newTempEvent_2.Update(v);
+                // service_udp.newTempEvent_2.Update(v);
             }},
             {"sensor_temp_3", [this](int16_t v) {
                 service_ipc.newTempEvent_3.Update(v);
-                service_udp.newTempEvent_3.Update(v);
+                // service_udp.newTempEvent_3.Update(v);
             }},
             {"board_1",       [this](int16_t v) {
                 service_ipc.newBoardTempEvent1.Update(v);
-                service_udp.newBoardTempEvent1.Update(v);
+                // service_udp.newBoardTempEvent1.Update(v);
             }},
             {"board_2",       [this](int16_t v) {
                 service_ipc.newBoardTempEvent2.Update(v);
-                service_udp.newBoardTempEvent2.Update(v);
+                // service_udp.newBoardTempEvent2.Update(v);
             }},
             {"board_3",       [this](int16_t v) {
                 service_ipc.newBoardTempEvent3.Update(v);
-                service_udp.newBoardTempEvent3.Update(v);
+                // service_udp.newBoardTempEvent3.Update(v);
             }}
         };
 

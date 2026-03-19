@@ -7,6 +7,7 @@ cc_library(
         "//core/json:simba_json",
         "//mw/gpio_server/controller:gpio_controller",
         "//mw/i2c_service/controller/pca9685:pca9685_controller",
+        "//mw/i2c_service/controller/ina219:ina219_controller",
         "@srp_platform//ara/log",
     ],
     visibility = [

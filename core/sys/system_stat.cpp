@@ -26,7 +26,8 @@ namespace core {
 namespace stat {
 
 namespace {
-    constexpr auto kMemInfoPath = "/proc/meminfo";
+    static constexpr auto kMemInfoPath = "/proc/meminfo";
+    static constexpr auto kCPU_THREADS = 1;
 }
 
 namespace fs = std::filesystem;
@@ -44,26 +45,23 @@ std::optional<float> SystemStats::get_ram_usage() {
     int64_t total = 0, available = 0;
 
     while (std::getline(file, line)) {
-        if (line.compare(0, 8, "MemTotal") == 0) {
+        if (line.find("MemTotal:") == 0) {
             sscanf(line.c_str(), "MemTotal: %ld kB", &total);
-        } else if (line.compare(0, 12, "MemAvailable") == 0) {
+        } else if (line.find("MemAvailable:") == 0) {
             sscanf(line.c_str(), "MemAvailable: %ld kB", &available);
         }
-        if (total == 0 && available == 0) {
-            return std::nullopt;
-        }
     }
-    float ram_usage = 100.0f * static_cast<float>(total - available) / static_cast<float>(total);
-    ram_usage = static_cast<float>(ram_usage);
-    return ram_usage;
+    if (total <= 0) return std::nullopt;
+
+    return 100.0f * static_cast<float>(total - available) / static_cast<float>(total);
 }
 
 std::optional<double> SystemStats::get_cpu_usage() {
     double load[1];
-    if (getloadavg(load, 1) <= 0) {
-        return std::nullopt;
-    }
-    return load[0] * 25;
+    if (getloadavg(load, 1) <= 0) return std::nullopt;
+
+    double usage = load[0] * 100.0 / kCPU_THREADS;
+    return (usage > 100.0) ? 100.0 : usage;
 }
 
 }  // namespace stat
