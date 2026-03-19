@@ -35,7 +35,7 @@ class I2CService final : public ara::exec::AdaptiveApplication {
       std::unique_ptr<srp::com::soc::ISocketStream> socket);
   std::vector<uint8_t> RxCallback(const std::string& ip,
                                   const std::uint16_t& port,
-                                  const std::vector<std::uint8_t> data);
+                                  const std::vector<std::uint8_t>& data);
   std::optional<std::vector<uint8_t>> ReadWrite(
       const std::vector<uint8_t>& payload,
       std::shared_ptr<i2c::Header> headerPtr);

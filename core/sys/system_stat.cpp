@@ -52,7 +52,7 @@ std::optional<float> SystemStats::get_ram_usage() {
         }
     }
     if (total <= 0) return std::nullopt;
-    
+
     return 100.0f * static_cast<float>(total - available) / static_cast<float>(total);
 }
 
@@ -61,7 +61,7 @@ std::optional<double> SystemStats::get_cpu_usage() {
     if (getloadavg(load, 1) <= 0) return std::nullopt;
 
     double usage = load[0] * 100.0 / kCPU_THREADS;
-    return (usage > 100.0) ? 100.0 : usage; 
+    return (usage > 100.0) ? 100.0 : usage;
 }
 
 }  // namespace stat

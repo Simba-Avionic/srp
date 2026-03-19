@@ -13,6 +13,7 @@
 #include "apps/ec/logger_service/data_type.hpp"
 #include <sstream>
 #include <iomanip>
+#include <cstring>
 namespace srp {
 namespace logger {
 
@@ -26,22 +27,54 @@ std::string Data_t::get_header() {
 }
 
 std::vector<uint8_t> Data_t::get_bytes(const int64_t& timestamp) {
-  std::vector<uint8_t> bytes;
-  std::unique_lock<std::mutex> lock(this->mutex_);
+  tempType temp1_local;
+  tempType temp2_local;
+  tempType temp3_local;
+  pressType tank_press_local;
+  dPressType tank_d_press_local;
+  apps::SysStatType sys_status_local;
 
-  auto append_bytes = [&bytes](auto& value) {
+  {
+    std::unique_lock<std::mutex> lock(this->mutex_);
+    temp1_local = temp1;
+    temp2_local = temp2;
+    temp3_local = temp3;
+    tank_press_local = tank_press;
+    tank_d_press_local = tank_d_press;
+    sys_status_local = sys_status;
+  }
+
+  constexpr std::size_t kTotalSize =
+      sizeof(timestamp) +
+      sizeof(temp1_local) +
+      sizeof(temp2_local) +
+      sizeof(temp3_local) +
+      sizeof(tank_press_local) +
+      sizeof(tank_d_press_local) +
+      sizeof(sys_status_local.cpu_usage) +
+      sizeof(sys_status_local.mem_usage) +
+      sizeof(sys_status_local.disk_utilization);
+
+  std::vector<uint8_t> bytes;
+  bytes.resize(kTotalSize);
+
+  auto append_bytes = [&bytes](std::size_t& offset, const auto& value) {
+    const std::size_t size = sizeof(value);
     const uint8_t* ptr = reinterpret_cast<const uint8_t*>(&value);
-    bytes.insert(bytes.end(), ptr, ptr + sizeof(value));
+    std::memcpy(bytes.data() + offset, ptr, size);
+    offset += size;
   };
-  append_bytes(timestamp);
-  append_bytes(temp1);
-  append_bytes(temp2);
-  append_bytes(temp3);
-  append_bytes(tank_press);
-  append_bytes(tank_d_press);
-  append_bytes(sys_status.cpu_usage);
-  append_bytes(sys_status.mem_usage);
-  append_bytes(sys_status.disk_utilization);
+
+  std::size_t offset = 0U;
+  append_bytes(offset, timestamp);
+  append_bytes(offset, temp1_local);
+  append_bytes(offset, temp2_local);
+  append_bytes(offset, temp3_local);
+  append_bytes(offset, tank_press_local);
+  append_bytes(offset, tank_d_press_local);
+  append_bytes(offset, sys_status_local.cpu_usage);
+  append_bytes(offset, sys_status_local.mem_usage);
+  append_bytes(offset, sys_status_local.disk_utilization);
 
   return bytes;
 }

@@ -97,32 +97,28 @@ void StreamIpcSocket::Loop(std::stop_token stoken) {
     return;
   }
   listen(server_sock, 1);
-  while (true) {
-    std::array<char, 256 * 2> buffer;
-    int clen = sizeof(client_addr);
-    client_socket = accept(server_sock, (sockaddr*)&client_addr,  // NOLINT
-                           (socklen_t*)&clen);                    // NOLINT
-    if (client_socket < 0) {
-      break;
-    }
-    bytes_rec = read(client_socket, reinterpret_cast<char*>(&buffer), 256 * 2);
 
-    if (bytes_rec > 0) {
-      if (this->callback_) {
-        if (buffer.size() > 0) {
-          auto res = this->callback_(
-              "IPC", 0,
-              std::vector<uint8_t>{buffer.begin(), buffer.begin() + bytes_rec});
-          std::ignore = write(client_socket, res.data(), res.size());
+    std::vector<uint8_t> rx_buffer;
+    rx_buffer.reserve(1024);
+
+    while (!stoken.stop_requested()) {
+        int client_socket = accept(server_sock, nullptr, nullptr);
+        if (client_socket < 0) {
+            if (errno == EINTR) continue;
+            break;
         }
-      }
+
+        std::array<uint8_t, 4096> stack_buffer;
+        ssize_t received = read(client_socket, stack_buffer.data(), stack_buffer.size());
+
+        if (received > 0 && this->callback_) {
+            auto response = this->callback_("IPC", 0, {stack_buffer.begin(), stack_buffer.begin() + received});
+            if (!response.empty()) {
+                write(client_socket, response.data(), response.size());
+            }
+        }
+        close(client_socket);
     }
-    close(client_socket);
-    if (stoken.stop_requested()) {
-      break;
-    }
-  }
-  // close(server_sock);
 }
 void StreamIpcSocket::StopRXThread() {
   this->rx_thred->request_stop();

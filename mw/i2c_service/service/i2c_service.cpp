@@ -37,7 +37,6 @@ core::ErrorCode I2CService::Init(std::shared_ptr<core::i2c::II2CDriver> i2c,
 
 std::optional<std::vector<uint8_t>> I2CService::ReadWrite(
                   const std::vector<uint8_t> &payload, std::shared_ptr<i2c::Header> headerPtr) {
-  i2c_logger_.LogDebug() << ("Receive READ request");
   if (payload.size()%2 != 0) {
     i2c_logger_.LogWarn() << ("Invalid payload size");
     return std::nullopt;
@@ -50,7 +49,6 @@ std::optional<std::vector<uint8_t>> I2CService::WriteRead(const std::vector<uint
    *  size data to read (uint8_t)
    *  data to write (0-255B)
    */
-  i2c_logger_.LogDebug() << ("Receive Write Read request");
   if (payload.size() != 2) {
     return std::nullopt;
   }
@@ -100,12 +98,12 @@ std::vector<uint8_t> I2CService::ActionLogic(const std::shared_ptr<srp::i2c::Hea
 
 
 std::vector<uint8_t> I2CService::RxCallback(const std::string& ip, const std::uint16_t& port,
-                                         const std::vector<std::uint8_t> data) {
-    std::unique_lock<std::mutex> lock(this->i2c_mtx);
+                                         const std::vector<std::uint8_t>& data) {
     auto headerPtr = i2c::I2CFactory::GetHeader(data);
     if (!headerPtr) {
       return {};
     }
+    std::unique_lock<std::mutex> lock(this->i2c_mtx);
     if (this->i2c_->Ioctl(headerPtr->GetAddress()) != core::ErrorCode::kOk) {
       return {};
     }

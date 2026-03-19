@@ -52,7 +52,6 @@ struct ServoRuntimeConfig {
 
 class ServoController {
  private:
-  
   std::unordered_map<uint8_t, ServoRuntimeConfig> servo_db_;
   i2c::INA219 current_measure_;
   std::shared_ptr<srp::i2c::PCA9685> driver_;

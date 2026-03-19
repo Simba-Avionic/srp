@@ -24,7 +24,7 @@ namespace logger {
 namespace {
   constexpr std::string kloger_filename = "_log.bin";
   constexpr std::string kloger_filename_prefix = "/home/root/";
-  constexpr uint16_t kSave_interval = 1;
+  constexpr uint16_t kSave_interval = 2;
   constexpr auto kEnv_service_path_name = "srp/apps/FileLoggerApp/EnvApp";
   constexpr auto kUdp_service_path_name = "srp/apps/FileLoggerApp/logService_udp";
   constexpr auto kIpc_service_path_name = "srp/apps/FileLoggerApp/logService_ipc";
@@ -58,14 +58,16 @@ void LoggerService::SaveLoop(const std::stop_token& token,
         core::condition::wait_for(std::chrono::milliseconds(kSave_interval), token);
         continue;
       }
-      if (!writer_.write(this->data.get_bytes(val.value()))) {
+      if (!writer_.write(this->data.get_bytes(val.value()), false)) {
         ara::log::LogWarn() << "LoggerService::SaveLoop: Failed to write line";
       }
 
       const auto now = std::chrono::high_resolution_clock::now();
       const auto elapsed = std::chrono::duration_cast<
                   std::chrono::milliseconds>(now - start).count();
-      core::condition::wait_for(std::chrono::milliseconds(kSave_interval - elapsed), token);
+      if (elapsed < kSave_interval) {
+        core::condition::wait_for(std::chrono::milliseconds(kSave_interval - elapsed), token);
+      }
     }
   } catch (...) {
     writer_.close();
@@ -82,7 +84,6 @@ int LoggerService::Run(const std::stop_token& token) {
   while (!token.stop_requested()) {
     service_ipc->LoggingState.Update(save_state);
     service_udp->LoggingState.Update(save_state);
-    ara::log::LogDebug() << "logging state: " << save_state;
     core::condition::wait_for(std::chrono::milliseconds(1000), token);
   }
   service_ipc->StopOffer();
