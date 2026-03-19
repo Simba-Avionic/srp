@@ -14,27 +14,27 @@
                 "logger": {
                     "app_id": "STAT",
                     "app_des": "",
-                    "log_level": "kInfo",
+                    "log_level": "kWarn",
                     "log_mode": "kRemote",
                     "ctx": [
                         {
                             "ctx_id": "ara",
-                            "log_level": "kInfo",
+                            "log_level": "kWarn",
                             "ctx_des": "Default ctx for ara"
                         },
                         {
                             "ctx_id": "acom",
-                            "log_level": "kInfo",
+                            "log_level": "kWarn",
                             "ctx_des": "Default ctx for ara::com"
                         },
                         {
                             "ctx_id": "adiag",
-                            "log_level": "kInfo",
+                            "log_level": "kWarn",
                             "ctx_des": "Default ctx for ara::diag"
                         },
                         {
                             "ctx_id": "exec",
-                            "log_level": "kInfo",
+                            "log_level": "kWarn",
                             "ctx_des": "Default ctx for ara::exec"
                         }
                     ]
