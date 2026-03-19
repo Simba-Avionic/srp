@@ -34,7 +34,7 @@ class EnvServiceFc final : public ara::exec::AdaptiveApplication {
 
   std::unordered_map<std::uint8_t, std::pair<std::string, std::string>> sensorIdsToPaths{};
   // [sensor_id] = {name, physical_id}
-  
+
   env::EnvAppFcSkeleton service_ipc;
   env::EnvAppFcSkeleton service_udp;
   int LoadTempConfig(
@@ -56,7 +56,7 @@ class EnvServiceFc final : public ara::exec::AdaptiveApplication {
    */
   int Initialize(const std::map<ara::core::StringView, ara::core::StringView>
                       parms) override;
-                      
+
 
 
  public:

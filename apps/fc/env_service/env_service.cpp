@@ -24,10 +24,10 @@ namespace srp {
 namespace envServiceFc {
 
 namespace {
-    static constexpr auto kBME280_delay_ms = 100; // ms
+    static constexpr auto kBME280_delay_ms = 100;  // ms
     static constexpr auto kService_instance_path_ipc = "srp/env/EnvAppFc/envServiceFc_ipc";
     static constexpr auto kService_instance_path_udp = "srp/env/EnvAppFc/envServiceFc_udp";
-} // namespace
+}  // namespace
 
 EnvServiceFc::EnvServiceFc(): service_ipc(ara::core::InstanceSpecifier{kService_instance_path_ipc}),
                   service_udp(ara::core::InstanceSpecifier{kService_instance_path_udp}) {
@@ -137,7 +137,8 @@ int EnvServiceFc::Run(const std::stop_token& token) {
         auto tempValue = this->bme->getTemperature();
         auto humValue = this->bme->getHumidity();
         if (pressValue.has_value() && tempValue.has_value() && humValue.has_value()) {
-            ara::log::LogDebug() << "Receive new Pressure: " << pressValue.value() << " temp: " << tempValue.value() << " hum: " << humValue.value();
+            ara::log::LogDebug() << "Receive new Pressure: " << pressValue.value()
+            << " temp: " << tempValue.value() << " hum: " << humValue.value();
             this->service_ipc.newBME280Event.Update({tempValue.value(), humValue.value(), pressValue.value()});
             this->service_udp.newBME280Event.Update({tempValue.value(), humValue.value(), pressValue.value()});
         } else {

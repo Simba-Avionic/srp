@@ -183,7 +183,6 @@ std::optional<float> BME280::getPressure() {
 }
 
 std::optional<float> BME280::getHumidity() {
-    
     auto outputData = readOutputData();
 
     auto humidityRawData = extractMeasurementField(outputData, 0, 16);
