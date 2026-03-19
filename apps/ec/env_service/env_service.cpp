@@ -203,13 +203,18 @@ int EnvService::Run(const std::stop_token& token) {
                 ara::log::LogDebug() << "Receive new tenso val: " << ss.str();
 
                 service_ipc.newTensoEvent.Update(pressValue.value());
-                service_udp.newTensoEvent.Update(pressValue.value());
+                // service_udp.newTensoEvent.Update(pressValue.value());
             } else {
                 ara::log::LogWarn() << "Don't receive new tenso";
             }
 
             auto end = std::chrono::high_resolution_clock::now();
             auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+            ara::log::LogDebug() <<"tenso loop taken: " << std::to_string(duration.count()) << "ms";
+
+            if (duration < std::chrono::milliseconds(kTensoDelayMs)) {
+                core::condition::wait_for(std::chrono::milliseconds(kTensoDelayMs) - duration, token);
+            }
         }
     });
     core::condition::wait(token);
