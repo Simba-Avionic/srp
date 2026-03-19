@@ -92,8 +92,12 @@ core::ErrorCode ServoController::AutoSetServoPosition(uint8_t actuator_id,
 }
 
 void ServoController::ExecuteServoMovement(const uint8_t actuator_id, const uint8_t state) {
-  std::lock_guard<std::mutex> lock(servo_operation_mutex_);
-
+  if (!(state == 0 || state == 1)) {
+    ara::log::LogError() << "Cant move to state: " << state;
+    return;
+  }
+  std::unique_lock<std::mutex> lock(servo_operation_mutex_);
+  ara::log::LogWarn() << "Execute move for id: " << actuator_id << " to state: " << state;
   auto it = servo_db_.find(actuator_id);
   if (it == servo_db_.end()) {
     logger_.LogWarn() << "ServoController.ExecuteServoMovement: unknown actuator " <<
@@ -107,7 +111,7 @@ void ServoController::ExecuteServoMovement(const uint8_t actuator_id, const uint
       return;
     }
   }
-
+  servo.last_state = state;
   if (servo.need_mosfet) {
     if (gpio_->SetPinValue(servo.mosfet_id, kOpenState) != core::ErrorCode::kOk) {
       logger_.LogError() << "ServoController.ExecuteServoMovement: failed to enable MOSFET " <<
@@ -118,7 +122,7 @@ void ServoController::ExecuteServoMovement(const uint8_t actuator_id, const uint
 
   if (servo.need_mosfet) {
     std::this_thread::sleep_for(
-        std::chrono::milliseconds(servo.timing.mosfet_power_on_delay_ms));
+        std::chrono::milliseconds(1));
   }
 
   const uint16_t target_position =
@@ -130,26 +134,26 @@ void ServoController::ExecuteServoMovement(const uint8_t actuator_id, const uint
     return;
   }
 
-  if (servo.need_loosening) {
-    std::this_thread::sleep_for(
-        std::chrono::milliseconds(servo.timing.loosening_delay_ms));
-    const uint16_t loosening_position =
-        (state == kOpenState) ? servo.on_loosening : servo.off_loosening;
-    if (driver_->SetChannelPosition(servo.channel, loosening_position) !=
-        core::ErrorCode::kOk) {
-      logger_.LogWarn() << "ServoController.ExecuteServoMovement: failed to set loosening PWM for actuator " <<
-                            std::to_string(static_cast<int>(actuator_id));
-      return;
-    }
-  }
+  // if (servo.need_loosening) {
+  //   std::this_thread::sleep_for(
+  //       std::chrono::milliseconds(servo.timing.loosening_delay_ms));
+  //   const uint16_t loosening_position =
+  //       (state == kOpenState) ? servo.on_loosening : servo.off_loosening;
+  //   if (driver_->SetChannelPosition(servo.channel, loosening_position) !=
+  //       core::ErrorCode::kOk) {
+  //     logger_.LogWarn() << "ServoController.ExecuteServoMovement: failed to set loosening PWM for actuator " <<
+  //                           std::to_string(static_cast<int>(actuator_id));
+  //     return;
+  //   }
+  // }
 
   if (servo.need_mosfet) {
-    auto hold_time = servo.timing.servo_move_time_ms;
-    if (servo.need_loosening &&
-        hold_time < servo.timing.loosening_delay_ms) {
-      hold_time = servo.timing.loosening_delay_ms;
-    }
-    std::this_thread::sleep_for(std::chrono::milliseconds(hold_time));
+    // auto hold_time = servo.timing.servo_move_time_ms;
+    // if (servo.need_loosening &&
+    //     hold_time < servo.timing.loosening_delay_ms) {
+    //   hold_time = servo.timing.loosening_delay_ms;
+    // }
+    std::this_thread::sleep_for(std::chrono::milliseconds(2000));
     if (gpio_->SetPinValue(servo.mosfet_id, kCloseState) !=
         core::ErrorCode::kOk) {
       logger_.LogWarn() << "ServoController.ExecuteServoMovement: failed to disable MOSFET " <<
@@ -223,7 +227,7 @@ bool ServoController::ChangeConfigPosition(uint8_t actuator_id,
 core::ErrorCode ServoController::InitializeServosToDefault() {
   for (auto& entry : servo_db_) {
     auto& servo = entry.second;
-    if (AutoSetServoPosition(entry.first, entry.second.off_pos) !=
+    if (AutoSetServoPosition(entry.first, kCloseState) !=
         core::ErrorCode::kOk) {
       logger_.LogWarn() << "ServoController.InitializeServosToDefault: failed to reset actuator " <<
                             std::to_string(static_cast<int>(entry.first));
