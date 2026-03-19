@@ -23,16 +23,53 @@ namespace rocketState {
 
 enum RocketState_t: uint8_t {
     INIT = 0,
-    DISARM,
-    ARM,
-    LAUNCH,
-    FLIGHT,
-    APOGEE,
-    FIRST_PARACHUTE,
-    SECOND_PARACHUTE,
-    DROP,
+    DISARM = 1,
+    ARM = 2,
+    LAUNCH = 3,
+    FLIGHT = 4 ,
+    APOGEE = 5,
+    FIRST_PARACHUTE = 6,
+    SECOND_PARACHUTE = 7,
+    DROP = 8,
     ABORT = 64,
 };
+
+static std::string to_string(const RocketState_t state) {
+    std::string res;
+    switch (state)
+    {
+    case RocketState_t::INIT:
+        res = "INIT";
+        break;
+    case RocketState_t::DISARM:
+        res = "DISARM";
+        break;
+    case RocketState_t::ARM:
+        res = "ARM";
+        break;
+    case RocketState_t::LAUNCH:
+        res = "LAUNCH";
+        break;
+    case RocketState_t::FLIGHT:
+        res = "FLIGHT";
+        break;
+    case RocketState_t::APOGEE:
+        res = "APOGEE";
+        break;
+    case RocketState_t::FIRST_PARACHUTE:
+        res = "FIRST_PARACHUTE";
+        break;
+    case RocketState_t::SECOND_PARACHUTE:
+        res = "SECOND_PARACHUTE";
+        break;
+    case RocketState_t::ABORT:
+        res = "ABORT";
+        break;
+    default:
+        break;
+    }
+    return res;
+}
 
 using StateCallback = std::function<void()>;
 using ChangeRequestCallback = std::function<bool(RocketState_t new_state)>;
