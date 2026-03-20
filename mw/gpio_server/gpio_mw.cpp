@@ -16,6 +16,7 @@
 #include <iostream>
 #include <utility>
 #include <sstream>
+#include<algorithm>
 
 #include "gpio_mw.hpp"
 #include "srp/mw/gpio/GpioHdr.h"
@@ -69,17 +70,31 @@ std::vector<uint8_t> GPIOMWService::RxCallback(const std::string& ip, const std:
                 return {core::ErrorCode::kError};
             }
             ara::log::LogDebug() << ("Change pin with ID:" + std::to_string(it->first) +
-                                        ", to value:" + std::to_string(hdr.value().value) + "for: " + std::to_string(hdr.value().time_period) + "s"); 
-            if (hdr.value().time_period != 0){
-                std::lock_guard<std::mutex> lock(pin_expire_mutex);
-                timepoint expire_time =  std::chrono::milliseconds(hdr.value().value) + std::chrono::high_resolution_clock::now();
+                                        ", to value:" + std::to_string(hdr.value().value) +
+                                          "for: " + std::to_string(hdr.value().time_period) + "s");
+            if (hdr.value().value == 0) {
+                return {core::ErrorCode::kOk};
+            }
+            auto current_state = this->gpio_driver_->getValue(it->second.pinNum);
+            {
+            std::lock_guard<std::mutex> lock(pin_expire_mutex);
+            if ( hdr.value().time_period != 0 ) {
+                auto duration = std::chrono::milliseconds(hdr.value().time_period);
+                timepoint expire_time = std::chrono::high_resolution_clock::now() + duration;
                 auto it = pin_expire.find(hdr.value().pin_id);
-                if (it == pin_expire.end()){
-                    pin_expire.emplace(hdr.value().pin_id, expire_time);
-                }
-                else{
+                if (it == pin_expire.end()) {
+                    if (current_state != 1) {
+                        pin_expire.emplace(hdr.value().pin_id, expire_time);
+                    }
+                } else {
                     it->second = std::max(expire_time, it->second);
-                } 
+                }
+            } else {
+                auto it = pin_expire.find(hdr.value().pin_id);
+                if (it != pin_expire.end()) {
+                    pin_expire.erase(it);
+                }
+            }
             }
             return {core::ErrorCode::kOk};
         }
@@ -178,7 +193,7 @@ GPIOMWService::~GPIOMWService() {
     this->sock_->~ISocketStream();
 }
 
-void GPIOMWService::CheckPinsExpired(){
+void GPIOMWService::CheckPinsExpired() {
     auto now = std::chrono::high_resolution_clock::now();
     std::lock_guard<std::mutex> lock(pin_expire_mutex);
     for (auto it = pin_expire.begin(); it != pin_expire.end(); ) {
@@ -197,7 +212,7 @@ int GPIOMWService::Run(const std::stop_token& token) {
             CheckPinsExpired();
             core::condition::wait_for(std::chrono::milliseconds(AUTO_DISABLE_PIN_DELAY), token);
         }
-    }); 
+    });
     pin_did_ = std::make_unique<GpioMWDID>(this->did_instance, this->gpio_driver_, config);
     pin_did_->Offer();
     this->sock_->StartRXThread();

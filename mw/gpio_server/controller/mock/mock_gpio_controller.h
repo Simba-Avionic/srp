@@ -17,8 +17,13 @@ namespace srp {
 namespace mock {
 class MOCKGPIOController : public gpio::IGPIOController {
  public:
-  MOCK_METHOD(core::ErrorCode, SetPinValue, (uint8_t actuatorID, int8_t value), (override));
-  MOCK_METHOD(std::optional<int8_t>, GetPinValue, (uint8_t actuatorID), (override));
+  MOCK_METHOD(core::ErrorCode, SetPinValue,
+              (uint8_t actuatorID, int8_t value, uint16_t active_time),
+              (override));
+
+  MOCK_METHOD(std::optional<int8_t>, GetPinValue,
+              (uint8_t actuatorID),
+              (override));
 };
 }  // namespace mock
 }  // namespace srp
