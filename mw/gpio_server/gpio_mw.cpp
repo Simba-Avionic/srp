@@ -70,17 +70,19 @@ std::vector<uint8_t> GPIOMWService::RxCallback(const std::string& ip, const std:
             }
             ara::log::LogDebug() << ("Change pin with ID:" + std::to_string(it->first) +
                                         ", to value:" + std::to_string(hdr.value().value) + "for: " + std::to_string(hdr.value().time_period) + "s");
-            auto current_state = this->gpio_driver_->getValue(it->second.pinNum);
             if (hdr.value().value == 0){
                 return {core::ErrorCode::kOk};
             }
+            auto current_state = this->gpio_driver_->getValue(it->second.pinNum);
             {
             std::lock_guard<std::mutex> lock(pin_expire_mutex);
-            if (hdr.value().time_period != 0 && current_state == 0){
-                timepoint expire_time =  std::chrono::milliseconds(hdr.value().value) + std::chrono::high_resolution_clock::now();
+            if (hdr.value().time_period != 0){
+                timepoint expire_time =  std::chrono::milliseconds(hdr.value().time_period) + std::chrono::high_resolution_clock::now();
                 auto it = pin_expire.find(hdr.value().pin_id);
                 if (it == pin_expire.end()){
-                    pin_expire.emplace(hdr.value().pin_id, expire_time);
+                    if (current_state != 1 ){
+                        pin_expire.emplace(hdr.value().pin_id, expire_time);
+                    }
                 }
                 else{
                     it->second = std::max(expire_time, it->second);
