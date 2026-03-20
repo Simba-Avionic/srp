@@ -43,7 +43,7 @@ class GPIOController : public IGPIOController{
     ~GPIOController();
     GPIOController(): sock_(std::make_unique<com::soc::StreamIpcSocket>()) {}
     explicit GPIOController(std::unique_ptr<srp::com::soc::ISocketStream> socket);
-    core::ErrorCode SetPinValue(uint8_t actuatorID, int8_t value) override;
+    core::ErrorCode SetPinValue(uint8_t actuatorID, int8_t value, const uint16_t active_time = 0) override;
     std::optional<int8_t> GetPinValue(uint8_t actuatorID) override;
 
     // optional for clearing callback
