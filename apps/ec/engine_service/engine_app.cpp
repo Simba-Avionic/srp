@@ -29,7 +29,7 @@ namespace {
   static constexpr auto kEngine_path_name = "srp/apps/EngineService/EngineService_ipc";
   static constexpr auto kEngine_udp_path_name = "srp/apps/EngineService/EngineService_udp";
   static constexpr auto kInit_max_intervals = 20;
-  static constexpr auto kPrimerDelay = 1000;
+  static constexpr auto kPrimerDelay = 1500;
   static constexpr auto kPin_off = 0;
   static constexpr auto kPin_on = 1;
   static constexpr auto kHeartBeatPinID = 3;
@@ -93,6 +93,7 @@ int EngineApp::Run(const std::stop_token& token) {
 
 int EngineApp::Initialize(const std::map<ara::core::StringView, ara::core::StringView>
                       parms) {
+  std::this_thread::sleep_for(std::chrono::seconds(5));
   if (parms.find("app_path") == parms.end()) {
       return 1;
   }
@@ -210,8 +211,10 @@ void EngineApp::OnApogee() {
 }
 
 void EngineApp::OnAbort() {
-  servo_handler_->SetDumpValue(1);
-  servo_handler_->SetVentServoValue(1);
+  if (servo_handler_ != nullptr) {
+    servo_handler_->SetDumpValue(1);
+    servo_handler_->SetVentServoValue(1);
+  }
   std::this_thread::sleep_for(std::chrono::seconds(3));
   for (const ArmPinConfig_t& pin : arm_pins_id) {
     if (!(pin.name == "Vent Servo Power" || pin.name == "Dump Valve Servo Power")) {

@@ -14,7 +14,7 @@
                 "logger": {
                     "app_id": "STAT",
                     "app_des": "",
-                    "log_level": "kWarn",
+                    "log_level": "kInfo",
                     "log_mode": "kRemote",
                     "ctx": [
                         {

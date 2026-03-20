@@ -12,7 +12,7 @@
         {
         "actuator_id":61,
         "channel": 0,
-        "on_pos" : 255,
+        "on_pos" : 300,
         "off_pos" : 102,
         "mosfet_id" : 16,
         "desc": "J12, VENT VALVE, off: 102 - on: 404, calculate open % by changing on pos",

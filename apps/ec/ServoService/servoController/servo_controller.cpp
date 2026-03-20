@@ -85,9 +85,7 @@ core::ErrorCode ServoController::AutoSetServoPosition(uint8_t actuator_id,
   auto& servo = it->second;
   servo.last_state = state;
 
-  std::thread([this, actuator_id, state]() {
-    this->ExecuteServoMovement(actuator_id, state);
-  }).detach();
+  this->ExecuteServoMovement(actuator_id, state);
   return core::ErrorCode::kOk;
 }
 
@@ -113,18 +111,12 @@ void ServoController::ExecuteServoMovement(const uint8_t actuator_id, const uint
   }
   servo.last_state = state;
   if (servo.need_mosfet) {
-    if (gpio_->SetPinValue(servo.mosfet_id, kOpenState) != core::ErrorCode::kOk) {
+    if (gpio_->SetPinValue(servo.mosfet_id, kOpenState, 2000) != core::ErrorCode::kOk) {
       logger_.LogError() << "ServoController.ExecuteServoMovement: failed to enable MOSFET " <<
                              std::to_string(static_cast<int>(servo.mosfet_id));
       return;
     }
   }
-
-  if (servo.need_mosfet) {
-    std::this_thread::sleep_for(
-        std::chrono::milliseconds(1));
-  }
-
   const uint16_t target_position =
       (state == kOpenState) ? servo.on_pos : servo.off_pos;
   if (driver_->SetChannelPosition(servo.channel, target_position) !=
@@ -146,20 +138,6 @@ void ServoController::ExecuteServoMovement(const uint8_t actuator_id, const uint
   //     return;
   //   }
   // }
-
-  if (servo.need_mosfet) {
-    // auto hold_time = servo.timing.servo_move_time_ms;
-    // if (servo.need_loosening &&
-    //     hold_time < servo.timing.loosening_delay_ms) {
-    //   hold_time = servo.timing.loosening_delay_ms;
-    // }
-    std::this_thread::sleep_for(std::chrono::milliseconds(2000));
-    if (gpio_->SetPinValue(servo.mosfet_id, kCloseState) !=
-        core::ErrorCode::kOk) {
-      logger_.LogWarn() << "ServoController.ExecuteServoMovement: failed to disable MOSFET " <<
-                            std::to_string(static_cast<int>(servo.mosfet_id));
-    }
-  }
 }
 
 std::optional<uint8_t> ServoController::ReadServoPosition(uint8_t actuator_id) {

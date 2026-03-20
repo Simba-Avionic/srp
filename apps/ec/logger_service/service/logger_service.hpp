@@ -17,6 +17,7 @@
 #include <map>
 #include <memory>
 #include <mutex>  // NOLINT
+#include <atomic>
 
 #include "ara/exec/adaptive_application.h"
 #include "srp/env/EnvApp/EnvAppHandler.h"
@@ -41,7 +42,7 @@ class LoggerService final : public ara::exec::AdaptiveApplication {
   const ara::core::InstanceSpecifier did_instance;
   std::shared_ptr<core::timestamp::TimestampController> timestamp_;
 
-  uint8_t save_state;
+  std::atomic<uint8_t> save_state{0};
 
   std::shared_ptr<std::jthread> save_thread_;
   void SaveLoop(const std::stop_token& token, std::shared_ptr<core::timestamp::TimestampController> timestamp);
