@@ -16,6 +16,7 @@
 #include <memory>
 #include <unordered_map>
 #include <functional>
+#include <string>
 
 namespace srp {
 namespace core {
@@ -36,8 +37,7 @@ enum RocketState_t: uint8_t {
 
 static std::string to_string(const RocketState_t state) {
     std::string res;
-    switch (state)
-    {
+    switch (state) {
     case RocketState_t::INIT:
         res = "INIT";
         break;

@@ -1,12 +1,12 @@
 // /**
 //  * @file event_data_test.cc
 //  * @author Mateusz Krajewski (matikrajek42@gmail.com)
-//  * @brief 
+//  * @brief
 //  * @version 0.1
 //  * @date 2025-04-26
-//  * 
+//  *
 //  * @copyright Copyright (c) 2025
-//  * 
+//  *
 //  */
 // #include "gtest/gtest.h"
 // #include "apps/fc/radio_service/event_data.h"

@@ -27,13 +27,19 @@
 #include "mw/gpio_server/gpio_mw_did.h"
 #include "ara/log/log.h"
 
+using timepoint = std::chrono::_V2::system_clock::time_point;
 typedef uint8_t CallbackId;
 typedef uint8_t PinId;
 
 namespace srp {
 namespace mw {
-    constexpr std::chrono::milliseconds STATE_POLL_DELAY = std::chrono::milliseconds(100);
-    using timepoint = std::chrono::_V2::system_clock::time_point;
+
+struct ExpiredPinCB {
+    timepoint disable_tp;
+    bool infinite_active;
+};
+
+
 class GPIOMWService : public ara::exec::AdaptiveApplication {
  protected:
     std::unique_ptr<GpioMWDID> pin_did_;
@@ -41,7 +47,7 @@ class GPIOMWService : public ara::exec::AdaptiveApplication {
     std::unique_ptr<srp::com::soc::ISocketStream> sock_;
     std::shared_ptr<core::gpio::IGpioDriver> gpio_driver_;
     std::unordered_map<uint8_t, GpioConf> config;
-    std::unordered_map<PinId, timepoint> pin_expire;
+    std::unordered_map<PinId, ExpiredPinCB> pin_expire;
     std::unordered_map<PinId, uint8_t> subscribed_pins_states;
     std::unordered_map<PinId, std::vector<CallbackId>> callbacks;
     uint8_t next_controller_id = 1;  // indeces start from 1

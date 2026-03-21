@@ -74,14 +74,12 @@ EngineApp::EngineApp():
 }
 
 int EngineApp::Run(const std::stop_token& token) {
-  bool pinState = 0;
   while (!token.stop_requested()) {
-    pinState = !pinState;
-    gpio_.SetPinValue(kHeartBeatPinID, (pinState) ? kPin_on : kPin_off);
+    gpio_.SetPinValue(kHeartBeatPinID, kPin_on, 1000);
     auto state = state_ctr->GetState();
     service_ipc.CurrentMode.Update(static_cast<uint8_t>(state));
     // service_udp.CurrentMode.Update(static_cast<uint8_t>(state));
-    core::condition::wait_for(std::chrono::seconds(1), token);
+    core::condition::wait_for(std::chrono::seconds(2), token);
   }
 
   service_ipc.StopOffer();

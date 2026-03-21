@@ -133,7 +133,7 @@ void RadioApp::TransmittingLoop(const std::stop_token& token) {
 
     auto end = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-  
+
     // Zabezpieczenie przed ujemnym czasem czekania
     auto sleep_time = std::chrono::milliseconds(kTime) - duration;
     if (sleep_time > std::chrono::milliseconds(0)) {
@@ -156,7 +156,7 @@ std::optional<RocketState_t> RadioApp::GetReqRocketStateFromGSFlags(const uint8_
 }
 
 void RadioApp::OnActuatorCMD(const mavlink_message_t& msg) {
-  // TODO IMplement this maybe  
+  // TODO(matikrajek42@gmail.com) IMplement this maybe
 }
 
 void RadioApp::HBHangleActuators(const uint8_t values) {
@@ -190,6 +190,7 @@ void RadioApp::HBHangleActuators(const uint8_t values) {
 }
 
 void RadioApp::HBHangleState(const uint8_t values) {
+  // TODO(matikrajek42@gmail.com) Dodać obsługę MB
   auto req_state = GetReqRocketStateFromGSFlags(values);
   if (!req_state.has_value()) {
     return;
@@ -208,7 +209,6 @@ void RadioApp::HBHangleState(const uint8_t values) {
                             + core::rocketState::to_string(req_state.value());
         // main_service_handler->setMode(static_cast<uint8_t>(req_state.value()));
         engine_service_handler->SetMode(static_cast<uint8_t>(req_state.value()));
-      
     }
   }
 }

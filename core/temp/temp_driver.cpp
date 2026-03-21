@@ -42,15 +42,17 @@ ara::core::Result<double> TempDriver::ReadTemp(const std::string& sensorPhysical
     std::string line;
     std::getline(file, line);
     try {
-        const double value = static_cast<double>(std::stoi(line)) / 1000.0;
-        ara::log::LogDebug() << "Read from ID: " << sensorPhysicalID << ", temp: " << std::to_string(value);
+        const double value = std::stod(line) / 1000.0;
+        if (value == 85.0 || value == -127.0) {
+            ara::log::LogWarn() << "Sensor " << sensorPhysicalID << " returned power-on reset value (85C)";
+        }
         return value;
-    } catch (const std::invalid_argument& e) {
-        ara::log::LogWarn() << "Invalid temperature data for sensor " << sensorPhysicalID;
-        return ara::com::MakeErrorCode(
-            ara::com::ComErrc::kErroneousFileHandle, "Invalid temperature data");
+    } catch (const std::exception& e) {
+        ara::log::LogWarn() << "Conversion error for sensor " << sensorPhysicalID << ": " << e.what();
+        return ara::com::MakeErrorCode(ara::com::ComErrc::kErroneousFileHandle, "Parsing error");
     }
 }
+
 
 ara::core::Result<bool> TempDriver::SetResolution(const std::string& sensorPhysicalID, uint8_t resolution) {
     std::ofstream file(kSensorPath + sensorPhysicalID + "/resolution");
