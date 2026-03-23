@@ -19,7 +19,7 @@ using namespace srp::core;  // NOLINT
 TEST(WaitQueueTest, GetNoWait) {
     auto queue = std::make_shared<WaitQueue<int, 10>>();
     std::stop_source source;
-    queue->push(10);
+    queue->Push(10);
     auto res = queue->Get(source.get_token());
     EXPECT_TRUE(queue->IsEmpty());
     EXPECT_TRUE(res.has_value());
@@ -29,7 +29,7 @@ TEST(WaitQueueTest, GetNoWait) {
 TEST(WaitQueueTest, GetWithoutRemoveNoWait) {
     auto queue = std::make_shared<WaitQueue<int, 10>>();
     std::stop_source source;
-    queue->push(10);
+    queue->Push(10);
     auto res = queue->GetWithoutRemove(source.get_token());
     EXPECT_FALSE(queue->IsEmpty());
     EXPECT_TRUE(res.has_value());
@@ -40,7 +40,7 @@ TEST(WaitQueueTest, GetWithoutRemoveWait) {
     std::stop_source source;
     std::jthread thread([queue](){
         std::this_thread::sleep_for(std::chrono::milliseconds(200));
-        queue->push(10);
+        queue->Push(10);
     });
     auto res = queue->GetWithoutRemove(source.get_token());
     thread.join();
@@ -68,7 +68,7 @@ TEST(WaitQueueTest, PushAndIsEmpty) {
     WaitQueue<int, 10> queue;
     EXPECT_TRUE(queue.IsEmpty());
 
-    queue.push(42);
+    queue.Push(42);
     EXPECT_FALSE(queue.IsEmpty());
 }
 
@@ -76,20 +76,20 @@ TEST(WaitQueueTest, PushWithMaxSize) {
     constexpr uint16_t max_size = 3;
     WaitQueue<int, max_size> queue;
 
-    EXPECT_TRUE(queue.push(1));
-    EXPECT_TRUE(queue.push(2));
-    EXPECT_TRUE(queue.push(3));
+    EXPECT_TRUE(queue.Push(1));
+    EXPECT_TRUE(queue.Push(2));
+    EXPECT_TRUE(queue.Push(3));
 
     // Kolejka osiągnęła maksymalny rozmiar, dodanie kolejnego elementu powoduje usunięcie najstarszego
-    EXPECT_FALSE(queue.push(4));
+    EXPECT_FALSE(queue.Push(4));
 
     EXPECT_FALSE(queue.IsEmpty());
 }
 
 TEST(WaitQueueTest, GetRemovesElement) {
     WaitQueue<int> queue;
-    queue.push(10);
-    queue.push(20);
+    queue.Push(10);
+    queue.Push(20);
 
     EXPECT_EQ(queue.Get(), 10);
     EXPECT_EQ(queue.Get(), 20);
@@ -97,15 +97,15 @@ TEST(WaitQueueTest, GetRemovesElement) {
 }
 TEST(WaitQueueTest, GetElement) {
     WaitQueue<int> queue;
-    queue.push(10);
-    queue.push(20);
+    queue.Push(10);
+    queue.Push(20);
     EXPECT_EQ(queue.Get(), 10);
     EXPECT_FALSE(queue.IsEmpty());
 }
 
 TEST(WaitQueueTest, GetWithoutRemoveDoesNotRemoveElement) {
     WaitQueue<int> queue;
-    queue.push(10);
+    queue.Push(10);
 
     EXPECT_EQ(queue.GetWithoutRemove(), 10);
     EXPECT_FALSE(queue.IsEmpty());
@@ -118,7 +118,7 @@ TEST(WaitQueueTest, GetBlocksUntilElementAvailable) {
 
     std::thread producer([&]() {
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
-        queue.push(42);
+        queue.Push(42);
     });
 
     EXPECT_EQ(queue.Get(), 42);
@@ -144,7 +144,7 @@ TEST(WaitQueueTest, GetWithoutRemoveBlocksUntilElementAvailable) {
 
     std::thread producer([&]() {
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
-        queue.push(99);
+        queue.Push(99);
     });
 
     EXPECT_EQ(queue.GetWithoutRemove(), 99);
@@ -157,8 +157,8 @@ TEST(WaitQueueTest, GetWithoutRemoveBlocksUntilElementAvailable) {
 
 TEST(WaitQueueTest, RemoveRemovesElement) {
     WaitQueue<int> queue;
-    queue.push(1);
-    queue.push(2);
+    queue.Push(1);
+    queue.Push(2);
 
     queue.Remove();
     EXPECT_EQ(queue.Get(), 2);

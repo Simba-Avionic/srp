@@ -14,6 +14,7 @@
 
 #include <memory>
 #include <mutex>  // NOLINT
+#include <vector>
 #include <map>
 
 #include "ara/exec/adaptive_application.h"
@@ -28,8 +29,9 @@
 #include "srp/apps/RecoveryService/RecoveryServiceHandler.h"
 #include "core/timestamp/timestamp_driver.hpp"
 #include "srp/apps/RadioServiceSkeleton.h"
-#include "core/uart/uart_driver.hpp"
+#include "apps/fc/radio_service/mavlink_uart_driver.hpp"
 #include "ara/log/logging_menager.h"
+#include "core/common/wait_queue.h"
 
 namespace srp {
 namespace apps {
@@ -38,6 +40,9 @@ class RadioApp : public ara::exec::AdaptiveApplication {
 
  private:
   const ara::log::Logger& mavl_logger;
+  const ara::log::Logger& someip_logger;
+
+  core::WaitQueue<std::vector<uint8_t>, 20> UartTxQueue;
 
   PrimerServiceProxy primer_service_proxy;
   std::shared_ptr<PrimerServiceHandler> primer_service_handler;
@@ -57,18 +62,18 @@ class RadioApp : public ara::exec::AdaptiveApplication {
   std::unique_ptr<apps::RadioServiceSkeleton> service_ipc;
   std::unique_ptr<apps::RadioServiceSkeleton> service_udp;
 
-  std::unique_ptr<core::uart::IUartDriver> uart_;
-  std::mutex uart_mutex_;
+  core::uart::MavUartDriver uart_;
 
-  std::unique_ptr<core::timestamp::ITimestampController> timestamp_;
+  core::timestamp::TimestampController timestamp_;
   void SomeIpInit();
+  void OnActuatorCMD(const mavlink_message_t& msg);
+  void HBHangleActuators(const uint8_t values);
+  void HBHangleState(const uint8_t values);
+  void OnGSHEARTBEAT(const mavlink_message_t& msg);
 
   std::optional<RocketState_t> GetReqRocketStateFromGSFlags(const uint8_t flags);
 
  protected:
-  void InitUart(std::unique_ptr<core::uart::IUartDriver> uart);
-  void InitTimestamp(std::unique_ptr<core::timestamp::ITimestampController> timestamp);
-
   void TransmittingLoop(const std::stop_token& token);
   void ListeningLoop(const std::stop_token& token);
   std::shared_ptr<EventData> event_data;

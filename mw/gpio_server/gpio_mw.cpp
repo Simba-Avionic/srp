@@ -34,6 +34,7 @@ namespace {
     constexpr auto SOCKET_PATH = "SRP.GPIO";
     constexpr auto CALLBACK_PATH_PREFIX = "SRP.GPIO.";
     constexpr auto AUTO_DISABLE_PIN_DELAY = 100;
+    constexpr auto STATE_POLL_DELAY = std::chrono::milliseconds(100);
 }
 
 int GPIOMWService::Init(std::unique_ptr<srp::com::soc::ISocketStream> socket,
@@ -75,26 +76,25 @@ std::vector<uint8_t> GPIOMWService::RxCallback(const std::string& ip, const std:
             if (hdr.value().value == 0) {
                 return {core::ErrorCode::kOk};
             }
-            auto current_state = this->gpio_driver_->getValue(it->second.pinNum);
-            {
-            std::lock_guard<std::mutex> lock(pin_expire_mutex);
-            if ( hdr.value().time_period != 0 ) {
-                auto duration = std::chrono::milliseconds(hdr.value().time_period);
-                timepoint expire_time = std::chrono::high_resolution_clock::now() + duration;
-                auto it = pin_expire.find(hdr.value().pin_id);
-                if (it == pin_expire.end()) {
-                    if (current_state != 1) {
-                        pin_expire.emplace(hdr.value().pin_id, expire_time);
-                    }
+            auto it = pin_expire.find(hdr.value().pin_id);
+            if (it == pin_expire.end()) {
+                ExpiredPinCB cfg;
+                if (hdr.value().time_period == 0) {
+                    cfg.infinite_active = true;
                 } else {
-                    it->second = std::max(expire_time, it->second);
+                    cfg.infinite_active = false;
+                    cfg.disable_tp = std::chrono::high_resolution_clock::now()
+                                        + std::chrono::milliseconds(hdr.value().time_period);
                 }
+                pin_expire[hdr.value().pin_id] =  cfg;
             } else {
-                auto it = pin_expire.find(hdr.value().pin_id);
-                if (it != pin_expire.end()) {
-                    pin_expire.erase(it);
+                if (hdr.value().time_period == 0) {
+                    it->second.infinite_active = true;
+                } else {
+                    auto new_time = std::chrono::high_resolution_clock::now()
+                                        + std::chrono::milliseconds(hdr.value().time_period);
+                    it->second.disable_tp = std::max(it->second.disable_tp, new_time);
                 }
-            }
             }
             return {core::ErrorCode::kOk};
         }
@@ -105,9 +105,6 @@ std::vector<uint8_t> GPIOMWService::RxCallback(const std::string& ip, const std:
             return srp::data::Convert2Vector<srp::mw::gpio::GpioHdr>::Conv(hdr2);
         }
 
-        // subscriptions and unsubscriptions have different return values
-        // 0 means failure, any other value is success
-        // additionally, in case of subscription, the return value is the controller ID
         case srp::gpio::ACTION::SUBSCRIBE: {
             auto controller_id = hdr.value().value;
             auto pin_id = hdr.value().pin_id;
@@ -196,13 +193,26 @@ GPIOMWService::~GPIOMWService() {
 void GPIOMWService::CheckPinsExpired() {
     auto now = std::chrono::high_resolution_clock::now();
     std::lock_guard<std::mutex> lock(pin_expire_mutex);
+
     for (auto it = pin_expire.begin(); it != pin_expire.end(); ) {
-        if (now > it->second) {
-            gpio_driver_->setValue(it->first, 0);
-            it = pin_expire.erase(it);
-        } else {
+        if (it->second.infinite_active) {
             ++it;
+            continue;
         }
+        if (now < it->second.disable_tp) {
+            ++it;
+            continue;
+        }
+
+        const uint8_t pin_id = it->first;
+        auto pin_config = config.find(pin_id);
+        if (pin_config == config.end()) {
+            ++it;
+            continue;
+        }
+
+        gpio_driver_->setValue(pin_config->second.pinNum, 0);
+        it = pin_expire.erase(it);
     }
 }
 

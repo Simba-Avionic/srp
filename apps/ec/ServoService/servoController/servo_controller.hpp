@@ -30,7 +30,7 @@ namespace service {
 
 
 struct ServoTimingConfig {
-  uint16_t mosfet_power_on_delay_ms{50};
+  uint16_t mosfet_power_on_delay_ms{1};
   uint16_t servo_move_time_ms{400};
   uint16_t loosening_delay_ms{50};
 };

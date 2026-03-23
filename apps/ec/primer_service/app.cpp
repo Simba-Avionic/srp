@@ -27,8 +27,8 @@ namespace {
 
 int PrimerService::Run(const std::stop_token& token) {
   while (!token.stop_requested()) {
-    service_ipc.primeStatusEvent.Update(0);
-    service_udp.primeStatusEvent.Update(0);
+    service_ipc.primeStatusEvent.Update(controller->GetPrimerState());
+    service_udp.primeStatusEvent.Update(controller->GetPrimerState());
     core::condition::wait_for(std::chrono::milliseconds(kEvent_interval_ms), token);
   }
   service_ipc.StopOffer();

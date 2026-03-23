@@ -29,7 +29,7 @@ namespace {
   static constexpr auto kEngine_path_name = "srp/apps/EngineService/EngineService_ipc";
   static constexpr auto kEngine_udp_path_name = "srp/apps/EngineService/EngineService_udp";
   static constexpr auto kInit_max_intervals = 20;
-  static constexpr auto kPrimerDelay = 1000;
+  static constexpr auto kPrimerDelay = 1500;
   static constexpr auto kPin_off = 0;
   static constexpr auto kPin_on = 1;
   static constexpr auto kHeartBeatPinID = 3;
@@ -74,11 +74,12 @@ EngineApp::EngineApp():
 }
 
 int EngineApp::Run(const std::stop_token& token) {
-  bool pinState = 0;
   while (!token.stop_requested()) {
-    pinState = !pinState;
-    gpio_.SetPinValue(kHeartBeatPinID, (pinState) ? kPin_on : kPin_off);
-    core::condition::wait_for(std::chrono::seconds(1), token);
+    gpio_.SetPinValue(kHeartBeatPinID, kPin_on, 1000);
+    auto state = state_ctr->GetState();
+    service_ipc.CurrentMode.Update(static_cast<uint8_t>(state));
+    // service_udp.CurrentMode.Update(static_cast<uint8_t>(state));
+    core::condition::wait_for(std::chrono::seconds(2), token);
   }
 
   service_ipc.StopOffer();
@@ -90,6 +91,7 @@ int EngineApp::Run(const std::stop_token& token) {
 
 int EngineApp::Initialize(const std::map<ara::core::StringView, ara::core::StringView>
                       parms) {
+  std::this_thread::sleep_for(std::chrono::seconds(5));
   if (parms.find("app_path") == parms.end()) {
       return 1;
   }
@@ -99,7 +101,6 @@ int EngineApp::Initialize(const std::map<ara::core::StringView, ara::core::Strin
     return 1;
   }
   this->arm_pins_id = std::move(arm_pins.value());
-
   state_ctr = core::rocketState::RocketStateController::GetInstance();
   state_ctr->RegisterRequirementsCallback([this](core::rocketState::RocketState_t state) {
     switch (state) {
@@ -208,18 +209,13 @@ void EngineApp::OnApogee() {
 }
 
 void EngineApp::OnAbort() {
-  for (const ArmPinConfig_t& pin : arm_pins_id) {
-    if (pin.name == "Vent Servo Power" || pin.name == "Dump Valve Servo Power") {
-      if (gpio_.SetPinValue(pin.pin_id, kPin_on) != core::ErrorCode::kOk) {
-        ara::log::LogError() << "cant arm pin: " << pin.name;
-      }
-    }
+  if (servo_handler_ != nullptr) {
+    servo_handler_->SetDumpValue(1);
+    servo_handler_->SetVentServoValue(1);
   }
-  servo_handler_->SetDumpValue(1);
-  servo_handler_->SetVentServoValue(1);
-  std::this_thread::sleep_for(std::chrono::seconds(2));
+  std::this_thread::sleep_for(std::chrono::seconds(3));
   for (const ArmPinConfig_t& pin : arm_pins_id) {
-    if (pin.name == "Vent Servo Power" || pin.name == "Dump Valve Servo Power") {
+    if (!(pin.name == "Vent Servo Power" || pin.name == "Dump Valve Servo Power")) {
       if (gpio_.SetPinValue(pin.pin_id, kPin_off) != core::ErrorCode::kOk) {
         ara::log::LogError() << "cant disarm pin: " << pin.name;
       }

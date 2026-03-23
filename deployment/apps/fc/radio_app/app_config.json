@@ -25,6 +25,11 @@
                     "log_mode": "kRemote",
                     "ctx": [
                         {
+                            "ctx_id": "MAVL",
+                            "log_level": "kInfo",
+                            "ctx_des": "Logs From mavlink"
+                        },
+                        {
                             "ctx_id": "ara",
                             "log_level": "kInfo",
                             "ctx_des": "Default ctx for ara"
@@ -63,9 +68,8 @@
             "require": [
                 {
                     "name": "srp.env.EnvApp as EnvApp",
-                    "on": "udp",
-                    "port": "10001",
-                    "instance": 1
+                    "on": "ipc",
+                    "instance": 2
                 },
                 {
                     "name": "srp.apps.GPSService as GPSService",
@@ -74,14 +78,12 @@
                 },
                 {
                     "name": "srp.apps.PrimerService as PrimerService",
-                    "on": "udp",
-                    "port": "10002",
-                    "instance": 1
+                    "on": "ipc",
+                    "instance": 2
                 },
                 {
                     "name": "srp.apps.ServoService as ServoService",
-                    "on": "udp",
-                    "port": "10001",
+                    "on": "ipc",
                     "instance": 2
                 },
                 {
@@ -96,9 +98,8 @@
                 },
                 {
                     "name": "srp.apps.EngineService as EngineService",
-                    "on": "udp",
-                    "instance": 1,
-                    "port": "10002"
+                    "on": "ipc",
+                    "instance": 2
                 }
             ]
         }

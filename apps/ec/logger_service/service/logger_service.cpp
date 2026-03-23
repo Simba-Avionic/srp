@@ -14,7 +14,7 @@
 #include "core/common/condition.h"
 #include "ara/log/log.h"
 #include "core/time/sys_time.hpp"
-#include "core/binary_file_writer/writer.hpp"
+#include "core/csvdriver/csvdriver.h"
 #include "apps/ec/logger_service/service/logger_builder.hpp"
 
 
@@ -22,9 +22,9 @@ namespace srp {
 namespace logger {
 
 namespace {
-  constexpr std::string kloger_filename = "_log.bin";
+  constexpr std::string kloger_filename = "_log.csv";
   constexpr std::string kloger_filename_prefix = "/home/root/";
-  constexpr uint16_t kSave_interval = 2;
+  constexpr uint16_t kSave_interval = 5;
   constexpr auto kEnv_service_path_name = "srp/apps/FileLoggerApp/EnvApp";
   constexpr auto kUdp_service_path_name = "srp/apps/FileLoggerApp/logService_udp";
   constexpr auto kIpc_service_path_name = "srp/apps/FileLoggerApp/logService_ipc";
@@ -37,28 +37,29 @@ namespace {
 
 void LoggerService::SaveLoop(const std::stop_token& token,
             std::shared_ptr<core::timestamp::TimestampController> timestamp) {
-  core::binaryWriter::BinaryFileWriter writer_;
+  csv::CSVDriver writer_;
+  writer_.Init(std::make_unique<core::FileHandler>());
 
   auto prefix = core::time::TimeChanger::ReadSystemTimeAsString();
   std::string filename;
   filename = kloger_filename_prefix + prefix.value_or("") + kloger_filename;
 
-  if (!writer_.open(filename)) {
+  if (writer_.Open(filename, data.get_header()) != 0) {
     ara::log::LogError() << "LoggerService::SaveLoop: Failed to open file: " << filename;
     return;
   }
 
   ara::log::LogInfo() << "LoggerService::SaveLoop: Started logging to " << filename;
-  save_state = kLogs_on;
+  save_state.store(kLogs_on);
+
   try {
     while (!token.stop_requested()) {
       const auto start = std::chrono::high_resolution_clock::now();
       auto val = timestamp->GetNewTimeStamp();
       if (!val.has_value()) {
-        core::condition::wait_for(std::chrono::milliseconds(kSave_interval), token);
         continue;
       }
-      if (!writer_.write(this->data.get_bytes(val.value()), false)) {
+      if (writer_.WriteLine(this->data.to_string(std::to_string(val.value()))) != 0) {
         ara::log::LogWarn() << "LoggerService::SaveLoop: Failed to write line";
       }
 
@@ -70,20 +71,20 @@ void LoggerService::SaveLoop(const std::stop_token& token,
       }
     }
   } catch (...) {
-    writer_.close();
-    save_state = kLogs_off;
+    writer_.Close();
+    save_state.store(kLogs_off);
     ara::log::LogFatal() << "LoggerService::SaveLoop: Stopped logging due to Fatal error";
   }
 
-  writer_.close();
-  save_state = kLogs_off;
+  writer_.Close();
+  save_state.store(kLogs_off);
   ara::log::LogInfo() << "LoggerService::SaveLoop: Stopped logging, file closed";
 }
 
 int LoggerService::Run(const std::stop_token& token) {
   while (!token.stop_requested()) {
-    service_ipc->LoggingState.Update(save_state);
-    service_udp->LoggingState.Update(save_state);
+    service_ipc->LoggingState.Update(save_state.load());
+    service_udp->LoggingState.Update(save_state.load());
     core::condition::wait_for(std::chrono::milliseconds(1000), token);
   }
   service_ipc->StopOffer();
@@ -126,6 +127,8 @@ LoggerService::LoggerService():
 }
 
 void LoggerService::start_func_handler(const std::uint8_t status) {
+  ara::log::LogWarn() << "LoggerService::start_func_handler: status=" << static_cast<unsigned>(status)
+                      << " save_thread_=" << (this->save_thread_ ? "set" : "null");
   if (status == 1 && !this->save_thread_) {
     this->save_thread_ = std::make_shared<std::jthread>(
       [this](std::stop_token token) {
@@ -199,6 +202,15 @@ void LoggerService::SomeIpInit() {
           return;
         }
         this->data.SetTankPress(res.Value());
+      });
+    });
+    env_service_handler->newTensoEvent.Subscribe(1, [this](const uint8_t status) {
+      env_service_handler->newTensoEvent.SetReceiveHandler([this] () {
+        auto res = env_service_handler->newTensoEvent.GetNewSamples();
+        if (!res.HasValue()) {
+          return;
+        }
+        this->data.SetTenso(res.Value());
       });
     });
   });

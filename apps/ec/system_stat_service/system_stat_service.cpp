@@ -56,12 +56,12 @@ int SystemStatService::Run(const std::stop_token& token) {
         }
         stats.mem_usage = mem_usage_opt.value();
         stats.disk_utilization = static_cast<float>(core::stat::SystemStats::get_disk_space());
-        // std::ostringstream ss;
-        // ss << std::fixed << std::setprecision(2)  << "cpu usage(1min): " << stats.cpu_usage
-        //                     << "%, mem usage: " << stats.mem_usage
-        //                     << "%, disk usage: " << stats.disk_utilization << "%";
+        std::ostringstream ss;
+        ss << std::fixed << std::setprecision(2)  << "cpu usage(1min): " << stats.cpu_usage
+                            << "%, mem usage: " << stats.mem_usage
+                            << "%, disk usage: " << stats.disk_utilization << "%";
 
-        // ara::log::LogInfo() << ss.str();
+        ara::log::LogInfo() << ss.str();
         service_ipc.NewSystemUsage.Update(stats);
         service_udp.NewSystemUsage.Update(stats);
         core::condition::wait_for(std::chrono::milliseconds(kDelay), token);

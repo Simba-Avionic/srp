@@ -22,14 +22,14 @@ namespace rocketState {
 namespace {
     static const std::unordered_map<RocketState_t, std::vector<RocketState_t>> allowed_transitions = {
         {RocketState_t::INIT,                     {RocketState_t::DISARM}},
-        {RocketState_t::DISARM,                   {RocketState_t::ARM, RocketState_t::ABORT}},
+        {RocketState_t::DISARM,                   {RocketState_t::ARM}},
         {RocketState_t::ARM,                      {RocketState_t::LAUNCH, RocketState_t::ABORT, RocketState_t::DISARM}},
         {RocketState_t::ABORT,                    {RocketState_t::DISARM}},
         {RocketState_t::LAUNCH,                   {RocketState_t::FLIGHT}},
         {RocketState_t::FLIGHT,                   {RocketState_t::APOGEE}},
-        {RocketState_t::APOGEE, {RocketState_t::FIRST_PARACHUTE}},
-        {RocketState_t::FIRST_PARACHUTE, {RocketState_t::SECOND_PARACHUTE}},
-        {RocketState_t::SECOND_PARACHUTE, {RocketState_t::DROP}}
+        {RocketState_t::APOGEE,                   {RocketState_t::FIRST_PARACHUTE}},
+        {RocketState_t::FIRST_PARACHUTE,          {RocketState_t::SECOND_PARACHUTE}},
+        {RocketState_t::SECOND_PARACHUTE,         {RocketState_t::DROP}}
     };
     static std::shared_ptr<RocketStateController> instance = nullptr;
 
@@ -120,12 +120,12 @@ void RocketStateController::RegisterRequirementsCallback(ChangeRequestCallback c
 bool RocketStateController::SetState(const RocketState_t state) {
     std::lock_guard<std::mutex> lock_(mtx_);
     if (state == actual_state) {
-        ara::log::LogInfo() << "Requested change to same state: " << to_string(state);
+        ara::log::LogInfo() << "Requested change to same state: " << core::rocketState::to_string(state);
         return false;
     }
     if (!TransitionAllowed(this->actual_state, state)) {
-        ara::log::LogWarn() << "Transition from: " << to_string(actual_state) <<
-                                " To state: " << to_string(state) << "rejected";
+        ara::log::LogWarn() << "Transition from: " << core::rocketState::to_string(actual_state) <<
+                                " To state: " << core::rocketState::to_string(state) << " rejected";
         return false;
     }
     if (!requirements_callback_(state)) {

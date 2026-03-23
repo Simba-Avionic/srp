@@ -49,10 +49,6 @@ int ExampleApp::Run(const std::stop_token& token) {
 
   ara::log::LogInfo() << "App started";
   while (!token.stop_requested()) {
-    gpio_.SetPinValue(1, 1);
-    core::condition::wait_for(std::chrono::seconds(1), token);
-    gpio_.SetPinValue(1, 0);
-    core::condition::wait_for(std::chrono::seconds(1), token);
   }
   ara::log::LogInfo() << "App Stop";
   did.StopOffer();

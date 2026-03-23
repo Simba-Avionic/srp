@@ -8,15 +8,16 @@
  * @copyright Copyright (c) 2025
  * 
  */
+#include "apps/fc/radio_service/radio_app.h"
+#include <termios.h>
 #include <utility>
 #include <vector>
+#include <string>
 #include <chrono>  // NOLINT
 #include "simba/mavlink.h"
 #include "simba/simba.h"
-#include "apps/fc/radio_service/radio_app.h"
 #include "ara/log/log.h"
 #include "core/common/condition.h"
-
 
 namespace srp {
 namespace apps {
@@ -30,173 +31,239 @@ namespace {
   static constexpr auto kRecovery_service_path_name = "srp/apps/RadioApp/RecoveryService";
   static constexpr auto kMain_service_path_name = "srp/apps/RadioApp/MainService";
   static constexpr auto kEngine_service_path_name = "srp/apps/RadioApp/EngineService";
-  static constexpr auto KGPS_UART_path = "/dev/ttyS1";
-  static constexpr auto KGPS_UART_baudrate = B57600;
+  static constexpr auto KRadio_UART_path = "/dev/ttyS1";
+  static constexpr auto KRadio_UART_baudrate = B57600;
   static constexpr auto kSystemId = 1;
   static constexpr auto kComponentId = 200;
   static constexpr auto kTime = 990;  // Should be 1 Hz but better make it 1.1Hz than 0.9 wchich can trigger error on GS
-
-  static constexpr std::pair<uint8_t, core::rocketState::RocketState_t> gs_rocket_state_mapping[] = {
-        {SIMBA_GS_ABORT,  core::rocketState::RocketState_t::ABORT},
-        {SIMBA_GS_DISARM, core::rocketState::RocketState_t::DISARM},
-        {SIMBA_GS_ARM,    core::rocketState::RocketState_t::ARM},
-        {SIMBA_GS_LAUNCH, core::rocketState::RocketState_t::LAUNCH}
-    };
   using RocketState_t = core::rocketState::RocketState_t;
+
+  uint8_t RocketStateToMavlinkState(const RocketState_t state) {
+      switch (state) {
+          case RocketState_t::INIT:
+              return SIMBA_ROCKET_STATE_INIT;
+          case RocketState_t::DISARM:
+              return SIMBA_ROCKET_STATE_DISARM;
+          case RocketState_t::ARM:
+              return SIMBA_ROCKET_STATE_ARM;
+          case RocketState_t::LAUNCH:
+              return SIMBA_ROCKET_STATE_LAUNCH;
+          case RocketState_t::FLIGHT:
+              return SIMBA_ROCKET_STATE_FLIGHT;
+          case RocketState_t::APOGEE:
+              return SIMBA_ROCKET_STATE_APOGEE;
+          case RocketState_t::FIRST_PARACHUTE:
+              return SIMBA_ROCKET_STATE_FIRT_PARACHUTE_FALL;
+          case RocketState_t::SECOND_PARACHUTE:
+              return SIMBA_ROCKET_STATE_SECOND_PARACHUTE_ACTIVATION;
+          case RocketState_t::DROP:
+              return SIMBA_ROCKET_STATE_SECOND_PARACHUTE_FALL;
+          case RocketState_t::ABORT:
+              return SIMBA_ROCKET_STATE_SIMBA_ROCKET_STATE_ABORT;
+          default:
+              return SIMBA_ROCKET_STATE_SIMBA_ROCKET_STATE_ABORT;
+      }
+    }
 }  // namespace
 
 void RadioApp::TransmittingLoop(const std::stop_token& token) {
   mavlink_message_t msg;
-  uint8_t buffer[MAVLINK_MAX_PACKET_LEN];
-  if (!timestamp_->Init()) {
+  std::vector<uint8_t> buffer(MAVLINK_MAX_PACKET_LEN);
+
+  if (!timestamp_.Init()) {
     ara::log::LogWarn() << "Cant initialize app time";
   }
+
   event_data = EventData::GetInstance();
+
   auto send = [&](auto pack_func) {
     pack_func();
-    uint16_t len = mavlink_msg_to_send_buffer(buffer, &msg);
-    mavl_logger.LogDebug() << std::vector<uint8_t>(buffer, buffer + len);
-    uart_->Write(std::vector<uint8_t>(buffer, buffer + len));
+
+    uint16_t len = mavlink_msg_to_send_buffer(buffer.data(), &msg);
+
+    std::vector<uint8_t> actual_data(buffer.begin(), buffer.begin() + len);
+    UartTxQueue.Push(actual_data);
   };
+
   while (!token.stop_requested()) {
     auto start = std::chrono::high_resolution_clock::now();
-    {
-      // Send Heartbeat msg
-      auto val = timestamp_->GetNewTimeStamp();
-      if (val.has_value()) {
-        send([&] {
-          mavlink_msg_simba_rocket_heartbeat_pack(kSystemId, kComponentId, &msg,
-                    static_cast<uint64_t>(val.value()), event_data->GetMBState(),
-                    event_data->GetEBState(), event_data->GetActuatorStates());
-        });
-      } else {
-        ara::log::LogWarn() << "Cant Get Timestamp";
-      }
 
+    // Heartbeat
+    if (auto val = timestamp_.GetNewTimeStamp(); val.has_value()) {
       send([&] {
-        mavlink_msg_simba_computer_temperature_pack(kSystemId, kComponentId, &msg,
-            event_data->GetEBTemp(), event_data->GetMBTemp());
+        mavlink_msg_simba_rocket_heartbeat_pack(kSystemId, kComponentId, &msg,
+                  static_cast<uint64_t>(val.value()),
+                  RocketStateToMavlinkState(event_data->GetComputerState(BoardType_e::MB)),
+                  RocketStateToMavlinkState(event_data->GetComputerState(BoardType_e::EB)),
+                  event_data->GetActuatorStates());
       });
-
-      // Send Max Altitude MSG
-      send([&] {
-        mavlink_msg_simba_max_altitude_pack(kSystemId, kComponentId, &msg, event_data->GetMaxAltitude());
-      });
-
-      // TODO(matikrajek42@gmail.com) Add send IMU data
-
-      // Send Tank Temps
-      send([&] { mavlink_msg_simba_tank_temperature_pack(kSystemId, kComponentId, &msg,
-              static_cast<int16_t>(event_data->GetTemp1()), static_cast<int16_t>(event_data->GetTemp2()),
-              static_cast<int16_t>(event_data->GetTemp3())); });
-
-      // Send Tank pressure
-      send([&] { mavlink_msg_simba_tank_pressure_pack(kSystemId, kComponentId, &msg,
-                                                  static_cast<uint16_t>(event_data->GetPress())); });
-
-      //  Send
-      send([&] { mavlink_msg_simba_gps_pack(kSystemId, kComponentId, &msg,
-                            event_data->GetGPSLat(), event_data->GetGPSLon(), event_data->GetGPSAlt()); });
     }
-    ara::log::LogDebug() << "send full Mavlink packets";
+
+    // Temperature
+    send([&] {
+      mavlink_msg_simba_computer_temperature_pack(kSystemId, kComponentId, &msg,
+          event_data->GetComputerTemp(BoardType_e::EB), event_data->GetComputerTemp(BoardType_e::MB));
+    });
+
+    // Max Altitude
+    send([&] {
+      mavlink_msg_simba_max_altitude_pack(kSystemId, kComponentId, &msg, event_data->GetMaxAltitude());
+    });
+
+    // Tank Temps
+    send([&] {
+      mavlink_msg_simba_tank_temperature_pack(kSystemId, kComponentId, &msg,
+          static_cast<int16_t>(event_data->GetTemp(0)),
+          static_cast<int16_t>(event_data->GetTemp(1)),
+          static_cast<int16_t>(event_data->GetTemp(2)));
+    });
+
+    // Tank Pressure
+    send([&] {
+      mavlink_msg_simba_tank_pressure_pack(kSystemId, kComponentId, &msg,
+          static_cast<uint16_t>(event_data->GetPress()));
+    });
+
+    // GPS
+    auto gps_data = event_data->GetGPS();
+    send([&] {
+      mavlink_msg_simba_gps_pack(kSystemId, kComponentId, &msg,
+          gps_data.lon, gps_data.lat, gps_data.altitude);
+    });
+
     auto end = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-    core::condition::wait_for(std::chrono::milliseconds(kTime - duration.count()), token);  // 1 Hz
+
+    // Zabezpieczenie przed ujemnym czasem czekania
+    auto sleep_time = std::chrono::milliseconds(kTime) - duration;
+    if (sleep_time > std::chrono::milliseconds(0)) {
+        core::condition::wait_for(sleep_time, token);
+    }
   }
 }
 std::optional<RocketState_t> RadioApp::GetReqRocketStateFromGSFlags(const uint8_t flags) {
+  static constexpr std::pair<uint8_t, RocketState_t> gs_rocket_state_mapping[] = {
+      {SIMBA_GS_ABORT,  RocketState_t::ABORT},
+      {SIMBA_GS_LAUNCH, RocketState_t::LAUNCH},
+      {SIMBA_GS_ARM,    RocketState_t::ARM},
+      {SIMBA_GS_DISARM, RocketState_t::DISARM},
+    };
     for (const auto& [mask, state] : gs_rocket_state_mapping) {
-        if (flags & mask) return state;
+        if ((flags & mask) != 0) return state;
     }
 
     return std::nullopt;
+}
+
+void RadioApp::OnActuatorCMD(const mavlink_message_t& msg) {
+  // TODO(matikrajek42@gmail.com) IMplement this maybe
+}
+
+void RadioApp::HBHangleActuators(const uint8_t values) {
+  auto update_valve = [&](uint8_t gs_mask, uint8_t rocket_mask, const std::string& name, auto setter_func) {
+    uint8_t requested = ((values & gs_mask) != 0);
+    bool current = (event_data->GetActuatorStates() & rocket_mask) != 0;
+
+    if (requested != current) {
+      if (!servo_service_handler) {
+        mavl_logger.LogWarn() << "Servo service handler not ready for " << name;
+        return;
+      }
+      mavl_logger.LogInfo() << "Changing " << name << " to " << (requested ? "ON" : "OFF");
+      event_data->SetActuatorState(static_cast<SIMBA_ACTUATOR_FLAGS>(rocket_mask), requested);
+      setter_func(requested);
+    }
+  };
+
+  // TOFIX OBEJSCIE NA STATIC PO KONKURSIE USUNAC FLIGHT JAKO DOZWOLONY
+  auto eb_state = event_data->GetComputerState(BoardType_e::EB);
+  if ( eb_state == RocketState_t::ARM || eb_state == RocketState_t::FLIGHT ) {
+    update_valve(SIMBA_GS_VENT_VALVE, SIMBA_ROCKET_VENT_VALVE, "VENT_VALVE",
+                  [&](uint8_t val) { servo_service_handler->SetVentServoValue(val); });
+    update_valve(SIMBA_GS_DUMP_VALVE, SIMBA_ROCKET_DUMP_VALVE, "DUMP_VALVE",
+                  [&](uint8_t val) { servo_service_handler->SetDumpValue(val); });
+  }
+
+  if (event_data->GetComputerState(BoardType_e::MB) == RocketState_t::ARM) {
+    // TODO(matikrajek42@gmail.com) Add missing Cameras handler
+  }
+}
+
+void RadioApp::HBHangleState(const uint8_t values) {
+  // TODO(matikrajek42@gmail.com) Dodać obsługę MB
+  auto req_state = GetReqRocketStateFromGSFlags(values);
+  if (!req_state.has_value()) {
+    return;
+  }
+
+  auto current_mb = event_data->GetComputerState(BoardType_e::MB);
+  auto current_eb = event_data->GetComputerState(BoardType_e::EB);
+
+  if (req_state.value() != current_eb
+      // || req_state.value() != current_mb
+    ) {
+    if (engine_service_handler == nullptr) {
+      mavl_logger.LogWarn() << "Service handlers not ready in GS_HEARTBEAT (main/engine).";
+    } else {
+      mavl_logger.LogInfo() << "Changing rocket state to "
+                            + core::rocketState::to_string(req_state.value());
+        // main_service_handler->setMode(static_cast<uint8_t>(req_state.value()));
+        engine_service_handler->SetMode(static_cast<uint8_t>(req_state.value()));
+    }
+  }
+}
+
+void RadioApp::OnGSHEARTBEAT(const mavlink_message_t& msg) {
+  auto timestamp = mavlink_msg_simba_gs_heartbeat_get_timestamp(&msg);
+  auto values = mavlink_msg_simba_gs_heartbeat_get_values(&msg);
+  mavl_logger.LogInfo() << "GS Heartbeat: ts="
+                      + std::to_string(static_cast<int64_t>(timestamp))
+                      + " flags=" + std::to_string(static_cast<int>(values));
+
+  HBHangleState(values);
+
+  HBHangleActuators(values);
 }
 
 void RadioApp::ListeningLoop(const std::stop_token& token) {
   mavlink_message_t msg;
   mavlink_status_t status;
   while (!token.stop_requested()) {
-    if (!uart_) {
-      ara::log::LogError() << "UART not initialized in ListeningLoop. Stopping loop.";
-      return;
-    }
     if (!event_data) {
-      ara::log::LogError() << "EventData not initialized in ListeningLoop. Stopping loop.";
+      mavl_logger.LogError() << "EventData not initialized in ListeningLoop. Stopping loop.";
       return;
     }
-    auto bytes_opt = uart_->Read(1);
+    if (!uart_.WaitForData(250)) {
+      continue;
+    }
+    auto bytes_opt = uart_.Read(0);
     if (!bytes_opt.has_value()) {
       continue;
     }
-    if (!mavlink_parse_char(MAVLINK_COMM_0, bytes_opt.value()[0], &msg, &status)) {
-      continue;
-    }
-    ara::log::LogDebug() << "Parsed MAVLink msg id="
-                         + std::to_string(msg.msgid)
-                         + " len=" + std::to_string(msg.len);
-    switch (msg.msgid) {
-      case MAVLINK_MSG_ID_SIMBA_ACTUATOR_CMD:
-        // TODO(matikrajek42@gmail.com) Add support for CMD command
-        break;
-      case MAVLINK_MSG_ID_SIMBA_GS_HEARTBEAT: {
-        auto timestamp = mavlink_msg_simba_gs_heartbeat_get_timestamp(&msg);
-        auto values = mavlink_msg_simba_gs_heartbeat_get_values(&msg);
-        ara::log::LogInfo() << "GS Heartbeat: ts="
-                             + std::to_string(static_cast<int64_t>(timestamp))
-                             + " flags=" + std::to_string(static_cast<int>(values));
-
-        auto req_state = GetReqRocketStateFromGSFlags(values);
-        if (req_state.has_value()) {
-          if (req_state.value() != event_data->GetEBState() &&
-                  req_state.value() != event_data->GetMBState()) {
-            if (!main_service_handler || !engine_service_handler) {
-              ara::log::LogWarn() << "Service handlers not ready in GS_HEARTBEAT (main/engine).";
-            } else {
-              ara::log::LogDebug() << "Changing rocket state to "
-                                   + std::to_string(static_cast<int>(req_state.value()));
-              main_service_handler->setMode(static_cast<uint8_t>(req_state.value()));
-              engine_service_handler->SetMode(static_cast<uint8_t>(req_state.value()));
-            }
-          }
-        }
-        if ((values & SIMBA_GS_VENT_VALVE) != (event_data->GetActuatorStates() & SIMBA_GS_VENT_VALVE)) {
-          if (!servo_service_handler) {
-            ara::log::LogWarn() << "Servo service handler not ready for VENT_VALVE.";
-          } else {
-            ara::log::LogDebug() << "Changing VENT valve to "
-                                 + std::to_string(static_cast<int>(values & SIMBA_GS_VENT_VALVE));
-            servo_service_handler->SetVentServoValue(values & SIMBA_GS_VENT_VALVE);
-          }
-        }
-        if ((values & SIMBA_GS_DUMP_VALVE) != (event_data->GetActuatorStates() & SIMBA_GS_DUMP_VALVE)) {
-          if (!servo_service_handler) {
-            ara::log::LogWarn() << "Servo service handler not ready for DUMP_VALVE.";
-          } else {
-            ara::log::LogDebug() << "Changing DUMP valve to "
-                                 + std::to_string(static_cast<int>(values & SIMBA_GS_DUMP_VALVE));
-            servo_service_handler->SetDumpValue(values & SIMBA_GS_DUMP_VALVE);
-          }
-        }
-        // TODO(matikrajek42@gmail.com) Add missing Cameras handler
-        break;
+    for (uint8_t i = 0; i < bytes_opt.value().size(); i++) {
+      if (!mavlink_parse_char(MAVLINK_COMM_0, bytes_opt.value()[i], &msg, &status)) {
+        continue;
       }
-      default:
-        ara::log::LogInfo() << "Received unknown msg with ID: " <<
-            std::to_string(msg.msgid) << ", with size: " << std::to_string(msg.len);
-        break;
+      mavl_logger.LogDebug() << "Parsed MAVLink msg id="
+                          + std::to_string(msg.msgid)
+                          + " len=" + std::to_string(msg.len);
+      switch (msg.msgid) {
+        case MAVLINK_MSG_ID_SIMBA_ACTUATOR_CMD:
+          OnActuatorCMD(msg);
+          break;
+        case MAVLINK_MSG_ID_SIMBA_GS_HEARTBEAT:
+          OnGSHEARTBEAT(msg);
+          break;
+        default:
+          mavl_logger.LogInfo() << "Received unknown msg with ID: " <<
+              std::to_string(msg.msgid) << ", with size: " << std::to_string(msg.len);
+          break;
+      }
     }
   }
 }
 
 int RadioApp::Run(const std::stop_token& token) {
-  if (!uart_) {
-    ara::log::LogError() << "UART not initialized. Aborting Run.";
-    return core::ErrorCode::kError;
-  }
-  if (!timestamp_) {
-    ara::log::LogError() << "Timestamp controller not initialized. Aborting Run.";
-    return core::ErrorCode::kError;
-  }
   if (!event_data) {
     ara::log::LogWarn() << "EventData not initialized in Run. Creating instance.";
     event_data = EventData::GetInstance();
@@ -208,20 +275,20 @@ int RadioApp::Run(const std::stop_token& token) {
   std::jthread listening_thread([this](const std::stop_token& t) {
     this->ListeningLoop(t);
   });
-  core::condition::wait(token);
+
+  while (!token.stop_requested()) {
+    auto package_opt = UartTxQueue.Get(token);
+    if (!package_opt.has_value()) {
+      continue;
+    }
+    uart_.Write(package_opt.value());
+  }
+
   ara::log::LogDebug() << "RadioApp Run stopping services and UART";
   service_ipc->StopOffer();
   service_udp->StopOffer();
-  uart_->Close();
+  uart_.Close();
   return core::ErrorCode::kOk;
-}
-
-void RadioApp::InitUart(std::unique_ptr<core::uart::IUartDriver> uart) {
-    this->uart_ = std::move(uart);
-}
-
-void RadioApp::InitTimestamp(std::unique_ptr<core::timestamp::ITimestampController> timestamp) {
-    this->timestamp_ = std::move(timestamp);
 }
 
 int RadioApp::Initialize(const std::map<ara::core::StringView,
@@ -230,18 +297,9 @@ int RadioApp::Initialize(const std::map<ara::core::StringView,
     ara::log::LogDebug() << "RadioApp Initialize after artificial delay";
     event_data = EventData::GetInstance();
     ara::log::LogDebug() << "EventData instance created in Initialize";
-    if (!this->uart_) {
-        auto uart_d = std::make_unique<core::uart::UartDriver>();
-        InitUart(std::move(uart_d));
-        ara::log::LogDebug() << "UART driver created in Initialize";
-    }
-    if (!this->uart_->Open(KGPS_UART_path, KGPS_UART_baudrate)) {
-        ara::log::LogError() << "Failed to open UART: " <<  KGPS_UART_path;
+    if (!this->uart_.Open(KRadio_UART_path, KRadio_UART_baudrate, 10)) {
+        ara::log::LogError() << "Failed to open UART: " <<  KRadio_UART_path;
         return 1;
-      }
-    if (!this->timestamp_) {
-        InitTimestamp(std::make_unique<core::timestamp::TimestampController>());
-        ara::log::LogDebug() << "Timestamp controller created in Initialize";
     }
     service_ipc = std::make_unique<apps::RadioServiceSkeleton>(service_ipc_instance);
     service_udp = std::make_unique<apps::RadioServiceSkeleton>(service_udp_instance);
@@ -252,107 +310,107 @@ int RadioApp::Initialize(const std::map<ara::core::StringView,
     return core::ErrorCode::kOk;
 }
 void RadioApp::SomeIpInit() {
-    ara::log::LogDebug() << "SomeIpInit started";
+    someip_logger.LogDebug() << "SomeIpInit started";
     this->env_service_proxy.StartFindService([this](auto handler) {
-      ara::log::LogDebug() << "Env service handler discovered";
+      someip_logger.LogDebug() << "Env service handler discovered";
       this->env_service_handler = handler;
       env_service_handler->newTempEvent_1.Subscribe(1, [this](const uint8_t status) {
-        ara::log::LogDebug() << "Subscribed to Env newTempEvent_1, status="
+        someip_logger.LogDebug() << "Subscribed to Env newTempEvent_1, status="
                              + std::to_string(static_cast<int>(status));
         env_service_handler->newTempEvent_1.SetReceiveHandler([this] () {
           auto res = env_service_handler->newTempEvent_1.GetNewSamples();
           if (!res.HasValue()) {
             return;
           }
-          ara::log::LogDebug() << "Env newTempEvent_1 sample: "
+          someip_logger.LogDebug() << "Env newTempEvent_1 sample: "
                                + std::to_string(res.Value());
-          event_data->SetTemp1(res.Value());
+          event_data->SetTemp(0, res.Value());
         });
       });
       env_service_handler->newTempEvent_2.Subscribe(1, [this](const uint8_t status) {
-        ara::log::LogDebug() << "Subscribed to Env newTempEvent_2, status="
+        someip_logger.LogDebug() << "Subscribed to Env newTempEvent_2, status="
                              + std::to_string(static_cast<int>(status));
         env_service_handler->newTempEvent_2.SetReceiveHandler([this] () {
           auto res = env_service_handler->newTempEvent_2.GetNewSamples();
           if (!res.HasValue()) {
             return;
           }
-          ara::log::LogDebug() << "Env newTempEvent_2 sample: "
+          someip_logger.LogDebug() << "Env newTempEvent_2 sample: "
                                + std::to_string(res.Value());
-          event_data->SetTemp2(res.Value());
+          event_data->SetTemp(1, res.Value());
         });
       });
       env_service_handler->newTempEvent_3.Subscribe(1, [this](const uint8_t status) {
-        ara::log::LogDebug() << "Subscribed to Env newTempEvent_3, status="
+        someip_logger.LogDebug() << "Subscribed to Env newTempEvent_3, status="
                              + std::to_string(static_cast<int>(status));
         env_service_handler->newTempEvent_3.SetReceiveHandler([this] () {
           auto res = env_service_handler->newTempEvent_3.GetNewSamples();
           if (!res.HasValue()) {
             return;
           }
-          ara::log::LogDebug() << "Env newTempEvent_3 sample: "
+          someip_logger.LogDebug() << "Env newTempEvent_3 sample: "
                                + std::to_string(res.Value());
-          event_data->SetTemp3(res.Value());
+          event_data->SetTemp(2, res.Value());
         });
       });
       env_service_handler->newPressEvent.Subscribe(1, [this](const uint8_t status) {
-        ara::log::LogDebug() << "Subscribed to Env newPressEvent, status="
+        someip_logger.LogDebug() << "Subscribed to Env newPressEvent, status="
                              + std::to_string(static_cast<int>(status));
         env_service_handler->newPressEvent.SetReceiveHandler([this] () {
           auto res = env_service_handler->newPressEvent.GetNewSamples();
           if (!res.HasValue()) {
             return;
           }
-          ara::log::LogDebug() << "Env newPressEvent sample: "
+          someip_logger.LogDebug() << "Env newPressEvent sample: "
                                + std::to_string(res.Value());
           event_data->SetPress(res.Value());
         });
       });
       env_service_handler->newBoardTempEvent1.Subscribe(1, [this](const uint8_t status) {
-        ara::log::LogDebug() << "Subscribed to Env newBoardTempEvent1, status="
+        someip_logger.LogDebug() << "Subscribed to Env newBoardTempEvent1, status="
                              + std::to_string(static_cast<int>(status));
         env_service_handler->newBoardTempEvent1.SetReceiveHandler([this] () {
           auto res = env_service_handler->newBoardTempEvent1.GetNewSamples();
           if (!res.HasValue()) {
             return;
           }
-          ara::log::LogDebug() << "Env newBoardTempEvent1 sample: "
+          someip_logger.LogDebug() << "Env newBoardTempEvent1 sample: "
                                + std::to_string(res.Value());
-          event_data->SetEBTemp(1, res.Value());
+          event_data->SetComputerTemp(BoardType_e::EB, 0,  res.Value());
         });
       });
       env_service_handler->newBoardTempEvent2.Subscribe(1, [this](const uint8_t status) {
-        ara::log::LogDebug() << "Subscribed to Env newBoardTempEvent2, status="
+        someip_logger.LogDebug() << "Subscribed to Env newBoardTempEvent2, status="
                              + std::to_string(static_cast<int>(status));
         env_service_handler->newBoardTempEvent2.SetReceiveHandler([this] () {
           auto res = env_service_handler->newBoardTempEvent2.GetNewSamples();
           if (!res.HasValue()) {
             return;
           }
-          ara::log::LogDebug() << "Env newBoardTempEvent2 sample: "
+          someip_logger.LogDebug() << "Env newBoardTempEvent2 sample: "
                                + std::to_string(res.Value());
-          event_data->SetEBTemp(2, res.Value());
+          event_data->SetComputerTemp(BoardType_e::EB, 1,  res.Value());
         });
       });
       env_service_handler->newBoardTempEvent3.Subscribe(1, [this](const uint8_t status) {
-        ara::log::LogDebug() << "Subscribed to Env newBoardTempEvent3, status="
+        someip_logger.LogDebug() << "Subscribed to Env newBoardTempEvent3, status="
                              + std::to_string(static_cast<int>(status));
         env_service_handler->newBoardTempEvent3.SetReceiveHandler([this] () {
           auto res = env_service_handler->newBoardTempEvent3.GetNewSamples();
           if (!res.HasValue()) {
             return;
           }
-          ara::log::LogDebug() << "Env newBoardTempEvent3 sample: "
+          someip_logger.LogDebug() << "Env newBoardTempEvent3 sample: "
                                + std::to_string(res.Value());
-          event_data->SetEBTemp(3, res.Value());
+          event_data->SetComputerTemp(BoardType_e::EB, 2,  res.Value());
         });
       });
     });
     this->gps_service_proxy.StartFindService([this](auto handler) {
-      ara::log::LogDebug() << "GPS service handler discovered";
+      someip_logger.LogDebug() << "GPS service handler discovered";
       this->gps_service_handler = handler;
       gps_service_handler->GPSStatusEvent.Subscribe(1, [this](const uint8_t status) {
-        ara::log::LogDebug() << "Subscribed to GPSStatusEvent, status="
+        someip_logger.LogDebug() << "Subscribed to GPSStatusEvent, status="
                              + std::to_string(static_cast<int>(status));
         gps_service_handler->GPSStatusEvent.SetReceiveHandler([this] () {
           auto res_opt = gps_service_handler->GPSStatusEvent.GetNewSamples();
@@ -360,7 +418,7 @@ void RadioApp::SomeIpInit() {
             return;
           }
           auto res = res_opt.Value();
-          ara::log::LogDebug() << "GPSStatusEvent sample: lon="
+          someip_logger.LogDebug() << "GPSStatusEvent sample: lon="
                                + std::to_string(res.longitude)
                                + ", lat=" + std::to_string(res.latitude)
                                + ", alt=" + std::to_string(res.altitude);
@@ -369,43 +427,43 @@ void RadioApp::SomeIpInit() {
       });
     });
     this->servo_service_proxy.StartFindService([this](auto handler) {
-      ara::log::LogDebug() << "Servo service handler discovered";
+      someip_logger.LogDebug() << "Servo service handler discovered";
       this->servo_service_handler = handler;
       servo_service_handler->ServoStatusEvent.Subscribe(1, [this](const uint8_t status) {
-        ara::log::LogDebug() << "Subscribed to ServoStatusEvent, status="
+        someip_logger.LogDebug() << "Subscribed to ServoStatusEvent, status="
                              + std::to_string(static_cast<int>(status));
         servo_service_handler->ServoStatusEvent.SetReceiveHandler([this] () {
           auto res = servo_service_handler->ServoStatusEvent.GetNewSamples();
           if (!res.HasValue()) {
             return;
           }
-          ara::log::LogDebug() << "ServoStatusEvent sample: "
+          someip_logger.LogDebug() << "ServoStatusEvent sample: "
                                + std::to_string(res.Value());
           event_data->SetActuatorState(SIMBA_ROCKET_MAIN_VALVE, res.Value());
         });
       });
       servo_service_handler->ServoVentStatusEvent.Subscribe(1, [this](const uint8_t status) {
-        ara::log::LogDebug() << "Subscribed to ServoVentStatusEvent, status="
+        someip_logger.LogDebug() << "Subscribed to ServoVentStatusEvent, status="
                              + std::to_string(static_cast<int>(status));
         servo_service_handler->ServoVentStatusEvent.SetReceiveHandler([this] () {
           auto res = servo_service_handler->ServoVentStatusEvent.GetNewSamples();
           if (!res.HasValue()) {
             return;
           }
-          ara::log::LogDebug() << "ServoVentStatusEvent sample: "
+          someip_logger.LogDebug() << "ServoVentStatusEvent sample: "
                                + std::to_string(res.Value());
           event_data->SetActuatorState(SIMBA_ROCKET_VENT_VALVE, res.Value());
         });
       });
       servo_service_handler->ServoDumpStatusEvent.Subscribe(1, [this](const uint8_t status) {
-        ara::log::LogDebug() << "Subscribed to ServoDumpStatusEvent, status="
+        someip_logger.LogDebug() << "Subscribed to ServoDumpStatusEvent, status="
                              + std::to_string(static_cast<int>(status));
         servo_service_handler->ServoDumpStatusEvent.SetReceiveHandler([this] () {
           auto res = servo_service_handler->ServoDumpStatusEvent.GetNewSamples();
           if (!res.HasValue()) {
             return;
           }
-          ara::log::LogDebug() << "ServoDumpStatusEvent sample: "
+          someip_logger.LogDebug() << "ServoDumpStatusEvent sample: "
                                + std::to_string(res.Value());
           event_data->SetActuatorState(SIMBA_ROCKET_DUMP_VALVE, res.Value());
         });
@@ -413,36 +471,37 @@ void RadioApp::SomeIpInit() {
     });
     // TODO(matikrajek42@gmail.com) add RECOVERY_SERVO, RECOVERY_LINECUTTER, ROCKET_CAMERAS
     this->main_service_proxy.StartFindService([this](auto handler) {
-      ara::log::LogDebug() << "Main service handler discovered";
+      someip_logger.LogDebug() << "Main service handler discovered";
       this->main_service_handler = handler;
       main_service_handler->CurrentModeStatusEvent.Subscribe(1, [this](const uint8_t status) {
-        ara::log::LogDebug() << "Subscribed to Main CurrentModeStatusEvent, status="
+        someip_logger.LogDebug() << "Subscribed to Main CurrentModeStatusEvent, status="
                              + std::to_string(static_cast<int>(status));
         main_service_handler->CurrentModeStatusEvent.SetReceiveHandler([this] () {
           auto res = main_service_handler->CurrentModeStatusEvent.GetNewSamples();
           if (!res.HasValue()) {
             return;
           }
-          ara::log::LogDebug() << "Main CurrentModeStatusEvent sample: "
-                               + std::to_string(static_cast<int>(res.Value()));
-          this->event_data->SetMBState(static_cast<core::rocketState::RocketState_t>(res.Value()));
+          someip_logger.LogDebug() << "Main CurrentModeStatusEvent sample: "
+                               << core::rocketState::to_string(static_cast<RocketState_t>(res.Value()));;
+          this->event_data->SetComputerState(BoardType_e::MB,
+                                  static_cast<RocketState_t>(res.Value()));
         });
       });
     });
     this->engine_service_proxy.StartFindService(([this](auto handler) {
-      ara::log::LogDebug() << "Engine service handler discovered";
+      someip_logger.LogDebug() << "Engine service handler discovered";
       this->engine_service_handler = handler;
       engine_service_handler->CurrentMode.Subscribe(1, [this](const uint8_t status) {
-        ara::log::LogDebug() << "Subscribed to Engine CurrentMode, status="
-                             + std::to_string(static_cast<int>(status));
+        someip_logger.LogDebug() << "Subscribed to Engine CurrentMode, status=" << std::to_string(status);
         engine_service_handler->CurrentMode.SetReceiveHandler([this] () {
           auto res = engine_service_handler->CurrentMode.GetNewSamples();
           if (!res.HasValue()) {
             return;
           }
-          ara::log::LogDebug() << "Engine CurrentMode sample: "
-                               + std::to_string(static_cast<int>(res.Value()));
-          this->event_data->SetEBState(static_cast<core::rocketState::RocketState_t>(res.Value()));
+          someip_logger.LogDebug() << "Engine CurrentMode sample: "
+                               << core::rocketState::to_string(static_cast<RocketState_t>(res.Value()));
+          this->event_data->SetComputerState(BoardType_e::EB,
+                                  static_cast<RocketState_t>(res.Value()));
         });
       });
     }));
@@ -450,23 +509,24 @@ void RadioApp::SomeIpInit() {
   }
 RadioApp::~RadioApp() {
 }
-RadioApp::RadioApp(): service_ipc_instance(kService_ipc_instance),
-                        service_udp_instance(kService_udp_instance),
-env_service_proxy{ara::core::InstanceSpecifier{kEnv_service_path_name}},
-env_service_handler{nullptr},
-gps_service_proxy{ara::core::InstanceSpecifier{kGPS_service_path_name}},
-gps_service_handler{nullptr},
-primer_service_proxy{ara::core::InstanceSpecifier{kPrimer_service_path_name}},
-primer_service_handler{nullptr},
-servo_service_proxy{ara::core::InstanceSpecifier{kServo_service_path_name}},
-servo_service_handler{nullptr},
-main_service_proxy{ara::core::InstanceSpecifier{kMain_service_path_name}},
-main_service_handler{nullptr},
-recovery_service_handler{nullptr},
-engine_service_handler{nullptr},
-engine_service_proxy{ara::core::InstanceSpecifier{kEngine_service_path_name}},
-mavl_logger{ara::log::LoggingMenager::GetInstance()->CreateLogger("MAVL", "", ara::log::LogLevel::kInfo)}
-{
+RadioApp::RadioApp():
+          mavl_logger{ara::log::LoggingMenager::GetInstance()->CreateLogger("MAVL", "", ara::log::LogLevel::kWarn)},
+          someip_logger{ara::log::LoggingMenager::GetInstance()->CreateLogger("SOME", "", ara::log::LogLevel::kWarn)},
+          primer_service_proxy{ara::core::InstanceSpecifier{kPrimer_service_path_name}},
+          primer_service_handler{nullptr},
+          servo_service_proxy{ara::core::InstanceSpecifier{kServo_service_path_name}},
+          servo_service_handler{nullptr},
+          env_service_proxy{ara::core::InstanceSpecifier{kEnv_service_path_name}},
+          env_service_handler{nullptr},
+          gps_service_proxy{ara::core::InstanceSpecifier{kGPS_service_path_name}},
+          gps_service_handler{nullptr},
+          main_service_handler{nullptr},
+          main_service_proxy{ara::core::InstanceSpecifier{kMain_service_path_name}},
+          engine_service_handler{nullptr},
+          engine_service_proxy{ara::core::InstanceSpecifier{kEngine_service_path_name}},
+          recovery_service_handler{nullptr},
+          service_ipc_instance(kService_ipc_instance),
+          service_udp_instance(kService_udp_instance) {
 }
 }  // namespace apps
 }  // namespace srp
