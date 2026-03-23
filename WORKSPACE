@@ -9,6 +9,10 @@ deps()
 
 load("//bazel/libs:third_party_repositories.bzl", "include_srp_platform", "include_srp_mavlink", "include_gtest_mock", "include_json")
 include_srp_platform("0.0.7-beta-patch-5", "SRP-Platform/srp_platform")
+load("//bazel/libs:third_party_repositories.bzl", "include_srp_platform",
+    "include_srp_mavlink", "include_gtest_mock", "include_simdjson", "include_json")
+
+
 load("@srp_platform//:download.bzl", "download")
 download()
 
@@ -26,6 +30,7 @@ pip_install()
 include_srp_mavlink("0.9.3")
 include_gtest_mock()
 include_json("3.11.3")
+include_simdjson("4.4.2", "284f1c5936e7eede83ce53ed4b03bcb09af02e3ddfec0aa465df109a8f6d3e87")
 
 ##### PYTHON
 

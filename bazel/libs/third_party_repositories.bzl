@@ -10,6 +10,16 @@ def include_json(ver):
         sha256 = "04022b05d806eb5ff73023c280b68697d12b93e1b7267a0b22a1a39ec7578069"
     )
 
+
+def include_simdjson(ver, sha256):
+    http_archive(
+        name = "simdjson",
+        urls = ["https://github.com/simdjson/simdjson/releases/download/v" + ver + "/singleheader.zip"],
+        type = "zip",
+        build_file = "//bazel/libs:simdjson.BUILD",
+        sha256 = sha256,
+    )
+
 def include_srp_platform(ver, source):
         http_archive(
         name = "srp_platform",
