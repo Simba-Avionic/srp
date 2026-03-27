@@ -541,7 +541,7 @@ void RadioApp::SomeIpInit() {
           }
           someip_logger.LogDebug() << "NewParachuteStatusEvent sample: "
                       << std::to_string(res.Value());
-          switch(static_cast<recovery::ParachuteState_t> (res.Value())) {
+          switch (static_cast<recovery::ParachuteState_t> (res.Value())) {
             case recovery::ParachuteState_t::CLOSED:
               this->event_data->SetActuatorState(SIMBA_ROCKET_RECOVERY_SERVO, 0);
               this->event_data->SetActuatorState(SIMBA_ROCKET_RECOVERY_LINECUTTER, 0);
