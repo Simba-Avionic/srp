@@ -10,6 +10,7 @@ cc_library(
         "//apps/fc/main_service:MainService",
         "//apps/fc/radio_service:uart_driver",
         "//core/common:wait_queue",
+        "//apps/fc/recovery_service:ParachuteController",
     ],
     srcs = [
         "radio_app.cc",

@@ -22,6 +22,7 @@
 #include "simba/mavlink.h"
 #include "apps/fc/radio_service/event_data.h"
 #include "srp/env/EnvApp/EnvAppHandler.h"
+#include "srp/env/EnvAppFc/EnvAppFcHandler.h"
 #include "srp/apps/GPSService/GPSServiceHandler.h"
 #include "srp/apps/PrimerService/PrimerServiceHandler.h"
 #include "srp/apps/ServoService/ServoServiceHandler.h"
@@ -55,6 +56,8 @@ class RadioApp : public ara::exec::AdaptiveApplication {
   std::shared_ptr<ServoServiceHandler> servo_service_handler;
   env::EnvAppProxy env_service_proxy;
   std::shared_ptr<env::EnvAppHandler> env_service_handler;
+  srp::env::EnvAppFcProxy env_fc_service_proxy;
+  std::shared_ptr<env::EnvAppFcHandler> env_fc_service_handler;
   GPSServiceProxy gps_service_proxy;
   std::shared_ptr<GPSServiceHandler> gps_service_handler;
   std::shared_ptr<MainServiceHandler> main_service_handler;
@@ -62,6 +65,7 @@ class RadioApp : public ara::exec::AdaptiveApplication {
   std::shared_ptr<EngineServiceHandler> engine_service_handler;
   EngineServiceProxy engine_service_proxy;
   std::shared_ptr<RecoveryServiceHandler> recovery_service_handler;
+  RecoveryServiceProxy recovery_service_proxy;
   const ara::core::InstanceSpecifier service_ipc_instance;
   const ara::core::InstanceSpecifier service_udp_instance;
   std::unique_ptr<apps::RadioServiceSkeleton> service_ipc;

@@ -12,7 +12,8 @@ filegroup(
         "//deployment/apps/engine_app:instance",
         "//deployment/apps/servo_service:instance",
         "//deployment/apps/fc/recovery_service:instance",
-        "//deployment/apps/fc/main_app:instance"
+        "//deployment/apps/fc/main_app:instance",
+        "//deployment/apps/fc/env_service:instance"
     ],
     visibility = [
         "//apps/fc/radio_service:__subpackages__",

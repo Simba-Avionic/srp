@@ -7,7 +7,8 @@
         "deployment/system_definition/someip/engine_service/service.json",
         "deployment/system_definition/someip/servo_service/service.json",
         "deployment/system_definition/someip/fc/recovery_service/service.json",
-        "deployment/system_definition/someip/fc/main_service/service.json"
+        "deployment/system_definition/someip/fc/main_service/service.json",
+        "deployment/system_definition/someip/fc/env_service/service.json"
     ],
     "package": "srp.apps",
     "adaptive_application": {
@@ -98,6 +99,11 @@
                 },
                 {
                     "name": "srp.apps.EngineService as EngineService",
+                    "on": "ipc",
+                    "instance": 2
+                },
+                {
+                    "name": "srp.env.EnvAppFc as EnvAppFc",
                     "on": "ipc",
                     "instance": 2
                 }
