@@ -35,18 +35,12 @@ class MyRecoveryServiceSkeleton: public RecoveryServiceSkeleton {
   ara::core::Result<bool> OpenReefedParachute() override {
     std::stop_source never_stop_source;
     auto res = controller->OpenParachute(never_stop_source.get_token(), false);
-    if (!res) {
-      return false;
-    }
     this->NewParachuteStatusEvent.Update(static_cast<uint8_t>(recovery::ParachuteState_t::OPEN_REEFED));
     return res;
   }
   ara::core::Result<bool> UnreefeParachute() override {
     std::stop_source never_stop_source;
     auto res = controller->UnreefParachute(never_stop_source.get_token(), false);
-    if (!res) {
-      return false;
-    }
     this->NewParachuteStatusEvent.Update(static_cast<uint8_t>(recovery::ParachuteState_t::OPEN_UNREEFED));
     return res;
   }

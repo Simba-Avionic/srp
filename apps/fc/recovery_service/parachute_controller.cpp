@@ -65,69 +65,61 @@ void ParachuteController::Init(std::shared_ptr<srp::service::ServoController> se
 }
 
 bool ParachuteController::OpenParachute(const std::stop_token& token, bool diag) {
-    if (!servo_controller) {
-        return false;
-    }
-    if (parachute_open && !diag) {
+    if (!servo_controller) return false;
+
+    if (parachute_state != ParachuteState_t::CLOSED && !diag) {
       return false;
-    }
+    } 
     if (!diag) {
-      parachute_open = true;
+      parachute_state = ParachuteState_t::OPEN_REEFED;
     }
-    if (token.stop_requested()) {
-      return false;
-    }
-    this->gpio_controller->SetPinValue(config_.servo_mosfet_id, 1);
-    core::condition::wait_for(std::chrono::milliseconds(config_.mosfet_delay), token);
-    if (token.stop_requested()) {
-      this->gpio_controller->SetPinValue(config_.servo_mosfet_id, 0);
-      return false;
-    }
-    for (uint8_t i = 0; i < config_.Servo_sequence_num; i++) {
-      if (token.stop_requested()) {
-        this->gpio_controller->SetPinValue(config_.servo_mosfet_id, 0);
-        return false;
+    std::jthread([&]() {
+      auto get_active_time = [&]() {
+        uint32_t active_time = 0;
+        active_time += config_.mosfet_delay * 2;
+        active_time += config_.Servo_move_time * config_.Servo_sequence_num * 2;
+        return active_time;
+      };
+      this->gpio_controller->SetPinValue(config_.servo_mosfet_id, get_active_time());
+      core::condition::wait_for(std::chrono::milliseconds(config_.mosfet_delay), token);
+      for (uint8_t i = 0; i < config_.Servo_sequence_num; i++) {
+        if (token.stop_requested()) {
+          break;
+        }
+        this->servo_controller->AutoSetServoPosition(config_.Recovery_servo_id, 1);
+        core::condition::wait_for(std::chrono::milliseconds(config_.Servo_move_time), token);
+
+        this->servo_controller->AutoSetServoPosition(config_.Recovery_servo_id, 0);
+        core::condition::wait_for(std::chrono::milliseconds(config_.Servo_move_time), token);
       }
-      this->servo_controller->AutoSetServoPosition(config_.Recovery_servo_id, 1);
-      core::condition::wait_for(std::chrono::milliseconds(config_.Servo_move_time), token);
-      if (token.stop_requested()) {
-        this->gpio_controller->SetPinValue(config_.servo_mosfet_id, 0);
-        return false;
-      }
-      this->servo_controller->AutoSetServoPosition(config_.Recovery_servo_id, 0);
-      core::condition::wait_for(std::chrono::milliseconds(config_.Servo_move_time), token);
-      if (token.stop_requested()) {
-        this->gpio_controller->SetPinValue(config_.servo_mosfet_id, 0);
-        return false;
-      }
-    }
-    if (token.stop_requested()) {
-      this->gpio_controller->SetPinValue(config_.servo_mosfet_id, 0);
-      return false;
-    }
-    core::condition::wait_for(std::chrono::milliseconds(config_.mosfet_delay), token);
-    this->gpio_controller->SetPinValue(config_.servo_mosfet_id, 0);
-    return token.stop_requested() ? false : true;
+    }).detach();
+    return true;
 }
 bool ParachuteController::UnreefParachute(const std::stop_token& token, bool diag) {
     if (!gpio_controller) {
         return false;
     }
-    if ((parachute_unreefed || !parachute_open) && !diag) {
+    if ((parachute_state != ParachuteState_t::OPEN_REEFED) && !diag) {
       return true;
     }
     if (!diag) {
-      parachute_unreefed = true;
+      parachute_state = ParachuteState_t::OPEN_UNREEFED;
     }
-    for (auto i = 0; i < config_.Linecutter_sequence_num; i++) {
-      this->gpio_controller->SetPinValue(config_.linecutter_pin_id, 1);
-      core::condition::wait_for(std::chrono::milliseconds(config_.Linecutter_active_time), token);
-      this->gpio_controller->SetPinValue(config_.linecutter_pin_id, 0);
-      core::condition::wait_for(std::chrono::milliseconds(config_.Linecutter_inactive_time), token);
-    }
-    return token.stop_requested() ? false : true;
+    std::jthread([&]() {
+      for (auto i = 0; i < config_.Linecutter_sequence_num; i++) {
+        if (token.stop_requested()) {
+          break;
+        }
+        this->gpio_controller->SetPinValue(config_.linecutter_pin_id, 1);
+        core::condition::wait_for(std::chrono::milliseconds(config_.Linecutter_active_time), token);
+
+        this->gpio_controller->SetPinValue(config_.linecutter_pin_id, 0);
+        core::condition::wait_for(std::chrono::milliseconds(config_.Linecutter_inactive_time), token);
+      }
+    }).detach();
+    return true;
 }
-ParachuteController::ParachuteController(): parachute_unreefed(false), parachute_open(false) {
+ParachuteController::ParachuteController(): parachute_state(ParachuteState_t::CLOSED) {
 }
 
 

@@ -35,8 +35,9 @@ int RecoveryService::Run(const std::stop_token& token) {
   service_ipc->StartOffer();
   service_udp->StartOffer();
   while (!token.stop_requested()) {
-    service_ipc->NewParachuteStatusEvent.Update(static_cast<uint8_t>(apps::recovery::ParachuteState_t::CLOSED));
-    service_udp->NewParachuteStatusEvent.Update(static_cast<uint8_t>(apps::recovery::ParachuteState_t::CLOSED));
+    auto parachute_state = static_cast<uint8_t>(controller->GetParachuteState());
+    service_ipc->NewParachuteStatusEvent.Update(parachute_state);
+    service_udp->NewParachuteStatusEvent.Update(parachute_state);
     core::condition::wait_for(std::chrono::milliseconds(1000), token);
   }
   service_ipc->StopOffer();

@@ -42,12 +42,12 @@ class ParachuteController {
  private:
   std::shared_ptr<srp::service::ServoController> servo_controller;
   std::unique_ptr<gpio::GPIOController> gpio_controller;
-  bool parachute_unreefed;
-  bool parachute_open;
+  ParachuteState_t parachute_state;
   Parachute_config_t config_;
 
   std::optional<Parachute_config_t> read_config(std::optional<srp::core::json::JsonParser> parser_);
  public:
+  ParachuteState_t GetParachuteState() const noexcept { return parachute_state; }
   uint16_t GetTargetActivationHeight() { return this->config_.linecutter_active_height; }
   uint16_t GetTargetActivationTime() { return this->config_.backup_linecutter_activation_time; }
   bool OpenParachute(const std::stop_token& token, bool diag = false);
