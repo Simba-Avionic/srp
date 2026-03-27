@@ -16,6 +16,7 @@
 #include <mutex>  // NOLINT
 #include <vector>
 #include <map>
+#include <utility>
 
 #include "ara/exec/adaptive_application.h"
 #include "simba/mavlink.h"
@@ -42,7 +43,11 @@ class RadioApp : public ara::exec::AdaptiveApplication {
   const ara::log::Logger& mavl_logger;
   const ara::log::Logger& someip_logger;
 
+  bool IsStateChangeApproved(const RocketState_t req_state);
+
   core::WaitQueue<std::vector<uint8_t>, 20> UartTxQueue;
+
+  std::pair<RocketState_t, uint8_t> req_rocket_state;
 
   PrimerServiceProxy primer_service_proxy;
   std::shared_ptr<PrimerServiceHandler> primer_service_handler;
@@ -72,6 +77,7 @@ class RadioApp : public ara::exec::AdaptiveApplication {
   void OnGSHEARTBEAT(const mavlink_message_t& msg);
 
   std::optional<RocketState_t> GetReqRocketStateFromGSFlags(const uint8_t flags);
+  uint8_t RocketStateToMavlinkState(const RocketState_t state) const noexcept;
 
  protected:
   void TransmittingLoop(const std::stop_token& token);
