@@ -1,0 +1,16 @@
+{
+    "sensors-temp": [
+      {
+        "physical_id" : "28-062018f00884",
+        "name" : "board_temp_1"
+      },
+      {
+        "physical_id" : "28-3c01e076e763",
+        "name" : "board_temp_2"
+      },
+      {
+        "physical_id" : "28-3c29e381356e",
+        "name" : "board_temp_3"
+      }
+    ]
+}
