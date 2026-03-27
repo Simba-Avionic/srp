@@ -21,6 +21,20 @@
 
 namespace srp {
 namespace apps {
+using RocketState_t = core::rocketState::RocketState_t;
+namespace {
+  static constexpr auto KRadio_UART_path = "/dev/ttyS1";
+  static constexpr auto KRadio_UART_baudrate = B57600;
+  static constexpr auto kSystemId = 1;
+  static constexpr auto kComponentId = 200;
+  static constexpr auto kTime = 990;  // Should be 1 Hz but better make it 1.1Hz than 0.9 wchich can trigger error on GS
+  static constexpr auto kRequired_mavlink_messages_to_change_state = 5;
+
+  static constexpr auto kEC_enabled = true;
+  static constexpr auto kFC_enabled = false;
+  static constexpr auto kStatic_test_mode = true;
+}  // namespace
+
 namespace {
   static constexpr auto kService_ipc_instance = "srp/apps/RadioApp/RadioService_ipc";
   static constexpr auto kService_udp_instance = "srp/apps/RadioApp/RadioService_udp";
@@ -31,40 +45,34 @@ namespace {
   static constexpr auto kRecovery_service_path_name = "srp/apps/RadioApp/RecoveryService";
   static constexpr auto kMain_service_path_name = "srp/apps/RadioApp/MainService";
   static constexpr auto kEngine_service_path_name = "srp/apps/RadioApp/EngineService";
-  static constexpr auto KRadio_UART_path = "/dev/ttyS1";
-  static constexpr auto KRadio_UART_baudrate = B57600;
-  static constexpr auto kSystemId = 1;
-  static constexpr auto kComponentId = 200;
-  static constexpr auto kTime = 990;  // Should be 1 Hz but better make it 1.1Hz than 0.9 wchich can trigger error on GS
-  using RocketState_t = core::rocketState::RocketState_t;
-
-  uint8_t RocketStateToMavlinkState(const RocketState_t state) {
-      switch (state) {
-          case RocketState_t::INIT:
-              return SIMBA_ROCKET_STATE_INIT;
-          case RocketState_t::DISARM:
-              return SIMBA_ROCKET_STATE_DISARM;
-          case RocketState_t::ARM:
-              return SIMBA_ROCKET_STATE_ARM;
-          case RocketState_t::LAUNCH:
-              return SIMBA_ROCKET_STATE_LAUNCH;
-          case RocketState_t::FLIGHT:
-              return SIMBA_ROCKET_STATE_FLIGHT;
-          case RocketState_t::APOGEE:
-              return SIMBA_ROCKET_STATE_APOGEE;
-          case RocketState_t::FIRST_PARACHUTE:
-              return SIMBA_ROCKET_STATE_FIRT_PARACHUTE_FALL;
-          case RocketState_t::SECOND_PARACHUTE:
-              return SIMBA_ROCKET_STATE_SECOND_PARACHUTE_ACTIVATION;
-          case RocketState_t::DROP:
-              return SIMBA_ROCKET_STATE_SECOND_PARACHUTE_FALL;
-          case RocketState_t::ABORT:
-              return SIMBA_ROCKET_STATE_SIMBA_ROCKET_STATE_ABORT;
-          default:
-              return SIMBA_ROCKET_STATE_SIMBA_ROCKET_STATE_ABORT;
-      }
-    }
 }  // namespace
+
+uint8_t RadioApp::RocketStateToMavlinkState(const RocketState_t state) const noexcept {
+  switch (state) {
+      case RocketState_t::INIT:
+          return SIMBA_ROCKET_STATE_INIT;
+      case RocketState_t::DISARM:
+          return SIMBA_ROCKET_STATE_DISARM;
+      case RocketState_t::ARM:
+          return SIMBA_ROCKET_STATE_ARM;
+      case RocketState_t::LAUNCH:
+          return SIMBA_ROCKET_STATE_LAUNCH;
+      case RocketState_t::FLIGHT:
+          return SIMBA_ROCKET_STATE_FLIGHT;
+      case RocketState_t::APOGEE:
+          return SIMBA_ROCKET_STATE_APOGEE;
+      case RocketState_t::FIRST_PARACHUTE:
+          return SIMBA_ROCKET_STATE_FIRT_PARACHUTE_FALL;
+      case RocketState_t::SECOND_PARACHUTE:
+          return SIMBA_ROCKET_STATE_SECOND_PARACHUTE_ACTIVATION;
+      case RocketState_t::DROP:
+          return SIMBA_ROCKET_STATE_SECOND_PARACHUTE_FALL;
+      case RocketState_t::ABORT:
+          return SIMBA_ROCKET_STATE_SIMBA_ROCKET_STATE_ABORT;
+      default:
+          return SIMBA_ROCKET_STATE_SIMBA_ROCKET_STATE_ABORT;
+  }
+}
 
 void RadioApp::TransmittingLoop(const std::stop_token& token) {
   mavlink_message_t msg;
@@ -134,10 +142,8 @@ void RadioApp::TransmittingLoop(const std::stop_token& token) {
     auto end = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
 
-    // Zabezpieczenie przed ujemnym czasem czekania
-    auto sleep_time = std::chrono::milliseconds(kTime) - duration;
-    if (sleep_time > std::chrono::milliseconds(0)) {
-        core::condition::wait_for(sleep_time, token);
+    if (std::chrono::milliseconds(kTime) > duration) {
+        core::condition::wait_for(std::chrono::milliseconds(kTime) - duration, token);
     }
   }
 }
@@ -177,7 +183,7 @@ void RadioApp::HBHangleActuators(const uint8_t values) {
 
   // TOFIX OBEJSCIE NA STATIC PO KONKURSIE USUNAC FLIGHT JAKO DOZWOLONY
   auto eb_state = event_data->GetComputerState(BoardType_e::EB);
-  if ( eb_state == RocketState_t::ARM || eb_state == RocketState_t::FLIGHT ) {
+  if (eb_state == RocketState_t::ARM || (kStatic_test_mode && eb_state != RocketState_t::DISARM)) {
     update_valve(SIMBA_GS_VENT_VALVE, SIMBA_ROCKET_VENT_VALVE, "VENT_VALVE",
                   [&](uint8_t val) { servo_service_handler->SetVentServoValue(val); });
     update_valve(SIMBA_GS_DUMP_VALVE, SIMBA_ROCKET_DUMP_VALVE, "DUMP_VALVE",
@@ -189,27 +195,52 @@ void RadioApp::HBHangleActuators(const uint8_t values) {
   }
 }
 
+/**
+ * @brief Spełnienie wymagania konkursu FAROUT -> pojedyńcza wiadomość mavlink nie może wywołać zmiany stanu
+ * 
+ * @param req_state 
+ * @return true 
+ * @return false 
+ */
+bool RadioApp::IsStateChangeApproved(const RocketState_t req_state) {
+  if (req_state != req_rocket_state.first) {
+    req_rocket_state.first = req_state;
+    req_rocket_state.second = 1;
+    return false;
+  }
+  req_rocket_state.second += 1;
+  if (req_rocket_state.second >= kRequired_mavlink_messages_to_change_state) {
+    return true;
+  }
+  return false;
+}
+
 void RadioApp::HBHangleState(const uint8_t values) {
-  // TODO(matikrajek42@gmail.com) Dodać obsługę MB
   auto req_state = GetReqRocketStateFromGSFlags(values);
   if (!req_state.has_value()) {
     return;
   }
-
   auto current_mb = event_data->GetComputerState(BoardType_e::MB);
   auto current_eb = event_data->GetComputerState(BoardType_e::EB);
 
-  if (req_state.value() != current_eb
-      // || req_state.value() != current_mb
-    ) {
-    if (engine_service_handler == nullptr) {
-      mavl_logger.LogWarn() << "Service handlers not ready in GS_HEARTBEAT (main/engine).";
-    } else {
-      mavl_logger.LogInfo() << "Changing rocket state to "
-                            + core::rocketState::to_string(req_state.value());
-        // main_service_handler->setMode(static_cast<uint8_t>(req_state.value()));
-        engine_service_handler->SetMode(static_cast<uint8_t>(req_state.value()));
-    }
+  if (!(((req_state.value() != current_eb) && kEC_enabled) || ((req_state.value() != current_mb) && kFC_enabled))) {
+    return;
+  }
+
+  if (!IsStateChangeApproved(req_state.value())) {
+    return;
+  }
+  if ((engine_service_handler == nullptr) && kEC_enabled || (main_service_handler == nullptr) && kFC_enabled) {
+    mavl_logger.LogWarn() << "Service handlers not ready in GS_HEARTBEAT (main/engine).";
+    return;
+  }
+  mavl_logger.LogInfo() << "Changing rocket state to "
+                    + core::rocketState::to_string(req_state.value());
+  if (kFC_enabled) {
+    main_service_handler->setMode(static_cast<uint8_t>(req_state.value()));
+  }
+  if (kEC_enabled) {
+    engine_service_handler->SetMode(static_cast<uint8_t>(req_state.value()));
   }
 }
 
@@ -294,7 +325,6 @@ int RadioApp::Run(const std::stop_token& token) {
 int RadioApp::Initialize(const std::map<ara::core::StringView,
    ara::core::StringView> parms) {
     ara::log::LogDebug() << "RadioApp Initialize called";
-    ara::log::LogDebug() << "RadioApp Initialize after artificial delay";
     event_data = EventData::GetInstance();
     ara::log::LogDebug() << "EventData instance created in Initialize";
     if (!this->uart_.Open(KRadio_UART_path, KRadio_UART_baudrate, 10)) {
@@ -309,6 +339,30 @@ int RadioApp::Initialize(const std::map<ara::core::StringView,
     this->SomeIpInit();
     return core::ErrorCode::kOk;
 }
+
+RadioApp::~RadioApp() {
+}
+
+RadioApp::RadioApp():
+          mavl_logger{ara::log::LoggingMenager::GetInstance()->CreateLogger("MAVL", "", ara::log::LogLevel::kWarn)},
+          someip_logger{ara::log::LoggingMenager::GetInstance()->CreateLogger("SOME", "", ara::log::LogLevel::kWarn)},
+          primer_service_proxy{ara::core::InstanceSpecifier{kPrimer_service_path_name}},
+          primer_service_handler{nullptr},
+          servo_service_proxy{ara::core::InstanceSpecifier{kServo_service_path_name}},
+          servo_service_handler{nullptr},
+          env_service_proxy{ara::core::InstanceSpecifier{kEnv_service_path_name}},
+          env_service_handler{nullptr},
+          gps_service_proxy{ara::core::InstanceSpecifier{kGPS_service_path_name}},
+          gps_service_handler{nullptr},
+          main_service_handler{nullptr},
+          main_service_proxy{ara::core::InstanceSpecifier{kMain_service_path_name}},
+          engine_service_handler{nullptr},
+          engine_service_proxy{ara::core::InstanceSpecifier{kEngine_service_path_name}},
+          recovery_service_handler{nullptr},
+          service_ipc_instance(kService_ipc_instance),
+          service_udp_instance(kService_udp_instance) {
+}
+
 void RadioApp::SomeIpInit() {
     someip_logger.LogDebug() << "SomeIpInit started";
     this->env_service_proxy.StartFindService([this](auto handler) {
@@ -507,26 +561,5 @@ void RadioApp::SomeIpInit() {
     }));
     // TODO(matikrajek42@gmail.com) Write MB Temp After GrKo write Env App for FC
   }
-RadioApp::~RadioApp() {
-}
-RadioApp::RadioApp():
-          mavl_logger{ara::log::LoggingMenager::GetInstance()->CreateLogger("MAVL", "", ara::log::LogLevel::kWarn)},
-          someip_logger{ara::log::LoggingMenager::GetInstance()->CreateLogger("SOME", "", ara::log::LogLevel::kWarn)},
-          primer_service_proxy{ara::core::InstanceSpecifier{kPrimer_service_path_name}},
-          primer_service_handler{nullptr},
-          servo_service_proxy{ara::core::InstanceSpecifier{kServo_service_path_name}},
-          servo_service_handler{nullptr},
-          env_service_proxy{ara::core::InstanceSpecifier{kEnv_service_path_name}},
-          env_service_handler{nullptr},
-          gps_service_proxy{ara::core::InstanceSpecifier{kGPS_service_path_name}},
-          gps_service_handler{nullptr},
-          main_service_handler{nullptr},
-          main_service_proxy{ara::core::InstanceSpecifier{kMain_service_path_name}},
-          engine_service_handler{nullptr},
-          engine_service_proxy{ara::core::InstanceSpecifier{kEngine_service_path_name}},
-          recovery_service_handler{nullptr},
-          service_ipc_instance(kService_ipc_instance),
-          service_udp_instance(kService_udp_instance) {
-}
 }  // namespace apps
 }  // namespace srp

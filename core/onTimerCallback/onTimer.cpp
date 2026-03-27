@@ -18,10 +18,14 @@
 namespace srp {
 namespace core {
 
+namespace {
+    static constexpr auto kMax_sleep_time_ms = 1000;
+}
+
 
 void TimerController::Loop(const std::stop_token& token) {
     while (!token.stop_requested()) {
-        uint32_t can_sleep_for_ms = 1000;
+        uint32_t can_sleep_for_ms = kMax_sleep_time_ms;
         auto now = std::chrono::high_resolution_clock::now();
         std::vector<OnTimerCallback> callbacks_to_run;
         {
@@ -38,11 +42,16 @@ void TimerController::Loop(const std::stop_token& token) {
                 }
             }
         }
+        const auto start_cb = std::chrono::high_resolution_clock::now();
         for (auto& cb : callbacks_to_run) {
             cb();
         }
-
-        condition::wait_for(std::chrono::milliseconds(can_sleep_for_ms), token);
+        const auto end_cb = std::chrono::high_resolution_clock::now();
+        const auto elapsed = std::chrono::duration_cast<
+                std::chrono::milliseconds>(end_cb - start_cb).count();
+        if (elapsed < can_sleep_for_ms) {
+            condition::wait_for(std::chrono::milliseconds(can_sleep_for_ms - elapsed), token);
+        }
     }
 }
 
