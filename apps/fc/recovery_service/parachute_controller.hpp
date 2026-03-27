@@ -11,8 +11,13 @@
 #ifndef APPS_FC_RECOVERY_SERVICE_PARACHUTE_CONTROLLER_HPP_
 #define APPS_FC_RECOVERY_SERVICE_PARACHUTE_CONTROLLER_HPP_
 #include <stop_token>
+#include <atomic>
 #include <memory>
+#include <mutex>  // NOLINT
+#include <optional>
 #include <string>
+#include <thread>  // NOLINT
+
 #include "apps/ec/ServoService/servoController/servo_controller.hpp"
 #include "mw/gpio_server/controller/gpio_controller.hpp"
 namespace srp {
@@ -21,9 +26,13 @@ namespace recovery {
 
 enum ParachuteState_t {
   CLOSED = 1,
-  OPEN_REEFED = 2,
-  OPEN_UNREEFED = 3,
+  OPENING_REEFED,
+  OPEN_REEFED,
+  OPENING_UNREEFED,
+  OPEN_UNREEFED,
+  ERROR,
 };
+
 struct Parachute_config_t {
   uint16_t mosfet_delay;
   uint16_t Servo_move_time;
@@ -40,21 +49,30 @@ struct Parachute_config_t {
 
 class ParachuteController {
  private:
-  std::shared_ptr<srp::service::ServoController> servo_controller;
-  std::unique_ptr<gpio::GPIOController> gpio_controller;
-  bool parachute_unreefed;
-  bool parachute_open;
+  srp::service::ServoController servo_controller;
+  gpio::GPIOController gpio_controller;
+  std::atomic<ParachuteState_t> parachute_state;
+  std::atomic<bool> operation_in_progress_;
+  std::mutex operation_mtx_;
+  std::mutex config_mtx_;
   Parachute_config_t config_;
+  std::jthread operation_thread_;
 
   std::optional<Parachute_config_t> read_config(std::optional<srp::core::json::JsonParser> parser_);
+  void JoinFinishedWorkerIfNeeded();
+
  public:
-  uint16_t GetTargetActivationHeight() { return this->config_.linecutter_active_height; }
-  uint16_t GetTargetActivationTime() { return this->config_.backup_linecutter_activation_time; }
-  bool OpenParachute(const std::stop_token& token, bool diag = false);
-  bool UnreefParachute(const std::stop_token& token, bool diag = false);
-  void Init(std::shared_ptr<srp::service::ServoController> servo,
-              std::unique_ptr<gpio::GPIOController>&& gpio, const std::string& path);
+  static std::shared_ptr<ParachuteController> GetInstance();
+  ParachuteState_t GetParachuteState() const noexcept { return parachute_state.load(); }
+  bool OpenParachute(const std::stop_token& token);
+  bool UnreefParachute(const std::stop_token& token);
+  void StopThred();
+  void Init(const std::string& path);
   ParachuteController();
+  ParachuteController(const ParachuteController&) = delete;
+  ParachuteController& operator=(const ParachuteController&) = delete;
+  ParachuteController(ParachuteController&&) = delete;
+  ParachuteController& operator=(ParachuteController&&) = delete;
 };
 
 }  // namespace recovery
