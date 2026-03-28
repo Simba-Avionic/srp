@@ -18,6 +18,7 @@
 #include "simba/simba.h"
 #include "ara/log/log.h"
 #include "core/common/condition.h"
+#include "apps/fc/recovery_service/parachute_controller.hpp"
 
 namespace srp {
 namespace apps {
@@ -45,6 +46,7 @@ namespace {
   static constexpr auto kRecovery_service_path_name = "srp/apps/RadioApp/RecoveryService";
   static constexpr auto kMain_service_path_name = "srp/apps/RadioApp/MainService";
   static constexpr auto kEngine_service_path_name = "srp/apps/RadioApp/EngineService";
+  static constexpr auto kEnv_fc_service_path_name = "srp/apps/RadioApp/EnvAppFc";
 }  // namespace
 
 uint8_t RadioApp::RocketStateToMavlinkState(const RocketState_t state) const noexcept {
@@ -352,12 +354,15 @@ RadioApp::RadioApp():
           servo_service_handler{nullptr},
           env_service_proxy{ara::core::InstanceSpecifier{kEnv_service_path_name}},
           env_service_handler{nullptr},
+          env_fc_service_proxy{ara::core::InstanceSpecifier{kEnv_fc_service_path_name}},
+          env_fc_service_handler{nullptr},
           gps_service_proxy{ara::core::InstanceSpecifier{kGPS_service_path_name}},
           gps_service_handler{nullptr},
           main_service_handler{nullptr},
           main_service_proxy{ara::core::InstanceSpecifier{kMain_service_path_name}},
           engine_service_handler{nullptr},
           engine_service_proxy{ara::core::InstanceSpecifier{kEngine_service_path_name}},
+          recovery_service_proxy{ara::core::InstanceSpecifier{kRecovery_service_path_name}},
           recovery_service_handler{nullptr},
           service_ipc_instance(kService_ipc_instance),
           service_udp_instance(kService_udp_instance) {
@@ -523,7 +528,96 @@ void RadioApp::SomeIpInit() {
         });
       });
     });
-    // TODO(matikrajek42@gmail.com) add RECOVERY_SERVO, RECOVERY_LINECUTTER, ROCKET_CAMERAS
+    this->recovery_service_proxy.StartFindService([this] (auto handler){
+      someip_logger.LogDebug() << "Recovery service handler discovered";
+      this->recovery_service_handler = handler;
+      recovery_service_handler->NewParachuteStatusEvent.Subscribe(1, [this](const uint8_t status){
+        someip_logger.LogDebug() << "Subscribed to ParachuteStatusEvent, status="
+                             + std::to_string(static_cast<int>(status));
+        recovery_service_handler->NewParachuteStatusEvent.SetReceiveHandler([this] (){
+          auto res = recovery_service_handler->NewParachuteStatusEvent.GetNewSamples();
+          if (!res.HasValue()) {
+            return;
+          }
+          someip_logger.LogDebug() << "NewParachuteStatusEvent sample: "
+                      << std::to_string(res.Value());
+          switch (static_cast<recovery::ParachuteState_t> (res.Value())) {
+            case recovery::ParachuteState_t::CLOSED:
+              this->event_data->SetActuatorState(SIMBA_ROCKET_RECOVERY_SERVO, 0);
+              this->event_data->SetActuatorState(SIMBA_ROCKET_RECOVERY_LINECUTTER, 0);
+              break;
+            case recovery::ParachuteState_t::OPEN_REEFED:
+              this->event_data->SetActuatorState(SIMBA_ROCKET_RECOVERY_SERVO, 1);
+              this->event_data->SetActuatorState(SIMBA_ROCKET_RECOVERY_LINECUTTER, 0);
+              break;
+            case recovery::ParachuteState_t::OPEN_UNREEFED:
+              this->event_data->SetActuatorState(SIMBA_ROCKET_RECOVERY_SERVO, 1);
+              this->event_data->SetActuatorState(SIMBA_ROCKET_RECOVERY_LINECUTTER, 1);
+              break;
+            default:
+              break;
+          }
+        });
+      });
+    });
+    this->env_fc_service_proxy.StartFindService([this](auto handler) {
+      someip_logger.LogDebug() << "Env Flight Computer service handler discovered";
+      this->env_fc_service_handler = handler;
+      env_fc_service_handler->newBME280Event.Subscribe(1, [this](const uint8_t status){
+        someip_logger.LogDebug() << "Subscribed to BME280 event, status="
+                             + std::to_string(static_cast<int>(status));
+        env_fc_service_handler->newBME280Event.SetReceiveHandler([this] (){
+          auto res = env_fc_service_handler->newBME280Event.GetNewSamples();
+          if (!res.HasValue()) {
+            return;
+          }
+          someip_logger.LogDebug() << "Altitude sample: "
+                      << std::to_string(res.Value().altitude);
+          this->event_data->SetMaxAltitude(static_cast<int32_t>(res.Value().altitude));
+        });
+      });
+      env_fc_service_handler->newBoardTempEvent_1.Subscribe(1, [this](const uint8_t status){
+        someip_logger.LogDebug() << "Subscribed to newBoardTempEvent_1 event, status="
+                             + std::to_string(static_cast<int>(status));
+        env_fc_service_handler->newBoardTempEvent_1.SetReceiveHandler([this] (){
+          auto res = env_fc_service_handler->newBoardTempEvent_1.GetNewSamples();
+          if (!res.HasValue()) {
+            return;
+          }
+          someip_logger.LogDebug() << "newBoardTempEvent_1 sample: "
+                      << std::to_string(res.Value());
+          this->event_data->SetComputerTemp(BoardType_e::MB, 0, res.Value());
+        });
+      });
+      env_fc_service_handler->newBoardTempEvent_2.Subscribe(1, [this](const uint8_t status){
+        someip_logger.LogDebug() << "Subscribed to newBoardTempEvent_2 event, status="
+                             + std::to_string(static_cast<int>(status));
+        env_fc_service_handler->newBoardTempEvent_2.SetReceiveHandler([this] (){
+          auto res = env_fc_service_handler->newBoardTempEvent_2.GetNewSamples();
+          if (!res.HasValue()) {
+            return;
+          }
+          someip_logger.LogDebug() << "newBoardTempEvent_2 sample: "
+                      << std::to_string(res.Value());
+          this->event_data->SetComputerTemp(BoardType_e::MB, 1, res.Value());
+        });
+      });
+      env_fc_service_handler->newBoardTempEvent_3.Subscribe(1, [this](const uint8_t status){
+        someip_logger.LogDebug() << "Subscribed to newBoardTempEvent_3 event, status="
+                             + std::to_string(static_cast<int>(status));
+        env_fc_service_handler->newBoardTempEvent_3.SetReceiveHandler([this] (){
+          auto res = env_fc_service_handler->newBoardTempEvent_3.GetNewSamples();
+          if (!res.HasValue()) {
+            return;
+          }
+          someip_logger.LogDebug() << "newBoardTempEvent_3 sample: "
+                      << std::to_string(res.Value());
+          this->event_data->SetComputerTemp(BoardType_e::MB, 2, res.Value());
+        });
+      });
+    });
+
+    // TODO(matikrajek42@gmail.com)  ROCKET_CAMERAS
     this->main_service_proxy.StartFindService([this](auto handler) {
       someip_logger.LogDebug() << "Main service handler discovered";
       this->main_service_handler = handler;
@@ -536,7 +630,7 @@ void RadioApp::SomeIpInit() {
             return;
           }
           someip_logger.LogDebug() << "Main CurrentModeStatusEvent sample: "
-                               << core::rocketState::to_string(static_cast<RocketState_t>(res.Value()));;
+                               << core::rocketState::to_string(static_cast<RocketState_t>(res.Value()));
           this->event_data->SetComputerState(BoardType_e::MB,
                                   static_cast<RocketState_t>(res.Value()));
         });
