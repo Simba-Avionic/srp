@@ -1,14 +1,15 @@
 ---
 name: Lint, build and test SRP
 on:
-  push:
-    branches:
-      - master
   pull_request:
     branches:
       - master
   merge_group:
-  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   cpplint:
     name: CppLint Check
@@ -26,8 +27,8 @@ jobs:
         run: |
           /bin/bash ./tools/cpplint/cpplint.sh
 
-  bazel-test:
-    name: SRP Unit Tests
+  build-and-test:
+    name: SRP Build & Test SRP
     needs: cpplint
     runs-on: ubuntu-latest
     container:
@@ -39,63 +40,14 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Run Bazel tests
+      - name: Build
         run: |
-          ./tools/ut/unittest.sh --no_cache
+          bazel build --config=bbb-platform //deployment/cpu/ec:pkg //deployment/cpu/fc:pkg
 
-  bazel-coverage:
-    name: SRP Coverage
-    needs:
-      - build
-      - bazel-test
-    runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/simba-avionic/simba_avionics_dockers/docker-action:latest
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          submodules: recursive
-
-      - name: Run Bazel tests
+      - name: Test
         run: |
-          ./tools/coverage/coverage.sh
+          ./tools/ut/unittest.sh
 
-  build:
-    name: Build EC & FC
-    needs: cpplint
-    runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/simba-avionic/simba_avionics_dockers/docker-action:latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          submodules: recursive
-
-      - name: Build EC package
+      - name: Build all
         run: |
-          bazel build --config=bbb-platform //deployment/cpu/ec:pkg
-
-      - name: Build FC package
-        run: |
-          bazel build --config=bbb-platform //deployment/cpu/fc:pkg
-
-  build-all:
-    name: Build All
-    needs:
-      - build
-      - bazel-test
-    runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/simba-avionic/simba_avionics_dockers/docker-action:latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          submodules: recursive
-
-      - name: Build All
-        run: |
-          ./tools/build_all/build_all.sh --no_cache
+          ./tools/build_all/build_all.sh
