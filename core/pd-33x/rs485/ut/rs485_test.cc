@@ -52,9 +52,9 @@ TEST(RS485Test, WriteReadSuccess) {
     auto gpio_mock = std::make_unique<srp::mock::MOCKGPIOController>();
 
     EXPECT_CALL(*uart_mock, Open(_, _, _)).WillOnce(Return(true));
-    EXPECT_CALL(*gpio_mock, SetPinValue(1, 1, 0)).WillOnce(Return(srp::core::ErrorCode::kOk));
+    EXPECT_CALL(*gpio_mock, SetPinValue(1, 1, 0, false)).WillOnce(Return(srp::core::ErrorCode::kOk));
     EXPECT_CALL(*uart_mock, Write(data)).WillOnce(Return(srp::core::ErrorCode::kOk));
-    EXPECT_CALL(*gpio_mock, SetPinValue(1, 0, 0)).WillOnce(Return(srp::core::ErrorCode::kOk));
+    EXPECT_CALL(*gpio_mock, SetPinValue(1, 0, 0, false)).WillOnce(Return(srp::core::ErrorCode::kOk));
     EXPECT_CALL(*uart_mock, Read(2)).WillOnce(Return(response));
     EXPECT_CALL(*uart_mock, Close()).Times(1);
 
@@ -74,7 +74,7 @@ TEST(RS485Test, WriteReadFail1) {
     auto gpio_mock = std::make_unique<srp::mock::MOCKGPIOController>();
 
     EXPECT_CALL(*uart_mock, Open(_, _, _)).WillOnce(Return(true));
-    EXPECT_CALL(*gpio_mock, SetPinValue(1, 1, 0)).WillOnce(Return(srp::core::ErrorCode::kNotDefine));
+    EXPECT_CALL(*gpio_mock, SetPinValue(1, 1, 0, false)).WillOnce(Return(srp::core::ErrorCode::kNotDefine));
     EXPECT_CALL(*uart_mock, Close()).Times(1);
 
     ASSERT_TRUE(rs485.Init(config, std::move(uart_mock), std::move(gpio_mock)));
@@ -92,7 +92,7 @@ TEST(RS485Test, WriteReadFail2) {
     auto gpio_mock = std::make_unique<srp::mock::MOCKGPIOController>();
 
     EXPECT_CALL(*uart_mock, Open(_, _, _)).WillOnce(Return(true));
-    EXPECT_CALL(*gpio_mock, SetPinValue(1, 1, 0)).WillOnce(Return(srp::core::ErrorCode::kOk));
+    EXPECT_CALL(*gpio_mock, SetPinValue(1, 1, 0, false)).WillOnce(Return(srp::core::ErrorCode::kOk));
     EXPECT_CALL(*uart_mock, Write(data)).WillOnce(Return(srp::core::ErrorCode::kNotDefine));
     EXPECT_CALL(*uart_mock, Close()).Times(1);
 
@@ -110,9 +110,9 @@ TEST(RS485Test, WriteReadFail3) {
     auto gpio_mock = std::make_unique<srp::mock::MOCKGPIOController>();
 
     EXPECT_CALL(*uart_mock, Open(_, _, _)).WillOnce(Return(true));
-    EXPECT_CALL(*gpio_mock, SetPinValue(1, 1, 0)).WillOnce(Return(srp::core::ErrorCode::kOk));
+    EXPECT_CALL(*gpio_mock, SetPinValue(1, 1, 0, false)).WillOnce(Return(srp::core::ErrorCode::kOk));
     EXPECT_CALL(*uart_mock, Write(data)).WillOnce(Return(srp::core::ErrorCode::kOk));
-    EXPECT_CALL(*gpio_mock, SetPinValue(1, 0, 0)).WillOnce(Return(srp::core::ErrorCode::kNotDefine));
+    EXPECT_CALL(*gpio_mock, SetPinValue(1, 0, 0, false)).WillOnce(Return(srp::core::ErrorCode::kNotDefine));
     EXPECT_CALL(*uart_mock, Close()).Times(1);
 
     ASSERT_TRUE(rs485.Init(config, std::move(uart_mock), std::move(gpio_mock)));

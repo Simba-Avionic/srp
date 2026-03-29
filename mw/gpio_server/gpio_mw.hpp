@@ -62,8 +62,6 @@ class GPIOMWService : public ara::exec::AdaptiveApplication {
     std::optional<std::unordered_map<uint8_t, GpioConf>> ReadConfig(
                               const std::string& path) const;
     int InitPins();
-    std::vector<uint8_t> ActionSetCallback(const srp::mw::gpio::GpioHdr hdr,
-        );
     int Init(std::unique_ptr<srp::com::soc::ISocketStream> socket,
                               std::shared_ptr<core::gpio::IGpioDriver> gpio);
 

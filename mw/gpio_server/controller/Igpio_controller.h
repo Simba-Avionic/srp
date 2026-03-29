@@ -36,7 +36,8 @@ class IGPIOController {
      * @param value 
      * @return core::ErrorCode 
      */
-    virtual core::ErrorCode SetPinValue(uint8_t actuatorID, int8_t value, const uint16_t active_time = 0, const bool force_time = false) = 0;
+    virtual core::ErrorCode SetPinValue(uint8_t actuatorID, int8_t value,
+                            const uint16_t active_time = 0, const bool force_time = false) = 0;
     /**
      * @brief Get the Pin Value
      * 

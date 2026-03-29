@@ -28,9 +28,7 @@ namespace {
     static constexpr auto kPin_on = 1;
     static constexpr auto kPin_off = 0;
     static constexpr auto kRecovery_instance_name = "srp/apps/MainService/RecoveryService";
-    static constexpr auto kEB_state_change_required = {RocketState_t::APOGEE,
-        RocketState_t::FIRST_PARACHUTE, RocketState_t::SECOND_PARACHUTE, RocketState_t::DROP};
-}
+}  // namespace
 using RocketState_t = core::rocketState::RocketState_t;
 
 MainService::MainService(): recovery_proxy_{ara::core::InstanceSpecifier{kRecovery_instance_name}} {}
@@ -68,14 +66,16 @@ int MainService::Initialize(const std::map<ara::core::StringView, ara::core::Str
 
 void MainService::OnStateChange(core::rocketState::RocketState_t state) {
     auto update_req = false;
-    for (const auto& st: kEB_state_change_required) {
+    const auto change_require = {RocketState_t::APOGEE,
+        RocketState_t::FIRST_PARACHUTE, RocketState_t::SECOND_PARACHUTE, RocketState_t::DROP};
+    for (const auto& st : change_require) {
         if (st == state) {
             update_req = true;
             break;
         }
     }
     if (update_req) {
-        // TODO() add eb controll on state FLIGHT > 
+        // TODO(matikrajek42@gmail.com) add eb controll on state FLIGHT >
     }
 
     service_ipc->CurrentModeStatusEvent.Update(static_cast<uint8_t>(state));

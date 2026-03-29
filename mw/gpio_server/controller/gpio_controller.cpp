@@ -60,7 +60,8 @@ std::vector<uint8_t> GPIOController::HandleCallback(const std::string& _ip, cons
     return {1};
 }
 
-core::ErrorCode GPIOController::SetPinValue(uint8_t actuatorID, int8_t value, const uint16_t active_time, const bool force_time) {
+core::ErrorCode GPIOController::SetPinValue(uint8_t actuatorID, int8_t value,
+                                            const uint16_t active_time, const bool force_time) {
     if (this->sock_== nullptr) {
         return core::ErrorCode::kInitializeError;
     }

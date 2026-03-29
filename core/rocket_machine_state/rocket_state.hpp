@@ -23,21 +23,21 @@ namespace core {
 namespace rocketState {
 
 enum RocketState_t: uint8_t {
-    ABORT = 64,           // ABORT -> spuszczamy paliwo i wylaczamy silniki
-    INIT = 0,             // Domyślny stan
-    DISARM = 1,           // Wyłączone actuatory
-    ARM = 2,              // Actuatory zasilane
-    LAUNCH = 3,           // Sekwencja startowa
+    ABORT = 64,            // ABORT -> spuszczamy paliwo i wylaczamy silniki
+    INIT = 0,              // Domyślny stan
+    DISARM = 1,            // Wyłączone actuatory
+    ARM = 2,               // Actuatory zasilane
+    LAUNCH = 3,            // Sekwencja startowa
     // STANY powyżej sterowane są wspólnie (dla obu komputerów przez GS)
-    
+
     // Stan flight jest wywoływany dla fc i ec przez EC
-    FLIGHT = 4 ,          // Lot przed apogeum
-    
+    FLIGHT = 4 ,           // Lot przed apogeum
+
     // Stany poniżej wywoływane są przez fc na obu komputerach
-    APOGEE = 5,           // Apogeum wyzwolone
-    FIRST_PARACHUTE = 6,  // Opadanie zrefowany spadochron
-    SECOND_PARACHUTE = 7, // Sekwencja odrefowania spadochronu
-    DROP = 8,             // Spadanie odrefowany spadochron
+    APOGEE = 5,            // Apogeum wyzwolone
+    FIRST_PARACHUTE = 6,   // Opadanie zrefowany spadochron
+    SECOND_PARACHUTE = 7,  // Sekwencja odrefowania spadochronu
+    DROP = 8,              // Spadanie odrefowany spadochron
 };
 
 static std::string to_string(const RocketState_t state) {
