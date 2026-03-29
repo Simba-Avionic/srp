@@ -205,7 +205,7 @@ void EngineApp::OnDisarm() {
 }
 
 void EngineApp::OnApogee() {
-  // TODO Here we should open DUMP, VENT, MAIN VALVES, and disable power off all devices
+  OnAbort();
 }
 
 void EngineApp::OnAbort() {

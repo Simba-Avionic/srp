@@ -12,6 +12,7 @@ filegroup(
         "//apps/fc/recovery_service:__subpackages__",
         "//deployment/apps/fc/recovery_service:__subpackages__",
         "//deployment/apps/fc/radio_app:__subpackages__",
+        "//deployment/apps/fc/main_app:__subpackages__",
     ],
 )
 

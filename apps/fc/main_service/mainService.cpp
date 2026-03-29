@@ -21,17 +21,23 @@
 namespace srp {
 namespace service {
 namespace {
-constexpr auto kService_ipc_name = "srp/apps/MainService/MainService_ipc";
-constexpr auto kService_udp_name = "srp/apps/RecoveryService/MainService_udp";
-const auto kMain_loop_delay_ms = 10;
-const auto kSend_event_time = 1000;
+    static constexpr auto kService_ipc_name = "srp/apps/MainService/MainService_ipc";
+    static constexpr auto kService_udp_name = "srp/apps/MainService/MainService_udp";
+    static constexpr auto kSend_event_time = std::chrono::milliseconds(1000);
+    static constexpr auto kArmPinID = 5;
+    static constexpr auto kPin_on = 1;
+    static constexpr auto kPin_off = 0;
+    static constexpr auto kRecovery_instance_name = "srp/apps/MainService/RecoveryService";
+    static constexpr auto kEB_state_change_required = {RocketState_t::APOGEE,
+        RocketState_t::FIRST_PARACHUTE, RocketState_t::SECOND_PARACHUTE, RocketState_t::DROP};
 }
 using RocketState_t = core::rocketState::RocketState_t;
 
-MainService::MainService() {}
+MainService::MainService(): recovery_proxy_{ara::core::InstanceSpecifier{kRecovery_instance_name}} {}
 
 int MainService::Initialize(const std::map<ara::core::StringView, ara::core::StringView>
                     parms) {
+    apogee_detection_allowed = false;
     state_ctr = core::rocketState::RocketStateController::GetInstance();
 
     service_ipc = std::make_unique<apps::MyMainServiceSkeleton>(
@@ -39,16 +45,39 @@ int MainService::Initialize(const std::map<ara::core::StringView, ara::core::Str
     service_udp = std::make_unique<apps::MyMainServiceSkeleton>(
         ara::core::InstanceSpecifier(kService_udp_name));
 
-    state_ctr->RegisterCallback(RocketState_t::ARM, [this]() {
-        this->OnArm();
-    });
+    state_ctr->RegisterCallback(RocketState_t::ARM, [this]() { this->OnArm(); });
+    state_ctr->RegisterCallback(RocketState_t::DISARM, [this]() { this->OnDisarm(); });
+    state_ctr->RegisterCallback(RocketState_t::ABORT, [this]() { this->OnAbort(); });
+    state_ctr->RegisterCallback(RocketState_t::LAUNCH, [this]() { this->OnLaunch(); });
+    state_ctr->RegisterCallback(RocketState_t::APOGEE, [this]() { this->OnApogee(); });
+    state_ctr->RegisterCallback(RocketState_t::SECOND_PARACHUTE, [this]() { this->OnSecondParachute(); });
     state_ctr->RegisterOnStateChangeCallback([this](core::rocketState::RocketState_t state) {
             this->OnStateChange(state);
+    });
+    state_ctr->RegisterRequirementsCallback([this](core::rocketState::RocketState_t state) {
+        if (state == RocketState_t::APOGEE) {
+            return apogee_detection_allowed;
+        }
+        return true;
+    });
+    recovery_proxy_.StartFindService([this](auto handler) {
+        this->recovery_handler_ = handler;
     });
     return 0;
 }
 
 void MainService::OnStateChange(core::rocketState::RocketState_t state) {
+    auto update_req = false;
+    for (const auto& st: kEB_state_change_required) {
+        if (st == state) {
+            update_req = true;
+            break;
+        }
+    }
+    if (update_req) {
+        // TODO() add eb controll on state FLIGHT > 
+    }
+
     service_ipc->CurrentModeStatusEvent.Update(static_cast<uint8_t>(state));
     service_udp->CurrentModeStatusEvent.Update(static_cast<uint8_t>(state));
 }
@@ -56,15 +85,47 @@ void MainService::OnStateChange(core::rocketState::RocketState_t state) {
 int MainService::Run(const std::stop_token& token) {
     service_ipc->StartOffer();
     service_udp->StartOffer();
-    state_ctr->SetState(RocketState_t::DISARM);
-
+    while (!token.stop_requested()) {
+        auto state = static_cast<uint8_t>(state_ctr->GetState());
+        service_ipc->CurrentModeStatusEvent.Update(state);
+        service_udp->CurrentModeStatusEvent.Update(state);
+        core::condition::wait_for(kSend_event_time, token);
+    }
     service_ipc->StopOffer();
     service_udp->StopOffer();
+    recovery_proxy_.StopFindService();
     return 0;
 }
 
 void MainService::OnArm() {
+    gpio_.SetPinValue(kArmPinID, kPin_on);
+    // TOFIX() here should be Linecutter ARM pin but it dont exist...
 }
+
+void MainService::OnDisarm() {
+    gpio_.SetPinValue(kArmPinID, kPin_off);
+    // TOFIX() here should be Linecutter ARM pin but it dont exist...
+}
+
+void MainService::OnAbort() {
+    this->OnDisarm();
+}
+
+void MainService::OnLaunch() {
+    apogee_detection_allowed = true;
+}
+
+void MainService::OnApogee() {
+    recovery_handler_->OpenReefedParachute();
+    state_ctr->SetState(RocketState_t::FIRST_PARACHUTE);
+}
+
+void MainService::OnSecondParachute() {
+    recovery_handler_->UnreefeParachute();
+    state_ctr->SetState(RocketState_t::DROP);
+}
+
+
 
 }  // namespace service
 }  // namespace srp
