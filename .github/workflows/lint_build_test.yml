@@ -12,7 +12,9 @@ on:
 jobs:
   cpplint:
     name: CppLint Check
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/simba-avionic/simba_avionics_dockers/docker-action:latest
 
     steps:
       - name: Checkout repository
@@ -27,7 +29,9 @@ jobs:
   bazel-test:
     name: SRP Unit Tests
     needs: cpplint
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/simba-avionic/simba_avionics_dockers/docker-action:latest
 
     steps:
       - name: Checkout repository
@@ -44,7 +48,9 @@ jobs:
     needs:
       - build
       - bazel-test
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/simba-avionic/simba_avionics_dockers/docker-action:latest
 
     steps:
       - name: Checkout repository
@@ -59,7 +65,9 @@ jobs:
   build:
     name: Build EC & FC
     needs: cpplint
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/simba-avionic/simba_avionics_dockers/docker-action:latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -79,7 +87,9 @@ jobs:
     needs:
       - build
       - bazel-test
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/simba-avionic/simba_avionics_dockers/docker-action:latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
