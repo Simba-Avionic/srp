@@ -33,6 +33,7 @@ namespace {
   static constexpr auto kPin_off = 0;
   static constexpr auto kPin_on = 1;
   static constexpr auto kHeartBeatPinID = 3;
+  using RocketState_t = core::rocketState::RocketState_t;
 }  // namespace
 
 std::optional<std::vector<ArmPinConfig_t>> EngineApp::LoadArmPinConfig(const std::string& path) {
@@ -102,11 +103,11 @@ int EngineApp::Initialize(const std::map<ara::core::StringView, ara::core::Strin
   }
   this->arm_pins_id = std::move(arm_pins.value());
   state_ctr = core::rocketState::RocketStateController::GetInstance();
-  state_ctr->RegisterRequirementsCallback([this](core::rocketState::RocketState_t state) {
+  state_ctr->RegisterRequirementsCallback([this](RocketState_t state) {
     switch (state) {
-      case core::rocketState::RocketState_t::LAUNCH:
+      case RocketState_t::LAUNCH:
         break;
-      case core::rocketState::RocketState_t::ARM:
+      case RocketState_t::ARM:
         if ((primer_handler_ == nullptr || servo_handler_ == nullptr)) {
           ara::log::LogError() << "Invalid pointer to Primer or Servo";
           return false;
@@ -117,24 +118,14 @@ int EngineApp::Initialize(const std::map<ara::core::StringView, ara::core::Strin
     }
     return true;
   });
-  state_ctr->RegisterOnStateChangeCallback([this](core::rocketState::RocketState_t state) {
+  state_ctr->RegisterOnStateChangeCallback([this](RocketState_t state) {
         this->OnStateChange(state);
   });
-  state_ctr->RegisterCallback(core::rocketState::RocketState_t::LAUNCH, [this]() {
-      this->OnLaunch();
-  });
-  state_ctr->RegisterCallback(core::rocketState::RocketState_t::ARM, [this]() {
-      this->OnArm();
-  });
-  state_ctr->RegisterCallback(core::rocketState::RocketState_t::DISARM, [this]() {
-      this->OnDisarm();
-  });
-  state_ctr->RegisterCallback(core::rocketState::RocketState_t::APOGEE, [this]() {
-      this->OnApogee();
-  });
-  state_ctr->RegisterCallback(core::rocketState::RocketState_t::ABORT, [this]() {
-      this->OnAbort();
-  });
+  state_ctr->RegisterCallback(RocketState_t::LAUNCH, [this]() { this->OnLaunch(); });
+  state_ctr->RegisterCallback(RocketState_t::ARM, [this]() { this->OnArm(); });
+  state_ctr->RegisterCallback(RocketState_t::DISARM, [this]() { this->OnDisarm(); });
+  state_ctr->RegisterCallback(RocketState_t::APOGEE, [this]() { this->OnApogee(); });
+  state_ctr->RegisterCallback(RocketState_t::ABORT, [this]() { this->OnAbort(); });
 
   servo_proxy.StartFindService([this](auto handler) {
     servo_handler_ = handler;
@@ -161,11 +152,11 @@ int EngineApp::Initialize(const std::map<ara::core::StringView, ara::core::Strin
     return 1;
   }
   ara::log::LogInfo() << "Initialize Complete";
-  state_ctr->SetState(core::rocketState::RocketState_t::DISARM);
+  state_ctr->SetState(RocketState_t::DISARM);
   return 0;
 }
 
-void EngineApp::OnStateChange(core::rocketState::RocketState_t new_state) {
+void EngineApp::OnStateChange(RocketState_t new_state) {
   service_ipc.CurrentMode.Update(static_cast<uint8_t>(new_state));
   service_udp.CurrentMode.Update(static_cast<uint8_t>(new_state));
 }
@@ -184,7 +175,7 @@ void EngineApp::OnLaunch() {
       ara::log::LogError() << "Invalid request to MW:I2CService";
       return;
     }
-    state_ctr->SetState(core::rocketState::RocketState_t::FLIGHT);
+    state_ctr->SetState(RocketState_t::FLIGHT);
   }).detach();
 }
 
@@ -205,6 +196,7 @@ void EngineApp::OnDisarm() {
 }
 
 void EngineApp::OnApogee() {
+  // TODO Here we should open DUMP, VENT, MAIN VALVES, and disable power off all devices
 }
 
 void EngineApp::OnAbort() {
