@@ -2,7 +2,8 @@
     "include": [
         "deployment/system_definition/someip/engine_service/service.json",
         "deployment/system_definition/someip/servo_service/service.json",
-        "deployment/system_definition/someip/prim_service/service.json"
+        "deployment/system_definition/someip/prim_service/service.json",
+        "deployment/system_definition/someip/fc/main_service/service.json"
     ],
     "package": "srp.apps",
     "adaptive_application": {
@@ -65,6 +66,12 @@
                     "name": "PrimerService as PrimerService",
                     "on": "ipc",
                     "instance": 2
+                },
+                {
+                    "name": "srp.apps.MainService as MainService",
+                    "on": "udp",
+                    "instance": 1,
+                    "port": "10001"
                 }
             ]
         }
