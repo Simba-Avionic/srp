@@ -209,18 +209,18 @@ void EngineApp::OnApogee() {
 }
 
 void EngineApp::OnAbort() {
+  for (const ArmPinConfig_t& pin : arm_pins_id) {
+    bool disable_later = (pin.name == "Vent Servo Power" || pin.name == "Dump Valve Servo Power");
+    if (gpio_.SetPinValue(pin.pin_id,
+                          disable_later ? kPin_on : kPin_off,
+                          disable_later ? 3500 : 0,
+                          disable_later) != core::ErrorCode::kOk) {
+      ara::log::LogError() << "cant disarm pin: " << pin.name;
+    }
+  }
   if (servo_handler_ != nullptr) {
     servo_handler_->SetDumpValue(1);
     servo_handler_->SetVentServoValue(1);
-  }
-  // TODO change this (it cant be like this)
-  std::this_thread::sleep_for(std::chrono::seconds(3));
-  for (const ArmPinConfig_t& pin : arm_pins_id) {
-    if (!(pin.name == "Vent Servo Power" || pin.name == "Dump Valve Servo Power")) {
-      if (gpio_.SetPinValue(pin.pin_id, kPin_off) != core::ErrorCode::kOk) {
-        ara::log::LogError() << "cant disarm pin: " << pin.name;
-      }
-    }
   }
 }
 

@@ -21,6 +21,7 @@
 #include <memory>
 
 #include "core/gpio/gpio_driver.hpp"
+#include "srp/mw/gpio/GpioHdr.h"
 #include "communication-core/sockets/stream_ipc_socket.h"
 #include "ara/exec/adaptive_application.h"
 #include "nlohmann/json.hpp"
@@ -61,6 +62,8 @@ class GPIOMWService : public ara::exec::AdaptiveApplication {
     std::optional<std::unordered_map<uint8_t, GpioConf>> ReadConfig(
                               const std::string& path) const;
     int InitPins();
+    std::vector<uint8_t> ActionSetCallback(const srp::mw::gpio::GpioHdr hdr,
+        );
     int Init(std::unique_ptr<srp::com::soc::ISocketStream> socket,
                               std::shared_ptr<core::gpio::IGpioDriver> gpio);
 

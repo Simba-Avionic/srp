@@ -60,11 +60,12 @@ std::vector<uint8_t> GPIOController::HandleCallback(const std::string& _ip, cons
     return {1};
 }
 
-core::ErrorCode GPIOController::SetPinValue(uint8_t actuatorID, int8_t value, const uint16_t active_time) {
+core::ErrorCode GPIOController::SetPinValue(uint8_t actuatorID, int8_t value, const uint16_t active_time, const bool force_time) {
     if (this->sock_== nullptr) {
         return core::ErrorCode::kInitializeError;
     }
-    srp::mw::gpio::GpioHdr hdr {gpio::ACTION::SET, actuatorID, static_cast<uint8_t>(value), active_time};
+    srp::mw::gpio::GpioHdr hdr {gpio::ACTION::SET, actuatorID,
+                                static_cast<uint8_t>(value), active_time, force_time};
     auto buf = srp::data::Convert2Vector<srp::mw::gpio::GpioHdr>::Conv(hdr);
     auto res = this->sock_->Transmit(PATH, 0, buf);
     if (res.has_value()) {

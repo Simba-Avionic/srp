@@ -23,7 +23,6 @@ namespace gpio {
  * Class use GPIO_MW to controll gpio pins, allowed is only use as digital pins as IN/OUT
  * Controller dont allow to use digital pins as PWM, use PCA9685 to generate PWM
  * 
- * // TODO add functionality wchich allow to register for callback at pin state change
  * 
  */
 class IGPIOController {
@@ -37,7 +36,7 @@ class IGPIOController {
      * @param value 
      * @return core::ErrorCode 
      */
-    virtual core::ErrorCode SetPinValue(uint8_t actuatorID, int8_t value, const uint16_t active_time = 0) = 0;
+    virtual core::ErrorCode SetPinValue(uint8_t actuatorID, int8_t value, const uint16_t active_time = 0, const bool force_time = false) = 0;
     /**
      * @brief Get the Pin Value
      * 
