@@ -26,8 +26,8 @@ jobs:
         run: |
           /bin/bash ./tools/cpplint/cpplint.sh
 
-  bazel-test:
-    name: SRP Unit Tests
+  build-and-test:
+    name: SRP Build & Test SRP
     needs: cpplint
     runs-on: ubuntu-latest
     container:
@@ -39,63 +39,10 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Run Bazel tests
+      - name: Build & Test
         run: |
-          ./tools/ut/unittest.sh --no_cache
+          bazel build --config=bbb-platform //deployment/cpu/ec:pkg //deployment/cpu/fc:pkg
 
-  bazel-coverage:
-    name: SRP Coverage
-    needs:
-      - build
-      - bazel-test
-    runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/simba-avionic/simba_avionics_dockers/docker-action:latest
+          ./tools/ut/unittest.sh
 
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          submodules: recursive
-
-      - name: Run Bazel tests
-        run: |
-          ./tools/coverage/coverage.sh
-
-  build:
-    name: Build EC & FC
-    needs: cpplint
-    runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/simba-avionic/simba_avionics_dockers/docker-action:latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          submodules: recursive
-
-      - name: Build EC package
-        run: |
-          bazel build --config=bbb-platform //deployment/cpu/ec:pkg
-
-      - name: Build FC package
-        run: |
-          bazel build --config=bbb-platform //deployment/cpu/fc:pkg
-
-  build-all:
-    name: Build All
-    needs:
-      - build
-      - bazel-test
-    runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/simba-avionic/simba_avionics_dockers/docker-action:latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          submodules: recursive
-
-      - name: Build All
-        run: |
-          ./tools/build_all/build_all.sh --no_cache
+          ./tools/build_all/build_all.sh
