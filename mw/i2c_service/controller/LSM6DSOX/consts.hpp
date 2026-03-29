@@ -14,7 +14,7 @@
 namespace srp {
 namespace i2c {
 enum class ACCEL_SPEED_t: uint8_t {
-    k12_5 = 0b10110000,
+    k12_5 = 0b00010000,
     k26 =   0b00100000,
     k52 =   0b00110000,
     k104 =  0b01000000,
