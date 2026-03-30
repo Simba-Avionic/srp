@@ -245,9 +245,9 @@ void RadioApp::HBHangleActuators(const uint8_t values) {
   auto eb_state = event_data->GetComputerState(BoardType_e::EB);
   if (eb_state == RocketState_t::ARM || (kStatic_test_mode && eb_state != RocketState_t::DISARM)) {
     update_valve(SIMBA_GS_FLAGS_VENT_VALVE, SIMBA_ACTUATOR_FLAGS_VENT_VALVE, "VENT_VALVE",
-                  [&](uint8_t val) { servo_handler->SetVentServoValue(val); });
+                  [&](uint8_t val) { servo_service_handler->SetVentServoValue(val); });
     update_valve(SIMBA_GS_FLAGS_DUMP_VALVE, SIMBA_ACTUATOR_FLAGS_DUMP_VALVE, "DUMP_VALVE",
-                  [&](uint8_t val) { servo_handler->SetDumpValue(val); });
+                  [&](uint8_t val) { servo_service_handler->SetDumpValue(val); });
   }
 
   if (event_data->GetComputerState(BoardType_e::MB) == RocketState_t::ARM) {
