@@ -30,18 +30,13 @@ class MyPrimerServiceSkeleton: public PrimerServiceSkeleton {
   }
  protected:
   ara::core::Result<bool> OnPrime() override {
-      this->primeStatusEvent.Update(1);
-  return ara::core::Result<bool>(controller_->ChangePrimerState(1));
+    return ara::com::MakeErrorCode(ara::com::ComErrc::kSetHandlerNotSet, "Method handler is not set");
   }
   ara::core::Result<bool> OffPrime() override {
-      this->primeStatusEvent.Update(0);
-  return ara::core::Result<bool>(controller_->ChangePrimerState(0));
+    return ara::com::MakeErrorCode(ara::com::ComErrc::kSetHandlerNotSet, "Method handler is not set");
   }
   ara::core::Result<bool> StartPrime() override {
-    OnPrime();
-    std::this_thread::sleep_for(std::chrono::milliseconds(250));
-    OffPrime();
-    return ara::core::Result<bool>(true);
+    return ara::core::Result<bool>(controller_->EnablePrimer());
   }
 };
 }  // namespace apps

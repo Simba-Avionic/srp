@@ -27,30 +27,53 @@ namespace primer {
 namespace {
   const constexpr uint8_t kIgniter_pin_id = 13;
   const constexpr uint16_t kIgniter_active_time = 1000;
-  const constexpr uint8_t kOff_ignite = 0;
+  const constexpr uint8_t kPrimer_on = 1;
+  static constexpr bool kRequirePrimerVeryfication = false;
 }  // namespace
 
 PrimerController::PrimerController():
             gpio_(std::make_unique<com::soc::StreamIpcSocket>()) {
 }
-void PrimerController::Initialize(std::string path) {
-    this->ReadConfig(path);
-    ChangePrimerState(kOff_ignite);
+
+void PrimerController::VerifyPrimerConection() {
+    // PLACEHOLDER FOR CONNECTION VALIDATION
 }
 
-bool PrimerController::ChangePrimerState(uint8_t state) {
-    ara::log::LogInfo() << "changePrimerState";
+void PrimerController::Initialize(std::string path) {
+    this->primerState = PrimerState_t::kUNKNOWN;
+    this->ReadConfig(path);
+    // TODO(matikrajek42@gmail.com) write veryfication of voltage on IGN_MEASURE wchich say that primer is connected
+}
+
+bool PrimerController::DisablePrimer() {
+    if (primerState != PrimerState_t::kFIRED) {
+        return false;
+    }
     for (const auto primer : primer_pins_) {
-        if (this->gpio_.SetPinValue(primer, state) != core::ErrorCode::kOk) {
+        if (this->gpio_.SetPinValue(primer, !kPrimer_on, 0) != core::ErrorCode::kOk) {
+            ara::log::LogError() << "Failed to disable primer";
+            return false;
+        }
+    }
+}
+
+bool PrimerController::EnablePrimer(const bool auto_disable) {
+    if (kRequirePrimerVeryfication & primerState != PrimerState_t::kCONNECTED) {
+        return false;
+    }
+    if (primerState == PrimerState_t::kFIRED) {
+        return false;
+    }
+    for (const auto primer : primer_pins_) {
+        if (this->gpio_.SetPinValue(primer, kPrimer_on, auto_disable ? active_time : 0) != core::ErrorCode::kOk) {
             ara::log::LogError() << "Failed to enable primer";
             return false;
         }
     }
-    this->primerState = state;
+    primerState = PrimerState_t::kFIRED;
     return true;
 }
-
-uint8_t PrimerController::GetPrimerState() {
+PrimerState_t PrimerController::GetPrimerState() const noexcept {
     return primerState;
 }
 
