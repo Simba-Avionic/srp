@@ -11,6 +11,7 @@ cc_library(
         "//apps/fc/radio_service:uart_driver",
         "//core/common:wait_queue",
         "//apps/fc/recovery_service:ParachuteController",
+        "//apps/ec/primer_service/controller:primer_controller",
     ],
     srcs = [
         "radio_app.cc",

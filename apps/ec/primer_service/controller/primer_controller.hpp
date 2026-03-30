@@ -24,6 +24,14 @@
 namespace srp {
 namespace primer {
 
+enum PrimerState_t {
+  kUNKNOWN,
+  kNOT_CONNECTED,
+  kCONNECTED,
+  kSHORT_CIRCUIT,
+  kFIRED,
+};
+
 class PrimerController {
  private:
   gpio::GPIOController gpio_;

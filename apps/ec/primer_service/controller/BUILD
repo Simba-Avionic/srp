@@ -13,5 +13,5 @@ cc_library(
     hdrs = [
         "primer_controller.hpp",
     ],
-    visibility = ["//apps/ec/primer_service:__subpackages__"],
+    visibility = ["//visibility:public"],
 )

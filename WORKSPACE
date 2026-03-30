@@ -27,7 +27,7 @@ pip_install()
 
 
 
-include_srp_mavlink("0.9.3")
+include_srp_mavlink("0.10.0")
 include_gtest_mock()
 include_json("3.11.3")
 include_simdjson("4.4.2", "284f1c5936e7eede83ce53ed4b03bcb09af02e3ddfec0aa465df109a8f6d3e87")
