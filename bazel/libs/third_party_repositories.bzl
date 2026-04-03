@@ -58,4 +58,5 @@ def include_simulation_data():
         url = "https://github.com/Simba-Avionic/srp-common/releases/download/v1.0/data.zip",
         integrity = "sha256-1vPb5VyAvPpXCEAbIfftT7OJgjA9yYpdkZSrbALR3Jw=", 
         build_file = "//bazel/libs:apogee_simulation_data.BUILD",
+        strip_prefix = "data",
     )
