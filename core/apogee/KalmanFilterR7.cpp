@@ -1,3 +1,4 @@
+// Copyright 2025 Mikita Hapankou
 #include <cmath>
 #include "KalmanFilterR7.h"
 

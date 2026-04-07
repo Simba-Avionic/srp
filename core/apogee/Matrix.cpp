@@ -1,8 +1,10 @@
+// Copyright 2025 Jakub Nowak
 #include "Matrix.h"
 #include <initializer_list>
 #include <memory>
 #include <stdexcept>
 #include <string>
+#include <utility>
 
 Matrix::Matrix(std::initializer_list<std::initializer_list<float>> list) {
   rows = list.size();

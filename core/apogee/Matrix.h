@@ -1,5 +1,6 @@
-#ifndef MATRIX_H_
-#define MATRIX_H_
+// Copyright 2025 Jakub Nowak
+#ifndef CORE_APOGEE_MATRIX_H_
+#define CORE_APOGEE_MATRIX_H_
 
 #include <initializer_list>
 #include <memory>
@@ -31,4 +32,4 @@ class Matrix {
   std::string toString() const;
 };
 
-#endif  
+#endif // CORE_APOGEE_MATRIX_H_

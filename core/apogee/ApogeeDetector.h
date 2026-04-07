@@ -1,3 +1,4 @@
+// Copyright 2025 Mikita Hapankou
 #ifndef CORE_APOGEE_APOGEEDETECTOR_H_
 #define CORE_APOGEE_APOGEEDETECTOR_H_
 
@@ -73,4 +74,4 @@ class RealTimeApogee {
   bool isLaunched;
 };
 
-#endif  
+#endif //CORE_APOGEE_APOGEEDETECTOR_H_

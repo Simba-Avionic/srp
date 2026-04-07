@@ -1,3 +1,4 @@
+// Copyright 2025 Mikita Hapankou
 #ifndef CORE_APOGEE_UT_DATALOADER_H_
 #define CORE_APOGEE_UT_DATALOADER_H_
 
@@ -17,4 +18,4 @@ ConfigData readConfig(const std::string& path);
 
 std::vector<double> readColumnCSV(const std::string& path, size_t colIndex);
 
-#endif  
+#endif // CORE_APOGEE_UT_DATALOADER_H_

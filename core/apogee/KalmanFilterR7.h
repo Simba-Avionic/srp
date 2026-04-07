@@ -1,5 +1,6 @@
-#ifndef Kalman_Filter_R7
-#define Kalman_Filter_R7
+// Copyright 2025 Mikita Hapankou
+#ifndef CORE_APOGEE_KALMANFILTERR7_H_
+#define CORE_APOGEE_KALMANFILTERR7_H_
 
 #include "KalmanFilter.h"
 
@@ -14,4 +15,4 @@ class KalmanFilterR7 : public KalmanFilter {
   using KalmanFilter::update;
 };
 
-#endif  
+#endif // CORE_APOGEE_KALMANFILTERR7_H_

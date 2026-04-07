@@ -1,3 +1,4 @@
+// Copyright 2025 Mikita Hapankou
 #include "KalmanFilter.h"
 
 KalmanFilter::KalmanFilter(const Matrix& F, const Matrix& B, const Matrix& H,

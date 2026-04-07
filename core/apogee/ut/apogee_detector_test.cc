@@ -1,4 +1,4 @@
-// Copyright 2024 Wiktor Laska
+// Copyright 2026 Wiktor Laska
 #include <gtest/gtest.h>
 
 #include <cmath>

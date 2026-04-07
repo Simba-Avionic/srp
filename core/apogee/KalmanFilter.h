@@ -1,3 +1,4 @@
+// Copyright 2025 Mikita Hapankou
 #ifndef CORE_APOGEE_KALMANFILTER_H_
 #define CORE_APOGEE_KALMANFILTER_H_
 
@@ -26,4 +27,4 @@ class KalmanFilter {
   Vector x;  // wektor stanu
 };
 
-#endif 
+#endif //CORE_APOGEE_KALMANFILTER_H_

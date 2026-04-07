@@ -1,3 +1,4 @@
+// Copyright 2025 Mikita Hapankou
 #include "DataLoader.h"
 
 #include <algorithm>
