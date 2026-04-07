@@ -15,4 +15,4 @@ class KalmanFilterR7 : public KalmanFilter {
   using KalmanFilter::update;
 };
 
-#endif // CORE_APOGEE_KALMANFILTERR7_H_
+#endif  // CORE_APOGEE_KALMANFILTERR7_H_

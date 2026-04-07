@@ -51,7 +51,6 @@ class RealTimeApogee {
     if (height > maxHeight) {
       maxHeight = height;
     }
-    
     if (!apogeeReached && heightBuffer.size() >= bufferSize &&
         averageSpeed() <= speedThreshold) {
       apogeeReached = true;
@@ -74,4 +73,4 @@ class RealTimeApogee {
   bool isLaunched;
 };
 
-#endif //CORE_APOGEE_APOGEEDETECTOR_H_
+#endif  // CORE_APOGEE_APOGEEDETECTOR_H_

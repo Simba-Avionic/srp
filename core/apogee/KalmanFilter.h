@@ -27,4 +27,4 @@ class KalmanFilter {
   Vector x;  // wektor stanu
 };
 
-#endif //CORE_APOGEE_KALMANFILTER_H_
+#endif  // CORE_APOGEE_KALMANFILTER_H_

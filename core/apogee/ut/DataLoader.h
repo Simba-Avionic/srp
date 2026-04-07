@@ -18,4 +18,4 @@ ConfigData readConfig(const std::string& path);
 
 std::vector<double> readColumnCSV(const std::string& path, size_t colIndex);
 
-#endif // CORE_APOGEE_UT_DATALOADER_H_
+#endif  // CORE_APOGEE_UT_DATALOADER_H_

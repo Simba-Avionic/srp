@@ -32,4 +32,4 @@ class Matrix {
   std::string toString() const;
 };
 
-#endif // CORE_APOGEE_MATRIX_H_
+#endif  // CORE_APOGEE_MATRIX_H_
