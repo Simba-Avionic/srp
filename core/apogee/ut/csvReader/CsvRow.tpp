@@ -1,6 +1,7 @@
 // Copyright 2025 Jakub Nowak
 
 #include "CsvRow.h"
+
 #include <sstream>
 #include <string>
 #include <vector>
@@ -19,14 +20,14 @@ CsvRow<Types...>::CsvRow(std::string line, char delimiter) {
 
 template <typename... Types>
 template <std::size_t Index>
-void CsvRow<Types...>::setValue(const std::string &s) {
+void CsvRow<Types...>::setValue(const std::string& s) {
   using T = typename std::tuple_element<Index, std::tuple<Types...>>::type;
   std::get<Index>(data) = convert<T>(s);
 }
 
 template <typename... Types>
 template <typename T>
-T CsvRow<Types...>::convert(const std::string &s) {
+T CsvRow<Types...>::convert(const std::string& s) {
   std::istringstream iss(s);
   T val;
   if (!(iss >> val)) {
@@ -37,7 +38,7 @@ T CsvRow<Types...>::convert(const std::string &s) {
 
 template <typename... Types>
 template <std::size_t I>
-void CsvRow<Types...>::setValueRuntime(std::size_t index, const std::string &value) {
+void CsvRow<Types...>::setValueRuntime(std::size_t index, const std::string& value) {
   if constexpr (I < std::tuple_size_v<decltype(data)>) {
     if (I == index) {
       setValue<I>(value);

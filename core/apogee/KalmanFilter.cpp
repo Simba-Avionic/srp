@@ -1,29 +1,24 @@
 #include "KalmanFilter.h"
 
+KalmanFilter::KalmanFilter(const Matrix& F, const Matrix& B, const Matrix& H,
+                           const Matrix& Q, const Matrix& R, const Matrix& P,
+                           const Vector& x)
+    : F(F), B(B), H(H), Q(Q), R(R), P(P), x(x) {}
 
-KalmanFilter::KalmanFilter(const Matrix &F, const Matrix &B, const Matrix &H, const Matrix &Q, const Matrix &R, const Matrix &P, const Vector &x)
-: F(F), B(B), H(H), Q(Q), R(R), P(P), x(x) {}
-
-
-void KalmanFilter::predict(const Vector &u)
-{
-    x = F * x + B * u;
-    P = F * P * F.transpose() + Q;
+void KalmanFilter::predict(const Vector& u) {
+  x = F * x + B * u;
+  P = F * P * F.transpose() + Q;
 }
 
-void KalmanFilter::update(const Vector &z)
-{
-    Vector y = z - H * x;
-    Matrix S = H * P * H.transpose() + R;
-    Matrix K = P * H.transpose() * S.inverse1x1();
-    x = x + K * y;
-    Matrix I = Matrix::Identity(P.getRows());
-    P = (I - K * H) * P;
+void KalmanFilter::update(const Vector& z) {
+  Vector y = z - H * x;
+  Matrix S = H * P * H.transpose() + R;
+  Matrix K = P * H.transpose() * S.inverse1x1();
+  x = x + K * y;
+  Matrix I = Matrix::Identity(P.getRows());
+  P = (I - K * H) * P;
 }
 
-Matrix KalmanFilter::getState() const
-{
-    return x;
+Matrix KalmanFilter::getState() const {
+  return x;
 }
-
-

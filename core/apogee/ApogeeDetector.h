@@ -1,60 +1,76 @@
-#include <vector>
-#include <string>
-#include <fstream>
-#include <sstream>
+#ifndef CORE_APOGEE_APOGEEDETECTOR_H_
+#define CORE_APOGEE_APOGEEDETECTOR_H_
+
 #include <algorithm>
 #include <cmath>
+#include <fstream>
+#include <sstream>
+#include <string>
+#include <vector>
 
 class RealTimeApogee {
-public:
-    // bufferSize - liczba ostatnich pomiarów używanych do obliczenia średniej prędkości pionowej
-    // speedThreshold - próg prędkości pionowej (ujemna liczba!!); apogeum uznajemy za osiągnięte, gdy średnia prędkość spadnie poniżej tego progu
-    // startHeight - wysokość startowa (domyślnie 0)
-    RealTimeApogee(size_t bufferSize = 15, double speedThreshold = -0.5, double startHeight = 0)
-        : bufferSize(bufferSize), speedThreshold(speedThreshold), maxHeight(-1e9), startHeight(startHeight), detectedApogee(0), apogeeReached(false), isLaunched(false) {}
+ public:
+  // bufferSize - liczba ostatnich pomiarów używanych do obliczenia średniej prędkości pionowej
+  // speedThreshold - próg prędkości pionowej (ujemna liczba!!); apogeum uznajemy za
+  // osiągnięte, gdy średnia prędkość spadnie poniżej tego progu
+  // startHeight - wysokość startowa (domyślnie 0)
+  explicit RealTimeApogee(size_t bufferSize = 15, double speedThreshold = -0.5,
+                          double startHeight = 0)
+      : bufferSize(bufferSize),
+        speedThreshold(speedThreshold),
+        maxHeight(-1e9),
+        startHeight(startHeight),
+        detectedApogee(0),
+        apogeeReached(false),
+        isLaunched(false) {}
+
+  double averageSpeed() const {
+    double sum = 0;
+    for (double v : speedBuffer) sum += v;
+    return sum / speedBuffer.size();
+  }
+
+  // funkcja do aktualizacji stanu
+  void update(double height, double velocity) {
+    height = height - startHeight;
+    if (!isLaunched && velocity > 5.0) {
+      isLaunched = true;
+    }
+
+    if (!isLaunched) return;
+
+    heightBuffer.push_back(height);
+    speedBuffer.push_back(velocity);
+
+    if (heightBuffer.size() > bufferSize) {
+      heightBuffer.erase(heightBuffer.begin());
+      speedBuffer.erase(speedBuffer.begin());
+    }
+
+    if (height > maxHeight) {
+      maxHeight = height;
+    }
     
-    double averageSpeed() const {
-        double sum = 0;
-        for(double v : speedBuffer) sum += v;
-        return sum / speedBuffer.size();
+    if (!apogeeReached && heightBuffer.size() >= bufferSize &&
+        averageSpeed() <= speedThreshold) {
+      apogeeReached = true;
+      detectedApogee = maxHeight;
     }
+  }
 
-    // funkcja do aktualizacji stanu
-    void update(double height, double velocity) {
-        height = height - startHeight;
-        if (!isLaunched && velocity > 5.0) { 
-            isLaunched = true;
-        }
+  bool isApogeeReached() const { return apogeeReached; }
+  double getApogee() const { return detectedApogee; }
 
-        if (!isLaunched) return;
-
-        heightBuffer.push_back(height);
-        speedBuffer.push_back(velocity);
-        
-        if (heightBuffer.size() > bufferSize) {
-            heightBuffer.erase(heightBuffer.begin());
-            speedBuffer.erase(speedBuffer.begin());
-        }
-
-        if (height > maxHeight) {
-            maxHeight = height;
-        }
-        if (!apogeeReached && heightBuffer.size() >= bufferSize && averageSpeed() <= speedThreshold) {
-            apogeeReached = true;
-            detectedApogee = maxHeight;
-        }
-    }
-    bool isApogeeReached() const { return apogeeReached; }
-    double getApogee() const { return detectedApogee; }
-
-private:
-    size_t bufferSize;
-    double speedThreshold;
-    std::vector<double> heightBuffer;
-    std::vector<double> speedBuffer;
-    double maxHeight;
-    double startHeight;
-    double detectedApogee;
-    bool apogeeReached;
-    bool isLaunched;
+ private:
+  size_t bufferSize;
+  double speedThreshold;
+  std::vector<double> heightBuffer;
+  std::vector<double> speedBuffer;
+  double maxHeight;
+  double startHeight;
+  double detectedApogee;
+  bool apogeeReached;
+  bool isLaunched;
 };
+
+#endif  
