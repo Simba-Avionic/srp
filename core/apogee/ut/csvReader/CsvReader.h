@@ -1,4 +1,13 @@
-// Copyright 2025 Jakub Nowak
+/**
+ * @file CsvReader.h
+ * @author Jakub Nowak 
+ * @brief 
+ * @version 0.1
+ * @date 2026-04-08
+ * 
+ * @copyright Copyright (c) 2026
+ * 
+ */
 #ifndef CORE_APOGEE_UT_CSVREADER_CSVREADER_H_
 #define CORE_APOGEE_UT_CSVREADER_CSVREADER_H_
 
@@ -6,7 +15,7 @@
 #include <string>
 #include <vector>
 
-#include "CsvRow.h"
+#include "core/apogee/ut/csvReader/CsvRow.h"
 
 // Klasa napisana tylko w celu wygodniejszego odczytu pliku csv.
 // Poczas tworzenia nie były brane względy wydajnościowe

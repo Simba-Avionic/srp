@@ -1,4 +1,13 @@
-// Copyright 2026 Wiktor Laska
+/**
+ * @file apogee_detector_test.cc
+ * @author Wiktor Laska
+ * @brief 
+ * @version 0.1
+ * @date 2026-04-08
+ * 
+ * @copyright Copyright (c) 2026
+ * 
+ */
 #include <gtest/gtest.h>
 
 #include <cmath>

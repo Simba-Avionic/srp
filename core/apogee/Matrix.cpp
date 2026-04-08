@@ -1,4 +1,13 @@
-// Copyright 2025 Jakub Nowak
+/**
+ * @file KalmanFilter.cpp
+ * @author Jakub Nowak
+ * @brief 
+ * @version 0.1
+ * @date 2026-04-08
+ * 
+ * @copyright Copyright (c) 2026
+ * 
+ */
 #include "Matrix.h"
 #include <initializer_list>
 #include <memory>

@@ -1,4 +1,13 @@
-// Copyright 2025 Mikita Hapankou
+/**
+ * @file DataLoader.h
+ * @author Mikita Hapankou
+ * @brief 
+ * @version 0.1
+ * @date 2026-04-08
+ * 
+ * @copyright Copyright (c) 2026
+ * 
+ */
 #ifndef CORE_APOGEE_UT_DATALOADER_H_
 #define CORE_APOGEE_UT_DATALOADER_H_
 

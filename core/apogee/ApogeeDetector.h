@@ -1,4 +1,13 @@
-// Copyright 2025 Mikita Hapankou
+/**
+ * @file ApogeeDetector.h
+ * @author Mikita Hapankou
+ * @brief 
+ * @version 0.1
+ * @date 2026-04-08
+ * 
+ * @copyright Copyright (c) 2026
+ * 
+ */
 #ifndef CORE_APOGEE_APOGEEDETECTOR_H_
 #define CORE_APOGEE_APOGEEDETECTOR_H_
 
@@ -8,7 +17,7 @@
 #include <sstream>
 #include <string>
 #include <vector>
-
+constexpr int ksmallestHeight = -1e9;
 class RealTimeApogee {
  public:
   // bufferSize - liczba ostatnich pomiarów używanych do obliczenia średniej prędkości pionowej
@@ -19,7 +28,7 @@ class RealTimeApogee {
                           double startHeight = 0)
       : bufferSize(bufferSize),
         speedThreshold(speedThreshold),
-        maxHeight(-1e9),
+        maxHeight(ksmallestHeight),
         startHeight(startHeight),
         detectedApogee(0),
         apogeeReached(false),

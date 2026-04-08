@@ -1,4 +1,13 @@
-// Copyright 2025 Mikita Hapankou
+/**
+ * @file DataLoader.cpp
+ * @author Mikita Hapankou
+ * @brief 
+ * @version 0.1
+ * @date 2026-04-08
+ * 
+ * @copyright Copyright (c) 2026
+ * 
+ */
 #include "DataLoader.h"
 
 #include <algorithm>

@@ -1,4 +1,13 @@
-// Copyright 2025 Mikita Hapankou
+/**
+ * @file KalmanFilter.cpp
+ * @author Mikita Hapankou
+ * @brief 
+ * @version 0.1
+ * @date 2026-04-08
+ * 
+ * @copyright Copyright (c) 2026
+ * 
+ */
 #include <cmath>
 #include "KalmanFilterR7.h"
 
@@ -23,14 +32,18 @@ Matrix KalmanFilterR7::processMeasurement(float acceleration, float pressure) {
     return getState();
 }
 
-double KalmanFilterR7::pressureToAltitude(double p) {
-    const double p0 = 101325.0,  // standardowe ciśnienie na poziomie morza (Pa)
-                 T = 288.15,     // standardowa temperatura na poziomie morza (Kelwiny)
-                 L = 0.0065,     // spadek temp. na 1 metr, K/m
-                 R = 8.31447,    // uniwersalna stała gazowa, J/(mol·K)
-                 g = 9.80665,    // przyspieszenie ziemskie, m/s^2
-                 M = 0.0289644;  // molowa masa powietrza, kg/mol
+namespace {
+    static constexpr auto kP0 = 101325.0;  // standardowe ciśnienie na poziomie morza (Pa)
+    static constexpr auto kT = 288.15;    // standardowa temperatura na poziomie morza (Kelwiny)
+    static constexpr auto kL = 0.0065;    // spadek temp. na 1 metr, K/m
+    static constexpr auto kR = 8.31447;    // uniwersalna stała gazowa, J/(mol·K)
+    static constexpr auto kg = 9.80665;    // przyspieszenie ziemskie, m/s^2
+    static constexpr auto kM = 0.0289644;  // molowa masa powietrza, kg/mol
+    consteval double getPressurePow() {
+        return (kR * kL) / (kg * kM);
+    }
+}  // namespace
 
-    // h = (T / L) * (1 - (p / p0) ^ ((R * L) / (g * M)))
-    return (T / L) * (1 - pow(p / p0, (R * L) / (g * M)));
+double KalmanFilterR7::pressureToAltitude(double p) {
+    return (kT / kL) * (1 - pow(p / kP0, getPressurePow()));
 }

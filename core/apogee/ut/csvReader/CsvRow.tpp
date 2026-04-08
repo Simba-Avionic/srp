@@ -1,5 +1,13 @@
-// Copyright 2025 Jakub Nowak
-
+/**
+ * @file CsvRow.tpp
+ * @author Jakub Nowak
+ * @brief 
+ * @version 0.1
+ * @date 2026-04-08
+ * 
+ * @copyright Copyright (c) 2026
+ * 
+ */
 #include "CsvRow.h"
 
 #include <sstream>
