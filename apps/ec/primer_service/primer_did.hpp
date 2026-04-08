@@ -40,11 +40,11 @@ class PrimerDID : public ara::diag::GenericDiD {
   ara::core::Result<void> Write(
       const std::vector<uint8_t> &payload) noexcept override {
   ara::log::LogError() << "Receive write req";
-    if (payload.size() != 1) {
+    if (payload.size() != 0) {
       return ara::diag::MakeErrorCode(
         ara::diag::UdsDiagErrc::kInvalidMessageLengthFormat);
     }
-    handler_->ChangePrimerState(payload[0]);
+    handler_->EnablePrimer();
     return {};
   }
 

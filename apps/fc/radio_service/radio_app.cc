@@ -22,7 +22,6 @@
 
 namespace srp {
 namespace apps {
-using RocketState_t = core::rocketState::RocketState_t;
 namespace {
   static constexpr auto KRadio_UART_path = "/dev/ttyS1";
   static constexpr auto KRadio_UART_baudrate = B57600;
@@ -70,9 +69,24 @@ uint8_t RadioApp::RocketStateToMavlinkState(const RocketState_t state) const noe
       case RocketState_t::DROP:
           return SIMBA_ROCKET_STATE_SECOND_PARACHUTE_FALL;
       case RocketState_t::ABORT:
-          return SIMBA_ROCKET_STATE_SIMBA_ROCKET_STATE_ABORT;
+          return SIMBA_ROCKET_STATE_ABORT;
       default:
-          return SIMBA_ROCKET_STATE_SIMBA_ROCKET_STATE_ABORT;
+          return SIMBA_ROCKET_STATE_ABORT;
+  }
+}
+
+uint8_t RadioApp::PrimerStateToMavlinState(const PrimerState_t state) const noexcept {
+  switch (state) {
+  case PrimerState_t::kUNKNOWN:
+    return SIMBA_PRIMER_STATE_UNKNOWN;
+  case PrimerState_t::kCONNECTED:
+    return SIMBA_PRIMER_STATE_CONNECTED;
+  case PrimerState_t::kNOT_CONNECTED:
+    return SIMBA_PRIMER_STATE_NOT_CONNECTED;
+  case PrimerState_t::kSHORT_CIRCUIT:
+    return SIMBA_PRIMER_STATE_SHORT_CIRCUIT;
+  default:
+    return SIMBA_PRIMER_STATE_UNKNOWN;
   }
 }
 
@@ -105,7 +119,8 @@ void RadioApp::TransmittingLoop(const std::stop_token& token) {
                   static_cast<uint64_t>(val.value()),
                   RocketStateToMavlinkState(event_data->GetComputerState(BoardType_e::MB)),
                   RocketStateToMavlinkState(event_data->GetComputerState(BoardType_e::EB)),
-                  event_data->GetActuatorStates());
+                  event_data->GetActuatorStates(),
+                  PrimerStateToMavlinState(static_cast<PrimerState_t>(event_data->GetPrimerStates())));
       });
     }
 
@@ -151,10 +166,10 @@ void RadioApp::TransmittingLoop(const std::stop_token& token) {
 }
 std::optional<RocketState_t> RadioApp::GetReqRocketStateFromGSFlags(const uint8_t flags) {
   static constexpr std::pair<uint8_t, RocketState_t> gs_rocket_state_mapping[] = {
-      {SIMBA_GS_ABORT,  RocketState_t::ABORT},
-      {SIMBA_GS_LAUNCH, RocketState_t::LAUNCH},
-      {SIMBA_GS_ARM,    RocketState_t::ARM},
-      {SIMBA_GS_DISARM, RocketState_t::DISARM},
+      {SSIMBA_GS_FLAGS_ABORT,  RocketState_t::ABORT},
+      {SIMBA_GS_FLAGS_LAUNCH,  RocketState_t::LAUNCH},
+      {SIMBA_GS_FLAGS_ARM,     RocketState_t::ARM},
+      {SIMBA_GS_FLAGS_DISARM,  RocketState_t::DISARM},
     };
     for (const auto& [mask, state] : gs_rocket_state_mapping) {
         if ((flags & mask) != 0) return state;
@@ -186,9 +201,9 @@ void RadioApp::HBHangleActuators(const uint8_t values) {
   // TOFIX OBEJSCIE NA STATIC PO KONKURSIE USUNAC FLIGHT JAKO DOZWOLONY
   auto eb_state = event_data->GetComputerState(BoardType_e::EB);
   if (eb_state == RocketState_t::ARM || (kStatic_test_mode && eb_state != RocketState_t::DISARM)) {
-    update_valve(SIMBA_GS_VENT_VALVE, SIMBA_ROCKET_VENT_VALVE, "VENT_VALVE",
+    update_valve(SIMBA_GS_FLAGS_VENT_VALVE, SIMBA_ACTUATOR_FLAGS_VENT_VALVE, "VENT_VALVE",
                   [&](uint8_t val) { servo_service_handler->SetVentServoValue(val); });
-    update_valve(SIMBA_GS_DUMP_VALVE, SIMBA_ROCKET_DUMP_VALVE, "DUMP_VALVE",
+    update_valve(SIMBA_GS_FLAGS_DUMP_VALVE, SIMBA_ACTUATOR_FLAGS_DUMP_VALVE, "DUMP_VALVE",
                   [&](uint8_t val) { servo_service_handler->SetDumpValue(val); });
   }
 
@@ -498,7 +513,7 @@ void RadioApp::SomeIpInit() {
           }
           someip_logger.LogDebug() << "ServoStatusEvent sample: "
                                + std::to_string(res.Value());
-          event_data->SetActuatorState(SIMBA_ROCKET_MAIN_VALVE, res.Value());
+          event_data->SetActuatorState(SIMBA_ACTUATOR_FLAGS_MAIN_VALVE, res.Value());
         });
       });
       servo_service_handler->ServoVentStatusEvent.Subscribe(1, [this](const uint8_t status) {
@@ -511,7 +526,7 @@ void RadioApp::SomeIpInit() {
           }
           someip_logger.LogDebug() << "ServoVentStatusEvent sample: "
                                + std::to_string(res.Value());
-          event_data->SetActuatorState(SIMBA_ROCKET_VENT_VALVE, res.Value());
+          event_data->SetActuatorState(SIMBA_ACTUATOR_FLAGS_VENT_VALVE, res.Value());
         });
       });
       servo_service_handler->ServoDumpStatusEvent.Subscribe(1, [this](const uint8_t status) {
@@ -524,7 +539,7 @@ void RadioApp::SomeIpInit() {
           }
           someip_logger.LogDebug() << "ServoDumpStatusEvent sample: "
                                + std::to_string(res.Value());
-          event_data->SetActuatorState(SIMBA_ROCKET_DUMP_VALVE, res.Value());
+          event_data->SetActuatorState(SIMBA_ACTUATOR_FLAGS_DUMP_VALVE, res.Value());
         });
       });
     });
@@ -543,16 +558,16 @@ void RadioApp::SomeIpInit() {
                       << std::to_string(res.Value());
           switch (static_cast<recovery::ParachuteState_t> (res.Value())) {
             case recovery::ParachuteState_t::CLOSED:
-              this->event_data->SetActuatorState(SIMBA_ROCKET_RECOVERY_SERVO, 0);
-              this->event_data->SetActuatorState(SIMBA_ROCKET_RECOVERY_LINECUTTER, 0);
+              this->event_data->SetActuatorState(SIMBA_ACTUATOR_FLAGS_RECOVERY_SERVO, 0);
+              this->event_data->SetActuatorState(SIMBA_ACTUATOR_FLAGS_RECOVERY_LINECUTTER, 0);
               break;
             case recovery::ParachuteState_t::OPEN_REEFED:
-              this->event_data->SetActuatorState(SIMBA_ROCKET_RECOVERY_SERVO, 1);
-              this->event_data->SetActuatorState(SIMBA_ROCKET_RECOVERY_LINECUTTER, 0);
+              this->event_data->SetActuatorState(SIMBA_ACTUATOR_FLAGS_RECOVERY_SERVO, 1);
+              this->event_data->SetActuatorState(SIMBA_ACTUATOR_FLAGS_RECOVERY_LINECUTTER, 0);
               break;
             case recovery::ParachuteState_t::OPEN_UNREEFED:
-              this->event_data->SetActuatorState(SIMBA_ROCKET_RECOVERY_SERVO, 1);
-              this->event_data->SetActuatorState(SIMBA_ROCKET_RECOVERY_LINECUTTER, 1);
+              this->event_data->SetActuatorState(SIMBA_ACTUATOR_FLAGS_RECOVERY_SERVO, 1);
+              this->event_data->SetActuatorState(SIMBA_ACTUATOR_FLAGS_RECOVERY_LINECUTTER, 1);
               break;
             default:
               break;
@@ -653,6 +668,19 @@ void RadioApp::SomeIpInit() {
         });
       });
     }));
+    this->primer_service_proxy.StartFindService([this](auto handler) {
+      someip_logger.LogDebug() << "Primer service handler discovered";
+      this->primer_service_handler = handler;
+      primer_service_handler->primeStatusEvent.SetReceiveHandler([this] () {
+        const auto res = primer_service_handler->primeStatusEvent.GetNewSamples();
+        if (!res.HasValue()) {
+          return;
+        }
+        someip_logger.LogDebug() << "Primer state sample: "
+                               << std::to_string(res.Value());
+        this->event_data->SetPrimerState(res.Value());
+      });
+    });
     // TODO(matikrajek42@gmail.com) Write MB Temp After GrKo write Env App for FC
   }
 }  // namespace apps

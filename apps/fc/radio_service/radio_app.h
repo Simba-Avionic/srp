@@ -34,12 +34,14 @@
 #include "apps/fc/radio_service/mavlink_uart_driver.hpp"
 #include "ara/log/logging_menager.h"
 #include "core/common/wait_queue.h"
+#include "apps/ec/primer_service/controller/primer_controller.hpp"
 
 namespace srp {
 namespace apps {
-class RadioApp : public ara::exec::AdaptiveApplication {
-  using RocketState_t = core::rocketState::RocketState_t;
+using RocketState_t = core::rocketState::RocketState_t;
+using PrimerState_t = srp::primer::PrimerState_t;
 
+class RadioApp : public ara::exec::AdaptiveApplication {
  private:
   const ara::log::Logger& mavl_logger;
   const ara::log::Logger& someip_logger;
@@ -82,6 +84,7 @@ class RadioApp : public ara::exec::AdaptiveApplication {
 
   std::optional<RocketState_t> GetReqRocketStateFromGSFlags(const uint8_t flags);
   uint8_t RocketStateToMavlinkState(const RocketState_t state) const noexcept;
+  uint8_t PrimerStateToMavlinState(const PrimerState_t state) const noexcept;
 
  protected:
   void TransmittingLoop(const std::stop_token& token);

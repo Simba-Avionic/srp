@@ -54,6 +54,7 @@ class EventData {
     ThreadSafe<mavlink_simba_imu_t> imu_;
     ThreadSafe<mavlink_simba_max_altitude_t> max_altitude_;
     ThreadSafe<uint8_t> actuator_state_;
+    ThreadSafe<uint8_t> primer_state_;
 
     ThreadSafe<core::rocketState::RocketState_t> EBState_;
     ThreadSafe<core::rocketState::RocketState_t> MBState_;
@@ -67,6 +68,8 @@ class EventData {
   core::rocketState::RocketState_t GetComputerState(const BoardType_e BoardType);
   void SetComputerState(const BoardType_e BoardType, const core::rocketState::RocketState_t state);
 
+  uint8_t GetPrimerStates();
+  void SetPrimerState(const uint8_t state);
 
   uint8_t GetActuatorStates();
   void SetActuatorState(const uint8_t actuator_mask, const uint8_t state);

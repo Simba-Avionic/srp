@@ -50,6 +50,14 @@ std::shared_ptr<EventData> EventData::GetInstance() {
     }
   }
 
+  uint8_t EventData::GetPrimerStates() {
+    return primer_state_.get();
+  }
+  void EventData::SetPrimerState(const uint8_t state) {
+    primer_state_.set(state);
+  }
+
+
   uint8_t EventData::GetActuatorStates() {
     return actuator_state_.get();
   }

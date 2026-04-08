@@ -24,19 +24,29 @@
 namespace srp {
 namespace primer {
 
+enum PrimerState_t {
+  kUNKNOWN,
+  kNOT_CONNECTED,
+  kCONNECTED,
+  kSHORT_CIRCUIT,
+  kFIRED,
+};
+
 class PrimerController {
  private:
   gpio::GPIOController gpio_;
   std::vector<uint8_t> primer_pins_;
   std::uint16_t active_time;
-  std::uint8_t primerState;
+  std::atomic<PrimerState_t> primerState;
 
  public:
   PrimerController();
   void Initialize(std::string path);
 
-  bool ChangePrimerState(uint8_t state);
-  uint8_t GetPrimerState();
+  bool EnablePrimer(const bool auto_disable = true);
+  bool DisablePrimer();
+  PrimerState_t GetPrimerState() const noexcept;
+  void VerifyPrimerConection();
 
  private:
   bool ReadConfig(std::string path);
