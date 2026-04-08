@@ -3,6 +3,7 @@
         "deployment/system_definition/someip/engine_service/service.json",
         "deployment/system_definition/someip/servo_service/service.json",
         "deployment/system_definition/someip/prim_service/service.json",
+        "deployment/system_definition/someip/logger_service/service.json",
         "deployment/system_definition/someip/fc/main_service/service.json"
     ],
     "package": "srp.apps",
@@ -17,7 +18,7 @@
                 "logger": {
                     "app_id": "ENG-",
                     "app_des": "głowny servis komputera silnika",
-                    "log_level": "kWarn",
+                    "log_level": "kDebug",
                     "log_mode": "kRemote",
                     "ctx": [
                         {
@@ -64,6 +65,11 @@
                 },
                 {
                     "name": "PrimerService as PrimerService",
+                    "on": "ipc",
+                    "instance": 2
+                },
+                {
+                    "name": "FileLoggerApp as FileLoggerApp",
                     "on": "ipc",
                     "instance": 2
                 },

@@ -24,13 +24,13 @@ namespace srp {
 namespace envService {
 
 namespace {
-    static constexpr uint8_t PRESS_SENSOR_ID = 10;
-    static constexpr uint8_t D_PRESS_SENSOR_ID = 11;
-    static constexpr uint8_t kTensoSensorID = 12;
-    static constexpr auto kPressureDelayMs = 100;
-    static constexpr auto kDifferentialPressureDelayMs = 100;
-    static constexpr auto kTensoDelayMs = 100;
-    static constexpr auto kTensoEnabled = false;
+    static constexpr uint8_t PRESS_SENSOR_ID =           10;
+    static constexpr uint8_t D_PRESS_SENSOR_ID =         11;
+    static constexpr uint8_t kTensoSensorID =            12;
+    static constexpr auto kPressureDelayMs =             20;
+    static constexpr auto kDifferentialPressureDelayMs = 5;
+    static constexpr auto kTensoDelayMs =                1000;
+    static constexpr auto kTensoEnabled =                false;
 }  // namespace
 
 
@@ -44,8 +44,8 @@ core::ErrorCode EnvService::Init(std::unique_ptr<mw::temp::TempController> temp)
 }
 
 EnvService::EnvService(): press_{std::move(std::make_shared<i2c::ADCSensorController>())},
-                service_ipc{press_, ara::core::InstanceSpecifier{"srp/env/EnvApp/envService_ipc"}, PRESS_SENSOR_ID},
-                service_udp{press_, ara::core::InstanceSpecifier{"srp/env/EnvApp/envService_udp"}, PRESS_SENSOR_ID} {
+                service_ipc{ara::core::InstanceSpecifier{"srp/env/EnvApp/envService_ipc"}},
+                service_udp{ara::core::InstanceSpecifier{"srp/env/EnvApp/envService_udp"}} {
 }
 
 
@@ -157,7 +157,9 @@ void EnvService::GenericPressureLoop(
 
             uint16_t encodedVal = static_cast<uint16_t>(val * 100);
             eventIpc.Update(encodedVal);
+
             if (sensorId == PRESS_SENSOR_ID) {
+                service_udp.SetTankPressure(encodedVal);
                 eventUdp.Update(encodedVal);
             }
         } else {
@@ -251,10 +253,12 @@ void EnvService::TempRxCallback(const std::vector<srp::mw::temp::TempReadHdr>& d
             {"sensor_temp_1", [this](int16_t v) {
                 service_ipc.newTempEvent_1.Update(v);
                 service_udp.newTempEvent_1.Update(v);
+                service_udp.SetUpTankTemp(v);
             }},
             {"sensor_temp_2", [this](int16_t v) {
                 service_ipc.newTempEvent_2.Update(v);
                 service_udp.newTempEvent_2.Update(v);
+                service_udp.SetDownTankTemp(v);
             }},
             {"sensor_temp_3", [this](int16_t v) {
                 service_ipc.newTempEvent_3.Update(v);

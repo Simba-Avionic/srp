@@ -7,10 +7,9 @@ register_all_toolchains()
 load("//third_party:deps.bzl", "deps")
 deps()
 
-load("//bazel/libs:third_party_repositories.bzl", "include_srp_platform", "include_srp_mavlink", "include_gtest_mock", "include_json")
-include_srp_platform("0.0.7-beta-patch-5", "SRP-Platform/srp_platform")
-load("//bazel/libs:third_party_repositories.bzl", "include_srp_platform",
-    "include_srp_mavlink", "include_gtest_mock", "include_simdjson", "include_json")
+load("//bazel/libs:third_party_repositories.bzl", "include_srp_platform", "include_srp_mavlink", "include_gtest_mock", "include_simdjson", "include_json")
+
+include_srp_platform("0.0.8-hotfix", "SRP-Platform/srp_platform")
 
 
 load("@srp_platform//:download.bzl", "download")

@@ -12,10 +12,10 @@
                 ],
                 "parms": "",
                 "logger": {
-                    "app_id": "STAT",
+                    "app_id": "STA2",
                     "app_des": "",
                     "log_level": "kInfo",
-                    "log_mode": "kRemote",
+                    "log_mode": "kRemote|kConsole",
                     "ctx": [
                         {
                             "ctx_id": "ara",
@@ -34,7 +34,7 @@
                         },
                         {
                             "ctx_id": "exec",
-                            "log_level": "kInfo",
+                            "log_level": "kDebug",
                             "ctx_des": "Default ctx for ara::exec"
                         }
                     ]

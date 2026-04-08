@@ -24,6 +24,7 @@
 #include "core/rocket_machine_state/rocket_state.hpp"
 #include "mw/gpio_server/controller/gpio_controller.hpp"
 #include "srp/apps/MainService/MainServiceHandler.h"
+#include "srp/apps/FileLoggerApp/FileLoggerAppHandler.h"
 
 
 namespace srp {
@@ -41,6 +42,8 @@ class EngineApp final : public ara::exec::AdaptiveApplication {
   std::vector<ArmPinConfig_t> arm_pins_id;
   std::shared_ptr<PrimerServiceHandler> primer_handler_;
   std::shared_ptr<ServoServiceHandler> servo_handler_;
+  std::shared_ptr<FileLoggerAppHandler> logger_handler_;
+  FileLoggerAppProxy logger_proxy;
   PrimerServiceProxy primer_proxy;
   ServoServiceProxy servo_proxy;
   std::shared_ptr<core::rocketState::RocketStateController> state_ctr;

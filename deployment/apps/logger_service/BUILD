@@ -21,7 +21,7 @@ filegroup(
         "//deployment/apps/system_stat_service:instance",
         "//deployment/system_definition/diag/jobs/file_logger:file_logger_job",
     ],
-    visibility = ["//apps/logger_service:__subpackages__"],
+    visibility = ["//visibility:public"],
 )
 
 adaptive_application(
