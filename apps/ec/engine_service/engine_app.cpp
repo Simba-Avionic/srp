@@ -26,6 +26,7 @@ namespace apps {
 namespace {
   static constexpr auto kPrimer_path_name = "srp/apps/EngineService/PrimerService";
   static constexpr auto kServo_path_name = "srp/apps/EngineService/ServoService";
+  static constexpr auto kMain_path_name = "srp/apps/EngineService/MainService";
   static constexpr auto kEngine_path_name = "srp/apps/EngineService/EngineService_ipc";
   static constexpr auto kEngine_udp_path_name = "srp/apps/EngineService/EngineService_udp";
   static constexpr auto kInit_max_intervals = 20;
@@ -33,6 +34,7 @@ namespace {
   static constexpr auto kPin_off = 0;
   static constexpr auto kPin_on = 1;
   static constexpr auto kHeartBeatPinID = 3;
+  using RocketState_t = core::rocketState::RocketState_t;
 }  // namespace
 
 std::optional<std::vector<ArmPinConfig_t>> EngineApp::LoadArmPinConfig(const std::string& path) {
@@ -70,7 +72,8 @@ EngineApp::EngineApp():
       servo_proxy((ara::core::InstanceSpecifier{kServo_path_name})),
       service_ipc(ara::core::InstanceSpecifier{kEngine_path_name}),
       service_udp(ara::core::InstanceSpecifier{kEngine_udp_path_name}),
-      primer_handler_{nullptr}, servo_handler_{nullptr} {
+      main_proxy(ara::core::InstanceSpecifier{kMain_path_name}),
+      primer_handler_{nullptr}, servo_handler_{nullptr}, main_handler{nullptr} {
 }
 
 int EngineApp::Run(const std::stop_token& token) {
@@ -78,7 +81,7 @@ int EngineApp::Run(const std::stop_token& token) {
     gpio_.SetPinValue(kHeartBeatPinID, kPin_on, 1000);
     auto state = state_ctr->GetState();
     service_ipc.CurrentMode.Update(static_cast<uint8_t>(state));
-    // service_udp.CurrentMode.Update(static_cast<uint8_t>(state));
+    service_udp.CurrentMode.Update(static_cast<uint8_t>(state));
     core::condition::wait_for(std::chrono::seconds(2), token);
   }
 
@@ -86,6 +89,7 @@ int EngineApp::Run(const std::stop_token& token) {
   service_udp.StopOffer();
   servo_proxy.StopFindService();
   primer_proxy.StopFindService();
+  main_proxy.StopFindService();
   return 0;
 }
 
@@ -102,11 +106,9 @@ int EngineApp::Initialize(const std::map<ara::core::StringView, ara::core::Strin
   }
   this->arm_pins_id = std::move(arm_pins.value());
   state_ctr = core::rocketState::RocketStateController::GetInstance();
-  state_ctr->RegisterRequirementsCallback([this](core::rocketState::RocketState_t state) {
+  state_ctr->RegisterRequirementsCallback([this](RocketState_t state) {
     switch (state) {
-      case core::rocketState::RocketState_t::LAUNCH:
-        break;
-      case core::rocketState::RocketState_t::ARM:
+      case RocketState_t::ARM:
         if ((primer_handler_ == nullptr || servo_handler_ == nullptr)) {
           ara::log::LogError() << "Invalid pointer to Primer or Servo";
           return false;
@@ -117,24 +119,14 @@ int EngineApp::Initialize(const std::map<ara::core::StringView, ara::core::Strin
     }
     return true;
   });
-  state_ctr->RegisterOnStateChangeCallback([this](core::rocketState::RocketState_t state) {
+  state_ctr->RegisterOnStateChangeCallback([this](RocketState_t state) {
         this->OnStateChange(state);
   });
-  state_ctr->RegisterCallback(core::rocketState::RocketState_t::LAUNCH, [this]() {
-      this->OnLaunch();
-  });
-  state_ctr->RegisterCallback(core::rocketState::RocketState_t::ARM, [this]() {
-      this->OnArm();
-  });
-  state_ctr->RegisterCallback(core::rocketState::RocketState_t::DISARM, [this]() {
-      this->OnDisarm();
-  });
-  state_ctr->RegisterCallback(core::rocketState::RocketState_t::APOGEE, [this]() {
-      this->OnApogee();
-  });
-  state_ctr->RegisterCallback(core::rocketState::RocketState_t::ABORT, [this]() {
-      this->OnAbort();
-  });
+  state_ctr->RegisterCallback(RocketState_t::LAUNCH, [this]() { this->OnLaunch(); });
+  state_ctr->RegisterCallback(RocketState_t::ARM, [this]() { this->OnArm(); });
+  state_ctr->RegisterCallback(RocketState_t::DISARM, [this]() { this->OnDisarm(); });
+  state_ctr->RegisterCallback(RocketState_t::APOGEE, [this]() { this->OnApogee(); });
+  state_ctr->RegisterCallback(RocketState_t::ABORT, [this]() { this->OnAbort(); });
 
   servo_proxy.StartFindService([this](auto handler) {
     servo_handler_ = handler;
@@ -160,12 +152,17 @@ int EngineApp::Initialize(const std::map<ara::core::StringView, ara::core::Strin
     ara::log::LogError() << "EngineApp::Initialize: state_ctr_ is nullptr!";
     return 1;
   }
+
+  main_proxy.StartFindService([this](auto handler) {
+    main_handler = handler;
+  });
+
   ara::log::LogInfo() << "Initialize Complete";
-  state_ctr->SetState(core::rocketState::RocketState_t::DISARM);
+  state_ctr->SetState(RocketState_t::DISARM);
   return 0;
 }
 
-void EngineApp::OnStateChange(core::rocketState::RocketState_t new_state) {
+void EngineApp::OnStateChange(RocketState_t new_state) {
   service_ipc.CurrentMode.Update(static_cast<uint8_t>(new_state));
   service_udp.CurrentMode.Update(static_cast<uint8_t>(new_state));
 }
@@ -184,7 +181,10 @@ void EngineApp::OnLaunch() {
       ara::log::LogError() << "Invalid request to MW:I2CService";
       return;
     }
-    state_ctr->SetState(core::rocketState::RocketState_t::FLIGHT);
+    state_ctr->SetState(RocketState_t::FLIGHT);
+    if (main_handler) {
+      main_handler->setMode(static_cast<uint8_t>(RocketState_t::FLIGHT));
+    }
   }).detach();
 }
 
@@ -205,20 +205,22 @@ void EngineApp::OnDisarm() {
 }
 
 void EngineApp::OnApogee() {
+  OnAbort();
 }
 
 void EngineApp::OnAbort() {
+  for (const ArmPinConfig_t& pin : arm_pins_id) {
+    bool disable_later = (pin.name == "Vent Servo Power" || pin.name == "Dump Valve Servo Power");
+    if (gpio_.SetPinValue(pin.pin_id,
+                          disable_later ? kPin_on : kPin_off,
+                          disable_later ? 3500 : 0,
+                          disable_later) != core::ErrorCode::kOk) {
+      ara::log::LogError() << "cant disarm pin: " << pin.name;
+    }
+  }
   if (servo_handler_ != nullptr) {
     servo_handler_->SetDumpValue(1);
     servo_handler_->SetVentServoValue(1);
-  }
-  std::this_thread::sleep_for(std::chrono::seconds(3));
-  for (const ArmPinConfig_t& pin : arm_pins_id) {
-    if (!(pin.name == "Vent Servo Power" || pin.name == "Dump Valve Servo Power")) {
-      if (gpio_.SetPinValue(pin.pin_id, kPin_off) != core::ErrorCode::kOk) {
-        ara::log::LogError() << "cant disarm pin: " << pin.name;
-      }
-    }
   }
 }
 

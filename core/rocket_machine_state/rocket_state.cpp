@@ -136,11 +136,11 @@ bool RocketStateController::SetState(const RocketState_t state) {
     this->prev_state = actual_state;
     this->actual_state = state;
 
-    on_change_callback_(actual_state);
-
     if (callbacks_.count(state)) {
         callbacks_[state]();
     }
+
+    on_change_callback_(actual_state);
     return true;
 }
 

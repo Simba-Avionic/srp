@@ -21,12 +21,14 @@ namespace apps {
 
 class MyRecoveryServiceSkeleton: public RecoveryServiceSkeleton {
  private:
-  const std::shared_ptr<recovery::ParachuteController> controller;
+  std::shared_ptr<recovery::ParachuteController> controller;
 
  public:
-  MyRecoveryServiceSkeleton(const ara::core::InstanceSpecifier& instance,
-                      const std::shared_ptr<recovery::ParachuteController>& contr):
-                  RecoveryServiceSkeleton{instance}, controller(contr) {}
+  explicit MyRecoveryServiceSkeleton(const ara::core::InstanceSpecifier& instance):
+                  RecoveryServiceSkeleton{instance} {
+  this->controller = recovery::ParachuteController::GetInstance();
+  }
+
   virtual ~MyRecoveryServiceSkeleton() = default;
 
   srp::apps::RecoveryService::NewParachuteStatusEventEventSkeleton NewParachuteStatusEvent{};
@@ -34,20 +36,14 @@ class MyRecoveryServiceSkeleton: public RecoveryServiceSkeleton {
  protected:
   ara::core::Result<bool> OpenReefedParachute() override {
     std::stop_source never_stop_source;
-    auto res = controller->OpenParachute(never_stop_source.get_token(), false);
-    if (!res) {
-      return false;
-    }
-    this->NewParachuteStatusEvent.Update(static_cast<uint8_t>(recovery::ParachuteState_t::OPEN_REEFED));
+    auto res = controller->OpenParachute(never_stop_source.get_token());
+    this->NewParachuteStatusEvent.Update(static_cast<uint8_t>(controller->GetParachuteState()));
     return res;
   }
   ara::core::Result<bool> UnreefeParachute() override {
     std::stop_source never_stop_source;
-    auto res = controller->UnreefParachute(never_stop_source.get_token(), false);
-    if (!res) {
-      return false;
-    }
-    this->NewParachuteStatusEvent.Update(static_cast<uint8_t>(recovery::ParachuteState_t::OPEN_UNREEFED));
+    auto res = controller->UnreefParachute(never_stop_source.get_token());
+    this->NewParachuteStatusEvent.Update(static_cast<uint8_t>(static_cast<uint8_t>(controller->GetParachuteState())));
     return res;
   }
 };

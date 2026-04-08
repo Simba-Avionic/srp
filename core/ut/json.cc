@@ -67,4 +67,3 @@ INSTANTIATE_TEST_SUITE_P(
         std::make_tuple(nlohmann::json(R"({ "value": -0})"), 0)
     )
 );
-// TODO dokończenie UT dla jsonParser  // NOLINT

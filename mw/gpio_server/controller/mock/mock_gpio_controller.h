@@ -18,7 +18,7 @@ namespace mock {
 class MOCKGPIOController : public gpio::IGPIOController {
  public:
   MOCK_METHOD(core::ErrorCode, SetPinValue,
-              (uint8_t actuatorID, int8_t value, uint16_t active_time),
+              (uint8_t actuatorID, int8_t value, uint16_t active_time, bool force_time),
               (override));
 
   MOCK_METHOD(std::optional<int8_t>, GetPinValue,

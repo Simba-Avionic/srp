@@ -562,10 +562,12 @@ void RadioApp::SomeIpInit() {
               this->event_data->SetActuatorState(SIMBA_ACTUATOR_FLAGS_RECOVERY_LINECUTTER, 0);
               break;
             case recovery::ParachuteState_t::OPEN_REEFED:
+            case recovery::ParachuteState_t::OPENING_REEFED:
               this->event_data->SetActuatorState(SIMBA_ACTUATOR_FLAGS_RECOVERY_SERVO, 1);
               this->event_data->SetActuatorState(SIMBA_ACTUATOR_FLAGS_RECOVERY_LINECUTTER, 0);
               break;
             case recovery::ParachuteState_t::OPEN_UNREEFED:
+            case recovery::ParachuteState_t::OPENING_UNREEFED:
               this->event_data->SetActuatorState(SIMBA_ACTUATOR_FLAGS_RECOVERY_SERVO, 1);
               this->event_data->SetActuatorState(SIMBA_ACTUATOR_FLAGS_RECOVERY_LINECUTTER, 1);
               break;
