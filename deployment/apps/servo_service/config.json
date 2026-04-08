@@ -21,8 +21,8 @@
         {
         "actuator_id":62,
         "channel": 1,
-        "on_pos" : 540,
-        "off_pos" : 102,
+        "on_pos" : 125,
+        "off_pos" : 520,
         "mosfet_id" : 11,
         "desc": "J13, DUMP VALVE",
         "ina219_address": 64

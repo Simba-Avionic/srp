@@ -69,8 +69,9 @@
             "require": [
                 {
                     "name": "srp.env.EnvApp as EnvApp",
-                    "on": "ipc",
-                    "instance": 2
+                    "on": "udp",
+                    "port": "10001",
+                    "instance": 1
                 },
                 {
                     "name": "srp.apps.GPSService as GPSService",
@@ -79,13 +80,15 @@
                 },
                 {
                     "name": "srp.apps.PrimerService as PrimerService",
-                    "on": "ipc",
-                    "instance": 2
+                    "on": "udp",
+                    "port": "10002",
+                    "instance": 1
                 },
                 {
                     "name": "srp.apps.ServoService as ServoService",
-                    "on": "ipc",
-                    "instance": 2
+                    "on": "udp",
+                    "port": "10001",
+                    "instance": 1
                 },
                 {
                     "name": "srp.apps.RecoveryService as RecoveryService",
@@ -99,8 +102,9 @@
                 },
                 {
                     "name": "srp.apps.EngineService as EngineService",
-                    "on": "ipc",
-                    "instance": 2
+                    "on": "udp",
+                    "port": "10001",
+                    "instance": 1
                 },
                 {
                     "name": "srp.env.EnvAppFc as EnvAppFc",
