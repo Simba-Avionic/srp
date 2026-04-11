@@ -16,12 +16,12 @@
 namespace srp {
 namespace apps {
 namespace {
-  constexpr auto kService_ipc_instance = "srp/apps/GPSApp/GPSService_ipc";
-  constexpr auto kService_udp_instance = "srp/apps/GPSApp/GPSService_udp";
-  constexpr auto KGPS_UART_path = "/dev/ttyS1";
-  constexpr auto KGPS_UART_baudrate = B230400;
-  constexpr uint16_t KGps_expected_interval = 1000;
-  constexpr auto kGps_freq_tolerance = 100;
+  constexpr auto kService_ipc_instance =       "srp/apps/GPSApp/GPSService_ipc";
+  constexpr auto kService_udp_instance =       "srp/apps/GPSApp/GPSService_udp";
+  constexpr auto KGPS_UART_path =              "/dev/ttyS0";
+  constexpr auto KGPS_UART_baudrate =          B230400;
+  constexpr uint16_t KGps_expected_interval =  1000;
+  constexpr auto kGps_freq_tolerance =         100;
 }
 
 GPSDataStructure GPSApp::GetSomeIPData(const core::GPS_DATA_T& data) {

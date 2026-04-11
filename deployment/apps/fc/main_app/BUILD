@@ -7,6 +7,7 @@ filegroup(
         "app_config.json",
         "//deployment/system_definition/someip/fc/main_service:service_someipy",
         "//deployment/apps/fc/recovery_service:instance",
+        "//deployment/system_definition/someip/engine_service:service_someipy",
     ],
     visibility = [
         "//apps/fc/main_service:__subpackages__",

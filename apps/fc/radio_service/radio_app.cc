@@ -23,29 +23,29 @@
 namespace srp {
 namespace apps {
 namespace {
-  static constexpr auto KRadio_UART_path = "/dev/ttyS1";
+  static constexpr auto KRadio_UART_path =     "/dev/ttyS1";
   static constexpr auto KRadio_UART_baudrate = B57600;
-  static constexpr auto kSystemId = 1;
+  static constexpr auto kSystemId =    1;
   static constexpr auto kComponentId = 200;
-  static constexpr auto kTime = 990;  // Should be 1 Hz but better make it 1.1Hz than 0.9 wchich can trigger error on GS
-  static constexpr auto kRequired_mavlink_messages_to_change_state = 5;
+  static constexpr auto kTime =        990;
+  static constexpr auto kRequired_mavlink_messages_to_change_state = 1;
 
-  static constexpr auto kEC_enabled = true;
-  static constexpr auto kFC_enabled = false;
+  static constexpr auto kEC_enabled =       true;
+  static constexpr auto kFC_enabled =       true;
   static constexpr auto kStatic_test_mode = true;
 }  // namespace
 
 namespace {
-  static constexpr auto kService_ipc_instance = "srp/apps/RadioApp/RadioService_ipc";
-  static constexpr auto kService_udp_instance = "srp/apps/RadioApp/RadioService_udp";
-  static constexpr auto kEnv_service_path_name = "srp/apps/RadioApp/EnvApp";
-  static constexpr auto kGPS_service_path_name = "srp/apps/RadioApp/GPSService";
-  static constexpr auto kPrimer_service_path_name = "srp/apps/RadioApp/PrimerService";
-  static constexpr auto kServo_service_path_name = "srp/apps/RadioApp/ServoService";
+  static constexpr auto kService_ipc_instance =       "srp/apps/RadioApp/RadioService_ipc";
+  static constexpr auto kService_udp_instance =       "srp/apps/RadioApp/RadioService_udp";
+  static constexpr auto kEnv_service_path_name =      "srp/apps/RadioApp/EnvApp";
+  static constexpr auto kGPS_service_path_name =      "srp/apps/RadioApp/GPSService";
+  static constexpr auto kPrimer_service_path_name =   "srp/apps/RadioApp/PrimerService";
+  static constexpr auto kServo_service_path_name =    "srp/apps/RadioApp/ServoService";
   static constexpr auto kRecovery_service_path_name = "srp/apps/RadioApp/RecoveryService";
-  static constexpr auto kMain_service_path_name = "srp/apps/RadioApp/MainService";
-  static constexpr auto kEngine_service_path_name = "srp/apps/RadioApp/EngineService";
-  static constexpr auto kEnv_fc_service_path_name = "srp/apps/RadioApp/EnvAppFc";
+  static constexpr auto kMain_service_path_name =     "srp/apps/RadioApp/MainService";
+  static constexpr auto kEngine_service_path_name =   "srp/apps/RadioApp/EngineService";
+  static constexpr auto kEnv_fc_service_path_name =   "srp/apps/RadioApp/EnvAppFc";
 }  // namespace
 
 uint8_t RadioApp::RocketStateToMavlinkState(const RocketState_t state) const noexcept {
@@ -112,17 +112,28 @@ void RadioApp::TransmittingLoop(const std::stop_token& token) {
   while (!token.stop_requested()) {
     auto start = std::chrono::high_resolution_clock::now();
 
+    if (engine_service_handler && servo_service_handler) {
+    auto main_valve = servo_service_handler->ReadMainServoValue();
+    auto vent_valve = servo_service_handler->ReadVentServoValue();
+    if (main_valve.HasValue()) {
+      event_data->SetActuatorState(SIMBA_ACTUATOR_FLAGS_MAIN_VALVE, main_valve.Value());
+    }
+    if (vent_valve.HasValue()) {
+      event_data->SetActuatorState(SIMBA_ACTUATOR_FLAGS_VENT_VALVE, vent_valve.Value());
+    }
+    auto EB_STATE = engine_service_handler->GetMode();
     // Heartbeat
-    if (auto val = timestamp_.GetNewTimeStamp(); val.has_value()) {
+    if (auto val = timestamp_.GetNewTimeStamp(); val.has_value() && EB_STATE.HasValue()) {
       send([&] {
         mavlink_msg_simba_rocket_heartbeat_pack(kSystemId, kComponentId, &msg,
                   static_cast<uint64_t>(val.value()),
                   RocketStateToMavlinkState(event_data->GetComputerState(BoardType_e::MB)),
-                  RocketStateToMavlinkState(event_data->GetComputerState(BoardType_e::EB)),
+                  RocketStateToMavlinkState(static_cast<RocketState_t>(EB_STATE.Value())),
                   event_data->GetActuatorStates(),
                   PrimerStateToMavlinState(static_cast<PrimerState_t>(event_data->GetPrimerStates())));
       });
     }
+  }
 
     // Temperature
     send([&] {
@@ -135,19 +146,27 @@ void RadioApp::TransmittingLoop(const std::stop_token& token) {
       mavlink_msg_simba_max_altitude_pack(kSystemId, kComponentId, &msg, event_data->GetMaxAltitude());
     });
 
+    if (env_service_handler) {
+      auto up_temp = env_service_handler->GetUpperTankTemp();
+      auto down_temp = env_service_handler->GetLowerTankTemp();
+      if (up_temp.HasValue() && down_temp.HasValue())
     // Tank Temps
     send([&] {
       mavlink_msg_simba_tank_temperature_pack(kSystemId, kComponentId, &msg,
-          static_cast<int16_t>(event_data->GetTemp(0)),
+          static_cast<int16_t>(up_temp.Value()),
           static_cast<int16_t>(event_data->GetTemp(1)),
-          static_cast<int16_t>(event_data->GetTemp(2)));
+          static_cast<int16_t>(down_temp.Value()));
     });
-
-    // Tank Pressure
+    }
+    if (env_service_handler) {
+    auto val = env_service_handler->GetTankPressure();
+    if (val.HasValue()) {
+      // Tank Pressure
     send([&] {
-      mavlink_msg_simba_tank_pressure_pack(kSystemId, kComponentId, &msg,
-          static_cast<uint16_t>(event_data->GetPress()));
+      mavlink_msg_simba_tank_pressure_pack(kSystemId, kComponentId, &msg, val.Value());
     });
+    }
+    }
 
     // GPS
     auto gps_data = event_data->GetGPS();
@@ -247,18 +266,22 @@ void RadioApp::HBHangleState(const uint8_t values) {
   if (!IsStateChangeApproved(req_state.value())) {
     return;
   }
-  if ((engine_service_handler == nullptr) && kEC_enabled || (main_service_handler == nullptr) && kFC_enabled) {
-    mavl_logger.LogWarn() << "Service handlers not ready in GS_HEARTBEAT (main/engine).";
-    return;
+  if ((engine_service_handler == nullptr) && kEC_enabled) {
+    mavl_logger.LogWarn() << "Service handlers not ready in GS_HEARTBEAT (engine).";
+  } else {
+    if (kEC_enabled && engine_service_handler) {
+      engine_service_handler->SetMode(static_cast<uint8_t>(req_state.value()));
+    }
+  }
+  if ((main_service_handler == nullptr) && kFC_enabled) {
+    mavl_logger.LogWarn() << "Service handlers not ready in GS_HEARTBEAT (main).";
+  } else {
+    if (kFC_enabled && main_service_handler) {
+      main_service_handler->setMode(static_cast<uint8_t>(req_state.value()));
+    }
   }
   mavl_logger.LogInfo() << "Changing rocket state to "
                     + core::rocketState::to_string(req_state.value());
-  if (kFC_enabled) {
-    main_service_handler->setMode(static_cast<uint8_t>(req_state.value()));
-  }
-  if (kEC_enabled) {
-    engine_service_handler->SetMode(static_cast<uint8_t>(req_state.value()));
-  }
 }
 
 void RadioApp::OnGSHEARTBEAT(const mavlink_message_t& msg) {
@@ -361,8 +384,8 @@ RadioApp::~RadioApp() {
 }
 
 RadioApp::RadioApp():
-          mavl_logger{ara::log::LoggingMenager::GetInstance()->CreateLogger("MAVL", "", ara::log::LogLevel::kWarn)},
-          someip_logger{ara::log::LoggingMenager::GetInstance()->CreateLogger("SOME", "", ara::log::LogLevel::kWarn)},
+          mavl_logger{ara::log::LoggingMenager::GetInstance()->CreateLogger("MAVL", "", ara::log::LogLevel::kDebug)},
+          someip_logger{ara::log::LoggingMenager::GetInstance()->CreateLogger("SOME", "", ara::log::LogLevel::kDebug)},
           primer_service_proxy{ara::core::InstanceSpecifier{kPrimer_service_path_name}},
           primer_service_handler{nullptr},
           servo_service_proxy{ara::core::InstanceSpecifier{kServo_service_path_name}},
@@ -373,10 +396,10 @@ RadioApp::RadioApp():
           env_fc_service_handler{nullptr},
           gps_service_proxy{ara::core::InstanceSpecifier{kGPS_service_path_name}},
           gps_service_handler{nullptr},
-          main_service_handler{nullptr},
           main_service_proxy{ara::core::InstanceSpecifier{kMain_service_path_name}},
-          engine_service_handler{nullptr},
+          main_service_handler{nullptr},
           engine_service_proxy{ara::core::InstanceSpecifier{kEngine_service_path_name}},
+          engine_service_handler{nullptr},
           recovery_service_proxy{ara::core::InstanceSpecifier{kRecovery_service_path_name}},
           recovery_service_handler{nullptr},
           service_ipc_instance(kService_ipc_instance),

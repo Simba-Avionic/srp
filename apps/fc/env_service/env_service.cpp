@@ -24,7 +24,7 @@ namespace srp {
 namespace envServiceFc {
 
 namespace {
-    static constexpr auto kBME280_delay_ms = 100;  // ms
+    static constexpr auto kBME280_delay_ms =           1000;
     static constexpr auto kService_instance_path_ipc = "srp/env/EnvAppFc/envServiceFc_ipc";
     static constexpr auto kService_instance_path_udp = "srp/env/EnvAppFc/envServiceFc_udp";
 }  // namespace

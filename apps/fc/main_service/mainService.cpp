@@ -21,17 +21,19 @@
 namespace srp {
 namespace service {
 namespace {
-    static constexpr auto kService_ipc_name = "srp/apps/MainService/MainService_ipc";
-    static constexpr auto kService_udp_name = "srp/apps/MainService/MainService_udp";
-    static constexpr auto kSend_event_time = std::chrono::milliseconds(1000);
-    static constexpr auto kArmPinID = 5;
-    static constexpr auto kPin_on = 1;
-    static constexpr auto kPin_off = 0;
-    static constexpr auto kRecovery_instance_name = "srp/apps/MainService/RecoveryService";
+    static constexpr auto kService_ipc_name = "srp/apps/MainApp/MainService_ipc";
+    static constexpr auto kService_udp_name = "srp/apps/MainApp/MainService_udp";
+    static constexpr auto kSend_event_time =  std::chrono::milliseconds(1000);
+    static constexpr auto kArmPinID =  5;
+    static constexpr auto kPin_on =    1;
+    static constexpr auto kPin_off =   0;
+    static constexpr auto kRecovery_instance_name = "srp/apps/MainApp/RecoveryService";
+    static constexpr auto kEngine_instance_name =   "srp/apps/MainApp/EngineService";
 }  // namespace
 using RocketState_t = core::rocketState::RocketState_t;
 
-MainService::MainService(): recovery_proxy_{ara::core::InstanceSpecifier{kRecovery_instance_name}} {}
+MainService::MainService(): recovery_proxy_{ara::core::InstanceSpecifier{kRecovery_instance_name}},
+                            engine_proxy_{ara::core::InstanceSpecifier{kEngine_instance_name}} {}
 
 int MainService::Initialize(const std::map<ara::core::StringView, ara::core::StringView>
                     parms) {
@@ -61,10 +63,19 @@ int MainService::Initialize(const std::map<ara::core::StringView, ara::core::Str
     recovery_proxy_.StartFindService([this](auto handler) {
         this->recovery_handler_ = handler;
     });
+    engine_proxy_.StartFindService([this](auto handler) {
+        this->engine_handler = handler;
+    });
+    service_ipc->StartOffer();
+    service_udp->StartOffer();
     return 0;
 }
 
 void MainService::OnStateChange(core::rocketState::RocketState_t state) {
+    service_ipc->CurrentModeStatusEvent.Update(static_cast<uint8_t>(state));
+    service_udp->CurrentModeStatusEvent.Update(static_cast<uint8_t>(state));
+    ara::log::LogInfo() << "State changed to: " << core::rocketState::to_string(state);
+
     auto update_req = false;
     const auto change_require = {RocketState_t::APOGEE,
         RocketState_t::FIRST_PARACHUTE, RocketState_t::SECOND_PARACHUTE, RocketState_t::DROP};
@@ -75,16 +86,16 @@ void MainService::OnStateChange(core::rocketState::RocketState_t state) {
         }
     }
     if (update_req) {
-        // TODO(matikrajek42@gmail.com) add eb controll on state FLIGHT >
+        if (!engine_handler) {
+            ara::log::LogWarn() << "Engine Handler not set";
+            return;
+        }
+        engine_handler->SetMode(static_cast<uint8_t>(state));
     }
-
-    service_ipc->CurrentModeStatusEvent.Update(static_cast<uint8_t>(state));
-    service_udp->CurrentModeStatusEvent.Update(static_cast<uint8_t>(state));
 }
 
 int MainService::Run(const std::stop_token& token) {
-    service_ipc->StartOffer();
-    service_udp->StartOffer();
+    state_ctr->SetState(RocketState_t::DISARM);
     while (!token.stop_requested()) {
         auto state = static_cast<uint8_t>(state_ctr->GetState());
         service_ipc->CurrentModeStatusEvent.Update(state);
@@ -116,12 +127,18 @@ void MainService::OnLaunch() {
 }
 
 void MainService::OnApogee() {
-    recovery_handler_->OpenReefedParachute();
+    // if (!recovery_handler_) {
+    //     return;
+    // }
+    // recovery_handler_->OpenReefedParachute();
     state_ctr->SetState(RocketState_t::FIRST_PARACHUTE);
 }
 
 void MainService::OnSecondParachute() {
-    recovery_handler_->UnreefeParachute();
+    // if (!recovery_handler_) {
+    //     return;
+    // }
+    // recovery_handler_->UnreefeParachute();
     state_ctr->SetState(RocketState_t::DROP);
 }
 

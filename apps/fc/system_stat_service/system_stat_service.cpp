@@ -36,13 +36,13 @@ FcSystemStatService::FcSystemStatService():
 
 int FcSystemStatService::Initialize(const std::map<ara::core::StringView, ara::core::StringView>
                       parms) {
-    service_ipc.StartOffer();
-    service_udp.StartOffer();
     return 0;
 }
 
 
 int FcSystemStatService::Run(const std::stop_token& token) {
+    service_ipc.StartOffer();
+    service_udp.StartOffer();
     while (!token.stop_requested()) {
         apps::SysStatType stats;
         auto cpu_usage_opt = core::stat::SystemStats::get_cpu_usage();
@@ -55,16 +55,13 @@ int FcSystemStatService::Run(const std::stop_token& token) {
             continue;
         }
         stats.mem_usage = mem_usage_opt.value();
-
         stats.disk_utilization = static_cast<float>(core::stat::SystemStats::get_disk_space());
-
         std::ostringstream ss;
-        ss << std::fixed << std::setprecision(2)  << "cpu usage(1min): " << std::to_string(stats.cpu_usage)
-                            << "%, mem usage: " << std::to_string(stats.mem_usage)
-                            << "%, disk usage: " << std::to_string(stats.disk_utilization) << "%";
+        ss << std::fixed << std::setprecision(2)  << "cpu usage(1min): " << stats.cpu_usage
+                            << "%, mem usage: " << stats.mem_usage
+                            << "%, disk usage: " << stats.disk_utilization << "%";
 
-        ara::log::LogDebug() << ss.str();
-
+        ara::log::LogInfo() << ss.str();
         service_ipc.NewSystemUsage.Update(stats);
         service_udp.NewSystemUsage.Update(stats);
         core::condition::wait_for(std::chrono::milliseconds(kDelay), token);

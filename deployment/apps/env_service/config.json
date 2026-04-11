@@ -21,11 +21,11 @@
   ],
   "sensors-temp": [
     {
-      "physical_id" : "28-062018f00883",
+      "physical_id" : "28-0b2554e84c21",
       "name" : "sensor_temp_1"
     },
     {
-      "physical_id" : "28-3c01e076e761",
+      "physical_id" : "28-0b25550c2889",
       "name" : "sensor_temp_2"
     },
     {

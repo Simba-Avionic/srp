@@ -21,9 +21,9 @@ cpu_def(
     srp_components = SIMBA_COMPUTER_BASE_APPS + [
 
         # "//deployment/example_adaptive/ExampleApp",
-        "//deployment/apps/fc/env_service:EnvAppFc",
-        "//deployment/apps/fc/gps_app:GPSApp",
-        "//deployment/apps/fc/recovery_service:RecoveryService",
+        # "//deployment/apps/fc/env_service:EnvAppFc",
+        # "//deployment/apps/fc/gps_app:GPSApp",
+        # "//deployment/apps/fc/recovery_service:RecoveryService",
         "//deployment/apps/fc/radio_app:RadioApp",
         "//deployment/apps/fc/main_app:MainApp",
         "//deployment/apps/fc/system_stat_service:FcSysStatService",
