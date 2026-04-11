@@ -95,7 +95,7 @@ void MainService::OnStateChange(core::rocketState::RocketState_t state) {
 }
 
 int MainService::Run(const std::stop_token& token) {
-    state_ctr->SetState(RocketState_t::DISARM);
+    state_ctr->SetState(RocketState_t::ARM);
     while (!token.stop_requested()) {
         auto state = static_cast<uint8_t>(state_ctr->GetState());
         service_ipc->CurrentModeStatusEvent.Update(state);

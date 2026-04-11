@@ -205,7 +205,7 @@ int EngineApp::Initialize(const std::map<ara::core::StringView, ara::core::Strin
   }
 
   ara::log::LogInfo() << "Initialize Complete";
-  state_ctr->SetState(RocketState_t::DISARM);
+  state_ctr->SetState(RocketState_t::ARM);
   ara::log::LogDebug() << "End Initialization Engine App";
   return 0;
 }
