@@ -18,7 +18,7 @@
                 "logger": {
                     "app_id": "ENG-",
                     "app_des": "głowny servis komputera silnika",
-                    "log_level": "kDebug",
+                    "log_level": "kInfo",
                     "log_mode": "kRemote",
                     "ctx": [
                         {

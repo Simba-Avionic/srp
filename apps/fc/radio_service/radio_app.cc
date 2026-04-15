@@ -28,7 +28,7 @@ namespace {
   static constexpr auto kSystemId =    1;
   static constexpr auto kComponentId = 200;
   static constexpr auto kTime =        990;
-  static constexpr auto kRequired_mavlink_messages_to_change_state = 1;
+  static constexpr auto kRequired_mavlink_messages_to_change_state = 4;
 
   static constexpr auto kEC_enabled =       true;
   static constexpr auto kFC_enabled =       true;
@@ -111,29 +111,42 @@ void RadioApp::TransmittingLoop(const std::stop_token& token) {
 
   while (!token.stop_requested()) {
     auto start = std::chrono::high_resolution_clock::now();
-
-    if (engine_service_handler && servo_service_handler) {
-    auto main_valve = servo_service_handler->ReadMainServoValue();
-    auto vent_valve = servo_service_handler->ReadVentServoValue();
-    if (main_valve.HasValue()) {
-      event_data->SetActuatorState(SIMBA_ACTUATOR_FLAGS_MAIN_VALVE, main_valve.Value());
+    std::shared_ptr<EngineServiceHandler> engine_handler;
+    std::shared_ptr<ServoServiceHandler> servo_handler;
+    std::shared_ptr<env::EnvAppHandler> env_handler;
+    {
+      std::lock_guard<std::mutex> lock(handler_mtx_);
+      engine_handler = engine_service_handler;
+      servo_handler = servo_service_handler;
+      env_handler = env_service_handler;
     }
-    if (vent_valve.HasValue()) {
-      event_data->SetActuatorState(SIMBA_ACTUATOR_FLAGS_VENT_VALVE, vent_valve.Value());
+    if (engine_handler) {
+      auto EB_STATE = engine_handler->GetMode();
+      if (EB_STATE.HasValue()) {
+        event_data->SetComputerState(BoardType_e::EB, static_cast<RocketState_t>(EB_STATE.Value()));
+      }
     }
-    auto EB_STATE = engine_service_handler->GetMode();
+    if (servo_service_handler) {
+      auto main_valve = servo_handler->ReadMainServoValue();
+      auto vent_valve = servo_handler->ReadVentServoValue();
+      if (main_valve.HasValue()) {
+        event_data->SetActuatorState(SIMBA_ACTUATOR_FLAGS_MAIN_VALVE, main_valve.Value());
+      }
+      if (vent_valve.HasValue()) {
+        event_data->SetActuatorState(SIMBA_ACTUATOR_FLAGS_VENT_VALVE, vent_valve.Value());
+      }
+    }
     // Heartbeat
-    if (auto val = timestamp_.GetNewTimeStamp(); val.has_value() && EB_STATE.HasValue()) {
+    if (auto val = timestamp_.GetNewTimeStamp(); val.has_value()) {
       send([&] {
         mavlink_msg_simba_rocket_heartbeat_pack(kSystemId, kComponentId, &msg,
                   static_cast<uint64_t>(val.value()),
                   RocketStateToMavlinkState(event_data->GetComputerState(BoardType_e::MB)),
-                  RocketStateToMavlinkState(static_cast<RocketState_t>(EB_STATE.Value())),
+                  RocketStateToMavlinkState(event_data->GetComputerState(BoardType_e::EB)),
                   event_data->GetActuatorStates(),
                   PrimerStateToMavlinState(static_cast<PrimerState_t>(event_data->GetPrimerStates())));
       });
     }
-  }
 
     // Temperature
     send([&] {
@@ -146,27 +159,33 @@ void RadioApp::TransmittingLoop(const std::stop_token& token) {
       mavlink_msg_simba_max_altitude_pack(kSystemId, kComponentId, &msg, event_data->GetMaxAltitude());
     });
 
-    if (env_service_handler) {
-      auto up_temp = env_service_handler->GetUpperTankTemp();
-      auto down_temp = env_service_handler->GetLowerTankTemp();
-      if (up_temp.HasValue() && down_temp.HasValue())
+    if (env_handler) {
+      auto up_temp = env_handler->GetUpperTankTemp();
+      auto down_temp = env_handler->GetLowerTankTemp();
+      if (up_temp.HasValue()) {
+        event_data->SetTemp(0, up_temp.Value());
+      }
+      if (down_temp.HasValue()) {
+        event_data->SetTemp(2, down_temp.Value());
+      }
+      auto press = env_handler->GetTankPressure();
+      if (press.HasValue()) {
+        event_data->SetPress(press.Value());
+      }
+    }
+
     // Tank Temps
     send([&] {
       mavlink_msg_simba_tank_temperature_pack(kSystemId, kComponentId, &msg,
-          static_cast<int16_t>(up_temp.Value()),
+          static_cast<int16_t>(event_data->GetTemp(0)),
           static_cast<int16_t>(event_data->GetTemp(1)),
-          static_cast<int16_t>(down_temp.Value()));
+          static_cast<int16_t>(event_data->GetTemp(3)));
     });
-    }
-    if (env_service_handler) {
-    auto val = env_service_handler->GetTankPressure();
-    if (val.HasValue()) {
-      // Tank Pressure
+
+    // Tank Pressure
     send([&] {
-      mavlink_msg_simba_tank_pressure_pack(kSystemId, kComponentId, &msg, val.Value());
+      mavlink_msg_simba_tank_pressure_pack(kSystemId, kComponentId, &msg, event_data->GetPress());
     });
-    }
-    }
 
     // GPS
     auto gps_data = event_data->GetGPS();
@@ -202,12 +221,17 @@ void RadioApp::OnActuatorCMD(const mavlink_message_t& msg) {
 }
 
 void RadioApp::HBHangleActuators(const uint8_t values) {
+  std::shared_ptr<ServoServiceHandler> servo_handler;
+  {
+    std::lock_guard<std::mutex> lock(handler_mtx_);
+    servo_handler = servo_service_handler;
+  }
   auto update_valve = [&](uint8_t gs_mask, uint8_t rocket_mask, const std::string& name, auto setter_func) {
     uint8_t requested = ((values & gs_mask) != 0);
     bool current = (event_data->GetActuatorStates() & rocket_mask) != 0;
 
     if (requested != current) {
-      if (!servo_service_handler) {
+      if (!servo_handler) {
         mavl_logger.LogWarn() << "Servo service handler not ready for " << name;
         return;
       }
@@ -221,9 +245,9 @@ void RadioApp::HBHangleActuators(const uint8_t values) {
   auto eb_state = event_data->GetComputerState(BoardType_e::EB);
   if (eb_state == RocketState_t::ARM || (kStatic_test_mode && eb_state != RocketState_t::DISARM)) {
     update_valve(SIMBA_GS_FLAGS_VENT_VALVE, SIMBA_ACTUATOR_FLAGS_VENT_VALVE, "VENT_VALVE",
-                  [&](uint8_t val) { servo_service_handler->SetVentServoValue(val); });
+                  [&](uint8_t val) { servo_handler->SetVentServoValue(val); });
     update_valve(SIMBA_GS_FLAGS_DUMP_VALVE, SIMBA_ACTUATOR_FLAGS_DUMP_VALVE, "DUMP_VALVE",
-                  [&](uint8_t val) { servo_service_handler->SetDumpValue(val); });
+                  [&](uint8_t val) { servo_handler->SetDumpValue(val); });
   }
 
   if (event_data->GetComputerState(BoardType_e::MB) == RocketState_t::ARM) {
@@ -266,18 +290,26 @@ void RadioApp::HBHangleState(const uint8_t values) {
   if (!IsStateChangeApproved(req_state.value())) {
     return;
   }
-  if ((engine_service_handler == nullptr) && kEC_enabled) {
+  std::shared_ptr<EngineServiceHandler> engine_handler;
+  std::shared_ptr<MainServiceHandler> main_handler;
+  {
+    std::lock_guard<std::mutex> lock(handler_mtx_);
+    engine_handler = engine_service_handler;
+    main_handler = main_service_handler;
+  }
+
+  if ((engine_handler == nullptr) && kEC_enabled) {
     mavl_logger.LogWarn() << "Service handlers not ready in GS_HEARTBEAT (engine).";
   } else {
-    if (kEC_enabled && engine_service_handler) {
-      engine_service_handler->SetMode(static_cast<uint8_t>(req_state.value()));
+    if (kEC_enabled && engine_handler) {
+      engine_handler->SetMode(static_cast<uint8_t>(req_state.value()));
     }
   }
-  if ((main_service_handler == nullptr) && kFC_enabled) {
+  if ((main_handler == nullptr) && kFC_enabled) {
     mavl_logger.LogWarn() << "Service handlers not ready in GS_HEARTBEAT (main).";
   } else {
-    if (kFC_enabled && main_service_handler) {
-      main_service_handler->setMode(static_cast<uint8_t>(req_state.value()));
+    if (kFC_enabled && main_handler) {
+      main_handler->setMode(static_cast<uint8_t>(req_state.value()));
     }
   }
   mavl_logger.LogInfo() << "Changing rocket state to "
@@ -355,7 +387,16 @@ int RadioApp::Run(const std::stop_token& token) {
     uart_.Write(package_opt.value());
   }
 
+  shutting_down_.store(true);
   ara::log::LogDebug() << "RadioApp Run stopping services and UART";
+  env_service_proxy.StopFindService();
+  gps_service_proxy.StopFindService();
+  primer_service_proxy.StopFindService();
+  servo_service_proxy.StopFindService();
+  recovery_service_proxy.StopFindService();
+  main_service_proxy.StopFindService();
+  engine_service_proxy.StopFindService();
+  env_fc_service_proxy.StopFindService();
   service_ipc->StopOffer();
   service_udp->StopOffer();
   uart_.Close();
@@ -381,6 +422,15 @@ int RadioApp::Initialize(const std::map<ara::core::StringView,
 }
 
 RadioApp::~RadioApp() {
+  shutting_down_.store(true);
+  env_service_proxy.StopFindService();
+  gps_service_proxy.StopFindService();
+  primer_service_proxy.StopFindService();
+  servo_service_proxy.StopFindService();
+  recovery_service_proxy.StopFindService();
+  main_service_proxy.StopFindService();
+  engine_service_proxy.StopFindService();
+  env_fc_service_proxy.StopFindService();
 }
 
 RadioApp::RadioApp():
@@ -409,8 +459,14 @@ RadioApp::RadioApp():
 void RadioApp::SomeIpInit() {
     someip_logger.LogDebug() << "SomeIpInit started";
     this->env_service_proxy.StartFindService([this](auto handler) {
+      if (shutting_down_.load()) {
+        return;
+      }
       someip_logger.LogDebug() << "Env service handler discovered";
-      this->env_service_handler = handler;
+      {
+        std::lock_guard<std::mutex> lock(handler_mtx_);
+        this->env_service_handler = handler;
+      }
       env_service_handler->newTempEvent_1.Subscribe(1, [this](const uint8_t status) {
         someip_logger.LogDebug() << "Subscribed to Env newTempEvent_1, status="
                              + std::to_string(static_cast<int>(status));
@@ -504,8 +560,14 @@ void RadioApp::SomeIpInit() {
       });
     });
     this->gps_service_proxy.StartFindService([this](auto handler) {
+      if (shutting_down_.load()) {
+        return;
+      }
       someip_logger.LogDebug() << "GPS service handler discovered";
-      this->gps_service_handler = handler;
+      {
+        std::lock_guard<std::mutex> lock(handler_mtx_);
+        this->gps_service_handler = handler;
+      }
       gps_service_handler->GPSStatusEvent.Subscribe(1, [this](const uint8_t status) {
         someip_logger.LogDebug() << "Subscribed to GPSStatusEvent, status="
                              + std::to_string(static_cast<int>(status));
@@ -524,8 +586,14 @@ void RadioApp::SomeIpInit() {
       });
     });
     this->servo_service_proxy.StartFindService([this](auto handler) {
+      if (shutting_down_.load()) {
+        return;
+      }
       someip_logger.LogDebug() << "Servo service handler discovered";
-      this->servo_service_handler = handler;
+      {
+        std::lock_guard<std::mutex> lock(handler_mtx_);
+        this->servo_service_handler = handler;
+      }
       servo_service_handler->ServoStatusEvent.Subscribe(1, [this](const uint8_t status) {
         someip_logger.LogDebug() << "Subscribed to ServoStatusEvent, status="
                              + std::to_string(static_cast<int>(status));
@@ -567,8 +635,14 @@ void RadioApp::SomeIpInit() {
       });
     });
     this->recovery_service_proxy.StartFindService([this] (auto handler){
+      if (shutting_down_.load()) {
+        return;
+      }
       someip_logger.LogDebug() << "Recovery service handler discovered";
-      this->recovery_service_handler = handler;
+      {
+        std::lock_guard<std::mutex> lock(handler_mtx_);
+        this->recovery_service_handler = handler;
+      }
       recovery_service_handler->NewParachuteStatusEvent.Subscribe(1, [this](const uint8_t status){
         someip_logger.LogDebug() << "Subscribed to ParachuteStatusEvent, status="
                              + std::to_string(static_cast<int>(status));
@@ -601,8 +675,14 @@ void RadioApp::SomeIpInit() {
       });
     });
     this->env_fc_service_proxy.StartFindService([this](auto handler) {
+      if (shutting_down_.load()) {
+        return;
+      }
       someip_logger.LogDebug() << "Env Flight Computer service handler discovered";
-      this->env_fc_service_handler = handler;
+      {
+        std::lock_guard<std::mutex> lock(handler_mtx_);
+        this->env_fc_service_handler = handler;
+      }
       env_fc_service_handler->newBME280Event.Subscribe(1, [this](const uint8_t status){
         someip_logger.LogDebug() << "Subscribed to BME280 event, status="
                              + std::to_string(static_cast<int>(status));
@@ -659,8 +739,14 @@ void RadioApp::SomeIpInit() {
 
     // TODO(matikrajek42@gmail.com)  ROCKET_CAMERAS
     this->main_service_proxy.StartFindService([this](auto handler) {
+      if (shutting_down_.load()) {
+        return;
+      }
       someip_logger.LogDebug() << "Main service handler discovered";
-      this->main_service_handler = handler;
+      {
+        std::lock_guard<std::mutex> lock(handler_mtx_);
+        this->main_service_handler = handler;
+      }
       main_service_handler->CurrentModeStatusEvent.Subscribe(1, [this](const uint8_t status) {
         someip_logger.LogDebug() << "Subscribed to Main CurrentModeStatusEvent, status="
                              + std::to_string(static_cast<int>(status));
@@ -677,8 +763,14 @@ void RadioApp::SomeIpInit() {
       });
     });
     this->engine_service_proxy.StartFindService(([this](auto handler) {
+      if (shutting_down_.load()) {
+        return;
+      }
       someip_logger.LogDebug() << "Engine service handler discovered";
-      this->engine_service_handler = handler;
+      {
+        std::lock_guard<std::mutex> lock(handler_mtx_);
+        this->engine_service_handler = handler;
+      }
       engine_service_handler->CurrentMode.Subscribe(1, [this](const uint8_t status) {
         someip_logger.LogDebug() << "Subscribed to Engine CurrentMode, status=" << std::to_string(status);
         engine_service_handler->CurrentMode.SetReceiveHandler([this] () {
@@ -694,8 +786,14 @@ void RadioApp::SomeIpInit() {
       });
     }));
     this->primer_service_proxy.StartFindService([this](auto handler) {
+      if (shutting_down_.load()) {
+        return;
+      }
       someip_logger.LogDebug() << "Primer service handler discovered";
-      this->primer_service_handler = handler;
+      {
+        std::lock_guard<std::mutex> lock(handler_mtx_);
+        this->primer_service_handler = handler;
+      }
       primer_service_handler->primeStatusEvent.SetReceiveHandler([this] () {
         const auto res = primer_service_handler->primeStatusEvent.GetNewSamples();
         if (!res.HasValue()) {

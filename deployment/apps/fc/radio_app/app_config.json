@@ -23,7 +23,7 @@
                     "app_id": "RAD-",
                     "app_des": "czytanie i wysyłanie po radiu",
                     "log_level": "kDebug",
-                    "log_mode": "kRemote|kConsole",
+                    "log_mode": "kRemote",
                     "ctx": [
                         {
                             "ctx_id": "SOME",

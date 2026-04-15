@@ -55,16 +55,17 @@ int EnvServiceFc::Initialize(const std::map<ara::core::StringView, ara::core::St
     }
 
     // Initialize pressure sensor
-    bme = std::make_unique<i2c::BME280>();
+    bme = std::make_shared<i2c::BME280>();
     auto i2c = std::make_unique<i2c::I2CController>();
     if (i2c->Init(std::make_unique<com::soc::StreamIpcSocket>()) != core::ErrorCode::kOk) {
         ara::log::LogError() << "EnvApp: Failed to initialize i2c pointer";
-    } else {
-        ara::log::LogDebug() << "EnvApp: Initialized i2c pointer";
+        return core::ErrorCode::kInitializeError;
     }
+    ara::log::LogDebug() << "EnvApp: Initialized i2c pointer";
     ara::log::LogDebug() << "EnvApp: init Complete";
     if (bme->Init(std::move(i2c)) != core::ErrorCode::kOk) {
         ara::log::LogWarn() << "EnvApp: Failed to initialize BME280 sensor";
+        return core::ErrorCode::kInitializeError;
     }
     ara::log::LogInfo() << "EnvApp: Pressure initialization Complete";
 
@@ -81,7 +82,14 @@ int EnvServiceFc::Initialize(const std::map<ara::core::StringView, ara::core::St
             this, std::placeholders::_1), std::make_unique<com::soc::StreamIpcSocket>());
         i++;
     } while (res != core::ErrorCode::kOk && i < 6);
-    LoadTempConfig(parms);
+    if (res != core::ErrorCode::kOk) {
+        ara::log::LogError() << "TempController failed to initialize after retries";
+        return core::ErrorCode::kInitializeError;
+    }
+    if (LoadTempConfig(parms) != core::ErrorCode::kOk) {
+        ara::log::LogError() << "Failed to load temperature configuration";
+        return core::ErrorCode::kInitializeError;
+    }
     service_ipc.StartOffer();
     service_udp.StartOffer();
     return core::ErrorCode::kOk;
@@ -94,13 +102,13 @@ int EnvServiceFc::LoadTempConfig(const std::map<ara::core::StringView, ara::core
     ara::log::LogDebug() << path;
     if (!parser_opt.has_value()) {
         ara::log::LogError() <<("Failed to open temp_Service config file");
-        exit(1);
+        return core::ErrorCode::kInitializeError;
     }
     ara::log::LogDebug() << "Opened file";
     auto temp_opt = parser_opt.value().GetArray<nlohmann::json>("sensors-temp");
     if (!temp_opt.has_value()) {
         ara::log::LogError() <<("Invalid temp_Service config format");
-        exit(2);
+        return core::ErrorCode::kInitializeError;
     }
     ara::log::LogDebug() << "Loaded sensor-temp";
     for (const auto &data : temp_opt.value()) {
@@ -147,7 +155,9 @@ int EnvServiceFc::Run(const std::stop_token& token) {
         auto end = std::chrono::high_resolution_clock::now();
         auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
         ara::log::LogDebug() << "loop taken:" << std::to_string(duration.count()) << "ms";
-        core::condition::wait_for(std::chrono::milliseconds(kBME280_delay_ms - duration.count()), token);  // 1 Hz
+        if (duration < std::chrono::milliseconds(kBME280_delay_ms)) {
+            core::condition::wait_for(std::chrono::milliseconds(kBME280_delay_ms) - duration, token);  // 1 Hz
+        }
     }
     service_ipc.StopOffer();
     service_udp.StopOffer();

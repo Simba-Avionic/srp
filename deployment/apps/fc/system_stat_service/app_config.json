@@ -12,10 +12,10 @@
                 ],
                 "parms": "",
                 "logger": {
-                    "app_id": "STA2",
+                    "app_id": "STAT",
                     "app_des": "",
                     "log_level": "kInfo",
-                    "log_mode": "kRemote|kConsole",
+                    "log_mode": "kRemote",
                     "ctx": [
                         {
                             "ctx_id": "ara",
