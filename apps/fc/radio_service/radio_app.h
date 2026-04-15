@@ -14,6 +14,7 @@
 
 #include <memory>
 #include <mutex>  // NOLINT
+#include <atomic>
 #include <vector>
 #include <map>
 #include <utility>
@@ -72,6 +73,8 @@ class RadioApp : public ara::exec::AdaptiveApplication {
   const ara::core::InstanceSpecifier service_udp_instance;
   std::unique_ptr<apps::RadioServiceSkeleton> service_ipc;
   std::unique_ptr<apps::RadioServiceSkeleton> service_udp;
+  mutable std::mutex handler_mtx_;
+  std::atomic_bool shutting_down_{false};
 
   core::uart::MavUartDriver uart_;
 

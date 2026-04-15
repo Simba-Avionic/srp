@@ -27,8 +27,8 @@ namespace {
     static constexpr uint8_t PRESS_SENSOR_ID =           10;
     static constexpr uint8_t D_PRESS_SENSOR_ID =         11;
     static constexpr uint8_t kTensoSensorID =            12;
-    static constexpr auto kPressureDelayMs =             20;
-    static constexpr auto kDifferentialPressureDelayMs = 5;
+    static constexpr auto kPressureDelayMs =             100;
+    static constexpr auto kDifferentialPressureDelayMs = 100;
     static constexpr auto kTensoDelayMs =                1000;
     static constexpr auto kTensoEnabled =                false;
 }  // namespace
