@@ -49,6 +49,11 @@ ServoService::ServoService():
 
 int ServoService::Run(const std::stop_token& token) {
   ara::log::LogInfo() << "ServoService.Run: offering services";
+  if (!servo_controller || !main_servo_service_did_ || !vent_servo_service_did_ ||
+      !dump_servo_service_did_ || !servo_did_ || !service_ipc || !service_udp) {
+    ara::log::LogError() << "ServoService.Run: service components are not initialized";
+    return 1;
+  }
 
   main_servo_service_did_->Offer();
   vent_servo_service_did_->Offer();

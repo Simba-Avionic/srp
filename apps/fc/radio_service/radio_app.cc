@@ -28,7 +28,7 @@ namespace {
   static constexpr auto kSystemId =    1;
   static constexpr auto kComponentId = 200;
   static constexpr auto kTime =        990;
-  static constexpr auto kRequired_mavlink_messages_to_change_state = 1;
+  static constexpr auto kRequired_mavlink_messages_to_change_state = 4;
 
   static constexpr auto kEC_enabled =       true;
   static constexpr auto kFC_enabled =       true;
