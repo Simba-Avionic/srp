@@ -24,8 +24,8 @@ class RealTimeApogee {
   // speedThreshold - próg prędkości pionowej (ujemna liczba!!); apogeum uznajemy za
   // osiągnięte, gdy średnia prędkość spadnie poniżej tego progu
   // startHeight - wysokość startowa (domyślnie 0)
-  explicit RealTimeApogee(size_t bufferSize = 15, double speedThreshold = -0.5,
-                          double startHeight = 0)
+  explicit RealTimeApogee(const size_t& bufferSize = 15, const double& speedThreshold = -0.5,
+    const double& startHeight = 0)
       : bufferSize(bufferSize),
         speedThreshold(speedThreshold),
         maxHeight(ksmallestHeight),
@@ -41,15 +41,15 @@ class RealTimeApogee {
   }
 
   // funkcja do aktualizacji stanu
-  void update(double height, double velocity) {
-    height = height - startHeight;
+  void update(const double& height, const double& velocity) {
+    int heightDiff = height - startHeight;
     if (!isLaunched && velocity > 5.0) {
       isLaunched = true;
     }
 
     if (!isLaunched) return;
 
-    heightBuffer.push_back(height);
+    heightBuffer.push_back(heightDiff);
     speedBuffer.push_back(velocity);
 
     if (heightBuffer.size() > bufferSize) {
@@ -57,8 +57,8 @@ class RealTimeApogee {
       speedBuffer.erase(speedBuffer.begin());
     }
 
-    if (height > maxHeight) {
-      maxHeight = height;
+    if (heightDiff > maxHeight) {
+      maxHeight = heightDiff;
     }
     if (!apogeeReached && heightBuffer.size() >= bufferSize &&
         averageSpeed() <= speedThreshold) {

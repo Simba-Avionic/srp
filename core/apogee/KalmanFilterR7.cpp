@@ -4,14 +4,12 @@
  * @brief 
  * @version 0.1
  * @date 2026-04-08
- * 
- * @copyright Copyright (c) 2026
- * 
- */
+ * * @copyright Copyright (c) 2026
+ * */
 #include <cmath>
 #include "KalmanFilterR7.h"
 
-KalmanFilterR7::KalmanFilterR7(float dt) : KalmanFilter(
+KalmanFilterR7::KalmanFilterR7(const float& dt) : KalmanFilter(
     Matrix{{1.0f, dt}, {0.0f, 1.0f}},        // F - macierz przejścia stanu
     Matrix{{0.0f}, {dt}},                    // B - macierz sterowania
     Matrix{{1.0f, 0.0f}},                    // H - macierz obserwacji
@@ -21,13 +19,13 @@ KalmanFilterR7::KalmanFilterR7(float dt) : KalmanFilter(
     Matrix{{0.0f}, {0.0f}}                   // x - wektor stanu (pozycja, prędkość)
 ) {}
 
-Matrix KalmanFilterR7::processMeasurement(float acceleration, float pressure) {
+Matrix KalmanFilterR7::processMeasurement(const float& acceleration, const float& pressure) {
     Matrix u(1, 1);
     u(0, 0) = acceleration;
     predict(u);
 
     Matrix z(1, 1);
-    z(0, 0) = static_cast<float>(pressureToAltitude(pressure));
+    z(0, 0) = static_cast<float>(pressureToAltitude(static_cast<double>(pressure)));
     update(z);
     return getState();
 }

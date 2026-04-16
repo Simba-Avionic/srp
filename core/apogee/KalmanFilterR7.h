@@ -15,8 +15,8 @@
 
 class KalmanFilterR7 : public KalmanFilter {
  public:
-  explicit KalmanFilterR7(float dt);
-  Matrix processMeasurement(float acceleration, float pressure);
+  explicit KalmanFilterR7(const float& dt);
+  Matrix processMeasurement(const float& acceleration, const float& pressure);
 
  private:
   double pressureToAltitude(double p);

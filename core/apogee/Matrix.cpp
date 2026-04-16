@@ -41,7 +41,7 @@ Matrix::Matrix(std::initializer_list<std::initializer_list<float>> list) {
   }
 }
 
-Matrix::Matrix(size_t rows, size_t columns) {
+Matrix::Matrix(const size_t rows, const size_t columns) {
   array = std::make_unique<std::unique_ptr<float[]>[]>(rows);
   for (size_t r = 0; r < rows; ++r) {
     array[r] = std::make_unique<float[]>(columns);
@@ -64,7 +64,7 @@ Matrix::Matrix(const Matrix& other)
   }
 }
 
-Matrix Matrix::Identity(size_t size) {
+Matrix Matrix::Identity(const size_t size) {
   Matrix m(size, size);
   for (size_t i = 0; i < size; ++i) {
     m(i, i) = 1;
