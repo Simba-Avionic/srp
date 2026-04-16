@@ -25,10 +25,13 @@ namespace srp {
 namespace primer {
 
 namespace {
-  const constexpr uint8_t kIgniter_pin_id = 13;
-  const constexpr uint16_t kIgniter_active_time = 1000;
-  const constexpr uint8_t kPrimer_on = 1;
-  static constexpr bool kRequirePrimerVeryfication = false;
+  static constexpr uint8_t kIgniter_pin_id = 13;
+  static constexpr uint16_t kIgniter_active_time = 1000;
+  static constexpr uint8_t kPrimer_on = 1;
+  static constexpr bool kRequire_primer_veryfication = true;
+  static constexpr auto kIgniter_measureme_adc_channel = 4;
+  static constexpr auto kIgniter_measurement_adc_samples = 5;
+  static constexpr auto kIgniter_connected_treshold_mV = 1500;
 }  // namespace
 
 PrimerController::PrimerController():
@@ -36,13 +39,40 @@ PrimerController::PrimerController():
 }
 
 void PrimerController::VerifyPrimerConection() {
-    // PLACEHOLDER FOR CONNECTION VALIDATION
+    auto verify_required = [this]() {
+        auto primer_state = primerState.load();
+        return (primer_state == PrimerState_t::kUNKNOWN || primer_state == PrimerState_t::kNOT_CONNECTED ||
+            primer_state == PrimerState_t::kCONNECTED || primer_state == PrimerState_t::kSHORT_CIRCUIT);
+    };
+    if (!verify_required()) {
+        return;
+    }
+    float sum = 0;
+    auto sample_num = 0;
+    for (int i = 0; i < kIgniter_measurement_adc_samples; i++) {
+        auto voltage = adc_.GetAdcVoltage(kIgniter_measureme_adc_channel);
+        if (!voltage.has_value()) {
+            continue;
+        }
+        sum += voltage.value();
+        sample_num += 1;
+    }
+    if (sample_num == 0) {
+        return;
+    }
+    auto mean = sum / static_cast<float>(sample_num);
+    ara::log::LogWarn() << "Read value: " << std::to_string(mean);
+    if (mean >= kIgniter_connected_treshold_mV) {
+        primerState.store(PrimerState_t::kCONNECTED);
+    } else {
+        primerState.store(PrimerState_t::kNOT_CONNECTED);
+    }
 }
 
 void PrimerController::Initialize(std::string path) {
     this->primerState = PrimerState_t::kUNKNOWN;
     this->ReadConfig(path);
-    // TODO(matikrajek42@gmail.com) write veryfication of voltage on IGN_MEASURE wchich say that primer is connected
+    this->adc_.Init();
 }
 
 bool PrimerController::DisablePrimer() {
@@ -58,7 +88,7 @@ bool PrimerController::DisablePrimer() {
 }
 
 bool PrimerController::EnablePrimer(const bool auto_disable) {
-    if (kRequirePrimerVeryfication & primerState != PrimerState_t::kCONNECTED) {
+    if (kRequire_primer_veryfication & primerState != PrimerState_t::kCONNECTED) {
         return false;
     }
     if (primerState == PrimerState_t::kFIRED) {

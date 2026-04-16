@@ -20,6 +20,7 @@
 #include "ara/log/log.h"
 #include "core/common/condition.h"
 #include "core/json/json_parser.h"
+#include "mw/i2c_service/controller/ads7828/controller.hpp"
 
 namespace srp {
 namespace primer {
@@ -38,6 +39,7 @@ class PrimerController {
   std::vector<uint8_t> primer_pins_;
   std::uint16_t active_time;
   std::atomic<PrimerState_t> primerState;
+  i2c::ADS7828 adc_;
 
  public:
   PrimerController();
