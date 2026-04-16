@@ -36,6 +36,7 @@
 #include "ara/log/logging_menager.h"
 #include "core/common/wait_queue.h"
 #include "apps/ec/primer_service/controller/primer_controller.hpp"
+#include "mw/gpio_server/controller/gpio_controller.hpp"
 
 namespace srp {
 namespace apps {
@@ -46,6 +47,7 @@ class RadioApp : public ara::exec::AdaptiveApplication {
  private:
   const ara::log::Logger& mavl_logger;
   const ara::log::Logger& someip_logger;
+  gpio::GPIOController gpio_;
 
   bool IsStateChangeApproved(const RocketState_t req_state);
 
@@ -92,6 +94,7 @@ class RadioApp : public ara::exec::AdaptiveApplication {
  protected:
   void TransmittingLoop(const std::stop_token& token);
   void ListeningLoop(const std::stop_token& token);
+  void ServicePollingLoop(const std::stop_token& token);
   std::shared_ptr<EventData> event_data;
 
  public:

@@ -22,16 +22,17 @@ namespace srp {
 namespace logger {
 
 namespace {
-  constexpr std::string kloger_filename = "_log.csv";
-  constexpr std::string kloger_filename_prefix = "/home/root/";
-  constexpr uint16_t kSave_interval = 5;
-  constexpr auto kEnv_service_path_name = "srp/apps/FileLoggerApp/EnvApp";
-  constexpr auto kUdp_service_path_name = "srp/apps/FileLoggerApp/logService_udp";
-  constexpr auto kIpc_service_path_name = "srp/apps/FileLoggerApp/logService_ipc";
-  constexpr auto kSysStat_service_path_name = "srp/apps/FileLoggerApp/SysStatService";
-  constexpr auto kFile_did_path_name = "/srp/apps/FileLoggerApp/logger_did";
-  constexpr auto kLogs_on = 1;
-  constexpr auto kLogs_off = 0;
+  static constexpr std::string kloger_filename = "_log.csv";
+  static constexpr std::string kloger_filename_prefix = "/home/root/";
+  static constexpr uint16_t kSave_interval = 5;
+  static constexpr auto kEnv_service_path_name = "srp/apps/FileLoggerApp/EnvApp";
+  static constexpr auto kUdp_service_path_name = "srp/apps/FileLoggerApp/logService_udp";
+  static constexpr auto kIpc_service_path_name = "srp/apps/FileLoggerApp/logService_ipc";
+  static constexpr auto kSysStat_service_path_name = "srp/apps/FileLoggerApp/SysStatService";
+  static constexpr auto kFile_did_path_name = "/srp/apps/FileLoggerApp/logger_did";
+  static constexpr auto kLogs_on = 1;
+  static constexpr auto kLogs_off = 0;
+  static constexpr auto kHeartBeatPinID = 2;
 }  // namespace
 
 
@@ -83,6 +84,9 @@ void LoggerService::SaveLoop(const std::stop_token& token,
 
 int LoggerService::Run(const std::stop_token& token) {
   while (!token.stop_requested()) {
+    if (gpio_.SetPinValue(kHeartBeatPinID, 1, 500) != core::ErrorCode::kOk) {
+      ara::log::LogWarn() << "EngineApp::Run: Failed to toggle heartbeat pin";
+    }
     service_ipc->LoggingState.Update(save_state.load());
     service_udp->LoggingState.Update(save_state.load());
     core::condition::wait_for(std::chrono::milliseconds(1000), token);

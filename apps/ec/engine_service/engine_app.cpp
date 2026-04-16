@@ -34,7 +34,7 @@ namespace {
   static constexpr auto kPrimerDelay =          1000;
   static constexpr auto kPin_off =              0;
   static constexpr auto kPin_on =               1;
-  static constexpr auto kHeartBeatPinID =       3;
+  static constexpr auto kHeartBeatPinID =       1;
   using RocketState_t = core::rocketState::RocketState_t;
 }  // namespace
 

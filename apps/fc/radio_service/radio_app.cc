@@ -33,6 +33,7 @@ namespace {
   static constexpr auto kEC_enabled =       true;
   static constexpr auto kFC_enabled =       true;
   static constexpr auto kStatic_test_mode = true;
+    static constexpr auto kHeartBeatPinID = 2;
 }  // namespace
 
 namespace {
@@ -111,31 +112,7 @@ void RadioApp::TransmittingLoop(const std::stop_token& token) {
 
   while (!token.stop_requested()) {
     auto start = std::chrono::high_resolution_clock::now();
-    std::shared_ptr<EngineServiceHandler> engine_handler;
-    std::shared_ptr<ServoServiceHandler> servo_handler;
-    std::shared_ptr<env::EnvAppHandler> env_handler;
-    {
-      std::lock_guard<std::mutex> lock(handler_mtx_);
-      engine_handler = engine_service_handler;
-      servo_handler = servo_service_handler;
-      env_handler = env_service_handler;
-    }
-    if (engine_handler) {
-      auto EB_STATE = engine_handler->GetMode();
-      if (EB_STATE.HasValue()) {
-        event_data->SetComputerState(BoardType_e::EB, static_cast<RocketState_t>(EB_STATE.Value()));
-      }
-    }
-    if (servo_service_handler) {
-      auto main_valve = servo_handler->ReadMainServoValue();
-      auto vent_valve = servo_handler->ReadVentServoValue();
-      if (main_valve.HasValue()) {
-        event_data->SetActuatorState(SIMBA_ACTUATOR_FLAGS_MAIN_VALVE, main_valve.Value());
-      }
-      if (vent_valve.HasValue()) {
-        event_data->SetActuatorState(SIMBA_ACTUATOR_FLAGS_VENT_VALVE, vent_valve.Value());
-      }
-    }
+
     // Heartbeat
     if (auto val = timestamp_.GetNewTimeStamp(); val.has_value()) {
       send([&] {
@@ -158,21 +135,6 @@ void RadioApp::TransmittingLoop(const std::stop_token& token) {
     send([&] {
       mavlink_msg_simba_max_altitude_pack(kSystemId, kComponentId, &msg, event_data->GetMaxAltitude());
     });
-
-    if (env_handler) {
-      auto up_temp = env_handler->GetUpperTankTemp();
-      auto down_temp = env_handler->GetLowerTankTemp();
-      if (up_temp.HasValue()) {
-        event_data->SetTemp(0, up_temp.Value());
-      }
-      if (down_temp.HasValue()) {
-        event_data->SetTemp(2, down_temp.Value());
-      }
-      auto press = env_handler->GetTankPressure();
-      if (press.HasValue()) {
-        event_data->SetPress(press.Value());
-      }
-    }
 
     // Tank Temps
     send([&] {
@@ -380,6 +342,9 @@ int RadioApp::Run(const std::stop_token& token) {
   });
 
   while (!token.stop_requested()) {
+    if (gpio_.SetPinValue(kHeartBeatPinID, 1, 500) != core::ErrorCode::kOk) {
+      ara::log::LogWarn() << "EngineApp::Run: Failed to toggle heartbeat pin";
+    }
     auto package_opt = UartTxQueue.Get(token);
     if (!package_opt.has_value()) {
       continue;

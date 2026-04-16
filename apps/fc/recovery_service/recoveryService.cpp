@@ -25,6 +25,7 @@ namespace {
   constexpr auto kService_ipc_name = "srp/apps/RecoveryService/RecoveryService_ipc";
   constexpr auto kService_udp_name = "srp/apps/RecoveryService/RecoveryService_udp";
   constexpr auto KRec_did_name = "/srp/apps/RecoveryService/REC_RID";
+    static constexpr auto kHeartBeatPinID = 4;
 }
 RecoveryService::RecoveryService(): rec_did_specifier(KRec_did_name) {
 }
@@ -35,6 +36,9 @@ int RecoveryService::Run(const std::stop_token& token) {
   service_ipc->StartOffer();
   service_udp->StartOffer();
   while (!token.stop_requested()) {
+    if (gpio_.SetPinValue(kHeartBeatPinID, 1, 500) != core::ErrorCode::kOk) {
+      ara::log::LogWarn() << "EngineApp::Run: Failed to toggle heartbeat pin";
+    }
     auto parachute_state = static_cast<uint8_t>(controller->GetParachuteState());
     service_ipc->NewParachuteStatusEvent.Update(parachute_state);
     service_udp->NewParachuteStatusEvent.Update(parachute_state);

@@ -29,6 +29,7 @@ namespace {
     static constexpr auto kPin_off =   0;
     static constexpr auto kRecovery_instance_name = "srp/apps/MainApp/RecoveryService";
     static constexpr auto kEngine_instance_name =   "srp/apps/MainApp/EngineService";
+    static constexpr auto kHeartBeatPinID = 1;
 }  // namespace
 using RocketState_t = core::rocketState::RocketState_t;
 
@@ -97,6 +98,9 @@ void MainService::OnStateChange(core::rocketState::RocketState_t state) {
 int MainService::Run(const std::stop_token& token) {
     state_ctr->SetState(RocketState_t::DISARM);
     while (!token.stop_requested()) {
+        if (gpio_.SetPinValue(kHeartBeatPinID, kPin_on, 500) != core::ErrorCode::kOk) {
+            ara::log::LogWarn() << "EngineApp::Run: Failed to toggle heartbeat pin";
+        }
         auto state = static_cast<uint8_t>(state_ctr->GetState());
         service_ipc->CurrentModeStatusEvent.Update(state);
         service_udp->CurrentModeStatusEvent.Update(state);
