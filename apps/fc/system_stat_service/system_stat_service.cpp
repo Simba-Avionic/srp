@@ -44,7 +44,7 @@ int FcSystemStatService::Run(const std::stop_token& token) {
     service_ipc.StartOffer();
     service_udp.StartOffer();
     while (!token.stop_requested()) {
-        apps::SysStatType stats;
+        apps::FcSysStatType stats;
         auto cpu_usage_opt = core::stat::SystemStats::get_cpu_usage();
         if (!cpu_usage_opt.has_value()) {
             continue;

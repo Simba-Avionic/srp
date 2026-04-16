@@ -32,7 +32,7 @@ namespace {
 
   static constexpr auto kEC_enabled =       true;
   static constexpr auto kFC_enabled =       true;
-  static constexpr auto kStatic_test_mode = true;
+  static constexpr auto kStatic_test_mode = false;
     static constexpr auto kHeartBeatPinID = 2;
 }  // namespace
 
@@ -64,13 +64,17 @@ uint8_t RadioApp::RocketStateToMavlinkState(const RocketState_t state) const noe
       case RocketState_t::APOGEE:
           return SIMBA_ROCKET_STATE_APOGEE;
       case RocketState_t::FIRST_PARACHUTE:
-          return SIMBA_ROCKET_STATE_FIRT_PARACHUTE_FALL;
+          return SIMBA_ROCKET_STATE_DESCENT_PILOT;
       case RocketState_t::SECOND_PARACHUTE:
-          return SIMBA_ROCKET_STATE_SECOND_PARACHUTE_ACTIVATION;
+          return SIMBA_ROCKET_STATE_SEC_PARACHUTE;
       case RocketState_t::DROP:
-          return SIMBA_ROCKET_STATE_SECOND_PARACHUTE_FALL;
+          return SIMBA_ROCKET_STATE_DESCENT_MAIN;
       case RocketState_t::ABORT:
           return SIMBA_ROCKET_STATE_ABORT;
+      case RocketState_t::CONNECTION_LOST:
+        return SIMBA_ROCKET_STATE_CONNECTION_LOST;
+      case RocketState_t::TOUCHDOWN:
+        return SIMBA_ROCKET_STATE_TOUCHDOWN;
       default:
           return SIMBA_ROCKET_STATE_ABORT;
   }
@@ -117,7 +121,7 @@ void RadioApp::TransmittingLoop(const std::stop_token& token) {
     if (auto val = timestamp_.GetNewTimeStamp(); val.has_value()) {
       send([&] {
         mavlink_msg_simba_rocket_heartbeat_pack(kSystemId, kComponentId, &msg,
-                  static_cast<uint64_t>(val.value()),
+                  static_cast<uint64_t>(val.value()), 0,  // Add here apps alive
                   RocketStateToMavlinkState(event_data->GetComputerState(BoardType_e::MB)),
                   RocketStateToMavlinkState(event_data->GetComputerState(BoardType_e::EB)),
                   event_data->GetActuatorStates(),
@@ -125,28 +129,18 @@ void RadioApp::TransmittingLoop(const std::stop_token& token) {
       });
     }
 
-    // Temperature
-    send([&] {
-      mavlink_msg_simba_computer_temperature_pack(kSystemId, kComponentId, &msg,
-          event_data->GetComputerTemp(BoardType_e::EB), event_data->GetComputerTemp(BoardType_e::MB));
-    });
-
     // Max Altitude
     send([&] {
       mavlink_msg_simba_max_altitude_pack(kSystemId, kComponentId, &msg, event_data->GetMaxAltitude());
     });
 
-    // Tank Temps
+    // Tank Sensors
     send([&] {
-      mavlink_msg_simba_tank_temperature_pack(kSystemId, kComponentId, &msg,
+      mavlink_msg_simba_tank_sensors_pack(kSystemId, kComponentId, &msg,
           static_cast<int16_t>(event_data->GetTemp(0)),
           static_cast<int16_t>(event_data->GetTemp(1)),
-          static_cast<int16_t>(event_data->GetTemp(3)));
-    });
-
-    // Tank Pressure
-    send([&] {
-      mavlink_msg_simba_tank_pressure_pack(kSystemId, kComponentId, &msg, event_data->GetPress());
+          static_cast<int16_t>(event_data->GetTemp(3)),
+          event_data->GetPress());
     });
 
     // GPS
@@ -154,6 +148,16 @@ void RadioApp::TransmittingLoop(const std::stop_token& token) {
     send([&] {
       mavlink_msg_simba_gps_pack(kSystemId, kComponentId, &msg,
           gps_data.lon, gps_data.lat, gps_data.altitude);
+    });
+
+    // Computers telemetry
+    auto eb_telemetry = event_data->GetComputerTelemetry(BoardType_e::EB);
+    auto mb_telemetry = event_data->GetComputerTelemetry(BoardType_e::MB);
+    send([&] {
+      mavlink_msg_simba_computers_telemetry_pack(kSystemId, kComponentId, &msg,
+        mb_telemetry.cpu_usage, mb_telemetry.mem_usage,
+        eb_telemetry.cpu_usage, eb_telemetry.mem_usage,
+        mb_telemetry.temps, eb_telemetry.temps);
     });
 
     auto end = std::chrono::high_resolution_clock::now();
@@ -166,7 +170,7 @@ void RadioApp::TransmittingLoop(const std::stop_token& token) {
 }
 std::optional<RocketState_t> RadioApp::GetReqRocketStateFromGSFlags(const uint8_t flags) {
   static constexpr std::pair<uint8_t, RocketState_t> gs_rocket_state_mapping[] = {
-      {SSIMBA_GS_FLAGS_ABORT,  RocketState_t::ABORT},
+      {SIMBA_GS_FLAGS_ABORT,  RocketState_t::ABORT},
       {SIMBA_GS_FLAGS_LAUNCH,  RocketState_t::LAUNCH},
       {SIMBA_GS_FLAGS_ARM,     RocketState_t::ARM},
       {SIMBA_GS_FLAGS_DISARM,  RocketState_t::DISARM},

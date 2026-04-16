@@ -24,6 +24,8 @@
 #include "apps/fc/radio_service/event_data.h"
 #include "srp/env/EnvApp/EnvAppHandler.h"
 #include "srp/env/EnvAppFc/EnvAppFcHandler.h"
+#include "srp/apps/SysStatService/SysStatServiceHandler.h"
+#include "srp/apps/FcSysStatService/FcSysStatServiceHandler.h"
 #include "srp/apps/GPSService/GPSServiceHandler.h"
 #include "srp/apps/PrimerService/PrimerServiceHandler.h"
 #include "srp/apps/ServoService/ServoServiceHandler.h"

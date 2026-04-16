@@ -46,10 +46,15 @@ class ThreadSafe {
 
 enum class BoardType_e {EB, MB};
 
+struct computer_telemetry_t {
+    uint8_t temps[3];
+    uint8_t cpu_usage;
+    uint8_t mem_usage;
+};
+
 class EventData {
  private:
-    ThreadSafe<mavlink_simba_tank_temperature_t> temp_;
-    ThreadSafe<mavlink_simba_tank_pressure_t> press_;
+    ThreadSafe<mavlink_simba_tank_sensors_t> tank_;
     ThreadSafe<mavlink_simba_gps_t> gps_;
     ThreadSafe<mavlink_simba_imu_t> imu_;
     ThreadSafe<mavlink_simba_max_altitude_t> max_altitude_;
@@ -59,8 +64,8 @@ class EventData {
     ThreadSafe<core::rocketState::RocketState_t> EBState_;
     ThreadSafe<core::rocketState::RocketState_t> MBState_;
 
-    ThreadSafe<std::array<int16_t, 3>> eb_temp_sensors_;
-    ThreadSafe<std::array<int16_t, 3>> mb_temp_sensors_;
+    ThreadSafe<computer_telemetry_t> eb_telemetry;
+    ThreadSafe<computer_telemetry_t> mb_telemetry;
 
  public:
   static std::shared_ptr<EventData> GetInstance();
@@ -77,8 +82,10 @@ class EventData {
   uint16_t GetTemp(const uint8_t index);
   void SetTemp(const uint8_t index, const int16_t res);
 
-  int16_t GetComputerTemp(const BoardType_e BoardType);
-  void SetComputerTemp(const BoardType_e BoardType, const uint8_t index, const int16_t& temp);
+  computer_telemetry_t GetComputerTelemetry(const BoardType_e BoardType);
+  void SetComputerTemp(const BoardType_e BoardType, const uint8_t temp, const uint8_t index);
+  void SetComputerCpuUsage(const BoardType_e BoardType, const uint8_t cpu_usage);
+  void SetComputerMemUsage(const BoardType_e BoardType, const uint8_t mem_usage);
 
   uint16_t GetPress();
   void SetPress(uint16_t res);
@@ -88,6 +95,8 @@ class EventData {
 
   int32_t GetMaxAltitude();
   void SetMaxAltitude(const int32_t alt);
+
+
 };
 
 }  // namespace apps
