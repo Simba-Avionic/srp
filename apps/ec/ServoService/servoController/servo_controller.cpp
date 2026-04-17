@@ -19,11 +19,10 @@ namespace srp {
 namespace service {
 
 namespace {
-constexpr uint8_t kOpenState = 1U;
-constexpr uint8_t kCloseState = 0U;
-constexpr uint16_t kDefaultMosfetPowerOnDelayMs = 100U;
-constexpr uint16_t kDefaultServoMoveTimeMs = 3000U;
-constexpr uint16_t kDefaultLooseningDelayMs = 150U;
+  static constexpr uint8_t kOpenState = 1U;
+  static constexpr uint8_t kCloseState = 0U;
+  static constexpr uint16_t kDefaultMosfetPowerOnDelayMs = 100U;
+  static constexpr uint16_t kDefaultServoMoveTimeMs = 3000U;
 }  // namespace
 
 ServoController::ServoController()
@@ -232,9 +231,6 @@ void ServoController::EnsureTimingConsistency(ServoRuntimeConfig* cfg) const {
   if (cfg->timing.servo_move_time_ms == 0U) {
     cfg->timing.servo_move_time_ms = kDefaultServoMoveTimeMs;
   }
-  if (cfg->timing.loosening_delay_ms == 0U) {
-    cfg->timing.loosening_delay_ms = kDefaultLooseningDelayMs;
-  }
   if (cfg->timing.servo_move_time_ms < cfg->timing.loosening_delay_ms) {
     cfg->timing.servo_move_time_ms = cfg->timing.loosening_delay_ms;
   }
@@ -303,9 +299,6 @@ ServoController::LoadConfig(const std::string& file_path) {
     cfg.timing.servo_move_time_ms =
         servo_parser.GetNumber<uint16_t>("servo_move_time_ms")
             .value_or(kDefaultServoMoveTimeMs);
-    cfg.timing.loosening_delay_ms =
-        servo_parser.GetNumber<uint16_t>("loosening_delay_ms")
-            .value_or(kDefaultLooseningDelayMs);
 
     if (auto servo_delay = servo_parser.GetNumber<uint16_t>("servo_delay");
         servo_delay.has_value()) {

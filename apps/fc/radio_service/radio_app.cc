@@ -17,6 +17,7 @@
 #include "simba/simba.h"
 #include "ara/log/log.h"
 #include "core/common/condition.h"
+#include "apps/ec/engine_service/vent_controller.hpp"
 
 namespace srp {
 namespace apps {
@@ -99,7 +100,11 @@ void RadioApp::HBHangleActuators(const uint8_t values) {
 
   if (eb_state == RocketState_t::ARM || (kStatic_test_mode && eb_state == RocketState_t::DISARM)) {
     update_valve(SIMBA_GS_FLAGS_VENT_VALVE, SIMBA_ACTUATOR_FLAGS_VENT_VALVE, "VENT_VALVE",
-                  [&](uint8_t val) { servo_handler->SetVentServoValue(val); });
+                  [&](uint8_t val) {
+      auto to_set = (val == 0) ? engine::VentState_e::CLOSE : engine::VentState_e::OPENING;
+      auto engine_handler = someip_controller.GetEngineServiceHandler();
+      engine_handler->SetVentValve(static_cast<uint8_t>(to_set));
+    });
     update_valve(SIMBA_GS_FLAGS_DUMP_VALVE, SIMBA_ACTUATOR_FLAGS_DUMP_VALVE, "DUMP_VALVE",
                   [&](uint8_t val) { servo_handler->SetDumpValue(val); });
   }

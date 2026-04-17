@@ -19,5 +19,20 @@ cc_binary(
         "//deployment/apps/engine_app:someip_lib",
         "//mw/gpio_server/controller:gpio_controller",
         "//core/rocket_machine_state:rocket_state_base",
+        "//apps/ec/engine_service:vent_controller",
     ],
+)
+
+cc_library(
+    name = "vent_controller",
+    srcs = [
+        "vent_controller.cpp",
+    ],
+    hdrs = [
+        "vent_controller.hpp",
+    ],
+    deps = [
+        "//core/common:condition_lib",
+    ],
+    visibility = ["//visibility:public"]
 )
