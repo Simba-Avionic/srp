@@ -23,6 +23,9 @@ namespace core {
 namespace rocketState {
 
 enum RocketState_t: uint8_t {
+    CONNECTION_LOST = 54,  // 2min od ostatniej wiadomosci przechodzimy w stan
+        //  connection_lost (disarm), po x minutach tego stanu robimy abort
+
     ABORT = 64,            // ABORT -> spuszczamy paliwo i wylaczamy silniki
     INIT = 0,              // Domyślny stan
     DISARM = 1,            // Wyłączone actuatory
@@ -38,6 +41,7 @@ enum RocketState_t: uint8_t {
     FIRST_PARACHUTE = 6,   // Opadanie zrefowany spadochron
     SECOND_PARACHUTE = 7,  // Sekwencja odrefowania spadochronu
     DROP = 8,              // Spadanie odrefowany spadochron
+    TOUCHDOWN = 9,         // Rakieta na ziemi
 };
 
 static std::string to_string(const RocketState_t state) {
@@ -70,7 +74,11 @@ static std::string to_string(const RocketState_t state) {
     case RocketState_t::ABORT:
         res = "ABORT";
         break;
+    case RocketState_t::CONNECTION_LOST:
+        res = "CONNECTION_LOST";
+        break;
     default:
+        res = "";
         break;
     }
     return res;

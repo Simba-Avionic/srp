@@ -29,6 +29,7 @@ namespace {
     static constexpr auto kPin_off =   0;
     static constexpr auto kRecovery_instance_name = "srp/apps/MainApp/RecoveryService";
     static constexpr auto kEngine_instance_name =   "srp/apps/MainApp/EngineService";
+    static constexpr auto kHeartBeatPinID = 1;
 }  // namespace
 using RocketState_t = core::rocketState::RocketState_t;
 
@@ -47,6 +48,7 @@ int MainService::Initialize(const std::map<ara::core::StringView, ara::core::Str
 
     state_ctr->RegisterCallback(RocketState_t::ARM, [this]() { this->OnArm(); });
     state_ctr->RegisterCallback(RocketState_t::DISARM, [this]() { this->OnDisarm(); });
+    state_ctr->RegisterCallback(RocketState_t::CONNECTION_LOST, [this]() { this->OnDisarm(); });
     state_ctr->RegisterCallback(RocketState_t::ABORT, [this]() { this->OnAbort(); });
     state_ctr->RegisterCallback(RocketState_t::LAUNCH, [this]() { this->OnLaunch(); });
     state_ctr->RegisterCallback(RocketState_t::APOGEE, [this]() { this->OnApogee(); });
@@ -97,6 +99,9 @@ void MainService::OnStateChange(core::rocketState::RocketState_t state) {
 int MainService::Run(const std::stop_token& token) {
     state_ctr->SetState(RocketState_t::DISARM);
     while (!token.stop_requested()) {
+        if (gpio_.SetPinValue(kHeartBeatPinID, kPin_on, 500) != core::ErrorCode::kOk) {
+            ara::log::LogWarn() << "EngineApp::Run: Failed to toggle heartbeat pin";
+        }
         auto state = static_cast<uint8_t>(state_ctr->GetState());
         service_ipc->CurrentModeStatusEvent.Update(state);
         service_udp->CurrentModeStatusEvent.Update(state);
@@ -132,6 +137,9 @@ void MainService::OnApogee() {
     // }
     // recovery_handler_->OpenReefedParachute();
     state_ctr->SetState(RocketState_t::FIRST_PARACHUTE);
+    if (engine_handler) {
+        engine_handler->SetMode(static_cast<uint8_t>(RocketState_t::FIRST_PARACHUTE));
+    }
 }
 
 void MainService::OnSecondParachute() {
@@ -140,6 +148,9 @@ void MainService::OnSecondParachute() {
     // }
     // recovery_handler_->UnreefeParachute();
     state_ctr->SetState(RocketState_t::DROP);
+    if (engine_handler) {
+        engine_handler->SetMode(static_cast<uint8_t>(RocketState_t::DROP));
+    }
 }
 
 

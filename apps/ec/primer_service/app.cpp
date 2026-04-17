@@ -21,12 +21,16 @@ namespace srp {
 namespace primer {
 
 namespace {
-  constexpr auto kdid_path = "/srp/apps/PrimerService/primer_did";
-  constexpr auto kEvent_interval_ms = 1000;
+  static constexpr auto kdid_path = "/srp/apps/PrimerService/primer_did";
+  static constexpr auto kEvent_interval_ms = 1000;
+  static constexpr auto kHeartBeatPinID = 3;
 }
 
 int PrimerService::Run(const std::stop_token& token) {
   while (!token.stop_requested()) {
+    if (gpio_.SetPinValue(kHeartBeatPinID, 1, 500) != core::ErrorCode::kOk) {
+      ara::log::LogWarn() << "EngineApp::Run: Failed to toggle heartbeat pin";
+    }
     controller->VerifyPrimerConection();
     auto state = static_cast<uint8_t>(controller->GetPrimerState());
     service_ipc.primeStatusEvent.Update(state);

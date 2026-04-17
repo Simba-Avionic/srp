@@ -38,6 +38,10 @@ class MyPrimerServiceSkeleton: public PrimerServiceSkeleton {
   ara::core::Result<bool> StartPrime() override {
     return ara::core::Result<bool>(controller_->EnablePrimer());
   }
+
+  ara::core::Result<std::uint8_t> GetPrimerState() override {
+    return ara::core::Result<uint8_t>{static_cast<uint8_t>(controller_->GetPrimerState())};
+  }
 };
 }  // namespace apps
 }  // namespace srp

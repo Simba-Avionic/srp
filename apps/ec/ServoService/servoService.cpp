@@ -25,19 +25,20 @@ namespace srp {
 namespace service {
 
 namespace {
-  constexpr auto kEventIntervalMs = std::chrono::milliseconds(1000);
+  static constexpr auto kEventIntervalMs = std::chrono::milliseconds(1000);
 
-  constexpr std::uint8_t kMainValveID = 60;
-  constexpr std::uint8_t kVentValveID = 61;
-  constexpr std::uint8_t kDumpValveID = 62;
+  static constexpr std::uint8_t kMainValveID = 60;
+  static constexpr std::uint8_t kVentValveID = 61;
+  static constexpr std::uint8_t kDumpValveID = 62;
 
-  constexpr auto kDiagMainValveInstance = "/srp/apps/servoService/MainServoStatus";
-  constexpr auto kDiagVentValveInstance = "/srp/apps/servoService/VentServoStatus";
-  constexpr auto kDiagDumpValveInstance = "/srp/apps/servoService/DumpServoStatus";
-  constexpr auto kDiagServeInstance = "/srp/apps/servoService/ServoDID";
+  static constexpr auto kDiagMainValveInstance = "/srp/apps/servoService/MainServoStatus";
+  static constexpr auto kDiagVentValveInstance = "/srp/apps/servoService/VentServoStatus";
+  static constexpr auto kDiagDumpValveInstance = "/srp/apps/servoService/DumpServoStatus";
+  static constexpr auto kDiagServeInstance = "/srp/apps/servoService/ServoDID";
 
-  constexpr auto kIpcInstanceSpecifier = "srp/apps/servoService/ServoService_ipc";
-  constexpr auto kUdpInstanceSpecifier = "srp/apps/servoService/ServoService_udp";
+  static constexpr auto kIpcInstanceSpecifier = "srp/apps/servoService/ServoService_ipc";
+  static constexpr auto kUdpInstanceSpecifier = "srp/apps/servoService/ServoService_udp";
+  static constexpr auto kHeartBeatPinID = 4;
 }  // namespace
 
 ServoService::ServoService():
@@ -73,6 +74,9 @@ int ServoService::Run(const std::stop_token& token) {
   };
 
   while (!token.stop_requested()) {
+    if (gpio_.SetPinValue(kHeartBeatPinID, 1, 500) != core::ErrorCode::kOk) {
+      ara::log::LogWarn() << "EngineApp::Run: Failed to toggle heartbeat pin";
+    }
     update_servo_status(kMainValveID, service_ipc->ServoStatusEvent,     service_udp->ServoStatusEvent,     "main");
     update_servo_status(kVentValveID, service_ipc->ServoVentStatusEvent, service_udp->ServoVentStatusEvent, "vent");
     update_servo_status(kDumpValveID, service_ipc->ServoDumpStatusEvent, service_udp->ServoDumpStatusEvent, "dump");

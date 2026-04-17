@@ -1,40 +1,88 @@
 cc_library(
-    name = "radio_app_lib",
+    name = "radio_service",
     deps = [
         "@srp_platform//ara/exec:adaptive_application_lib",
-        "@srp_mavlink//:simba_mavlink",
-        "//deployment/apps/fc/radio_app:someip_lib",
+        "//apps/fc/radio_service:telemetry_provider",
+        "//apps/fc/radio_service:someip_controller",
         "//deployment/apps/fc/radio_app:ara",
+        "//apps/fc/radio_service:radio_controller",
         "//core/timestamp:timestamp_controller",
         "@srp_platform//ara/log",
         "//apps/fc/main_service:MainService",
-        "//apps/fc/radio_service:uart_driver",
-        "//core/common:wait_queue",
-        "//apps/fc/recovery_service:ParachuteController",
-        "//apps/ec/primer_service/controller:primer_controller",
     ],
     srcs = [
         "radio_app.cc",
-        "event_data.cc",
+         "main.cc",
     ],
     hdrs = [
         "radio_app.h",
-        "event_data.h",
     ],
-    visibility = ["//apps/fc/radio_service:__subpackages__",],
+    visibility = ["//visibility:public"],
 )
 
-cc_binary(
-    name = "radio_service",
+cc_library(
+    name = "someip_controller",
     srcs = [
-        "main.cc",
+        "someip_controller.cpp",
     ],
-    visibility = [
-        "//deployment:__subpackages__",
+    hdrs = [
+        "someip_controller.hpp",
     ],
+    visibility = ["//visibility:public"],
     deps = [
-        "//apps/fc/radio_service:radio_app_lib",
+        "@srp_platform//ara/log",
+        "//apps/fc/radio_service:event_data",
+        "//deployment/apps/fc/radio_app:someip_lib",
+        "//apps/fc/recovery_service:ParachuteController",
+        "//apps/ec/primer_service/controller:primer_controller",
     ],
+)
+
+cc_library(
+    name = "radio_controller",
+    srcs = [
+        "radio_controller.cpp",
+    ],
+    hdrs = [
+        "radio_controller.hpp",
+    ],
+    visibility = ["//visibility:public"],
+    deps = [
+        "@srp_platform//ara/log",
+        "//apps/fc/radio_service:event_data",
+        "@srp_mavlink//:simba_mavlink",
+        "//apps/fc/radio_service:uart_driver",
+        "//core/common:wait_queue",
+    ],
+)
+
+cc_library(
+    name = "telemetry_provider",
+    srcs = [
+        "telemetry_provider.cpp",
+    ],
+    hdrs = [
+        "telemetry_provider.hpp",
+    ],
+    visibility = ["//visibility:public"],
+    deps = [
+        "@srp_mavlink//:simba_mavlink",
+        "@srp_platform//ara/log",
+        "//apps/fc/radio_service:event_data",
+        "//core/timestamp:timestamp_controller",
+        "//apps/ec/primer_service/controller:primer_controller",
+    ],
+)
+
+cc_library(
+    name = "event_data",
+    hdrs = ["event_data.h"],
+    srcs = ["event_data.cc"],
+    deps = [
+        "@srp_mavlink//:simba_mavlink",
+        "//core/rocket_machine_state:rocket_state_base",
+    ],
+    visibility = ["//visibility:public"],
 )
 
 cc_library(

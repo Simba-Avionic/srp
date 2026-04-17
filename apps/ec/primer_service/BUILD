@@ -33,6 +33,7 @@ cc_library(
         "//apps/ec/primer_service",
         "@srp_platform//ara/exec:adaptive_application_lib",
         "//core/common:condition_lib",
+        "//mw/gpio_server/controller:gpio_controller",
     ],
     srcs = [
         "app.cpp",

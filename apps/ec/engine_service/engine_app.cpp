@@ -34,7 +34,7 @@ namespace {
   static constexpr auto kPrimerDelay =          1000;
   static constexpr auto kPin_off =              0;
   static constexpr auto kPin_on =               1;
-  static constexpr auto kHeartBeatPinID =       3;
+  static constexpr auto kHeartBeatPinID =       1;
   using RocketState_t = core::rocketState::RocketState_t;
 }  // namespace
 
@@ -142,6 +142,10 @@ int EngineApp::Initialize(const std::map<ara::core::StringView, ara::core::Strin
   });
   state_ctr->RegisterOnStateChangeCallback([this](RocketState_t state) {
         this->OnStateChange(state);
+  });
+  state_ctr->RegisterCallback(RocketState_t::CONNECTION_LOST, [this]() {
+    ara::log::LogDebug() << "EngineApp::RegisterCallback: CONNECTION_LOST callback triggered";
+    this->OnDisarm();
   });
 
   state_ctr->RegisterCallback(RocketState_t::LAUNCH, [this]() {
@@ -263,9 +267,13 @@ void EngineApp::OnDisarm() {
     this->logger_handler_->Stop();
   }
   for (const auto & pin : arm_pins_id) {
-    if (gpio_.SetPinValue(pin.pin_id, kPin_off) != core::ErrorCode::kOk) {
+    if (gpio_.SetPinValue(pin.pin_id, kPin_off, 2000) != core::ErrorCode::kOk) {
       ara::log::LogError() << "cant disarm pin: " << pin.name;
     }
+  }
+  if (servo_handler_) {
+    servo_handler_->SetDumpValue(0);
+    servo_handler_->SetVentServoValue(0);
   }
   ara::log::LogInfo() << "EngineApp::OnDisarm: DISARM sequence completed";
 }

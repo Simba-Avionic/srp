@@ -35,7 +35,6 @@ struct ArmPinConfig_t {
     std::string name;
 };
 
-using instace_t = ara::core::InstanceSpecifier;
 class EngineApp final : public ara::exec::AdaptiveApplication {
  private:
   gpio::GPIOController gpio_;

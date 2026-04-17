@@ -13,7 +13,10 @@ filegroup(
         "//deployment/apps/servo_service:instance",
         "//deployment/apps/fc/recovery_service:instance",
         "//deployment/apps/fc/main_app:instance",
-        "//deployment/apps/fc/env_service:instance"
+        "//deployment/apps/fc/env_service:instance",
+        "//deployment/apps/system_stat_service:instance",
+        "//deployment/apps/fc/system_stat_service:instance",
+
     ],
     visibility = [
         "//apps/fc/radio_service:__subpackages__",

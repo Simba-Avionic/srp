@@ -24,6 +24,7 @@
 
 #include "core/uart/uart_driver.hpp"
 #include "core/gps/nmea.hpp"
+#include "mw/gpio_server/controller/gpio_controller.hpp"
 
 namespace srp {
 namespace apps {
@@ -35,6 +36,7 @@ class GPSApp final : public ara::exec::AdaptiveApplication {
   std::unique_ptr<apps::GPSServiceSkeleton> service_ipc;
   std::unique_ptr<apps::GPSServiceSkeleton> service_udp;
   std::unique_ptr<core::uart::IUartDriver> uart_;
+  gpio::GPIOController gpio_;
 
   std::chrono::high_resolution_clock::time_point last_frame;
 
