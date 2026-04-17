@@ -1,39 +1,41 @@
 cc_library(
-    name = "radio_app_lib",
+    name = "radio_service",
     deps = [
         "@srp_platform//ara/exec:adaptive_application_lib",
         "//apps/fc/radio_service:telemetry_provider",
-        "//deployment/apps/fc/radio_app:someip_lib",
+        "//apps/fc/radio_service:someip_controller",
         "//deployment/apps/fc/radio_app:ara",
         "//core/timestamp:timestamp_controller",
         "@srp_platform//ara/log",
         "//apps/fc/main_service:MainService",
         "//apps/fc/radio_service:uart_driver",
         "//core/common:wait_queue",
-        "//apps/fc/recovery_service:ParachuteController",
     ],
     srcs = [
         "radio_app.cc",
-        "event_data.cc",
+         "main.cc",
     ],
     hdrs = [
         "radio_app.h",
-        "event_data.h",
     ],
-    visibility = ["//apps/fc/radio_service:__subpackages__",],
+    visibility = ["//visibility:public"],
 )
 
-cc_binary(
-    name = "radio_service",
+cc_library(
+    name = "someip_controller",
     srcs = [
-        "main.cc",
+        "someip_controller.cpp",
     ],
-    visibility = [
-        "//deployment:__subpackages__",
+    hdrs = [
+        "someip_controller.hpp",
     ],
+    visibility = ["//visibility:public"],
     deps = [
         "@srp_platform//ara/log",
-        "//apps/fc/radio_service:radio_app_lib",
+        "//apps/fc/radio_service:event_data",
+        "//deployment/apps/fc/radio_app:someip_lib",
+        "//apps/fc/recovery_service:ParachuteController",
+        "//apps/ec/primer_service/controller:primer_controller",
     ],
 )
 
