@@ -127,6 +127,12 @@ int EngineApp::Initialize(const std::map<ara::core::StringView, ara::core::Strin
   }
   this->arm_pins_id = std::move(arm_pins.value());
   state_ctr = core::rocketState::RocketStateController::GetInstance();
+  vent_ctr_ = engine::VentController::GetInstance();
+  vent_ctr_->BindVentHandler([this](const uint8_t& state) {
+    if (servo_handler_) {
+      servo_handler_->SetVentServoValue(state);
+    }
+  });
   state_ctr->RegisterRequirementsCallback([this](RocketState_t state) {
     switch (state) {
       case RocketState_t::ARM:
@@ -262,20 +268,23 @@ void EngineApp::OnArm() {
 }
 
 void EngineApp::OnDisarm() {
-  ara::log::LogInfo() << "EngineApp::OnDisarm: DISARM sequence started";
-  if (logger_handler_) {
-    this->logger_handler_->Stop();
-  }
-  for (const auto & pin : arm_pins_id) {
-    if (gpio_.SetPinValue(pin.pin_id, kPin_off, 2000) != core::ErrorCode::kOk) {
+  ara::log::LogInfo() << "EngineApp::OnDisarm: DISARM sequence completed";
+  for (const ArmPinConfig_t& pin : arm_pins_id) {
+    bool disable_later = (pin.name == "Vent Servo Power" || pin.name == "Dump Valve Servo Power");
+    if (gpio_.SetPinValue(pin.pin_id,
+                          disable_later ? kPin_on : kPin_off,
+                          disable_later ? 3500 : 0,
+                          disable_later) != core::ErrorCode::kOk) {
       ara::log::LogError() << "cant disarm pin: " << pin.name;
     }
   }
-  if (servo_handler_) {
+  if (servo_handler_ != nullptr) {
     servo_handler_->SetDumpValue(0);
-    servo_handler_->SetVentServoValue(0);
+    vent_ctr_->ChangeState(engine::VentState_e::CLOSE);
   }
-  ara::log::LogInfo() << "EngineApp::OnDisarm: DISARM sequence completed";
+  if (logger_handler_) {
+    this->logger_handler_->Stop();
+  }
 }
 
 void EngineApp::OnApogee() {
@@ -297,7 +306,7 @@ void EngineApp::OnAbort() {
   }
   if (servo_handler_ != nullptr) {
     servo_handler_->SetDumpValue(1);
-    servo_handler_->SetVentServoValue(1);
+    vent_ctr_->ChangeState(engine::VentState_e::OPEN);
   }
 }
 
