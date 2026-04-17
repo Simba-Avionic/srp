@@ -12,10 +12,12 @@ cc_library(
     ],
     srcs = [
         "radio_app.cc",
-         "main.cc",
+        "main.cc",
+        "gs_hb_guider.cpp",
     ],
     hdrs = [
         "radio_app.h",
+        "gs_hb_guider.hpp",
     ],
     visibility = ["//visibility:public"],
 )
