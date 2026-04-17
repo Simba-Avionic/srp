@@ -267,9 +267,13 @@ void EngineApp::OnDisarm() {
     this->logger_handler_->Stop();
   }
   for (const auto & pin : arm_pins_id) {
-    if (gpio_.SetPinValue(pin.pin_id, kPin_off) != core::ErrorCode::kOk) {
+    if (gpio_.SetPinValue(pin.pin_id, kPin_off, 2000) != core::ErrorCode::kOk) {
       ara::log::LogError() << "cant disarm pin: " << pin.name;
     }
+  }
+  if (servo_handler_) {
+    servo_handler_->SetDumpValue(0);
+    servo_handler_->SetVentServoValue(0);
   }
   ara::log::LogInfo() << "EngineApp::OnDisarm: DISARM sequence completed";
 }
