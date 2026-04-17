@@ -23,7 +23,8 @@ namespace core {
 namespace rocketState {
 
 enum RocketState_t: uint8_t {
-    CONNECTION_LOST = 54,  // 2min od ostatniej wiadomosci przechodzimy w stan connection_lost (disarm), po x minutach tego stanu robimy abort
+    CONNECTION_LOST = 54,  // 2min od ostatniej wiadomosci przechodzimy w stan
+        //  connection_lost (disarm), po x minutach tego stanu robimy abort
 
     ABORT = 64,            // ABORT -> spuszczamy paliwo i wylaczamy silniki
     INIT = 0,              // Domyślny stan

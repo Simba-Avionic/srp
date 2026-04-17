@@ -25,8 +25,6 @@ namespace apps {
 namespace {
   static constexpr auto KRadio_UART_path =     "/dev/ttyS1";
   static constexpr auto KRadio_UART_baudrate = B57600;
-  static constexpr auto kSystemId =    1;
-  static constexpr auto kComponentId = 200;
   static constexpr auto kTime =        990;
   static constexpr auto kRequired_mavlink_messages_to_change_state = 4;
 
@@ -54,123 +52,43 @@ namespace {
   static constexpr auto kEnv_fc_service_path_name =   "srp/apps/RadioApp/EnvAppFc";
 }  // namespace
 
-uint8_t RadioApp::RocketStateToMavlinkState(const RocketState_t state) const noexcept {
-  switch (state) {
-      case RocketState_t::INIT:
-          return SIMBA_ROCKET_STATE_INIT;
-      case RocketState_t::DISARM:
-          return SIMBA_ROCKET_STATE_DISARM;
-      case RocketState_t::ARM:
-          return SIMBA_ROCKET_STATE_ARM;
-      case RocketState_t::LAUNCH:
-          return SIMBA_ROCKET_STATE_LAUNCH;
-      case RocketState_t::FLIGHT:
-          return SIMBA_ROCKET_STATE_FLIGHT;
-      case RocketState_t::APOGEE:
-          return SIMBA_ROCKET_STATE_APOGEE;
-      case RocketState_t::FIRST_PARACHUTE:
-          return SIMBA_ROCKET_STATE_DESCENT_PILOT;
-      case RocketState_t::SECOND_PARACHUTE:
-          return SIMBA_ROCKET_STATE_SEC_PARACHUTE;
-      case RocketState_t::DROP:
-          return SIMBA_ROCKET_STATE_DESCENT_MAIN;
-      case RocketState_t::ABORT:
-          return SIMBA_ROCKET_STATE_ABORT;
-      case RocketState_t::CONNECTION_LOST:
-        return SIMBA_ROCKET_STATE_CONNECTION_LOST;
-      case RocketState_t::TOUCHDOWN:
-        return SIMBA_ROCKET_STATE_TOUCHDOWN;
-      default:
-          return SIMBA_ROCKET_STATE_ABORT;
-  }
-}
 
-uint8_t RadioApp::PrimerStateToMavlinState(const PrimerState_t state) const noexcept {
-  switch (state) {
-  case PrimerState_t::kUNKNOWN:
-    return SIMBA_PRIMER_STATE_UNKNOWN;
-  case PrimerState_t::kCONNECTED:
-    return SIMBA_PRIMER_STATE_CONNECTED;
-  case PrimerState_t::kNOT_CONNECTED:
-    return SIMBA_PRIMER_STATE_NOT_CONNECTED;
-  case PrimerState_t::kSHORT_CIRCUIT:
-    return SIMBA_PRIMER_STATE_SHORT_CIRCUIT;
-  default:
-    return SIMBA_PRIMER_STATE_UNKNOWN;
+void RadioApp::WaitUntillTimeEnd(const timepoint& start, const uint32_t req_loop_time,
+                                                  const std::stop_token& token) {
+  auto end = std::chrono::high_resolution_clock::now();
+  auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+
+  if (std::chrono::milliseconds(req_loop_time) > duration) {
+      core::condition::wait_for(std::chrono::milliseconds(req_loop_time) - duration, token);
   }
 }
 
 void RadioApp::TransmittingLoop(const std::stop_token& token) {
-  mavlink_message_t msg;
-  std::vector<uint8_t> buffer(MAVLINK_MAX_PACKET_LEN);
-
-  if (!timestamp_.Init()) {
-    ara::log::LogWarn() << "Cant initialize app time";
-  }
-
   event_data = EventData::GetInstance();
 
-  auto send = [&](auto pack_func) {
-    pack_func();
-
-    uint16_t len = mavlink_msg_to_send_buffer(buffer.data(), &msg);
-
-    std::vector<uint8_t> actual_data(buffer.begin(), buffer.begin() + len);
-    UartTxQueue.Push(actual_data);
-  };
 
   while (!token.stop_requested()) {
     auto start = std::chrono::high_resolution_clock::now();
 
-    // Heartbeat
-    if (auto val = timestamp_.GetNewTimeStamp(); val.has_value()) {
-      send([&] {
-        mavlink_msg_simba_rocket_heartbeat_pack(kSystemId, kComponentId, &msg,
-                  static_cast<uint64_t>(val.value()), 0,  // Add here apps alive
-                  RocketStateToMavlinkState(event_data->GetComputerState(BoardType_e::MB)),
-                  RocketStateToMavlinkState(event_data->GetComputerState(BoardType_e::EB)),
-                  event_data->GetActuatorStates(),
-                  PrimerStateToMavlinState(static_cast<PrimerState_t>(event_data->GetPrimerStates())));
-      });
+    // HB
+    auto hb = telemetry_provider.GetHeartbeatMsg();
+    if (hb.has_value()) {
+      UartTxQueue.Push(hb.value());
     }
 
     // Max Altitude
-    send([&] {
-      mavlink_msg_simba_max_altitude_pack(kSystemId, kComponentId, &msg, event_data->GetMaxAltitude());
-    });
+    UartTxQueue.Push(telemetry_provider.GetMaxAltitudeMsg());
 
     // Tank Sensors
-    send([&] {
-      mavlink_msg_simba_tank_sensors_pack(kSystemId, kComponentId, &msg,
-          static_cast<int16_t>(event_data->GetTemp(0)),
-          static_cast<int16_t>(event_data->GetTemp(1)),
-          static_cast<int16_t>(event_data->GetTemp(3)),
-          event_data->GetPress());
-    });
+    UartTxQueue.Push(telemetry_provider.GetTankSensorsMsg());
 
     // GPS
-    auto gps_data = event_data->GetGPS();
-    send([&] {
-      mavlink_msg_simba_gps_pack(kSystemId, kComponentId, &msg,
-          gps_data.lon, gps_data.lat, gps_data.altitude);
-    });
+    UartTxQueue.Push(telemetry_provider.GetGpsMsg());
 
     // Computers telemetry
-    auto eb_telemetry = event_data->GetComputerTelemetry(BoardType_e::EB);
-    auto mb_telemetry = event_data->GetComputerTelemetry(BoardType_e::MB);
-    send([&] {
-      mavlink_msg_simba_computers_telemetry_pack(kSystemId, kComponentId, &msg,
-        mb_telemetry.cpu_usage, mb_telemetry.mem_usage,
-        eb_telemetry.cpu_usage, eb_telemetry.mem_usage,
-        mb_telemetry.temps, eb_telemetry.temps);
-    });
+    UartTxQueue.Push(telemetry_provider.GetComputersTelemetryMsg());
 
-    auto end = std::chrono::high_resolution_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-
-    if (std::chrono::milliseconds(kTime) > duration) {
-        core::condition::wait_for(std::chrono::milliseconds(kTime) - duration, token);
-    }
+    WaitUntillTimeEnd(start, kTime, token);
   }
 }
 std::optional<RocketState_t> RadioApp::GetReqRocketStateFromGSFlags(const uint8_t flags) {

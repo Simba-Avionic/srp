@@ -39,6 +39,8 @@
 #include "core/common/wait_queue.h"
 #include "apps/ec/primer_service/controller/primer_controller.hpp"
 #include "mw/gpio_server/controller/gpio_controller.hpp"
+#include "apps/fc/radio_service/telemetry_provider.hpp"
+
 
 namespace srp {
 namespace apps {
@@ -48,6 +50,9 @@ using timepoint = std::chrono::_V2::system_clock::time_point;
 
 class RadioApp : public ara::exec::AdaptiveApplication {
  private:
+  radio::TelemetryProvider telemetry_provider;
+
+
   const ara::log::Logger& mavl_logger;
   const ara::log::Logger& someip_logger;
   gpio::GPIOController gpio_;
@@ -55,6 +60,8 @@ class RadioApp : public ara::exec::AdaptiveApplication {
   timepoint last_received_hb;
 
   bool IsStateChangeApproved(const RocketState_t req_state);
+  void WaitUntillTimeEnd(const timepoint& start, const uint32_t req_loop_time,
+                                                  const std::stop_token& token);
 
   core::WaitQueue<std::vector<uint8_t>, 20> UartTxQueue;
 

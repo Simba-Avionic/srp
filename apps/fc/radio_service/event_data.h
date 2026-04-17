@@ -95,8 +95,6 @@ class EventData {
 
   int32_t GetMaxAltitude();
   void SetMaxAltitude(const int32_t alt);
-
-
 };
 
 }  // namespace apps
