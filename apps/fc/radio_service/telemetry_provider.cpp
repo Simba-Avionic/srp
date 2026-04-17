@@ -1,6 +1,16 @@
+/**
+ * @file telemetry_provider.cpp
+ * @author Mateusz Krajewski (matikrajek42@gmail.com)
+ * @brief 
+ * @version 0.1
+ * @date 2026-04-17
+ * 
+ * @copyright Copyright (c) 2026
+ * 
+ */
 #include "apps/fc/radio_service/telemetry_provider.hpp"
+#include <utility>
 #include "ara/log/log.h"
-
 namespace srp {
 namespace apps {
 namespace radio {
@@ -11,7 +21,7 @@ namespace {
 
     uint8_t RocketStateToMavlinkState(const core::rocketState::RocketState_t state) {
         switch (state) {
-            using namespace core::rocketState;
+            using RocketState_t = core::rocketState::RocketState_t;
             case RocketState_t::INIT:             return SIMBA_ROCKET_STATE_INIT;
             case RocketState_t::DISARM:           return SIMBA_ROCKET_STATE_DISARM;
             case RocketState_t::ARM:              return SIMBA_ROCKET_STATE_ARM;
@@ -30,7 +40,7 @@ namespace {
 
     uint8_t PrimerStateToMavlinState(const srp::primer::PrimerState_t state) {
         switch (state) {
-            using namespace srp::primer;
+            using PrimerState_t = srp::primer::PrimerState_t;
             case PrimerState_t::kUNKNOWN:       return SIMBA_PRIMER_STATE_UNKNOWN;
             case PrimerState_t::kCONNECTED:     return SIMBA_PRIMER_STATE_CONNECTED;
             case PrimerState_t::kNOT_CONNECTED: return SIMBA_PRIMER_STATE_NOT_CONNECTED;
@@ -38,7 +48,21 @@ namespace {
             default:                            return SIMBA_PRIMER_STATE_UNKNOWN;
         }
     }
-} // namespace
+}  // namespace
+
+std::optional<RocketState_t> TelemetryProvider::GetReqRocketStateFromGSFlags(const uint8_t flags) {
+  static constexpr std::pair<uint8_t, RocketState_t> gs_rocket_state_mapping[] = {
+      {SIMBA_GS_FLAGS_ABORT,  RocketState_t::ABORT},
+      {SIMBA_GS_FLAGS_LAUNCH,  RocketState_t::LAUNCH},
+      {SIMBA_GS_FLAGS_ARM,     RocketState_t::ARM},
+      {SIMBA_GS_FLAGS_DISARM,  RocketState_t::DISARM},
+    };
+    for (const auto& [mask, state] : gs_rocket_state_mapping) {
+        if ((flags & mask) != 0) return state;
+    }
+
+    return std::nullopt;
+}
 
 TelemetryProvider::TelemetryProvider() : event_data(EventData::GetInstance()) {
     if (!timestamp_.Init()) {
@@ -57,7 +81,6 @@ uint8_t TelemetryProvider::MapPrimer(srp::primer::PrimerState_t p) {
 std::optional<std::vector<uint8_t>> TelemetryProvider::GetHeartbeatMsg() {
     auto ts = timestamp_.GetNewTimeStamp();
     if (!ts.has_value()) return std::nullopt;
-    
     return Pack([&](mavlink_message_t* m) {
       mavlink_msg_simba_rocket_heartbeat_pack(
           kSystemId, kComponentId, m,
@@ -65,8 +88,7 @@ std::optional<std::vector<uint8_t>> TelemetryProvider::GetHeartbeatMsg() {
           MapState(event_data->GetComputerState(BoardType_e::MB)),
           MapState(event_data->GetComputerState(BoardType_e::EB)),
           event_data->GetActuatorStates(),
-          MapPrimer(static_cast<srp::primer::PrimerState_t>(event_data->GetPrimerStates()))
-      );
+          MapPrimer(static_cast<srp::primer::PrimerState_t>(event_data->GetPrimerStates())));
     });
 }
 
@@ -96,14 +118,13 @@ std::vector<uint8_t> TelemetryProvider::GetGpsMsg() {
 std::vector<uint8_t> TelemetryProvider::GetComputersTelemetryMsg() {
     auto eb = event_data->GetComputerTelemetry(BoardType_e::EB);
     auto mb = event_data->GetComputerTelemetry(BoardType_e::MB);
-    
+
     return Pack([&](mavlink_message_t* m) {
       mavlink_msg_simba_computers_telemetry_pack(
           kSystemId, kComponentId, m,
           mb.cpu_usage, mb.mem_usage,
           eb.cpu_usage, eb.mem_usage,
-          mb.temps, eb.temps
-      );
+          mb.temps, eb.temps);
     });
 }
 

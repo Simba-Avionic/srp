@@ -1,18 +1,32 @@
+/**
+ * @file telemetry_provider.hpp
+ * @author Mateusz Krajewski (matikrajek42@gmail.com)
+ * @brief 
+ * @version 0.1
+ * @date 2026-04-17
+ * 
+ * @copyright Copyright (c) 2026
+ * 
+ */
 #ifndef APPS_FC_RADIO_SERVICE_TELEMETRY_PROVIDER_HPP_
 #define APPS_FC_RADIO_SERVICE_TELEMETRY_PROVIDER_HPP_
 
+#include <memory>
+#include <vector>
+#include <optional>
 #include "simba/mavlink.h"
 #include "simba/simba.h"
 #include "apps/fc/radio_service/event_data.h"
 #include "core/timestamp/timestamp_driver.hpp"
 #include "apps/ec/primer_service/controller/primer_controller.hpp"
-#include <memory>
-#include <vector>
-#include <optional>
+
 
 namespace srp {
 namespace apps {
 namespace radio {
+using RocketState_t = core::rocketState::RocketState_t;
+using PrimerState_t = srp::primer::PrimerState_t;
+using timepoint = std::chrono::_V2::system_clock::time_point;
 
 class TelemetryProvider {
  public:
@@ -25,7 +39,7 @@ class TelemetryProvider {
 
     std::vector<uint8_t> buffer(MAVLINK_MAX_PACKET_LEN);
     uint16_t len = mavlink_msg_to_send_buffer(buffer.data(), &msg);
-    
+
     buffer.resize(len);
     return buffer;
   }
@@ -35,6 +49,8 @@ class TelemetryProvider {
   std::vector<uint8_t> GetTankSensorsMsg();
   std::vector<uint8_t> GetGpsMsg();
   std::vector<uint8_t> GetComputersTelemetryMsg();
+
+  std::optional<RocketState_t> GetReqRocketStateFromGSFlags(const uint8_t flags);
 
  private:
   std::shared_ptr<EventData> event_data;
@@ -47,5 +63,4 @@ class TelemetryProvider {
 }  // namespace radio
 }  // namespace apps
 }  // namespace srp
-
-#endif // APPS_FC_RADIO_SERVICE_TELEMETRY_PROVIDER_HPP_
+#endif  // APPS_FC_RADIO_SERVICE_TELEMETRY_PROVIDER_HPP_

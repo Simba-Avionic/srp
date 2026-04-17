@@ -11,7 +11,7 @@
 #include "apps/fc/radio_service/someip_controller.hpp"
 #include <memory>
 #include <vector>
-#include <chrono>
+#include <chrono>  // NOLINT
 #include "ara/log/logging_menager.h"
 
 namespace srp {
@@ -48,7 +48,6 @@ SomeIPController::SomeIPController():
     engine_service_proxy{ara::core::InstanceSpecifier{kEngine_service_path_name}},
     recovery_service_handler{nullptr},
     recovery_service_proxy{ara::core::InstanceSpecifier{kRecovery_service_path_name}} {
-    
     SomeIpInit();
 }
 std::shared_ptr<MainServiceHandler> SomeIPController::GetMainServiceHandler() {

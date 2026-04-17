@@ -10,6 +10,8 @@
  */
 #ifndef APPS_FC_RADIO_SERVICE_SOMEIP_CONTROLLER_HPP_
 #define APPS_FC_RADIO_SERVICE_SOMEIP_CONTROLLER_HPP_
+#include <memory>
+#include <utility>
 #include "apps/fc/radio_service/event_data.h"
 #include "apps/fc/radio_service/someip_controller.hpp"
 #include "apps/fc/recovery_service/parachute_controller.hpp"
@@ -63,7 +65,6 @@ class SomeIPController {
   std::shared_ptr<MainServiceHandler> GetMainServiceHandler();
   std::shared_ptr<EngineServiceHandler> GetEngineServiceHandler();
   std::shared_ptr<ServoServiceHandler> GetServoServiceHandler();
-
 };
 
 }  // namespace radio

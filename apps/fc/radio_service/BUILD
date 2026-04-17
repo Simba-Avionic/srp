@@ -5,11 +5,10 @@ cc_library(
         "//apps/fc/radio_service:telemetry_provider",
         "//apps/fc/radio_service:someip_controller",
         "//deployment/apps/fc/radio_app:ara",
+        "//apps/fc/radio_service:radio_controller",
         "//core/timestamp:timestamp_controller",
         "@srp_platform//ara/log",
         "//apps/fc/main_service:MainService",
-        "//apps/fc/radio_service:uart_driver",
-        "//core/common:wait_queue",
     ],
     srcs = [
         "radio_app.cc",
@@ -36,6 +35,24 @@ cc_library(
         "//deployment/apps/fc/radio_app:someip_lib",
         "//apps/fc/recovery_service:ParachuteController",
         "//apps/ec/primer_service/controller:primer_controller",
+    ],
+)
+
+cc_library(
+    name = "radio_controller",
+    srcs = [
+        "radio_controller.cpp",
+    ],
+    hdrs = [
+        "radio_controller.hpp",
+    ],
+    visibility = ["//visibility:public"],
+    deps = [
+        "@srp_platform//ara/log",
+        "//apps/fc/radio_service:event_data",
+        "@srp_mavlink//:simba_mavlink",
+        "//apps/fc/radio_service:uart_driver",
+        "//core/common:wait_queue",
     ],
 )
 
