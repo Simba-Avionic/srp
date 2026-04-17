@@ -44,12 +44,15 @@ namespace srp {
 namespace apps {
 using RocketState_t = core::rocketState::RocketState_t;
 using PrimerState_t = srp::primer::PrimerState_t;
+using timepoint = std::chrono::_V2::system_clock::time_point;
 
 class RadioApp : public ara::exec::AdaptiveApplication {
  private:
   const ara::log::Logger& mavl_logger;
   const ara::log::Logger& someip_logger;
   gpio::GPIOController gpio_;
+
+  timepoint last_received_hb;
 
   bool IsStateChangeApproved(const RocketState_t req_state);
 
@@ -78,7 +81,6 @@ class RadioApp : public ara::exec::AdaptiveApplication {
   std::unique_ptr<apps::RadioServiceSkeleton> service_ipc;
   std::unique_ptr<apps::RadioServiceSkeleton> service_udp;
   mutable std::mutex handler_mtx_;
-  std::atomic_bool shutting_down_{false};
 
   core::uart::MavUartDriver uart_;
 

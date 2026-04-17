@@ -143,6 +143,10 @@ int EngineApp::Initialize(const std::map<ara::core::StringView, ara::core::Strin
   state_ctr->RegisterOnStateChangeCallback([this](RocketState_t state) {
         this->OnStateChange(state);
   });
+  state_ctr->RegisterCallback(RocketState_t::CONNECTION_LOST, [this]() {
+    ara::log::LogDebug() << "EngineApp::RegisterCallback: CONNECTION_LOST callback triggered";
+    this->OnDisarm();
+  });
 
   state_ctr->RegisterCallback(RocketState_t::LAUNCH, [this]() {
     ara::log::LogDebug() << "EngineApp::RegisterCallback: LAUNCH callback triggered";

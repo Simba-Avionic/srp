@@ -48,6 +48,7 @@ int MainService::Initialize(const std::map<ara::core::StringView, ara::core::Str
 
     state_ctr->RegisterCallback(RocketState_t::ARM, [this]() { this->OnArm(); });
     state_ctr->RegisterCallback(RocketState_t::DISARM, [this]() { this->OnDisarm(); });
+    state_ctr->RegisterCallback(RocketState_t::CONNECTION_LOST, [this]() { this->OnDisarm(); });
     state_ctr->RegisterCallback(RocketState_t::ABORT, [this]() { this->OnAbort(); });
     state_ctr->RegisterCallback(RocketState_t::LAUNCH, [this]() { this->OnLaunch(); });
     state_ctr->RegisterCallback(RocketState_t::APOGEE, [this]() { this->OnApogee(); });
@@ -136,6 +137,9 @@ void MainService::OnApogee() {
     // }
     // recovery_handler_->OpenReefedParachute();
     state_ctr->SetState(RocketState_t::FIRST_PARACHUTE);
+    if (engine_handler) {
+        engine_handler->SetMode(static_cast<uint8_t>(RocketState_t::FIRST_PARACHUTE));
+    }
 }
 
 void MainService::OnSecondParachute() {
@@ -144,6 +148,9 @@ void MainService::OnSecondParachute() {
     // }
     // recovery_handler_->UnreefeParachute();
     state_ctr->SetState(RocketState_t::DROP);
+    if (engine_handler) {
+        engine_handler->SetMode(static_cast<uint8_t>(RocketState_t::DROP));
+    }
 }
 
 

@@ -33,7 +33,12 @@ namespace {
   static constexpr auto kEC_enabled =       true;
   static constexpr auto kFC_enabled =       true;
   static constexpr auto kStatic_test_mode = false;
-    static constexpr auto kHeartBeatPinID = 2;
+  static constexpr auto kHeartBeatPinID = 2;
+
+  static constexpr auto kHbDelayWarning = 1.1;
+
+  static constexpr auto kDuration_from_last_hb_to_conn_lost_ms = 2 * 60 * 1000;
+  static constexpr auto kDuration_from_last_hb_to_abort_ms = 15 * 60 * 1000;
 }  // namespace
 
 namespace {
@@ -283,6 +288,16 @@ void RadioApp::HBHangleState(const uint8_t values) {
 }
 
 void RadioApp::OnGSHEARTBEAT(const mavlink_message_t& msg) {
+  auto now = std::chrono::high_resolution_clock::now();
+  auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(now - last_received_hb).count();
+  if (duration > (1000 * kHbDelayWarning)) {
+    ara::log::LogWarn() << "GS Heartbeat received with duration: " << std::to_string(duration);
+  } else {
+    ara::log::LogDebug() << "GS Heartbeat received with duration: " << std::to_string(duration);
+  }
+
+  last_received_hb = now;
+
   auto timestamp = mavlink_msg_simba_gs_heartbeat_get_timestamp(&msg);
   auto values = mavlink_msg_simba_gs_heartbeat_get_values(&msg);
   mavl_logger.LogInfo() << "GS Heartbeat: ts="
@@ -338,25 +353,52 @@ int RadioApp::Run(const std::stop_token& token) {
     event_data = EventData::GetInstance();
   }
   ara::log::LogDebug() << "RadioApp Run starting threads";
+  std::jthread uart_transmit_thread([this](const std::stop_token& t) {
+    while (!t.stop_requested()) {
+      auto package_opt = UartTxQueue.Get(t);
+      if (!package_opt.has_value()) {
+        continue;
+      }
+      uart_.Write(package_opt.value());
+    }
+  });
   std::jthread transmitting_thread([this](const std::stop_token& t) {
     this->TransmittingLoop(t);
     });
   std::jthread listening_thread([this](const std::stop_token& t) {
     this->ListeningLoop(t);
   });
+  std::jthread gs_communication_guard_thread([this](const std::stop_token& t) {
+    auto broadcast_state = [this](RocketState_t state, const std::string& reason) {
+      ara::log::LogError() << "GS Connection Guard: " << reason << " -> Switching to " 
+                            << core::rocketState::to_string(state);
+      
+      auto raw_state = static_cast<uint8_t>(state);
+      
+      std::lock_guard<std::mutex> lock(handler_mtx_);
+      if (engine_service_handler) engine_service_handler->SetMode(raw_state);
+      if (main_service_handler)   main_service_handler->setMode(raw_state);
+    };
+    while (!t.stop_requested()) {
+      auto now = std::chrono::high_resolution_clock::now();
+      auto diff = std::chrono::duration_cast<std::chrono::milliseconds>(now - last_received_hb).count();
+
+      if (diff >= kDuration_from_last_hb_to_abort_ms) {
+          broadcast_state(RocketState_t::ABORT, "Timeout ABORT");
+      } 
+      else if (diff >= kDuration_from_last_hb_to_conn_lost_ms) {
+          broadcast_state(RocketState_t::CONNECTION_LOST, "Timeout CONN_LOST");
+      }
+      core::condition::wait_for(std::chrono::milliseconds(100), t);
+    }
+  });
 
   while (!token.stop_requested()) {
     if (gpio_.SetPinValue(kHeartBeatPinID, 1, 500) != core::ErrorCode::kOk) {
       ara::log::LogWarn() << "EngineApp::Run: Failed to toggle heartbeat pin";
     }
-    auto package_opt = UartTxQueue.Get(token);
-    if (!package_opt.has_value()) {
-      continue;
-    }
-    uart_.Write(package_opt.value());
   }
 
-  shutting_down_.store(true);
   ara::log::LogDebug() << "RadioApp Run stopping services and UART";
   env_service_proxy.StopFindService();
   gps_service_proxy.StopFindService();
@@ -391,7 +433,6 @@ int RadioApp::Initialize(const std::map<ara::core::StringView,
 }
 
 RadioApp::~RadioApp() {
-  shutting_down_.store(true);
   env_service_proxy.StopFindService();
   gps_service_proxy.StopFindService();
   primer_service_proxy.StopFindService();
@@ -428,9 +469,6 @@ RadioApp::RadioApp():
 void RadioApp::SomeIpInit() {
     someip_logger.LogDebug() << "SomeIpInit started";
     this->env_service_proxy.StartFindService([this](auto handler) {
-      if (shutting_down_.load()) {
-        return;
-      }
       someip_logger.LogDebug() << "Env service handler discovered";
       {
         std::lock_guard<std::mutex> lock(handler_mtx_);
@@ -529,9 +567,6 @@ void RadioApp::SomeIpInit() {
       });
     });
     this->gps_service_proxy.StartFindService([this](auto handler) {
-      if (shutting_down_.load()) {
-        return;
-      }
       someip_logger.LogDebug() << "GPS service handler discovered";
       {
         std::lock_guard<std::mutex> lock(handler_mtx_);
@@ -555,9 +590,6 @@ void RadioApp::SomeIpInit() {
       });
     });
     this->servo_service_proxy.StartFindService([this](auto handler) {
-      if (shutting_down_.load()) {
-        return;
-      }
       someip_logger.LogDebug() << "Servo service handler discovered";
       {
         std::lock_guard<std::mutex> lock(handler_mtx_);
@@ -604,9 +636,6 @@ void RadioApp::SomeIpInit() {
       });
     });
     this->recovery_service_proxy.StartFindService([this] (auto handler){
-      if (shutting_down_.load()) {
-        return;
-      }
       someip_logger.LogDebug() << "Recovery service handler discovered";
       {
         std::lock_guard<std::mutex> lock(handler_mtx_);
@@ -644,9 +673,6 @@ void RadioApp::SomeIpInit() {
       });
     });
     this->env_fc_service_proxy.StartFindService([this](auto handler) {
-      if (shutting_down_.load()) {
-        return;
-      }
       someip_logger.LogDebug() << "Env Flight Computer service handler discovered";
       {
         std::lock_guard<std::mutex> lock(handler_mtx_);
@@ -708,9 +734,6 @@ void RadioApp::SomeIpInit() {
 
     // TODO(matikrajek42@gmail.com)  ROCKET_CAMERAS
     this->main_service_proxy.StartFindService([this](auto handler) {
-      if (shutting_down_.load()) {
-        return;
-      }
       someip_logger.LogDebug() << "Main service handler discovered";
       {
         std::lock_guard<std::mutex> lock(handler_mtx_);
@@ -732,9 +755,6 @@ void RadioApp::SomeIpInit() {
       });
     });
     this->engine_service_proxy.StartFindService(([this](auto handler) {
-      if (shutting_down_.load()) {
-        return;
-      }
       someip_logger.LogDebug() << "Engine service handler discovered";
       {
         std::lock_guard<std::mutex> lock(handler_mtx_);
@@ -755,9 +775,6 @@ void RadioApp::SomeIpInit() {
       });
     }));
     this->primer_service_proxy.StartFindService([this](auto handler) {
-      if (shutting_down_.load()) {
-        return;
-      }
       someip_logger.LogDebug() << "Primer service handler discovered";
       {
         std::lock_guard<std::mutex> lock(handler_mtx_);
