@@ -8,11 +8,11 @@
  * @copyright Copyright (c) 2026
  * 
  */
-#ifndef x
-#define x
+#ifndef APPS_FC_RADIO_SERVICE_GS_HB_GUIDER_HPP_
+#define APPS_FC_RADIO_SERVICE_GS_HB_GUIDER_HPP_
 #include <chrono>  // NOLINT
 #include <functional>
-#include <stop_token>
+#include <stop_token>  // NOLINT
 #include <thread>  // NOLINT
 #include "core/rocket_machine_state/rocket_state.hpp"
 namespace srp {
@@ -38,4 +38,4 @@ class GSHeartbeatGuard {
 }  // namespace apps
 }  // namespace srp
 
-#endif  // x
+#endif  // APPS_FC_RADIO_SERVICE_GS_HB_GUIDER_HPP_

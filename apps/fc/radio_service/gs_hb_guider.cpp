@@ -11,6 +11,7 @@
 #include "apps/fc/radio_service/gs_hb_guider.hpp"
 #include <chrono>  // NOLINT
 #include <thread>  // NOLINT
+#include <string>
 #include "ara/log/log.h"
 #include "core/common/condition.h"
 namespace srp {
@@ -54,10 +55,11 @@ void GSHeartbeatGuard::GSHeartbeatGuardLoop(const std::stop_token& t) {
                             << core::rocketState::to_string(state);
       this->callback(state);
     };
-    while(!first_hb_received) {
-      core::condition::wait_for(std::chrono::milliseconds(1000), t);
-    }
     while (!t.stop_requested()) {
+      core::condition::wait_for(std::chrono::milliseconds(1000), t);
+      if (!first_hb_received) {
+        continue;
+      }
       auto now = std::chrono::high_resolution_clock::now();
       auto diff = std::chrono::duration_cast<std::chrono::milliseconds>(now - last_hb_time).count();
 
@@ -66,7 +68,6 @@ void GSHeartbeatGuard::GSHeartbeatGuardLoop(const std::stop_token& t) {
       } else if (diff >= kDuration_from_last_hb_to_conn_lost_ms) {
           broadcast_state(RocketState_t::CONNECTION_LOST, "Timeout CONN_LOST");
       }
-      core::condition::wait_for(std::chrono::milliseconds(1000), t);
   }
 }
 

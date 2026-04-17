@@ -17,6 +17,7 @@ namespace srp {
 namespace apps {
 namespace engine {
 using VentMoveFunc = std::function<void(const uint8_t&)>;
+using timepoint = std::chrono::_V2::high_resolution_clock::time_point;
 enum VentState_e {
     CLOSE = 0,
     OPEN = 1,
@@ -28,10 +29,13 @@ class VentController {
   VentState_e actual_state;
   std::unique_ptr<std::jthread> opening_thread;
   void VentingLoop(const std::stop_token& t);
+  timepoint last_requested_opening;
+  std::unique_ptr<std::jthread> auto_close_thread;
  public:
   static std::shared_ptr<VentController> GetInstance();
   void BindVentHandler(VentMoveFunc func) { vent_handler = func; }
   bool ChangeState(const VentState_e new_state);
+  VentController();
 };
 }  // namespace engine
 }  // namespace apps

@@ -38,10 +38,10 @@ namespace {
 void RadioApp::WaitUntillTimeEnd(const timepoint& start, const uint32_t req_loop_time,
                                                   const std::stop_token& token) {
   auto end = std::chrono::high_resolution_clock::now();
-  auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-
-  if (std::chrono::milliseconds(req_loop_time) > duration) {
-      core::condition::wait_for(std::chrono::milliseconds(req_loop_time) - duration, token);
+  auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+  auto target = std::chrono::milliseconds(req_loop_time);
+  if (target > elapsed) {
+      core::condition::wait_for(target - elapsed, token);
   }
 }
 
@@ -95,14 +95,24 @@ void RadioApp::HBHangleActuators(const uint8_t values) {
   auto eb_state = event_data->GetComputerState(BoardType_e::EB);
 
   if (eb_state == RocketState_t::ARM || (kStatic_test_mode && eb_state == RocketState_t::DISARM)) {
-    update_valve(SIMBA_GS_FLAGS_VENT_VALVE, SIMBA_ACTUATOR_FLAGS_VENT_VALVE, "VENT_VALVE",
-                  [&](uint8_t val) {
-      auto to_set = (val == 0) ? engine::VentState_e::CLOSE : engine::VentState_e::OPENING;
-      auto engine_handler = someip_controller.GetEngineServiceHandler();
-      engine_handler->SetVentValve(static_cast<uint8_t>(to_set));
-    });
+    // Dump Valve
     update_valve(SIMBA_GS_FLAGS_DUMP_VALVE, SIMBA_ACTUATOR_FLAGS_DUMP_VALVE, "DUMP_VALVE",
                   [&](uint8_t val) { servo_handler->SetDumpValue(val); });
+
+    // Vent Valve
+    {
+      auto eng_handler = someip_controller.GetEngineServiceHandler();
+      uint8_t requested = ((values & SIMBA_GS_FLAGS_VENT_VALVE) != 0);
+      bool current = (event_data->GetActuatorStates() & SIMBA_ACTUATOR_FLAGS_VENT_VALVE) != 0;
+      if (eng_handler) {
+        auto to_set = (requested == 0) ? engine::VentState_e::CLOSE : engine::VentState_e::OPENING;
+        eng_handler->SetVentValve(static_cast<uint8_t>(to_set));
+      }
+      if (requested != current) {
+        ara::log::LogInfo() << "Changing Vent Valve to " << (requested ? "OPENING" : "OFF");
+        event_data->SetActuatorState(static_cast<SIMBA_ACTUATOR_FLAGS>(SIMBA_ACTUATOR_FLAGS_VENT_VALVE), requested);
+      }
+    }
   }
 
   // TODO(matikrajek42@gmail.com) Add missing Cameras handler
@@ -167,8 +177,8 @@ void RadioApp::OnGSHEARTBEAT(const mavlink_message_t& msg) {
   auto timestamp = mavlink_msg_simba_gs_heartbeat_get_timestamp(&msg);
   auto values = mavlink_msg_simba_gs_heartbeat_get_values(&msg);
   ara::log::LogInfo() << "GS Heartbeat: ts="
-                      + std::to_string(static_cast<int64_t>(timestamp))
-                      + " flags=" + std::to_string(static_cast<int>(values));
+                      << std::to_string(static_cast<int64_t>(timestamp))
+                      << " flags=" << std::to_string(static_cast<int>(values));
 
   HBHangleState(values);
 
