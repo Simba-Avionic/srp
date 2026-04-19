@@ -10,7 +10,6 @@
  */
 #include "apps/fc/logger_service/service/logger_service.hpp"
 
-#include <chrono>
 #include <string>
 #include <utility>
 
