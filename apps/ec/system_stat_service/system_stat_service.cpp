@@ -41,30 +41,39 @@ int SystemStatService::Initialize(const std::map<ara::core::StringView, ara::cor
     return 0;
 }
 
+std::optional<apps::SysStatType> SystemStatService::GetSysStats() const {
+    apps::SysStatType stats;
+    auto cpu_usage_opt = core::stat::SystemStats::get_cpu_usage();
+    if (!cpu_usage_opt.has_value()) {
+        return std::nullopt;
+    }
+    stats.cpu_usage = static_cast<float>(cpu_usage_opt.value());
+    auto mem_usage_opt = core::stat::SystemStats::get_ram_usage();
+    if (!mem_usage_opt.has_value()) {
+        return std::nullopt;
+    }
+    stats.mem_usage = mem_usage_opt.value();
+    stats.disk_utilization = static_cast<float>(core::stat::SystemStats::get_disk_space());
+    return stats;
+}
+
 
 int SystemStatService::Run(const std::stop_token& token) {
     while (!token.stop_requested()) {
-        apps::SysStatType stats;
-        auto cpu_usage_opt = core::stat::SystemStats::get_cpu_usage();
-        if (!cpu_usage_opt.has_value()) {
+        core::condition::wait_for(std::chrono::milliseconds(kDelay), token);
+        auto stats_opt = GetSysStats();
+        if (!stats_opt.has_value()) {
             continue;
         }
-        stats.cpu_usage = static_cast<float>(cpu_usage_opt.value());
-        auto mem_usage_opt = core::stat::SystemStats::get_ram_usage();
-        if (!mem_usage_opt.has_value()) {
-            continue;
-        }
-        stats.mem_usage = mem_usage_opt.value();
-        stats.disk_utilization = static_cast<float>(core::stat::SystemStats::get_disk_space());
+        auto stats = stats_opt.value();
         std::ostringstream ss;
         ss << std::fixed << std::setprecision(2)  << "cpu usage(1min): " << stats.cpu_usage
                             << "%, mem usage: " << stats.mem_usage
                             << "%, disk usage: " << stats.disk_utilization << "%";
 
-        ara::log::LogInfo() << ss.str();
+        ara::log::LogDebug() << ss.str();
         service_ipc.NewSystemUsage.Update(stats);
         service_udp.NewSystemUsage.Update(stats);
-        core::condition::wait_for(std::chrono::milliseconds(kDelay), token);
     }
     service_ipc.StopOffer();
     service_udp.StopOffer();
