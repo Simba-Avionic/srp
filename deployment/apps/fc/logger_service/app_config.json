@@ -1,0 +1,66 @@
+{
+    "include": [
+        "deployment/system_definition/someip/fc/logger_service/service.json",
+        "deployment/system_definition/someip/fc/env_service/service.json",
+        "deployment/system_definition/someip/fc/sys_stat_service/service.json"
+    ],
+    "package": "srp.apps",
+    "adaptive_application": {
+        "FcFileLoggerApp": {
+            "app": {
+                "functional_groups": [
+                    "Running",
+                    "SafetyMode"
+                ],
+                "parms": "",
+                "logger": {
+                    "app_id": "FCLG",
+                    "app_des": "FC logger service",
+                    "log_level": "kInfo",
+                    "log_mode": "kRemote",
+                    "ctx": [
+                        {
+                            "ctx_id": "ara",
+                            "log_level": "kWarn",
+                            "ctx_des": "Default ctx for ara"
+                        },
+                        {
+                            "ctx_id": "acom",
+                            "log_level": "kWarn",
+                            "ctx_des": "Default ctx for ara::com"
+                        },
+                        {
+                            "ctx_id": "adiag",
+                            "log_level": "kWarn",
+                            "ctx_des": "Default ctx for ara::diag"
+                        },
+                        {
+                            "ctx_id": "exec",
+                            "log_level": "kWarn",
+                            "ctx_des": "Default ctx for ara::exec"
+                        }
+                    ]
+                }
+            },
+            "provide": [
+                {
+                    "name": "FcFileLoggerApp as logService_ipc",
+                    "on": "ipc",
+                    "instance": 2
+                }
+            ],
+            "require": [
+                {
+                    "name": "srp.env.EnvAppFc as envServiceFc_ipc",
+                    "on": "ipc",
+                    "instance": 2
+                },
+                {
+                    "name": "FcSysStatService as FcSysStatService_ipc",
+                    "on": "ipc",
+                    "instance": 2
+                }
+            ]
+        }
+    }
+}
