@@ -16,12 +16,13 @@
 namespace srp {
 namespace apps {
 namespace {
-  constexpr auto kService_ipc_instance = "srp/apps/GPSApp/GPSService_ipc";
-  constexpr auto kService_udp_instance = "srp/apps/GPSApp/GPSService_udp";
-  constexpr auto KGPS_UART_path = "/dev/ttyS1";
-  constexpr auto KGPS_UART_baudrate = B230400;
-  constexpr uint16_t KGps_expected_interval = 1000;
-  constexpr auto kGps_freq_tolerance = 100;
+  static constexpr auto kService_ipc_instance =       "srp/apps/GPSApp/GPSService_ipc";
+  static constexpr auto kService_udp_instance =       "srp/apps/GPSApp/GPSService_udp";
+  static constexpr auto KGPS_UART_path =              "/dev/ttyS0";
+  static constexpr auto KGPS_UART_baudrate =          B230400;
+  static constexpr uint16_t KGps_expected_interval =  1000;
+  static constexpr auto kGps_freq_tolerance =         100;
+  static constexpr auto kHeartBeatPinID = 3;
 }
 
 GPSDataStructure GPSApp::GetSomeIPData(const core::GPS_DATA_T& data) {
@@ -61,6 +62,9 @@ int64_t GPSApp::GetTimeDelata() const {
 int GPSApp::Run(const std::stop_token& token) {
   uint32_t warn_num = 0;
   while (!token.stop_requested()) {
+    if (gpio_.SetPinValue(kHeartBeatPinID, 1, 500) != core::ErrorCode::kOk) {
+      ara::log::LogWarn() << "EngineApp::Run: Failed to toggle heartbeat pin";
+    }
     if (GetTimeDelata() > KGps_expected_interval + kGps_freq_tolerance) {
       if (warn_num < 1) {
         ara::log::LogWarn() << "Missing GPS frame";

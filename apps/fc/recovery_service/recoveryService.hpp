@@ -25,6 +25,7 @@ namespace srp {
 namespace service {
 class RecoveryService final : public ara::exec::AdaptiveApplication {
  private:
+  gpio::GPIOController gpio_;
   const ara::core::InstanceSpecifier rec_did_specifier;
   std::shared_ptr<apps::recovery::ParachuteController> controller;
   std::unique_ptr<apps::MyRecoveryServiceSkeleton> service_ipc;

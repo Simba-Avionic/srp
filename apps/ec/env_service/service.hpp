@@ -12,6 +12,7 @@
 #define APPS_EC_ENV_SERVICE_SERVICE_HPP_
 
 #include <memory>
+#include <algorithm>
 #include "srp/env/EnvAppSkeleton.h"
 #include "mw/i2c_service/controller/adcsensor/controller.hpp"
 
@@ -22,15 +23,33 @@ namespace apps {
 
 class MyEnvAppSkeleton: public EnvAppSkeleton {
  private:
-      std::shared_ptr<i2c::ADCSensorController> press_sensor;
-      uint8_t press_sensor_id;
+      uint16_t tank_value;
+
+      uint16_t up_temp;
+      uint16_t down_temp;
 
  public:
-  MyEnvAppSkeleton(std::shared_ptr<i2c::ADCSensorController> press, const ara::core::InstanceSpecifier& instance,
-                                                            const uint8_t press_id):
-        press_sensor{press}, EnvAppSkeleton{instance}, press_sensor_id{press_id} {
+  explicit MyEnvAppSkeleton(const ara::core::InstanceSpecifier& instance): EnvAppSkeleton{instance} {
   }
   ~MyEnvAppSkeleton() {
+  }
+  void SetTankPressure(const uint16_t value) {
+     this->tank_value = value;
+  }
+  void SetUpTankTemp(const uint16_t value) {
+     this->up_temp = value;
+  }
+  void SetDownTankTemp(const uint16_t value) {
+     this->down_temp = value;
+  }
+  ara::core::Result<std::uint16_t> GetTankPressure() override {
+     return ara::core::Result<std::uint16_t>(this->tank_value);
+  }
+  ara::core::Result<std::uint16_t> GetUpperTankTemp() override {
+     return ara::core::Result<std::uint16_t>(this->up_temp);
+  }
+  ara::core::Result<std::uint16_t> GetLowerTankTemp() override {
+     return ara::core::Result<std::uint16_t>(this->down_temp);
   }
 
  protected:

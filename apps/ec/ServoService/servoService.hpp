@@ -20,7 +20,9 @@
 #include "apps/ec/ServoService/servoController/servo_controller.hpp"
 #include "apps/ec/ServoService/servo_service_did.h"
 #include "apps/ec/ServoService/servo_did.h"
+#include "mw/gpio_server/controller/gpio_controller.hpp"
 #include "apps/ec/ServoService/service.hpp"
+
 namespace srp {
 namespace service {
 class ServoService final : public ara::exec::AdaptiveApplication {
@@ -32,6 +34,7 @@ class ServoService final : public ara::exec::AdaptiveApplication {
   std::unique_ptr<ServoSecondDid> servo_did_;
   std::unique_ptr<apps::MyServoService> service_ipc;
   std::unique_ptr<apps::MyServoService> service_udp;
+  gpio::GPIOController gpio_;
 
   const ara::core::InstanceSpecifier diag_main_instance;
   const ara::core::InstanceSpecifier diag_venv_instance;

@@ -82,9 +82,10 @@ core::ErrorCode ServoController::AutoSetServoPosition(uint8_t actuator_id,
                           std::to_string(static_cast<int>(actuator_id));
     return core::ErrorCode::kNotDefine;
   }
-  auto& servo = it->second;
-  servo.last_state = state;
-
+  if (!driver_) {
+    ara::log::LogError() << "(pca9685) driver handler not set";
+    return core::ErrorCode::kInitializeError;
+  }
   this->ExecuteServoMovement(actuator_id, state);
   return core::ErrorCode::kOk;
 }
@@ -125,22 +126,14 @@ void ServoController::ExecuteServoMovement(const uint8_t actuator_id, const uint
                           std::to_string(static_cast<int>(actuator_id));
     return;
   }
-
-  // if (servo.need_loosening) {
-  //   std::this_thread::sleep_for(
-  //       std::chrono::milliseconds(servo.timing.loosening_delay_ms));
-  //   const uint16_t loosening_position =
-  //       (state == kOpenState) ? servo.on_loosening : servo.off_loosening;
-  //   if (driver_->SetChannelPosition(servo.channel, loosening_position) !=
-  //       core::ErrorCode::kOk) {
-  //     logger_.LogWarn() << "ServoController.ExecuteServoMovement: failed to set loosening PWM for actuator " <<
-  //                           std::to_string(static_cast<int>(actuator_id));
-  //     return;
-  //   }
-  // }
 }
 
 std::optional<uint8_t> ServoController::ReadServoPosition(uint8_t actuator_id) {
+  std::unique_lock<std::mutex> lock(servo_operation_mutex_);
+  if (!driver_) {
+    logger_.LogError() << "ServoController.Init: PCA9685 driver is null";
+    return std::nullopt;
+  }
   auto it = servo_db_.find(actuator_id);
   if (it == servo_db_.end()) {
     logger_.LogWarn() << "ServoController.ReadServoPosition: unknown actuator " <<
@@ -148,7 +141,6 @@ std::optional<uint8_t> ServoController::ReadServoPosition(uint8_t actuator_id) {
     return std::nullopt;
   }
   auto& servo = it->second;
-  // return servo.last_state;
   auto pos_opt = driver_->ReadChannelPosition(servo.channel);
   if (!pos_opt.has_value()) {
     logger_.LogWarn() << "ServoController.ReadServoPosition: unable to read PWM for actuator " <<
@@ -170,6 +162,11 @@ std::optional<uint8_t> ServoController::ReadServoPosition(uint8_t actuator_id) {
 }
 
 std::optional<uint16_t> ServoController::ReadRawServoPosition(uint8_t actuator_id) {
+  std::unique_lock<std::mutex> lock(servo_operation_mutex_);
+  if (!driver_) {
+    logger_.LogError() << "ServoController.Init: PCA9685 driver is null";
+    return std::nullopt;
+  }
   auto it = servo_db_.find(actuator_id);
   if (it == servo_db_.end()) {
     logger_.LogWarn() << "ServoController.ReadRawServoPosition: unknown actuator " <<
@@ -182,6 +179,11 @@ std::optional<uint16_t> ServoController::ReadRawServoPosition(uint8_t actuator_i
 bool ServoController::ChangeConfigPosition(uint8_t actuator_id,
                                            uint16_t new_open_val,
                                            uint16_t new_close_val) {
+  std::unique_lock<std::mutex> lock(servo_operation_mutex_);
+  if (!driver_) {
+    logger_.LogError() << "ServoController.Init: PCA9685 driver is null";
+    return false;
+  }
   auto it = servo_db_.find(actuator_id);
   if (it == servo_db_.end()) {
     logger_.LogWarn() << "ServoController.ChangeConfigPosition: unknown actuator " <<

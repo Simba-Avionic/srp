@@ -31,6 +31,9 @@ class MyServoService : public ServoServiceSkeleton {
  private:
   const std::shared_ptr<service::ServoController> servo_;
   ara::core::Result<bool> SetServoInternal(std::uint8_t servo_id, std::uint8_t value) {
+    if (!servo_) {
+        return ara::com::MakeErrorCode(ara::com::ComErrc::kUnsetFailure, "Servo controller is not initialized");
+    }
     if (value > 1) {
         return ara::com::MakeErrorCode(ara::com::ComErrc::kFieldValueIsNotValid, "Value must be 0 or 1");
     }
@@ -41,6 +44,9 @@ class MyServoService : public ServoServiceSkeleton {
     return true;
   }
   ara::core::Result<std::uint8_t> ReadServoInternal(std::uint8_t servo_id) {
+    if (!servo_) {
+        return ara::com::MakeErrorCode(ara::com::ComErrc::kUnsetFailure, "Servo controller is not initialized");
+    }
     auto res = servo_->ReadServoPosition(servo_id);
     if (!res.has_value()) {
         return ara::com::MakeErrorCode(ara::com::ComErrc::kUnsetFailure, "Unknown error from mw::ServoService");

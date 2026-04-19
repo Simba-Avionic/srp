@@ -34,6 +34,7 @@ class MyMainServiceSkeleton: public MainServiceSkeleton {
 
  protected:
   ara::core::Result<bool> setMode(const std::uint8_t& in_parm) override {
+    ara::log::LogInfo() << "Req change state to:" << core::rocketState::to_string(static_cast<RocketState_t>(in_parm));
     return state_ctr->SetState(static_cast<RocketState_t>(in_parm));
   }
 };

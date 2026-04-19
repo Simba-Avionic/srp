@@ -6,6 +6,7 @@ cc_library(
         "//mw/gpio_server/controller:gpio_controller",
         "//core/common:condition_lib",
         "//core/json:simba_json",
+        "//mw/i2c_service/controller/ads7828:adc_controller",
     ],
     srcs = [
         "primer_controller.cpp",
@@ -13,5 +14,5 @@ cc_library(
     hdrs = [
         "primer_controller.hpp",
     ],
-    visibility = ["//apps/ec/primer_service:__subpackages__"],
+    visibility = ["//visibility:public"],
 )

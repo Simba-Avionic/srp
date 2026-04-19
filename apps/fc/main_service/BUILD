@@ -21,5 +21,6 @@ cc_binary(
         "//core/timestamp:timestamp_controller",
         "@srp_mavlink//:simba_mavlink",
         "//core/rocket_machine_state:rocket_state_base",
+        "//mw/gpio_server/controller:gpio_controller",
     ],
 )

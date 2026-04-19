@@ -20,23 +20,35 @@
 #include "ara/log/log.h"
 #include "core/common/condition.h"
 #include "core/json/json_parser.h"
+#include "mw/i2c_service/controller/ads7828/controller.hpp"
 
 namespace srp {
 namespace primer {
+
+enum PrimerState_t {
+  kUNKNOWN,
+  kNOT_CONNECTED,
+  kCONNECTED,
+  kSHORT_CIRCUIT,
+  kFIRED,
+};
 
 class PrimerController {
  private:
   gpio::GPIOController gpio_;
   std::vector<uint8_t> primer_pins_;
   std::uint16_t active_time;
-  std::uint8_t primerState;
+  std::atomic<PrimerState_t> primerState;
+  i2c::ADS7828 adc_;
 
  public:
   PrimerController();
   void Initialize(std::string path);
 
-  bool ChangePrimerState(uint8_t state);
-  uint8_t GetPrimerState();
+  bool EnablePrimer(const bool auto_disable = true);
+  bool DisablePrimer();
+  PrimerState_t GetPrimerState() const noexcept;
+  void VerifyPrimerConection();
 
  private:
   bool ReadConfig(std::string path);

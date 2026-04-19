@@ -22,53 +22,19 @@ namespace rocketState {
 namespace {
     static const std::unordered_map<RocketState_t, std::vector<RocketState_t>> allowed_transitions = {
         {RocketState_t::INIT,                     {RocketState_t::DISARM}},
-        {RocketState_t::DISARM,                   {RocketState_t::ARM}},
-        {RocketState_t::ARM,                      {RocketState_t::LAUNCH, RocketState_t::ABORT, RocketState_t::DISARM}},
+        {RocketState_t::DISARM,                   {RocketState_t::ARM, RocketState_t::CONNECTION_LOST}},
+        {RocketState_t::ARM,                      {RocketState_t::LAUNCH, RocketState_t::ABORT,
+                                                    RocketState_t::DISARM, RocketState_t::CONNECTION_LOST}},
         {RocketState_t::ABORT,                    {RocketState_t::DISARM}},
         {RocketState_t::LAUNCH,                   {RocketState_t::FLIGHT}},
         {RocketState_t::FLIGHT,                   {RocketState_t::APOGEE}},
         {RocketState_t::APOGEE,                   {RocketState_t::FIRST_PARACHUTE}},
         {RocketState_t::FIRST_PARACHUTE,          {RocketState_t::SECOND_PARACHUTE}},
-        {RocketState_t::SECOND_PARACHUTE,         {RocketState_t::DROP}}
+        {RocketState_t::SECOND_PARACHUTE,         {RocketState_t::DROP}},
+        {RocketState_t::DROP,                     {RocketState_t::TOUCHDOWN}},
+        {RocketState_t::CONNECTION_LOST,          {RocketState_t::DISARM}}
     };
     static std::shared_ptr<RocketStateController> instance = nullptr;
-
-    std::string to_string(const RocketState_t state) {
-        switch (state) {
-            case RocketState_t::INIT:
-                return "INIT";
-
-            case RocketState_t::DISARM:
-                return "DISARM";
-
-            case RocketState_t::ARM:
-                return "ARM";
-
-            case RocketState_t::LAUNCH:
-                return "LAUNCH";
-
-            case RocketState_t::FLIGHT:
-                return "FLIGHT";
-
-            case RocketState_t::APOGEE:
-                return "APOGEE";
-
-            case RocketState_t::FIRST_PARACHUTE:
-                return "FIRST_PARACHUTE";
-
-            case RocketState_t::SECOND_PARACHUTE:
-                return "SECOND_PARACHUTE";
-
-            case RocketState_t::DROP:
-                return "DROP";
-
-            case RocketState_t::ABORT:
-                return "ABORT";
-
-            default:
-                return "UNKNOWN";
-        }
-    }
 }  // namespace
 
 void RocketStateController::RegisterCallback(RocketState_t state, StateCallback cb) {
@@ -136,11 +102,11 @@ bool RocketStateController::SetState(const RocketState_t state) {
     this->prev_state = actual_state;
     this->actual_state = state;
 
-    on_change_callback_(actual_state);
-
     if (callbacks_.count(state)) {
         callbacks_[state]();
     }
+
+    on_change_callback_(actual_state);
     return true;
 }
 

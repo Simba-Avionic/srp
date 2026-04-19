@@ -29,6 +29,7 @@ class MyEngineServiceSkeleton: public EngineServiceSkeleton {
   explicit MyEngineServiceSkeleton(ara::core::InstanceSpecifier instance);
  protected:
   ara::core::Result<bool> SetMode(const std::uint8_t& in_parm) override;
+  ara::core::Result<std::uint8_t> GetMode() override;
 };
 
 }  // namespace service

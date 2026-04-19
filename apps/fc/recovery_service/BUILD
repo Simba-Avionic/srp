@@ -6,6 +6,7 @@ cc_binary(
         "recoveryService.hpp",
         "service.hpp",
         "recovery_rid.hpp",
+        "recovery_rid.cpp",
     ],
     visibility = [
         "//deployment/apps/fc/recovery_service:__subpackages__"

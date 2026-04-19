@@ -6,11 +6,14 @@ filegroup(
     srcs = [
         "app_config.json",
         "//deployment/system_definition/someip/fc/main_service:service_someipy",
+        "//deployment/apps/fc/recovery_service:instance",
+        "//deployment/system_definition/someip/engine_service:service_someipy",
     ],
     visibility = [
         "//apps/fc/main_service:__subpackages__",
         "//deployment/apps/fc/main_service:__subpackages__",
-        "//deployment/apps/fc/radio_app:__subpackages__"
+        "//deployment/apps/fc/radio_app:__subpackages__",
+        "//deployment/apps/engine_app:__subpackages__",
     ],
 )
 

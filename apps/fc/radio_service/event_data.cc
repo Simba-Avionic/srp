@@ -50,6 +50,14 @@ std::shared_ptr<EventData> EventData::GetInstance() {
     }
   }
 
+  uint8_t EventData::GetPrimerStates() {
+    return primer_state_.get();
+  }
+  void EventData::SetPrimerState(const uint8_t state) {
+    primer_state_.set(state);
+  }
+
+
   uint8_t EventData::GetActuatorStates() {
     return actuator_state_.get();
   }
@@ -63,36 +71,47 @@ std::shared_ptr<EventData> EventData::GetInstance() {
     });
   }
 
-  int16_t EventData::GetComputerTemp(const BoardType_e BoardType) {
+  computer_telemetry_t EventData::GetComputerTelemetry(const BoardType_e BoardType) {
     if (BoardType == BoardType_e::EB) {
-        const auto temps = eb_temp_sensors_.get();
-        if (temps.empty()) return 0;
-
-        int32_t sum = std::accumulate(temps.begin(), temps.end(), 0);
-        return static_cast<int16_t>(sum / temps.size());
+      return eb_telemetry.get();
+    } else {
+      return mb_telemetry.get();
     }
-    if (BoardType == BoardType_e::MB) {
-        const auto temps = mb_temp_sensors_.get();
-        if (temps.empty()) return 0;
-
-        int32_t sum = std::accumulate(temps.begin(), temps.end(), 0);
-        return static_cast<int16_t>(sum / temps.size());
-    }
-    return 0;
   }
-  void EventData::SetComputerTemp(const BoardType_e BoardType, const uint8_t index, const int16_t& temp) {
+  void EventData::SetComputerTemp(const BoardType_e BoardType, const uint8_t temp, const uint8_t index) {
     if (index >= 3) {
         return;
     }
-    if (BoardType == BoardType_e::MB) {
-        mb_temp_sensors_.update([&](auto& array) {
-            array[index] = temp;
-        });
-    }
     if (BoardType == BoardType_e::EB) {
-         eb_temp_sensors_.update([&](auto& array) {
-            array[index] = temp;
-        });
+      eb_telemetry.update([&](auto& telemetry) {
+        telemetry.temps[index] = temp;
+      });
+    } else if (BoardType == BoardType_e::MB) {
+      mb_telemetry.update([&](auto& telemetry) {
+        telemetry.temps[index] = temp;
+      });
+    }
+  }
+  void EventData::SetComputerCpuUsage(const BoardType_e BoardType, const uint8_t cpu_usage) {
+    if (BoardType == BoardType_e::EB) {
+      eb_telemetry.update([&](auto& telemetry) {
+        telemetry.cpu_usage = cpu_usage;
+      });
+    } else if (BoardType == BoardType_e::MB) {
+      mb_telemetry.update([&](auto& telemetry) {
+        telemetry.cpu_usage = cpu_usage;
+      });
+    }
+  }
+  void EventData::SetComputerMemUsage(const BoardType_e BoardType, const uint8_t mem_usage) {
+    if (BoardType == BoardType_e::EB) {
+      eb_telemetry.update([&](auto& telemetry) {
+        telemetry.mem_usage = mem_usage;
+      });
+    } else if (BoardType == BoardType_e::MB) {
+      mb_telemetry.update([&](auto& telemetry) {
+        telemetry.mem_usage = mem_usage;
+      });
     }
   }
 
@@ -102,11 +121,11 @@ std::shared_ptr<EventData> EventData::GetInstance() {
     }
     switch (index) {
     case 0:
-        return temp_.get().lower_tank;
+        return tank_.get().lower_tank;
     case 1:
-        return temp_.get().middle_tank;
+        return tank_.get().middle_tank;
     case 2:
-        return temp_.get().upper_tank;
+        return tank_.get().upper_tank;
     default:
         return 0;
     }
@@ -115,7 +134,7 @@ std::shared_ptr<EventData> EventData::GetInstance() {
     if (index >= 3) {
         return;
     }
-    temp_.update([&](auto& temp) {
+    tank_.update([&](auto& temp) {
         switch (index) {
         case 0:
             temp.lower_tank = res;
@@ -133,11 +152,11 @@ std::shared_ptr<EventData> EventData::GetInstance() {
   }
 
   uint16_t EventData::GetPress() {
-    return press_.get().pressure;
+    return tank_.get().pressure;
   }
   void EventData::SetPress(uint16_t res) {
-    press_.update([&](auto& press) {
-        press.pressure = res;
+    tank_.update([&](auto& tank) {
+      tank.pressure = res;
     });
   }
 

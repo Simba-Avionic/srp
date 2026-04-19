@@ -27,6 +27,7 @@
 #include "apps/ec/logger_service/service/service.hpp"
 #include "apps/ec/logger_service/service/logger_did.hpp"
 #include "srp/apps/SysStatService/SysStatServiceHandler.h"
+#include "mw/gpio_server/controller/gpio_controller.hpp"
 
 namespace srp {
 namespace logger {
@@ -34,6 +35,7 @@ namespace logger {
 class LoggerService final : public ara::exec::AdaptiveApplication {
  private:
   env::EnvAppProxy env_service_proxy;
+  gpio::GPIOController gpio_;
   apps::SysStatServiceProxy stat_service_proxy;
   std::shared_ptr<env::EnvAppHandler> env_service_handler;
   std::shared_ptr<apps::SysStatServiceHandler> stat_service_handler;

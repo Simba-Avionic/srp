@@ -21,5 +21,6 @@ cc_binary(
         "//apps/ec/logger_service:logger_data_type_lib",
         "//core/time:sys_time_change_lib",
         "@srp_platform//ara/diag:uds_lib",
+        "//mw/gpio_server/controller:gpio_controller",
     ],
 )

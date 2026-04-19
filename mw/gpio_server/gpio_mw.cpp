@@ -19,7 +19,6 @@
 #include<algorithm>
 
 #include "gpio_mw.hpp"
-#include "srp/mw/gpio/GpioHdr.h"
 #include "mw/gpio_server/data/enums.hpp"
 #include "core/json/json_parser.h"
 #include "core/common/condition.h"
@@ -31,10 +30,11 @@ namespace srp {
 namespace mw {
 
 namespace {
-    constexpr auto SOCKET_PATH = "SRP.GPIO";
-    constexpr auto CALLBACK_PATH_PREFIX = "SRP.GPIO.";
-    constexpr auto AUTO_DISABLE_PIN_DELAY = 100;
-    constexpr auto STATE_POLL_DELAY = std::chrono::milliseconds(100);
+    static constexpr auto SOCKET_PATH = "SRP.GPIO";
+    static constexpr auto CALLBACK_PATH_PREFIX = "SRP.GPIO.";
+    static constexpr auto AUTO_DISABLE_PIN_DELAY = 100;
+    static constexpr auto STATE_POLL_DELAY = std::chrono::milliseconds(100);
+    static constexpr auto kDID_instance_name = "/srp/mw/gpio_service/gpio_pin_did";
 }
 
 int GPIOMWService::Init(std::unique_ptr<srp::com::soc::ISocketStream> socket,
@@ -46,7 +46,7 @@ int GPIOMWService::Init(std::unique_ptr<srp::com::soc::ISocketStream> socket,
   this->gpio_driver_ = std::move(gpio);
   return 0;
 }
-GPIOMWService::GPIOMWService():did_instance("/srp/mw/gpio_service/gpio_pin_did") {
+GPIOMWService::GPIOMWService():did_instance(kDID_instance_name) {
 }
 
 std::vector<uint8_t> GPIOMWService::RxCallback(const std::string& ip, const std::uint16_t& port,
@@ -72,33 +72,29 @@ std::vector<uint8_t> GPIOMWService::RxCallback(const std::string& ip, const std:
             }
             ara::log::LogDebug() << ("Change pin with ID:" + std::to_string(it->first) +
                                         ", to value:" + std::to_string(hdr.value().value) +
-                                          "for: " + std::to_string(hdr.value().time_period) + "s");
+                                            "for: " + std::to_string(hdr.value().time_period) + "s");
             if (hdr.value().value == 0) {
                 return {core::ErrorCode::kOk};
             }
             auto it = pin_expire.find(hdr.value().pin_id);
             if (it == pin_expire.end()) {
                 ExpiredPinCB cfg;
-                if (hdr.value().time_period == 0) {
-                    cfg.infinite_active = true;
-                } else {
-                    cfg.infinite_active = false;
-                    cfg.disable_tp = std::chrono::high_resolution_clock::now()
+                cfg.disable_tp = std::chrono::high_resolution_clock::now()
                                         + std::chrono::milliseconds(hdr.value().time_period);
-                }
+                cfg.infinite_active = (hdr.value().time_period == 0);
                 pin_expire[hdr.value().pin_id] =  cfg;
-            } else {
-                if (hdr.value().time_period == 0) {
-                    it->second.infinite_active = true;
-                } else {
-                    auto new_time = std::chrono::high_resolution_clock::now()
-                                        + std::chrono::milliseconds(hdr.value().time_period);
-                    it->second.disable_tp = std::max(it->second.disable_tp, new_time);
-                }
+                return {core::ErrorCode::kOk};
+            }
+            auto new_time = std::chrono::high_resolution_clock::now()
+                                    + std::chrono::milliseconds(hdr.value().time_period);
+            it->second.disable_tp = std::max(it->second.disable_tp, new_time);
+            if (hdr.value().time_period == 0) {
+                it->second.infinite_active = true;
+            } else if (hdr.value().force_time_period) {
+                it->second.infinite_active = false;
             }
             return {core::ErrorCode::kOk};
         }
-
         case srp::gpio::ACTION::GET: {
             auto val = this->gpio_driver_->getValue(it->second.pinNum);
             srp::mw::gpio::GpioHdr hdr2{srp::gpio::ACTION::RES, hdr.value().pin_id, val};

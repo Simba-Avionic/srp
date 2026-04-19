@@ -8,6 +8,8 @@ filegroup(
         "//deployment/system_definition/someip/engine_service:service_someipy",
         "//deployment/apps/servo_service:instance",
         "//deployment/apps/prim_service:instance",
+        "//deployment/apps/fc/main_app:instance",
+        "//deployment/apps/logger_service:instance",
     ],
     visibility = [
         "//apps/engine_service:__subpackages__",

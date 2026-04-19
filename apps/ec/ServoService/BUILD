@@ -18,5 +18,6 @@ cc_binary(
         "@srp_platform//ara/diag:uds_lib",
         "//deployment/apps/servo_service:ara",
         "//deployment/apps/servo_service:someip_lib",
+        "//mw/gpio_server/controller:gpio_controller",
     ],
 )

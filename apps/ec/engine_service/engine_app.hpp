@@ -23,6 +23,9 @@
 #include "apps/ec/engine_service/service.hpp"
 #include "core/rocket_machine_state/rocket_state.hpp"
 #include "mw/gpio_server/controller/gpio_controller.hpp"
+#include "srp/apps/MainService/MainServiceHandler.h"
+#include "srp/apps/FileLoggerApp/FileLoggerAppHandler.h"
+
 
 namespace srp {
 namespace apps {
@@ -32,16 +35,20 @@ struct ArmPinConfig_t {
     std::string name;
 };
 
-using instace_t = ara::core::InstanceSpecifier;
 class EngineApp final : public ara::exec::AdaptiveApplication {
  private:
   gpio::GPIOController gpio_;
   std::vector<ArmPinConfig_t> arm_pins_id;
   std::shared_ptr<PrimerServiceHandler> primer_handler_;
   std::shared_ptr<ServoServiceHandler> servo_handler_;
+  std::shared_ptr<FileLoggerAppHandler> logger_handler_;
+  FileLoggerAppProxy logger_proxy;
   PrimerServiceProxy primer_proxy;
   ServoServiceProxy servo_proxy;
   std::shared_ptr<core::rocketState::RocketStateController> state_ctr;
+
+  MainServiceProxy main_proxy;
+  std::shared_ptr<MainServiceHandler> main_handler;
 
   service::MyEngineServiceSkeleton service_ipc;
   service::MyEngineServiceSkeleton service_udp;

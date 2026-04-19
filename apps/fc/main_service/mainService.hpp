@@ -17,8 +17,12 @@
 
 #include "ara/exec/adaptive_application.h"
 #include "apps/fc/main_service/service.hpp"
+#include "mw/gpio_server/controller/gpio_controller.hpp"
 #include "core/rocket_machine_state/rocket_state.hpp"
 #include "core/common/error_code.h"
+#include "srp/apps/RecoveryService/RecoveryServiceHandler.h"
+#include "srp/apps/EngineService/EngineServiceHandler.h"
+
 namespace srp {
 namespace service {
 class MainService final : public ara::exec::AdaptiveApplication {
@@ -26,7 +30,20 @@ class MainService final : public ara::exec::AdaptiveApplication {
   std::shared_ptr<core::rocketState::RocketStateController> state_ctr;
   std::unique_ptr<apps::MyMainServiceSkeleton> service_ipc;
   std::unique_ptr<apps::MyMainServiceSkeleton> service_udp;
+
+  apps::RecoveryServiceProxy recovery_proxy_;
+  std::shared_ptr<apps::RecoveryServiceHandler> recovery_handler_;
+  apps::EngineServiceProxy engine_proxy_;
+  std::shared_ptr<apps::EngineServiceHandler> engine_handler;
+  gpio::GPIOController gpio_;
+  bool apogee_detection_allowed;
   void OnArm();
+  void OnDisarm();
+  void OnAbort();
+  void OnLaunch();
+  void OnApogee();
+  void OnSecondParachute();
+
   void OnStateChange(core::rocketState::RocketState_t state);
 
  protected:

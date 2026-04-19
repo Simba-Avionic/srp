@@ -21,11 +21,14 @@
 #include "apps/ec/primer_service/service.hpp"
 #include "apps/ec/primer_service/controller/primer_controller.hpp"
 #include "apps/ec/primer_service/primer_did.hpp"
+#include "mw/gpio_server/controller/gpio_controller.hpp"
+
 namespace srp {
 namespace primer {
 
 class PrimerService final :  public ara::exec::AdaptiveApplication {
  private:
+  gpio::GPIOController gpio_;
   std::shared_ptr<primer::PrimerController> controller;
   apps::MyPrimerServiceSkeleton service_ipc;
   apps::MyPrimerServiceSkeleton service_udp;

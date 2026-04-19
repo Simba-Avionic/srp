@@ -25,18 +25,23 @@ namespace {
   constexpr auto kService_ipc_name = "srp/apps/RecoveryService/RecoveryService_ipc";
   constexpr auto kService_udp_name = "srp/apps/RecoveryService/RecoveryService_udp";
   constexpr auto KRec_did_name = "/srp/apps/RecoveryService/REC_RID";
-  constexpr auto kRefresh_delay_time = 50;
+    static constexpr auto kHeartBeatPinID = 4;
 }
 RecoveryService::RecoveryService(): rec_did_specifier(KRec_did_name) {
 }
 
 
 int RecoveryService::Run(const std::stop_token& token) {
+  rec_did->Offer();
   service_ipc->StartOffer();
   service_udp->StartOffer();
   while (!token.stop_requested()) {
-    service_ipc->NewParachuteStatusEvent.Update(static_cast<uint8_t>(apps::recovery::ParachuteState_t::CLOSED));
-    service_udp->NewParachuteStatusEvent.Update(static_cast<uint8_t>(apps::recovery::ParachuteState_t::CLOSED));
+    if (gpio_.SetPinValue(kHeartBeatPinID, 1, 500) != core::ErrorCode::kOk) {
+      ara::log::LogWarn() << "EngineApp::Run: Failed to toggle heartbeat pin";
+    }
+    auto parachute_state = static_cast<uint8_t>(controller->GetParachuteState());
+    service_ipc->NewParachuteStatusEvent.Update(parachute_state);
+    service_udp->NewParachuteStatusEvent.Update(parachute_state);
     core::condition::wait_for(std::chrono::milliseconds(1000), token);
   }
   service_ipc->StopOffer();
@@ -47,22 +52,14 @@ int RecoveryService::Run(const std::stop_token& token) {
 
 int RecoveryService::Initialize(
     const std::map<ara::core::StringView, ara::core::StringView> parms) {
-  this->controller = std::make_shared<apps::recovery::ParachuteController>();
+  this->controller = srp::apps::recovery::ParachuteController::GetInstance();
   const auto app_path = parms.at("app_path");
-  auto servo_controller = std::make_shared<srp::service::ServoController>();
-  auto init_res = servo_controller->Init(app_path);
-  if (init_res != core::ErrorCode::kOk) {
-    ara::log::LogError() << "RecoveryService.Initialize: unable to init servo controller";
-    return 1;
-  }
-  this->controller->Init(std::move(servo_controller),
-                         std::make_unique<gpio::GPIOController>(), app_path);
-  rec_did = std::make_unique<apps::RecoveryGenericRoutine>(rec_did_specifier, controller);
+  this->controller->Init(app_path);
+  rec_did = std::make_unique<apps::RecoveryGenericRoutine>(rec_did_specifier);
   service_ipc = std::make_unique<apps::MyRecoveryServiceSkeleton>(
-                ara::core::InstanceSpecifier(kService_ipc_name), controller);
+                ara::core::InstanceSpecifier(kService_ipc_name));
   service_udp = std::make_unique<apps::MyRecoveryServiceSkeleton>(
-                ara::core::InstanceSpecifier(kService_udp_name), controller);
-  rec_did->Offer();
+                ara::core::InstanceSpecifier(kService_udp_name));
   return 0;
 }
 

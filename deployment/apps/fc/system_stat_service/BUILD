@@ -7,10 +7,7 @@ filegroup(
         "app_config.json",
         "//deployment/system_definition/someip/fc/sys_stat_service:sys_stat_service_someipy",
     ],
-    visibility = [
-        "//apps/fc/system_stat_service:__subpackages__",
-        "//deployment/apps/logger_service:__subpackages__",
-        ],
+    visibility = [ "//visibility:public" ],
 )
 
 ara_someip_lib(

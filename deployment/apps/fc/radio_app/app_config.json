@@ -8,7 +8,9 @@
         "deployment/system_definition/someip/servo_service/service.json",
         "deployment/system_definition/someip/fc/recovery_service/service.json",
         "deployment/system_definition/someip/fc/main_service/service.json",
-        "deployment/system_definition/someip/fc/env_service/service.json"
+        "deployment/system_definition/someip/fc/env_service/service.json",
+        "deployment/system_definition/someip/sys_stat_service/service.json",
+        "deployment/system_definition/someip/fc/sys_stat_service/service.json"
     ],
     "package": "srp.apps",
     "adaptive_application": {
@@ -22,12 +24,17 @@
                 "logger": {
                     "app_id": "RAD-",
                     "app_des": "czytanie i wysyłanie po radiu",
-                    "log_level": "kInfo",
+                    "log_level": "kDebug",
                     "log_mode": "kRemote",
                     "ctx": [
                         {
+                            "ctx_id": "SOME",
+                            "log_level": "kDebug",
+                            "ctx_des": "Logs From someip"
+                        },
+                        {
                             "ctx_id": "MAVL",
-                            "log_level": "kInfo",
+                            "log_level": "kDebug",
                             "ctx_des": "Logs From mavlink"
                         },
                         {
@@ -62,15 +69,16 @@
                 {
                     "name": "RadioService as RadioService_udp",
                     "on": "udp",
-                    "port": "10002",
+                    "port": "10001",
                     "instance": 1
                 }
             ],
             "require": [
                 {
                     "name": "srp.env.EnvApp as EnvApp",
-                    "on": "ipc",
-                    "instance": 2
+                    "on": "udp",
+                    "port": "10001",
+                    "instance": 1
                 },
                 {
                     "name": "srp.apps.GPSService as GPSService",
@@ -79,13 +87,15 @@
                 },
                 {
                     "name": "srp.apps.PrimerService as PrimerService",
-                    "on": "ipc",
-                    "instance": 2
+                    "on": "udp",
+                    "port": "10002",
+                    "instance": 1
                 },
                 {
                     "name": "srp.apps.ServoService as ServoService",
-                    "on": "ipc",
-                    "instance": 2
+                    "on": "udp",
+                    "port": "10001",
+                    "instance": 1
                 },
                 {
                     "name": "srp.apps.RecoveryService as RecoveryService",
@@ -99,11 +109,23 @@
                 },
                 {
                     "name": "srp.apps.EngineService as EngineService",
+                    "on": "udp",
+                    "port": "10001",
+                    "instance": 1
+                },
+                {
+                    "name": "srp.env.EnvAppFc as EnvAppFc",
                     "on": "ipc",
                     "instance": 2
                 },
                 {
-                    "name": "srp.env.EnvAppFc as EnvAppFc",
+                    "name": "SysStatService as SysStatService",
+                    "on": "udp",
+                    "port": "10001",
+                    "instance": 1
+                },
+                {
+                    "name": "FcSysStatService as FcSysStatService",
                     "on": "ipc",
                     "instance": 2
                 }
