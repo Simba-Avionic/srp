@@ -13,6 +13,7 @@
 #include <memory>
 #include <functional>
 #include <thread>  // NOLINT
+#include <mutex>  // NOLINT
 namespace srp {
 namespace apps {
 namespace engine {
@@ -31,10 +32,14 @@ class VentController {
   void VentingLoop(const std::stop_token& t);
   timepoint last_requested_opening;
   std::unique_ptr<std::jthread> auto_close_thread;
+  std::mutex mtx_;
  public:
-  static std::shared_ptr<VentController> GetInstance();
+  static std::shared_ptr<VentController> GetInstance() {
+        static std::shared_ptr<VentController> instance = std::make_shared<VentController>();
+        return instance;
+  }
   void BindVentHandler(VentMoveFunc func) { vent_handler = func; }
-  bool ChangeState(const VentState_e new_state);
+  void ChangeState(const VentState_e new_state);
   VentController();
 };
 }  // namespace engine

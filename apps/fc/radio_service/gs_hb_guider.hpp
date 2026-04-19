@@ -14,6 +14,7 @@
 #include <functional>
 #include <stop_token>  // NOLINT
 #include <thread>  // NOLINT
+#include <mutex>  // NOLINT
 #include "core/rocket_machine_state/rocket_state.hpp"
 namespace srp {
 namespace apps {
@@ -23,8 +24,10 @@ using RocketState_t = core::rocketState::RocketState_t;
 using GsConLossCB = std::function<void(const RocketState_t)>;
 class GSHeartbeatGuard {
  private:
-  timepoint last_hb_time;
-  bool first_hb_received;
+  std::mutex hb_guard_mtx_;
+  timepoint last_hb_time_;
+  bool first_hb_received_;
+
   GsConLossCB callback;
   std::jthread guard_thread;
  public:

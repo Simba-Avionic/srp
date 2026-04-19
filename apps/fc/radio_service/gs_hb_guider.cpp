@@ -25,21 +25,24 @@ namespace {
 
 void GSHeartbeatGuard::OnNewHbCallback() {
   auto now = std::chrono::high_resolution_clock::now();
-  if (!first_hb_received) {
-    first_hb_received = true;
-    last_hb_time = now;
+  {
+    std::lock_guard lock(hb_guard_mtx_);
+    if (!first_hb_received_) {
+      first_hb_received_ = true;
+      last_hb_time_ = now;
+      return;
+    }
+    last_hb_time_ = now;
   }
-  auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(now - last_hb_time).count();
+  auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(now - last_hb_time_).count();
   if (duration > (1000 * kHbDelayWarning)) {
     ara::log::LogWarn() << "GS Heartbeat received with duration: " << std::to_string(duration);
   } else {
     ara::log::LogDebug() << "GS Heartbeat received with duration: " << std::to_string(duration);
   }
-
-  last_hb_time = now;
 }
 
-GSHeartbeatGuard::GSHeartbeatGuard(): first_hb_received(false) {
+GSHeartbeatGuard::GSHeartbeatGuard(): first_hb_received_(false) {
 }
 
 void GSHeartbeatGuard::Init(GsConLossCB cb) {
@@ -54,20 +57,27 @@ void GSHeartbeatGuard::GSHeartbeatGuardLoop(const std::stop_token& t) {
       ara::log::LogError() << "GS Connection Guard: " << reason << " -> Switching to "
                             << core::rocketState::to_string(state);
       this->callback(state);
-    };
-    while (!t.stop_requested()) {
-      core::condition::wait_for(std::chrono::milliseconds(1000), t);
-      if (!first_hb_received) {
-        continue;
-      }
-      auto now = std::chrono::high_resolution_clock::now();
-      auto diff = std::chrono::duration_cast<std::chrono::milliseconds>(now - last_hb_time).count();
+  };
+  bool first_hb_received;
+  timepoint last_hb_time;
+  while (!t.stop_requested()) {
+    core::condition::wait_for(std::chrono::milliseconds(1000), t);
+    {
+      std::lock_guard<std::mutex> lock(hb_guard_mtx_);
+      first_hb_received = first_hb_received_;
+      last_hb_time = last_hb_time_;
+    }
+    if (!first_hb_received) {
+      continue;
+    }
+    auto now = std::chrono::high_resolution_clock::now();
+    auto diff = std::chrono::duration_cast<std::chrono::milliseconds>(now - last_hb_time).count();
 
-      if (diff >= kDuration_from_last_hb_to_abort_ms) {
-          broadcast_state(RocketState_t::ABORT, "Timeout ABORT");
-      } else if (diff >= kDuration_from_last_hb_to_conn_lost_ms) {
-          broadcast_state(RocketState_t::CONNECTION_LOST, "Timeout CONN_LOST");
-      }
+    if (diff >= kDuration_from_last_hb_to_abort_ms) {
+        broadcast_state(RocketState_t::ABORT, "Timeout ABORT");
+    } else if (diff >= kDuration_from_last_hb_to_conn_lost_ms) {
+        broadcast_state(RocketState_t::CONNECTION_LOST, "Timeout CONN_LOST");
+    }
   }
 }
 

@@ -26,12 +26,6 @@ namespace {
     static constexpr auto kVent_required_req_frequency_ms = 1050;
 }
 
-std::shared_ptr<VentController> VentController::GetInstance() {
-    if (!instance) {
-        instance = std::make_shared<VentController>();
-    }
-    return instance;
-}
 void VentController::VentingLoop(const std::stop_token& t) {
     uint8_t vent_state = 1;
     while (!t.stop_requested()) {
@@ -41,7 +35,8 @@ void VentController::VentingLoop(const std::stop_token& t) {
     }
 }
 
-bool VentController::ChangeState(const VentState_e new_state) {
+void VentController::ChangeState(const VentState_e new_state) {
+    std::lock_guard<std::mutex> lock_guard(mtx_);
     switch (new_state) {
     case VentState_e::OPEN:
         actual_state = VentState_e::OPEN;
