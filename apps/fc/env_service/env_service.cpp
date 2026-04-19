@@ -24,7 +24,7 @@ namespace srp {
 namespace envServiceFc {
 
 namespace {
-    static constexpr auto kBME280_delay_ms =           1000;
+    static constexpr auto kBME280_delay_ms =           100;
     static constexpr auto kService_instance_path_ipc = "srp/env/EnvAppFc/envServiceFc_ipc";
     static constexpr auto kService_instance_path_udp = "srp/env/EnvAppFc/envServiceFc_udp";
 }  // namespace
@@ -61,7 +61,6 @@ int EnvServiceFc::Initialize(const std::map<ara::core::StringView, ara::core::St
         ara::log::LogError() << "EnvApp: Failed to initialize i2c pointer";
         return core::ErrorCode::kInitializeError;
     }
-    ara::log::LogDebug() << "EnvApp: Initialized i2c pointer";
     ara::log::LogDebug() << "EnvApp: init Complete";
     if (bme->Init(std::move(i2c)) != core::ErrorCode::kOk) {
         ara::log::LogWarn() << "EnvApp: Failed to initialize BME280 sensor";
@@ -80,6 +79,7 @@ int EnvServiceFc::Initialize(const std::map<ara::core::StringView, ara::core::St
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
         res = this->temp_->Initialize(529, std::bind(&EnvServiceFc::TempRxCallback,
             this, std::placeholders::_1), std::make_unique<com::soc::StreamIpcSocket>());
+        ara::log::LogInfo() << "Cant connect to temp by id:529, try num: " << std::to_string(i);
         i++;
     } while (res != core::ErrorCode::kOk && i < 6);
     if (res != core::ErrorCode::kOk) {
@@ -135,18 +135,15 @@ int EnvServiceFc::LoadTempConfig(const std::map<ara::core::StringView, ara::core
     return srp::core::ErrorCode::kOk;
 }
 
-int EnvServiceFc::Run(const std::stop_token& token) {
-    ara::log::LogDebug() << "Leci run";
-
-    while (!token.stop_requested()) {
-        ara::log::LogDebug() << "petla";
-        auto start = std::chrono::high_resolution_clock::now();
-        auto pressValue = this->bme->getPressure();
-        auto tempValue = this->bme->getTemperature();
-        auto humValue = this->bme->getHumidity();
+void EnvServiceFc::Bme280Loop(const std::stop_token& token) {
+     while (!token.stop_requested()) {
+        const auto start = std::chrono::high_resolution_clock::now();
+        const auto pressValue = this->bme->getPressure();
+        const auto tempValue = this->bme->getTemperature();
+        const auto humValue = this->bme->getHumidity();
         if (pressValue.has_value() && tempValue.has_value() && humValue.has_value()) {
             ara::log::LogDebug() << "Receive new Pressure: " << pressValue.value()
-            << " temp: " << tempValue.value() << " hum: " << humValue.value();
+                                    << " temp: " << tempValue.value() << " hum: " << humValue.value();
             this->service_ipc.newBME280Event.Update({tempValue.value(), humValue.value(), pressValue.value()});
             this->service_udp.newBME280Event.Update({tempValue.value(), humValue.value(), pressValue.value()});
         } else {
@@ -159,27 +156,44 @@ int EnvServiceFc::Run(const std::stop_token& token) {
             core::condition::wait_for(std::chrono::milliseconds(kBME280_delay_ms) - duration, token);  // 1 Hz
         }
     }
+}
+
+int EnvServiceFc::Run(const std::stop_token& token) {
+    ara::log::LogDebug() << "Leci run";
+
+    Bme280Loop(token);
+
     service_ipc.StopOffer();
     service_udp.StopOffer();
     return core::ErrorCode::kOk;
 }
 
 void EnvServiceFc::TempRxCallback(const std::vector<srp::mw::temp::TempReadHdr>& data) {
+    auto updateEvents = [](auto& ipcEv, auto& udpEv, int16_t val) {
+        ipcEv.Update(val);
+        udpEv.Update(val);
+    };
     for (auto &hdr : data) {
+        const auto& sensorName = sensorIdsToPaths[hdr.actuator_id].first;
         const int16_t value = static_cast<int16_t>(hdr.value * 10);
-        ara::log::LogDebug() << "Receive temp id: " << hdr.actuator_id << ", name: "
-                            << sensorIdsToPaths[hdr.actuator_id].first << ", temp: " << static_cast<float>(value/10);
-        if (sensorIdsToPaths[hdr.actuator_id].first == "board_temp_1") {
-            this->service_ipc.newBoardTempEvent_1.Update(value);
-            this->service_udp.newBoardTempEvent_1.Update(value);
-        } else if (sensorIdsToPaths[hdr.actuator_id].first == "board_temp_2") {
-            this->service_ipc.newBoardTempEvent_2.Update(value);
-            this->service_udp.newBoardTempEvent_2.Update(value);
-        } else if (sensorIdsToPaths[hdr.actuator_id].first == "board_temp_3") {
-            this->service_ipc.newBoardTempEvent_3.Update(value);
-            this->service_udp.newBoardTempEvent_3.Update(value);
-        } else {
-            ara::log::LogWarn() << "ID spoza zakresu:" << hdr.actuator_id;
+
+        ara::log::LogDebug() << "Receive temp id: " << hdr.actuator_id
+                             << ", name: " << sensorName
+                             << ", temp: " << (static_cast<float>(value) / 10.0f);
+
+        switch (sensorName) {
+        case "board_temp_1":
+            updateEvents(this->service_ipc.newBoardTempEvent_1, this->service_udp.newBoardTempEvent_1, value);
+            break;
+        case "board_temp_2":
+            updateEvents(this->service_ipc.newBoardTempEvent_2, this->service_udp.newBoardTempEvent_2, value);
+            break;
+        case "board_temp_3":
+            updateEvents(this->service_ipc.newBoardTempEvent_3, this->service_udp.newBoardTempEvent_3, value);
+            break;
+        default:
+            ara::log::LogWarn() << "ID spoza zakresu: " << hdr.actuator_id;
+            break;
         }
     }
 }
