@@ -1,0 +1,41 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+
+
+cc_library(
+    name="KalmanFilter_lib",
+    srcs = [
+        "KalmanFilter.cpp",
+        "KalmanFilterR7.cpp",
+    ],
+    hdrs = [
+        "KalmanFilter.h",
+        "KalmanFilterR7.h",
+    ],
+    deps = [
+        "//core/apogee:basic_matrix_lib",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+
+cc_library(
+    name = "basic_matrix_lib",
+    hdrs = [
+        "Matrix.h",
+    ],
+    srcs = [
+        "Matrix.cpp"
+    ],
+)
+
+cc_library(
+    name = "apogee_lib",
+    hdrs = [
+        "ApogeeDetector.h",
+    ],
+    deps = [
+        "//core/apogee:KalmanFilter_lib",
+        "//core/apogee:basic_matrix_lib",
+    ],
+    visibility = ["//visibility:public"],
+)

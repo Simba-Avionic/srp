@@ -50,3 +50,13 @@ def include_gtest_mock():
         sha256 = "755f9a39bc7205f5a0c428e920ddad092c33c8a1b46997def3f1d4a82aded6e1",
         urls = ["https://github.com/google/googletest/archive/5ab508a01f9eb089207ee87fd547d290da39d015.zip"],
     )
+
+
+def include_simulation_data():
+    http_archive(
+        name = "simulation_data_apogee",
+        url = "https://github.com/Simba-Avionic/srp-common/releases/download/v1.0/data.zip",
+        integrity = "sha256-1vPb5VyAvPpXCEAbIfftT7OJgjA9yYpdkZSrbALR3Jw=", 
+        build_file = "//bazel/libs:apogee_simulation_data.BUILD",
+        strip_prefix = "data",
+    )
