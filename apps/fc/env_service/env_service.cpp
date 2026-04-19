@@ -181,19 +181,14 @@ void EnvServiceFc::TempRxCallback(const std::vector<srp::mw::temp::TempReadHdr>&
                              << ", name: " << sensorName
                              << ", temp: " << (static_cast<float>(value) / 10.0f);
 
-        switch (sensorName) {
-        case "board_temp_1":
+        if (sensorName == "board_temp_1") {
             updateEvents(this->service_ipc.newBoardTempEvent_1, this->service_udp.newBoardTempEvent_1, value);
-            break;
-        case "board_temp_2":
+        } else if (sensorName == "board_temp_2") {
             updateEvents(this->service_ipc.newBoardTempEvent_2, this->service_udp.newBoardTempEvent_2, value);
-            break;
-        case "board_temp_3":
+        } else if (sensorName == "board_temp_3") {
             updateEvents(this->service_ipc.newBoardTempEvent_3, this->service_udp.newBoardTempEvent_3, value);
-            break;
-        default:
+        } else {
             ara::log::LogWarn() << "ID spoza zakresu: " << hdr.actuator_id;
-            break;
         }
     }
 }

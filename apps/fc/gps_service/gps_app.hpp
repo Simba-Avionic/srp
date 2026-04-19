@@ -28,6 +28,7 @@
 
 namespace srp {
 namespace apps {
+using timepoint = std::chrono::high_resolution_clock::time_point;
 
 class GPSApp final : public ara::exec::AdaptiveApplication {
  private:
@@ -36,17 +37,17 @@ class GPSApp final : public ara::exec::AdaptiveApplication {
   std::unique_ptr<core::uart::IUartDriver> uart_;
   gpio::GPIOController gpio_;
 
-  std::chrono::high_resolution_clock::time_point last_frame;
+  int64_t GetTimeDelata(const timepoint last_frame_time) const;
 
-  int64_t GetTimeDelata() const;
-
+  timepoint last_frame;
   uint32_t warn_num;
   bool first_frame_detected;
+  std::mutex mtx_;
 
  public:
   static std::optional<GPSDataStructure> ParseGPSData(const std::vector<uint8_t>& data);
   void Init(std::unique_ptr<core::uart::IUartDriver> uart);
-  static GPSDataStructure GetSomeIPData(const core::GPS_DATA_T& data) const noexcept;
+  static GPSDataStructure GetSomeIPData(const core::GPS_DATA_T& data);
   /**
    * @brief This function is called to launch the application
    *

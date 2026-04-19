@@ -26,11 +26,8 @@ namespace envService {
 namespace {
     static constexpr uint8_t PRESS_SENSOR_ID =           10;
     static constexpr uint8_t D_PRESS_SENSOR_ID =         11;
-    static constexpr uint8_t kTensoSensorID =            12;
     static constexpr auto kPressureDelayMs =             100;
     static constexpr auto kDifferentialPressureDelayMs = 100;
-    static constexpr auto kTensoDelayMs =                1000;
-    static constexpr auto kTensoEnabled =                false;
 }  // namespace
 
 
@@ -157,11 +154,8 @@ void EnvService::GenericPressureLoop(
 
             uint16_t encodedVal = static_cast<uint16_t>(val * 100);
             eventIpc.Update(encodedVal);
-
-            if (sensorId == PRESS_SENSOR_ID) {
-                service_udp.SetTankPressure(encodedVal);
-                eventUdp.Update(encodedVal);
-            }
+            service_udp.SetTankPressure(encodedVal);
+            eventUdp.Update(encodedVal);
         } else {
             ara::log::LogWarn() << "Don't receive new " << label;
         }
@@ -194,41 +188,7 @@ int EnvService::Run(const std::stop_token& token) {
                             service_ipc.newDPressEvent,
                             service_udp.newDPressEvent);
     });
-    if (kTensoEnabled) {
-        std::jthread tenso_thread([this, token] {
-            while (!token.stop_requested()) {
-                auto start = std::chrono::high_resolution_clock::now();
-                auto pressValue = this->press_->GetValue(kTensoSensorID);
-
-                if (pressValue.has_value()) {
-                    float val = pressValue.value();
-
-                    std::ostringstream ss;
-                    ss << std::fixed << std::setprecision(2) << val;
-                    ara::log::LogDebug() << "Receive new tenso val: " << ss.str();
-
-                    service_ipc.newTensoEvent.Update(pressValue.value());
-                    service_udp.newTensoEvent.Update(pressValue.value());
-                } else {
-                    ara::log::LogWarn() << "Don't receive new tenso";
-                }
-
-                auto end = std::chrono::high_resolution_clock::now();
-                auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-                ara::log::LogDebug() <<"tenso loop taken: " << std::to_string(duration.count()) << "ms";
-
-                if (duration < std::chrono::milliseconds(kTensoDelayMs)) {
-                    core::condition::wait_for(std::chrono::milliseconds(kTensoDelayMs) - duration, token);
-                }
-            }
-        });
-    }
     core::condition::wait(token);
-    pressure_thread.request_stop();
-    differential_pressure_thread.request_stop();
-    if (kTensoEnabled) {
-        tenso_thread.request_stop();
-    }
 
     service_ipc.StopOffer();
     service_udp.StopOffer();

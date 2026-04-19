@@ -25,7 +25,7 @@ namespace {
   static constexpr auto kHeartBeatPinID = 3;
 }
 
-GPSDataStructure GPSApp::GetSomeIPData(const core::GPS_DATA_T& data) const noexcept {
+GPSDataStructure GPSApp::GetSomeIPData(const core::GPS_DATA_T& data) {
     GPSDataStructure someip_data;
     someip_data.latitude = data.latitude;
     someip_data.longitude = data.longitude;
@@ -56,9 +56,9 @@ std::optional<GPSDataStructure> GPSApp::ParseGPSData(const std::vector<uint8_t>&
   return someip_data;
 }
 
-int64_t GPSApp::GetTimeDelata() const {
+int64_t GPSApp::GetTimeDelata(const timepoint last_frame_time) const {
   auto now = std::chrono::high_resolution_clock::now();
-  return std::chrono::duration_cast<std::chrono::milliseconds>(now - last_frame).count();
+  return std::chrono::duration_cast<std::chrono::milliseconds>(now - last_frame_time).count();
 }
 
 int GPSApp::Run(const std::stop_token& token) {
@@ -73,12 +73,15 @@ int GPSApp::Run(const std::stop_token& token) {
   std::jthread gps_guard([this](const std::stop_token& t) {
     while (!t.stop_requested()) {
       core::condition::wait_for(std::chrono::milliseconds(100), t);
-      if (!first_frame_detected) {
-        continue;
-      }
-      if (GetTimeDelata() > KGps_expected_interval + kGps_freq_tolerance) {
-          ara::log::LogWarn() << "Missing GPS frame in row: " << std::to_string(warn_num);
-          warn_num +=1;
+      {
+        std::lock_guard<std::mutex> lock(mtx_);
+        if (!first_frame_detected) {
+          continue;
+        }
+        if (GetTimeDelata(last_frame) > KGps_expected_interval + kGps_freq_tolerance) {
+            ara::log::LogWarn() << "Missing GPS frame in row: " << std::to_string(warn_num);
+            warn_num +=1;
+        }
       }
     }
   });
@@ -89,25 +92,30 @@ int GPSApp::Run(const std::stop_token& token) {
     }
     auto res = ParseGPSData(data.value());
     if (res.has_value()) {
-      if (!first_frame_detected) {
-        first_frame_detected = true;
+      int64_t delta;
+      {
+        std::lock_guard<std::mutex> lock(mtx_);
+        if (!first_frame_detected) {
+          first_frame_detected = true;
+        }
+
+        delta = GetTimeDelata(last_frame);
+
+        last_frame = std::chrono::high_resolution_clock::now();
+        warn_num = 0;
       }
 
-      auto delta = GetTimeDelata();
       if (std::abs(delta - KGps_expected_interval) > kGps_freq_tolerance) {
         ara::log::LogWarn() << "GPS frequency deviation detected: interval = " << std::to_string(delta) << " ms";
       }
       ara::log::LogDebug() << "GPS frequency interval = " << std::to_string(delta) << " ms";
 
-      service_ipc->GPSStatusEvent.Update(res.value());
-      service_udp->GPSStatusEvent.Update(res.value());
-
-      last_frame = std::chrono::high_resolution_clock::now();
-      warn_num = 0;
+      service_ipc.GPSStatusEvent.Update(res.value());
+      service_udp.GPSStatusEvent.Update(res.value());
     }
   }
-  service_ipc->StopOffer();
-  service_udp->StopOffer();
+  service_ipc.StopOffer();
+  service_udp.StopOffer();
   uart_->Close();
   return 0;
 }
