@@ -31,10 +31,8 @@ namespace apps {
 
 class GPSApp final : public ara::exec::AdaptiveApplication {
  private:
-  const ara::core::InstanceSpecifier service_ipc_instance;
-  const ara::core::InstanceSpecifier service_udp_instance;
-  std::unique_ptr<apps::GPSServiceSkeleton> service_ipc;
-  std::unique_ptr<apps::GPSServiceSkeleton> service_udp;
+  apps::GPSServiceSkeleton service_ipc;
+  apps::GPSServiceSkeleton service_udp;
   std::unique_ptr<core::uart::IUartDriver> uart_;
   gpio::GPIOController gpio_;
 
@@ -42,10 +40,13 @@ class GPSApp final : public ara::exec::AdaptiveApplication {
 
   int64_t GetTimeDelata() const;
 
+  uint32_t warn_num;
+  bool first_frame_detected;
+
  public:
   static std::optional<GPSDataStructure> ParseGPSData(const std::vector<uint8_t>& data);
   void Init(std::unique_ptr<core::uart::IUartDriver> uart);
-  static GPSDataStructure GetSomeIPData(const core::GPS_DATA_T& data);
+  static GPSDataStructure GetSomeIPData(const core::GPS_DATA_T& data) const noexcept;
   /**
    * @brief This function is called to launch the application
    *
