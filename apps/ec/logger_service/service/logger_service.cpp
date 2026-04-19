@@ -29,13 +29,14 @@ namespace {
   static constexpr auto kUdp_service_path_name = "srp/apps/FileLoggerApp/logService_udp";
   static constexpr auto kIpc_service_path_name = "srp/apps/FileLoggerApp/logService_ipc";
   static constexpr auto kSysStat_service_path_name = "srp/apps/FileLoggerApp/SysStatService";
+  static constexpr auto kPrimer_service_path_name = "srp/apps/FileLoggerApp/PrimerService";
+  static constexpr auto kServo_service_path_name = "srp/apps/FileLoggerApp/ServoService";
+  static constexpr auto kEngine_service_path_name = "srp/apps/FileLoggerApp/EngineService";
   static constexpr auto kFile_did_path_name = "/srp/apps/FileLoggerApp/logger_did";
   static constexpr auto kLogs_on = 1;
   static constexpr auto kLogs_off = 0;
   static constexpr auto kHeartBeatPinID = 2;
 }  // namespace
-
-
 void LoggerService::SaveLoop(const std::stop_token& token,
             std::shared_ptr<core::timestamp::TimestampController> timestamp) {
   csv::CSVDriver writer_;
@@ -111,8 +112,15 @@ LoggerService::~LoggerService() {}
 LoggerService::LoggerService():
       env_service_proxy{ara::core::InstanceSpecifier{kEnv_service_path_name}},
       stat_service_proxy{ara::core::InstanceSpecifier{kSysStat_service_path_name}},
-      env_service_handler{nullptr}, save_thread_{nullptr},
+      primer_service_proxy{ara::core::InstanceSpecifier{kPrimer_service_path_name}},
+      servo_service_proxy{ara::core::InstanceSpecifier{kServo_service_path_name}},
+      engine_service_proxy{ara::core::InstanceSpecifier{kEngine_service_path_name}},
+      env_service_handler{nullptr},
+      save_thread_{nullptr},
       stat_service_handler{nullptr},
+      primer_service_handler{nullptr},
+      servo_service_handler{nullptr},
+      engine_service_handler{nullptr},
       did_instance{kFile_did_path_name},
       timestamp_{std::make_shared<core::timestamp::TimestampController>()} {
   auto builder = Builder([this](uint8_t status) { this->start_func_handler(status); });
@@ -147,8 +155,70 @@ void LoggerService::start_func_handler(const std::uint8_t status) {
   }
 }
 
-
 void LoggerService::SomeIpInit() {
+  this->engine_service_proxy.StartFindService([this](auto handler) {
+    this->engine_service_handler = handler;
+    engine_service_handler->CurrentMode.Subscribe(1, [this](const uint8_t status) {
+      engine_service_handler->CurrentMode.SetReceiveHandler([this] () {
+        auto res = engine_service_handler->CurrentMode.GetNewSamples();
+        if (!res.HasValue()) {
+          return;
+        }
+        this->data.SetEngineMode(res.Value());
+      });
+    });
+    engine_service_handler->NewVentValveStatus.Subscribe(1, [this](const uint8_t status) {
+      engine_service_handler->NewVentValveStatus.SetReceiveHandler([this] () {
+        auto res = engine_service_handler->NewVentValveStatus.GetNewSamples();
+        if (!res.HasValue()) {
+          return;
+        }
+        this->data.SetNewVentValveStatus(res.Value());
+      });
+    });
+  });
+  this->servo_service_proxy.StartFindService([this](auto handler) {
+    this->servo_service_handler = handler;
+    servo_service_handler->ServoStatusEvent.Subscribe(1, [this](const uint8_t status) {
+      servo_service_handler->ServoStatusEvent.SetReceiveHandler([this] () {
+        auto res = servo_service_handler->ServoStatusEvent.GetNewSamples();
+        if (!res.HasValue()) {
+          return;
+        }
+        this->data.SetServoStatus(res.Value());
+      });
+    });
+    servo_service_handler->ServoDumpStatusEvent.Subscribe(1, [this](const uint8_t status) {
+      servo_service_handler->ServoDumpStatusEvent.SetReceiveHandler([this] () {
+        auto res = servo_service_handler->ServoDumpStatusEvent.GetNewSamples();
+        if (!res.HasValue()) {
+          return;
+        }
+        this->data.SetServoDumpStatus(res.Value());
+      });
+    });
+    servo_service_handler->ServoVentStatusEvent.Subscribe(1, [this](const uint8_t status){
+      servo_service_handler->ServoVentStatusEvent.SetReceiveHandler([this] () {
+        auto res = servo_service_handler->ServoVentStatusEvent.GetNewSamples();
+        if (!res.HasValue()) {
+          return;
+        }
+        this->data.SetServoVentStatus(res.Value());
+      });
+    });
+  });
+  this->primer_service_proxy.StartFindService([this](auto handler) {
+    this->primer_service_handler = handler;
+    primer_service_handler->primeStatusEvent.Subscribe(1, [this](const uint8_t status) {
+      primer_service_handler->primeStatusEvent.SetReceiveHandler([this] () {
+        auto res = primer_service_handler->primeStatusEvent.GetNewSamples();
+        if (!res.HasValue()) {
+          return;
+        }
+        this->data.SetPrimerStatus(res.Value());
+      });
+    });
+  });
   this->stat_service_proxy.StartFindService([this](auto handler) {
     this->stat_service_handler = handler;
     stat_service_handler->NewSystemUsage.Subscribe(1, [this](const uint8_t status) {
@@ -190,6 +260,33 @@ void LoggerService::SomeIpInit() {
         this->data.SetTemp3(res.Value());
       });
     });
+    env_service_handler->newBoardTempEvent1.Subscribe(1, [this](const uint8_t status) {
+      env_service_handler->newBoardTempEvent1.SetReceiveHandler([this] () {
+        auto res = env_service_handler->newBoardTempEvent1.GetNewSamples();
+        if (!res.HasValue()) {
+          return;
+        }
+        this->data.SetBoardTemp1(res.Value());
+      });
+    });
+    env_service_handler->newBoardTempEvent2.Subscribe(1, [this](const uint8_t status) {
+      env_service_handler->newBoardTempEvent2.SetReceiveHandler([this] () {
+        auto res = env_service_handler->newBoardTempEvent2.GetNewSamples();
+        if (!res.HasValue()) {
+          return;
+        }
+        this->data.SetBoardTemp2(res.Value());
+      });
+    });
+    env_service_handler->newBoardTempEvent3.Subscribe(1, [this](const uint8_t status) {
+      env_service_handler->newBoardTempEvent3.SetReceiveHandler([this] () {
+        auto res = env_service_handler->newBoardTempEvent3.GetNewSamples();
+        if (!res.HasValue()) {
+          return;
+        }
+        this->data.SetBoardTemp3(res.Value());
+      });
+    });
     env_service_handler->newDPressEvent.Subscribe(1, [this](const uint8_t status) {
       env_service_handler->newDPressEvent.SetReceiveHandler([this] () {
         auto res = env_service_handler->newDPressEvent.GetNewSamples();
@@ -222,4 +319,3 @@ void LoggerService::SomeIpInit() {
 
 }  // namespace logger
 }  // namespace srp
-

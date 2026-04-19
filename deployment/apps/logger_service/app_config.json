@@ -3,6 +3,9 @@
         "deployment/system_definition/someip/logger_service/service.json",
         "deployment/system_definition/someip/env_service/service.json",
         "deployment/system_definition/someip/sys_stat_service/service.json",
+        "deployment/system_definition/someip/prim_service/service.json",
+        "deployment/system_definition/someip/servo_service/service.json",
+        "deployment/system_definition/someip/engine_service/service.json",
         "deployment/system_definition/diag/jobs/file_logger/file_logger_did.json"
     ],
     "package": "srp.apps",
@@ -68,6 +71,21 @@
                 },
                 {
                     "name": "SysStatService as SysStatService",
+                    "on": "ipc",
+                    "instance": 2
+                },
+                {
+                    "name": "PrimerService as PrimerService",
+                    "on": "ipc",
+                    "instance": 2
+                },
+                {
+                    "name": "ServoService as ServoService",
+                    "on": "ipc",
+                    "instance": 2
+                },
+                {
+                    "name": "EngineService as EngineService",
                     "on": "ipc",
                     "instance": 2
                 }

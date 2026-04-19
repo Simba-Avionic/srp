@@ -17,6 +17,7 @@ filegroup(
         "//deployment/apps/engine_app:__subpackages__",
         "//mw/i2c_service:__subpackages__",
         "//deployment/apps/fc/radio_app:__subpackages__",
+        "//deployment/apps/logger_service:__subpackages__",
         ],
 )
 
