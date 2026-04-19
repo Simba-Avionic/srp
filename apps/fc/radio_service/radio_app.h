@@ -26,6 +26,7 @@
 #include "apps/fc/radio_service/telemetry_provider.hpp"
 #include "apps/fc/radio_service/someip_controller.hpp"
 #include "apps/fc/radio_service/radio_controller.hpp"
+#include "apps/fc/radio_service/gs_hb_guider.hpp"
 
 
 namespace srp {
@@ -39,6 +40,7 @@ class RadioApp : public ara::exec::AdaptiveApplication {
   radio::SomeIPController someip_controller;
   radio::MavRadioController radio_controller;
   gpio::GPIOController gpio_;
+  radio::GSHeartbeatGuard heartbeat_controller;
 
   timepoint last_received_hb;
   void GSHeartbeatGuardLoop(const std::stop_token& t);

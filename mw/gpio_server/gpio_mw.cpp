@@ -16,7 +16,8 @@
 #include <iostream>
 #include <utility>
 #include <sstream>
-#include<algorithm>
+#include <algorithm>
+#include <mutex>  // NOLINT
 
 #include "gpio_mw.hpp"
 #include "mw/gpio_server/data/enums.hpp"
@@ -76,22 +77,25 @@ std::vector<uint8_t> GPIOMWService::RxCallback(const std::string& ip, const std:
             if (hdr.value().value == 0) {
                 return {core::ErrorCode::kOk};
             }
-            auto it = pin_expire.find(hdr.value().pin_id);
-            if (it == pin_expire.end()) {
-                ExpiredPinCB cfg;
-                cfg.disable_tp = std::chrono::high_resolution_clock::now()
+            {
+                std::lock_guard<std::mutex> lock(pin_expire_mutex);
+                auto expire_it = pin_expire.find(hdr.value().pin_id);
+                if (expire_it == pin_expire.end()) {
+                    ExpiredPinCB cfg;
+                    cfg.disable_tp = std::chrono::high_resolution_clock::now()
+                                            + std::chrono::milliseconds(hdr.value().time_period);
+                    cfg.infinite_active = (hdr.value().time_period == 0);
+                    pin_expire[hdr.value().pin_id] = cfg;
+                    return {core::ErrorCode::kOk};
+                }
+                auto new_time = std::chrono::high_resolution_clock::now()
                                         + std::chrono::milliseconds(hdr.value().time_period);
-                cfg.infinite_active = (hdr.value().time_period == 0);
-                pin_expire[hdr.value().pin_id] =  cfg;
-                return {core::ErrorCode::kOk};
-            }
-            auto new_time = std::chrono::high_resolution_clock::now()
-                                    + std::chrono::milliseconds(hdr.value().time_period);
-            it->second.disable_tp = std::max(it->second.disable_tp, new_time);
-            if (hdr.value().time_period == 0) {
-                it->second.infinite_active = true;
-            } else if (hdr.value().force_time_period) {
-                it->second.infinite_active = false;
+                expire_it->second.disable_tp = std::max(expire_it->second.disable_tp, new_time);
+                if (hdr.value().time_period == 0) {
+                    expire_it->second.infinite_active = true;
+                } else if (hdr.value().force_time_period) {
+                    expire_it->second.infinite_active = false;
+                }
             }
             return {core::ErrorCode::kOk};
         }
