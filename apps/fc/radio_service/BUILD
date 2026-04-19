@@ -12,10 +12,12 @@ cc_library(
     ],
     srcs = [
         "radio_app.cc",
-         "main.cc",
+        "main.cc",
+        "gs_hb_guider.cpp",
     ],
     hdrs = [
         "radio_app.h",
+        "gs_hb_guider.hpp",
     ],
     visibility = ["//visibility:public"],
 )
@@ -35,6 +37,7 @@ cc_library(
         "//deployment/apps/fc/radio_app:someip_lib",
         "//apps/fc/recovery_service:ParachuteController",
         "//apps/ec/primer_service/controller:primer_controller",
+        "//apps/ec/engine_service:vent_controller",
     ],
 )
 

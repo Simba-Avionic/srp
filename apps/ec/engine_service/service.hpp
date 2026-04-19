@@ -16,6 +16,7 @@
 
 #include "srp/apps/EngineServiceSkeleton.h"
 #include "core/rocket_machine_state/rocket_state.hpp"
+#include "apps/ec/engine_service/vent_controller.hpp"
 
 namespace srp {
 namespace apps {
@@ -25,11 +26,13 @@ namespace service {
 class MyEngineServiceSkeleton: public EngineServiceSkeleton {
  private:
   std::shared_ptr<core::rocketState::RocketStateController> state_ctr_;
+  std::shared_ptr<engine::VentController> vent_ctr_;
  public:
   explicit MyEngineServiceSkeleton(ara::core::InstanceSpecifier instance);
  protected:
   ara::core::Result<bool> SetMode(const std::uint8_t& in_parm) override;
   ara::core::Result<std::uint8_t> GetMode() override;
+  ara::core::Result<void> SetVentValve(const std::uint8_t& in_parm) override;
 };
 
 }  // namespace service

@@ -17,6 +17,7 @@
 #include "simba/simba.h"
 #include "ara/log/log.h"
 #include "core/common/condition.h"
+#include "apps/ec/engine_service/vent_controller.hpp"
 
 namespace srp {
 namespace apps {
@@ -28,10 +29,6 @@ namespace {
   static constexpr auto kHeartBeatPinID = 2;
   static constexpr auto kHeartbeat_time_ms = 500;
 
-  static constexpr auto kHbDelayWarning = 1.1;
-  static constexpr auto kDuration_from_last_hb_to_conn_lost_ms = 2 * 60 * 1000;
-  static constexpr auto kDuration_from_last_hb_to_abort_ms = 15 * 60 * 1000;
-
   static constexpr auto kService_ipc_instance =       "srp/apps/RadioApp/RadioService_ipc";
   static constexpr auto kService_udp_instance =       "srp/apps/RadioApp/RadioService_udp";
 }  // namespace
@@ -41,10 +38,10 @@ namespace {
 void RadioApp::WaitUntillTimeEnd(const timepoint& start, const uint32_t req_loop_time,
                                                   const std::stop_token& token) {
   auto end = std::chrono::high_resolution_clock::now();
-  auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-
-  if (std::chrono::milliseconds(req_loop_time) > duration) {
-      core::condition::wait_for(std::chrono::milliseconds(req_loop_time) - duration, token);
+  auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+  auto target = std::chrono::milliseconds(req_loop_time);
+  if (target > elapsed) {
+      core::condition::wait_for(target - elapsed, token);
   }
 }
 
@@ -98,10 +95,24 @@ void RadioApp::HBHangleActuators(const uint8_t values) {
   auto eb_state = event_data->GetComputerState(BoardType_e::EB);
 
   if (eb_state == RocketState_t::ARM || (kStatic_test_mode && eb_state == RocketState_t::DISARM)) {
-    update_valve(SIMBA_GS_FLAGS_VENT_VALVE, SIMBA_ACTUATOR_FLAGS_VENT_VALVE, "VENT_VALVE",
-                  [&](uint8_t val) { servo_handler->SetVentServoValue(val); });
+    // Dump Valve
     update_valve(SIMBA_GS_FLAGS_DUMP_VALVE, SIMBA_ACTUATOR_FLAGS_DUMP_VALVE, "DUMP_VALVE",
                   [&](uint8_t val) { servo_handler->SetDumpValue(val); });
+
+    // Vent Valve
+    {
+      auto eng_handler = someip_controller.GetEngineServiceHandler();
+      uint8_t requested = ((values & SIMBA_GS_FLAGS_VENT_VALVE) != 0);
+      bool current = (event_data->GetActuatorStates() & SIMBA_ACTUATOR_FLAGS_VENT_VALVE) != 0;
+      if (eng_handler) {
+        auto to_set = (requested == 0) ? engine::VentState_e::CLOSE : engine::VentState_e::OPENING;
+        eng_handler->SetVentValve(static_cast<uint8_t>(to_set));
+      }
+      if (requested != current) {
+        ara::log::LogInfo() << "Changing Vent Valve to " << (requested ? "OPENING" : "OFF");
+        event_data->SetActuatorState(static_cast<SIMBA_ACTUATOR_FLAGS>(SIMBA_ACTUATOR_FLAGS_VENT_VALVE), requested);
+      }
+    }
   }
 
   // TODO(matikrajek42@gmail.com) Add missing Cameras handler
@@ -161,21 +172,13 @@ void RadioApp::HBHangleState(const uint8_t values) {
 }
 
 void RadioApp::OnGSHEARTBEAT(const mavlink_message_t& msg) {
-  auto now = std::chrono::high_resolution_clock::now();
-  auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(now - last_received_hb).count();
-  if (duration > (1000 * kHbDelayWarning)) {
-    ara::log::LogWarn() << "GS Heartbeat received with duration: " << std::to_string(duration);
-  } else {
-    ara::log::LogDebug() << "GS Heartbeat received with duration: " << std::to_string(duration);
-  }
-
-  last_received_hb = now;
+  heartbeat_controller.OnNewHbCallback();
 
   auto timestamp = mavlink_msg_simba_gs_heartbeat_get_timestamp(&msg);
   auto values = mavlink_msg_simba_gs_heartbeat_get_values(&msg);
   ara::log::LogInfo() << "GS Heartbeat: ts="
-                      + std::to_string(static_cast<int64_t>(timestamp))
-                      + " flags=" + std::to_string(static_cast<int>(values));
+                      << std::to_string(static_cast<int64_t>(timestamp))
+                      << " flags=" << std::to_string(static_cast<int>(values));
 
   HBHangleState(values);
 
@@ -197,32 +200,18 @@ void RadioApp::RxMsgCallback(const mavlink_message_t& msg) {
   }
 }
 
-void RadioApp::GSHeartbeatGuardLoop(const std::stop_token& t) {
-  auto broadcast_state = [this](RocketState_t state, const std::string& reason) {
-      ara::log::LogError() << "GS Connection Guard: " << reason << " -> Switching to "
-                            << core::rocketState::to_string(state);
-
-      auto raw_state = static_cast<uint8_t>(state);
-      auto engine_handler = someip_controller.GetEngineServiceHandler();
-      auto main_handler = someip_controller.GetMainServiceHandler();
-      if (engine_handler) engine_handler->SetMode(raw_state);
-      if (main_handler)   main_handler->setMode(raw_state);
-    };
-    while (!t.stop_requested()) {
-      auto now = std::chrono::high_resolution_clock::now();
-      auto diff = std::chrono::duration_cast<std::chrono::milliseconds>(now - last_received_hb).count();
-
-      if (diff >= kDuration_from_last_hb_to_abort_ms) {
-          broadcast_state(RocketState_t::ABORT, "Timeout ABORT");
-      } else if (diff >= kDuration_from_last_hb_to_conn_lost_ms) {
-          broadcast_state(RocketState_t::CONNECTION_LOST, "Timeout CONN_LOST");
-      }
-      core::condition::wait_for(std::chrono::milliseconds(100), t);
-  }
-}
-
 int RadioApp::Run(const std::stop_token& token) {
   radio_controller.Init([this](const mavlink_message_t& msg) { RxMsgCallback(msg); }, token);
+  heartbeat_controller.Init([this](const RocketState_t state) {
+    auto engine_handler = someip_controller.GetEngineServiceHandler();
+    auto main_handler = someip_controller.GetMainServiceHandler();
+    if (engine_handler) {
+      engine_handler->SetMode(static_cast<uint8_t>(state));
+    }
+    if (main_handler) {
+      main_handler->setMode(static_cast<uint8_t>(state));
+    }
+  });
   ara::log::LogDebug() << "RadioApp Run starting threads";
 
   std::jthread transmitting_thread([this](const std::stop_token& t) {
