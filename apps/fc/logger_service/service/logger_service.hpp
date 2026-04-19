@@ -17,6 +17,7 @@
 #include <memory>
 
 #include "apps/fc/logger_service/data_type.hpp"
+#include "apps/fc/logger_service/service/logger_did.hpp"
 #include "apps/fc/logger_service/service/service.hpp"
 #include "ara/exec/adaptive_application.h"
 #include "core/timestamp/timestamp_driver.hpp"
@@ -33,12 +34,15 @@ class LoggerService final : public ara::exec::AdaptiveApplication {
   std::shared_ptr<env::EnvAppFcHandler> env_service_handler_;
   std::shared_ptr<apps::FcSysStatServiceHandler> stat_service_handler_;
   Data_t data_;
+  std::unique_ptr<FileLoggerDID> logger_did_;
+  const ara::core::InstanceSpecifier did_instance_;
   std::shared_ptr<core::timestamp::TimestampController> timestamp_;
 
   std::atomic<uint8_t> save_state_{0};
   std::shared_ptr<std::jthread> save_thread_;
 
   std::unique_ptr<apps::MyFcFileLoggerAppSkeleton> service_ipc_;
+  std::unique_ptr<apps::MyFcFileLoggerAppSkeleton> service_udp_;
 
   void SaveLoop(const std::stop_token& token);
   void StartFuncHandler(std::uint8_t status);

@@ -14,6 +14,7 @@
 #include <utility>
 
 #include "ara/log/log.h"
+#include "apps/fc/logger_service/service/logger_builder.hpp"
 #include "core/common/condition.h"
 #include "core/csvdriver/csvdriver.h"
 #include "core/time/sys_time.hpp"
@@ -26,8 +27,10 @@ constexpr auto kLoggerFilename = "_fc_log.csv";
 constexpr auto kLoggerFilenamePrefix = "/home/root/";
 constexpr std::uint16_t kSaveIntervalMs = 5000;
 constexpr auto kEnvServicePathName = "srp/env/EnvAppFc/envServiceFc_ipc";
+constexpr auto kUdpServicePathName = "srp/apps/FcFileLoggerApp/logService_udp";
 constexpr auto kIpcServicePathName = "srp/apps/FcFileLoggerApp/logService_ipc";
 constexpr auto kSysStatServicePathName = "srp/apps/FcSysStatService/FcSysStatService_ipc";
+constexpr auto kFileDidPathName = "/srp/apps/FcFileLoggerApp/logger_did";
 constexpr std::uint8_t kLogsOn = 1;
 constexpr std::uint8_t kLogsOff = 0;
 }  // namespace
@@ -37,11 +40,17 @@ LoggerService::LoggerService()
       stat_service_proxy_{ara::core::InstanceSpecifier{kSysStatServicePathName}},
       env_service_handler_{nullptr},
       stat_service_handler_{nullptr},
+      did_instance_{kFileDidPathName},
       timestamp_{std::make_shared<core::timestamp::TimestampController>()},
       save_thread_{nullptr} {
-  service_ipc_ = std::make_unique<apps::MyFcFileLoggerAppSkeleton>(
-      ara::core::InstanceSpecifier{kIpcServicePathName},
-      [this](std::uint8_t status) { StartFuncHandler(status); });
+  Builder builder([this](std::uint8_t status) { StartFuncHandler(status); });
+  auto result = builder.SetLoggerDID(did_instance_)
+                    .SetLoggerIPC(kIpcServicePathName)
+                    .SetLoggerUDP(kUdpServicePathName)
+                    .Build();
+  logger_did_ = std::move(result.logger_did);
+  service_ipc_ = std::move(result.service_ipc);
+  service_udp_ = std::move(result.service_udp);
 
   if (!timestamp_->Init()) {
     ara::log::LogError() << "LoggerService: failed to initialize timestamp controller";
@@ -54,7 +63,9 @@ LoggerService::~LoggerService() {
 
 int LoggerService::Initialize(
     const std::map<ara::core::StringView, ara::core::StringView> /*parms*/) {
+  logger_did_->Offer();
   service_ipc_->StartOffer();
+  service_udp_->StartOffer();
   SomeIpInit();
   return 0;
 }
@@ -62,11 +73,14 @@ int LoggerService::Initialize(
 int LoggerService::Run(const std::stop_token& token) {
   while (!token.stop_requested()) {
     service_ipc_->LoggingState.Update(save_state_.load());
+    service_udp_->LoggingState.Update(save_state_.load());
     core::condition::wait_for(std::chrono::milliseconds(1000), token);
   }
 
   StartFuncHandler(0);
   service_ipc_->StopOffer();
+  service_udp_->StopOffer();
+  logger_did_->StopOffer();
   return 0;
 }
 

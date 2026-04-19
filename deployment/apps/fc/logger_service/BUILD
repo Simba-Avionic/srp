@@ -19,6 +19,7 @@ filegroup(
         "//deployment/system_definition/someip/fc/logger_service:service_someipy",
         "//deployment/apps/fc/env_service:instance",
         "//deployment/apps/fc/system_stat_service:instance",
+        "//deployment/system_definition/diag/jobs/file_logger:file_logger_job",
     ],
     visibility = ["//visibility:public"],
 )

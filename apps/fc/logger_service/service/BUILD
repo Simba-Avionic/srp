@@ -1,6 +1,8 @@
 cc_binary(
     name = "logger_service_fc",
     srcs = [
+        "logger_builder.hpp",
+        "logger_did.hpp",
         "logger_service.cpp",
         "logger_service.hpp",
         "main.cpp",
@@ -16,5 +18,6 @@ cc_binary(
         "//core/timestamp:timestamp_controller",
         "//deployment/apps/fc/logger_service:ara",
         "//deployment/apps/fc/logger_service:someip_lib",
+        "@srp_platform//ara/diag:uds_lib",
     ],
 )

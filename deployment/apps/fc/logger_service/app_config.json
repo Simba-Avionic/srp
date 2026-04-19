@@ -2,7 +2,8 @@
     "include": [
         "deployment/system_definition/someip/fc/logger_service/service.json",
         "deployment/system_definition/someip/fc/env_service/service.json",
-        "deployment/system_definition/someip/fc/sys_stat_service/service.json"
+        "deployment/system_definition/someip/fc/sys_stat_service/service.json",
+        "deployment/system_definition/diag/jobs/file_logger/file_logger_did.json"
     ],
     "package": "srp.apps",
     "adaptive_application": {
@@ -44,9 +45,19 @@
             },
             "provide": [
                 {
+                    "name": "FcFileLoggerApp as logService_udp",
+                    "on": "udp",
+                    "port": "10004",
+                    "instance": 1
+                },
+                {
                     "name": "FcFileLoggerApp as logService_ipc",
                     "on": "ipc",
                     "instance": 2
+                },
+                {
+                    "name": "file_logger_did as logger_did",
+                    "on": "diag"
                 }
             ],
             "require": [
