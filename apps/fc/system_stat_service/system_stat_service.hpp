@@ -28,6 +28,8 @@ class FcSystemStatService final : public ara::exec::AdaptiveApplication {
   apps::FcSysStatServiceSkeleton service_ipc;
   apps::FcSysStatServiceSkeleton service_udp;
 
+  std::optional<apps::FcSysStatType> GetSysStats() const;
+
  protected:
   /**
    * @brief This function is called to launch the application

@@ -28,6 +28,8 @@ class SystemStatService final : public ara::exec::AdaptiveApplication {
   apps::SysStatServiceSkeleton service_ipc;
   apps::SysStatServiceSkeleton service_udp;
 
+  std::optional<apps::SysStatType> GetSysStats() const;
+
  protected:
   /**
    * @brief This function is called to launch the application

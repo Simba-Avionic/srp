@@ -17,6 +17,7 @@
 #include <map>
 #include <memory>
 #include <utility>
+#include <thread>  // NOLINT
 
 #include "mw/temp/controller/temp_controller.h"
 #include "ara/exec/adaptive_application.h"
@@ -37,9 +38,13 @@ class EnvServiceFc final : public ara::exec::AdaptiveApplication {
 
   env::EnvAppFcSkeleton service_ipc;
   env::EnvAppFcSkeleton service_udp;
+
+  std::jthread bme_thread;
+
   int LoadTempConfig(
     const std::map<ara::core::StringView, ara::core::StringView>& parms);
   void TempRxCallback(const std::vector<srp::mw::temp::TempReadHdr>& data);
+  void Bme280Loop(const std::stop_token& token);
 
  protected:
   /**
