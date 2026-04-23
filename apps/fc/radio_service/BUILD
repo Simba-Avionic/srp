@@ -1,4 +1,4 @@
-cc_library(
+cc_binary(
     name = "radio_service",
     deps = [
         "@srp_platform//ara/exec:adaptive_application_lib",
@@ -14,8 +14,6 @@ cc_library(
         "radio_app.cc",
         "main.cc",
         "gs_hb_guider.cpp",
-    ],
-    hdrs = [
         "radio_app.h",
         "gs_hb_guider.hpp",
     ],

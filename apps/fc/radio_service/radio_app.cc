@@ -219,7 +219,7 @@ int RadioApp::Run(const std::stop_token& token) {
   });
 
   std::jthread gs_communication_guard_thread([this](const std::stop_token& t) {
-    GSHeartbeatGuardLoop(t);
+    heartbeat_controller.GSHeartbeatGuardLoop(t);
   });
   service_ipc.StartOffer();
   service_udp.StartOffer();

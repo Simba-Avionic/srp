@@ -43,7 +43,6 @@ class RadioApp : public ara::exec::AdaptiveApplication {
   radio::GSHeartbeatGuard heartbeat_controller;
 
   timepoint last_received_hb;
-  void GSHeartbeatGuardLoop(const std::stop_token& t);
 
   bool IsStateChangeApproved(const RocketState_t req_state);
   void WaitUntillTimeEnd(const timepoint& start, const uint32_t req_loop_time,
