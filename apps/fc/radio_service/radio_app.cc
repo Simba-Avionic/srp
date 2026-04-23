@@ -17,7 +17,6 @@
 #include "simba/simba.h"
 #include "ara/log/log.h"
 #include "core/common/condition.h"
-#include "apps/ec/engine_service/vent_controller.hpp"
 
 namespace srp {
 namespace apps {
@@ -100,18 +99,11 @@ void RadioApp::HBHangleActuators(const uint8_t values) {
                   [&](uint8_t val) { servo_handler->SetDumpValue(val); });
 
     // Vent Valve
-    {
-      auto eng_handler = someip_controller.GetEngineServiceHandler();
-      uint8_t requested = ((values & SIMBA_GS_FLAGS_VENT_VALVE) != 0);
-      bool current = (event_data->GetActuatorStates() & SIMBA_ACTUATOR_FLAGS_VENT_VALVE) != 0;
-      if (eng_handler) {
-        auto to_set = (requested == 0) ? engine::VentState_e::CLOSE : engine::VentState_e::OPENING;
-        eng_handler->SetVentValve(static_cast<uint8_t>(to_set));
-      }
-      if (requested != current) {
-        ara::log::LogInfo() << "Changing Vent Valve to " << (requested ? "OPENING" : "OFF");
-        event_data->SetActuatorState(static_cast<SIMBA_ACTUATOR_FLAGS>(SIMBA_ACTUATOR_FLAGS_VENT_VALVE), requested);
-      }
+    uint8_t requested = ((values & SIMBA_GS_FLAGS_VENT_VALVE) != 0);
+    if (servo_handler) {
+      ara::log::LogInfo() << "Changing VENT_VALVE to " << (requested ? "ON" : "OFF");
+      event_data->SetActuatorState(static_cast<SIMBA_ACTUATOR_FLAGS>(SIMBA_ACTUATOR_FLAGS_VENT_VALVE), requested);
+      servo_handler->SetVentServoValue(requested);
     }
   }
 

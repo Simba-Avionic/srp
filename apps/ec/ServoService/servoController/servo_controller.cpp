@@ -15,321 +15,106 @@
 #include <thread>  // NOLINT
 #include <utility>
 
+#include "core/common/condition.h"
+
 namespace srp {
 namespace service {
 
-namespace {
-  static constexpr uint8_t kOpenState = 1U;
-  static constexpr uint8_t kCloseState = 0U;
-  static constexpr uint16_t kDefaultMosfetPowerOnDelayMs = 100U;
-  static constexpr uint16_t kDefaultServoMoveTimeMs = 3000U;
-}  // namespace
-
-ServoController::ServoController()
-    : driver_(nullptr),
-      gpio_(nullptr),
+ServoController::ServoController():
       logger_(ara::log::LoggingMenager::GetInstance()->CreateLogger(
           "srvc", "", ara::log::LogLevel::kDebug)) {}
 
-core::ErrorCode ServoController::Init(
-    const std::string& app_path, std::shared_ptr<srp::i2c::PCA9685> driver,
-    std::unique_ptr<gpio::IGPIOController> gpio,
-    std::unique_ptr<srp::i2c::II2CController> i2c_impl) {
+void ServoController::Init(const std::string& app_path) {
   logger_.LogInfo() << "ServoController.Init: start initialization for path " << app_path;
-  driver_ = std::move(driver);
-  gpio_ = std::move(gpio);
-  if (!driver_) {
-    logger_.LogError() << "ServoController.Init: PCA9685 driver is null";
-    return core::ErrorCode::kInitializeError;
-  }
-  if (driver_->Init(std::move(i2c_impl)) != core::ErrorCode::kOk) {
-    logger_.LogError() << "ServoController.Init: Failed to initialize PCA9685 driver";
-    return core::ErrorCode::kInitializeError;
-  }
 
-  current_measure_.InitDriver();
+  servo_cfg_mng.LoadServoConfig(app_path + "etc/config.json");
 
-  auto config = LoadConfig(app_path + "etc/config.json");
-  if (!config.has_value()) {
-    logger_.LogError() << "ServoController.Init: unable to load servo configuration";
-    return core::ErrorCode::kInitializeError;
-  }
-  servo_db_ = std::move(config.value());
-  auto init_status = InitializeServosToDefault();
-  if (init_status != core::ErrorCode::kOk) {
-    return init_status;
-  }
+  servo_ctr_.Init();
 
-  for (const auto& entry : servo_db_) {
-    if (entry.second.need_mosfet && gpio_ == nullptr) {
-      logger_.LogWarn() << "ServoController.Init: servo " << std::to_string(static_cast<int>(entry.first)) <<
-                            " requires MOSFET control but GPIO driver is null";
-      return core::ErrorCode::kInitializeError;
-    }
-  }
+  closing_thread = std::jthread([this](const std::stop_token& t) {
+    while (!t.stop_requested()) {
+      auto now = std::chrono::high_resolution_clock::now();
+      auto can_sleep_for = std::chrono::milliseconds(1000);
+      const auto ids = servo_cfg_mng.GetServosID();
+      for (const auto& id : ids) {
+        const auto cfg = servo_cfg_mng.GetServoConfig(id);
+        if (!cfg.has_value()) {
+          continue;
+        }
+        if (cfg.value().auto_closing == 0) {
+          continue;
+        }
+        if (cfg.value().position != kOpenState) {
+          continue;
+        }
+        if (cfg.value().open_time_end <= now) {
+          servo_ctr_.SetServoPosition(cfg.value(), 0);
+        } else {
+          auto time_until_end = std::chrono::duration_cast<
+                  std::chrono::milliseconds>(cfg.value().open_time_end - now);
+          can_sleep_for = std::min(can_sleep_for, time_until_end);
+        }
+      }
+      core::condition::wait_for(std::chrono::milliseconds(can_sleep_for), t);
+    } 
+  });
 
   logger_.LogInfo() << "ServoController.Init: initialization completed";
-
-  return core::ErrorCode::kOk;
 }
 
-core::ErrorCode ServoController::AutoSetServoPosition(uint8_t actuator_id,
-                                                      uint8_t state) {
-  auto it = servo_db_.find(actuator_id);
-  if (it == servo_db_.end()) {
-    logger_.LogWarn() << "ServoController.AutoSetServoPosition: unknown actuator " <<
-                          std::to_string(static_cast<int>(actuator_id));
-    return core::ErrorCode::kNotDefine;
-  }
-  if (!driver_) {
-    ara::log::LogError() << "(pca9685) driver handler not set";
-    return core::ErrorCode::kInitializeError;
-  }
-  this->ExecuteServoMovement(actuator_id, state);
-  return core::ErrorCode::kOk;
-}
-
-void ServoController::ExecuteServoMovement(const uint8_t actuator_id, const uint8_t state) {
+bool ServoController::AutoSetServoPosition(const uint8_t actuator_id,
+                                                      const uint8_t state) {
   if (!(state == 0 || state == 1)) {
-    ara::log::LogError() << "Cant move to state: " << state;
-    return;
-  }
-  std::unique_lock<std::mutex> lock(servo_operation_mutex_);
-  ara::log::LogWarn() << "Execute move for id: " << actuator_id << " to state: " << state;
-  auto it = servo_db_.find(actuator_id);
-  if (it == servo_db_.end()) {
-    logger_.LogWarn() << "ServoController.ExecuteServoMovement: unknown actuator " <<
-                          std::to_string(static_cast<int>(actuator_id));
-    return;
-  }
-  auto& servo = it->second;
-  if (servo.need_mosfet) {
-    if (gpio_ == nullptr) {
-      logger_.LogError() << "ServoController.ExecuteServoMovement: GPIO controller not available";
-      return;
-    }
-  }
-  servo.last_state = state;
-  if (servo.need_mosfet) {
-    if (gpio_->SetPinValue(servo.mosfet_id, kOpenState, 2000) != core::ErrorCode::kOk) {
-      logger_.LogError() << "ServoController.ExecuteServoMovement: failed to enable MOSFET " <<
-                             std::to_string(static_cast<int>(servo.mosfet_id));
-      return;
-    }
-  }
-  const uint16_t target_position =
-      (state == kOpenState) ? servo.on_pos : servo.off_pos;
-  if (driver_->SetChannelPosition(servo.channel, target_position) !=
-      core::ErrorCode::kOk) {
-    logger_.LogWarn() << "ServoController.ExecuteServoMovement: failed to set PWM for actuator " <<
-                          std::to_string(static_cast<int>(actuator_id));
-    return;
-  }
-}
-
-std::optional<uint8_t> ServoController::ReadServoPosition(uint8_t actuator_id) {
-  std::unique_lock<std::mutex> lock(servo_operation_mutex_);
-  if (!driver_) {
-    logger_.LogError() << "ServoController.Init: PCA9685 driver is null";
-    return std::nullopt;
-  }
-  auto it = servo_db_.find(actuator_id);
-  if (it == servo_db_.end()) {
-    logger_.LogWarn() << "ServoController.ReadServoPosition: unknown actuator " <<
-                          std::to_string(static_cast<int>(actuator_id));
-    return std::nullopt;
-  }
-  auto& servo = it->second;
-  auto pos_opt = driver_->ReadChannelPosition(servo.channel);
-  if (!pos_opt.has_value()) {
-    logger_.LogWarn() << "ServoController.ReadServoPosition: unable to read PWM for actuator " <<
-                          std::to_string(static_cast<int>(actuator_id));
-    return std::nullopt;
-  }
-  const auto current = pos_opt.value();
-  if (current == servo.on_pos ||
-      (servo.need_loosening && current == servo.on_loosening)) {
-    servo.last_state = kOpenState;
-    return kOpenState;
-  }
-  if (current == servo.off_pos ||
-      (servo.need_loosening && current == servo.off_loosening)) {
-    servo.last_state = kCloseState;
-    return kCloseState;
-  }
-  return servo.last_state;
-}
-
-std::optional<uint16_t> ServoController::ReadRawServoPosition(uint8_t actuator_id) {
-  std::unique_lock<std::mutex> lock(servo_operation_mutex_);
-  if (!driver_) {
-    logger_.LogError() << "ServoController.Init: PCA9685 driver is null";
-    return std::nullopt;
-  }
-  auto it = servo_db_.find(actuator_id);
-  if (it == servo_db_.end()) {
-    logger_.LogWarn() << "ServoController.ReadRawServoPosition: unknown actuator " <<
-                          std::to_string(static_cast<int>(actuator_id));
-    return std::nullopt;
-  }
-  return driver_->ReadChannelPosition(it->second.channel);
-}
-
-bool ServoController::ChangeConfigPosition(uint8_t actuator_id,
-                                           uint16_t new_open_val,
-                                           uint16_t new_close_val) {
-  std::unique_lock<std::mutex> lock(servo_operation_mutex_);
-  if (!driver_) {
-    logger_.LogError() << "ServoController.Init: PCA9685 driver is null";
+    logger_.LogError() << "ServoController.ExecuteServoMovement: unsupported state "
+                       << std::to_string(static_cast<int>(state));
     return false;
   }
-  auto it = servo_db_.find(actuator_id);
-  if (it == servo_db_.end()) {
-    logger_.LogWarn() << "ServoController.ChangeConfigPosition: unknown actuator " <<
-                          std::to_string(static_cast<int>(actuator_id));
+  const auto cfg = servo_cfg_mng.GetServoConfig(actuator_id);
+  if (!cfg.has_value()) {
     return false;
   }
-  auto& servo = it->second;
-  servo.on_pos = new_open_val;
-  servo.off_pos = new_close_val;
-  const uint16_t command_value =
-      (servo.last_state == kOpenState) ? servo.on_pos : servo.off_pos;
-  if (driver_->SetChannelPosition(servo.channel, command_value) !=
-      core::ErrorCode::kOk) {
-    logger_.LogWarn() << "ServoController.ChangeConfigPosition: failed to update PWM for actuator " <<
-                          std::to_string(static_cast<int>(actuator_id));
+  auto& servo = cfg.value();
+  logger_.LogInfo() << "ServoController.ExecuteServoMovement: actuator "
+                    << std::to_string(static_cast<int>(actuator_id))
+                    << " channel " << std::to_string(static_cast<int>(servo.channel))
+                    << " target state " << std::to_string(static_cast<int>(state));
+  
+  if (!servo_ctr_.SetServoPosition(servo, state)) {
     return false;
   }
+
+  servo_cfg_mng.SetServoPosition(actuator_id, state);
+
+  logger_.LogInfo() << "ServoController.ExecuteServoMovement: actuator "
+                    << std::to_string(static_cast<int>(actuator_id))
+                    << " moved successfully, state "
+                    << std::to_string(static_cast<int>(state));
   return true;
 }
 
-core::ErrorCode ServoController::InitializeServosToDefault() {
-  for (auto& entry : servo_db_) {
-    auto& servo = entry.second;
-    if (AutoSetServoPosition(entry.first, kCloseState) !=
-        core::ErrorCode::kOk) {
-      logger_.LogWarn() << "ServoController.InitializeServosToDefault: failed to reset actuator " <<
-                            std::to_string(static_cast<int>(entry.first));
-      return core::ErrorCode::kError;
-    }
-    servo.last_state = kCloseState;
-    // if (servo.measure_current_and_voltage) {
-    //   if (current_measure_.Initialize(servo.ina219_i2c_address) != core::ErrorCode::kOk) {
-    //     logger_.LogWarn() << "Failed to initialize Current Measure for actuator " <<
-    //                         std::to_string(static_cast<int>(entry.first));
-    //   }
-    // }
-  }
-  logger_.LogInfo() << "ServoController.InitializeServosToDefault: all servos reset to default";
-  return core::ErrorCode::kOk;
-}
-
-void ServoController::EnsureTimingConsistency(ServoRuntimeConfig* cfg) const {
-  if (cfg->timing.mosfet_power_on_delay_ms == 0U) {
-    cfg->timing.mosfet_power_on_delay_ms = kDefaultMosfetPowerOnDelayMs;
-  }
-  if (cfg->timing.servo_move_time_ms == 0U) {
-    cfg->timing.servo_move_time_ms = kDefaultServoMoveTimeMs;
-  }
-  if (cfg->timing.servo_move_time_ms < cfg->timing.loosening_delay_ms) {
-    cfg->timing.servo_move_time_ms = cfg->timing.loosening_delay_ms;
-  }
-}
-
-std::optional<std::unordered_map<uint8_t, ServoRuntimeConfig>>
-ServoController::LoadConfig(const std::string& file_path) {
-  std::unordered_map<uint8_t, ServoRuntimeConfig> db;
-  auto parser = core::json::JsonParser::Parser(file_path);
-  if (!parser.has_value()) {
-    logger_.LogError() << "ServoController.LoadConfig: missing config file at " << file_path;
+std::optional<uint8_t> ServoController::ReadServoPosition(const uint8_t actuator_id) {
+  auto cfg = servo_cfg_mng.GetServoConfig(actuator_id);
+  if (!cfg.has_value()) {
+    ara::log::LogWarn() << " cant find actuator with id: " << std::to_string(actuator_id);
     return std::nullopt;
   }
-  auto array = parser.value().GetArray<nlohmann::json>("servos");
-  if (!array.has_value()) {
-    logger_.LogError() << "ServoController.LoadConfig: missing 'servos' array in config";
-    return std::nullopt;
-  }
-
-  for (auto& entry : array.value()) {
-    auto servo_parser_opt = core::json::JsonParser::Parser(entry);
-    if (!servo_parser_opt.has_value()) {
-      logger_.LogWarn() << "ServoController.LoadConfig: invalid servo entry";
-      continue;
-    }
-    auto servo_parser = servo_parser_opt.value();
-    auto actuator_id = servo_parser.GetNumber<uint8_t>("actuator_id");
-    auto channel = servo_parser.GetNumber<uint8_t>("channel");
-    auto on_pos = servo_parser.GetNumber<uint16_t>("on_pos");
-    auto off_pos = servo_parser.GetNumber<uint16_t>("off_pos");
-    if (!(actuator_id.has_value() && channel.has_value() && on_pos.has_value() &&
-          off_pos.has_value())) {
-      logger_.LogWarn() << "ServoController.LoadConfig: incomplete servo description";
-      continue;
-    }
-
-    ServoRuntimeConfig cfg{};
-    cfg.channel = channel.value();
-    cfg.on_pos = on_pos.value();
-    cfg.off_pos = off_pos.value();
-    auto on_loosen_opt =
-        servo_parser.GetNumber<uint16_t>("on_losening_pos");
-    auto off_loosen_opt =
-        servo_parser.GetNumber<uint16_t>("off_losening_pos");
-    cfg.on_loosening = on_loosen_opt.value_or(cfg.on_pos);
-    cfg.off_loosening = off_loosen_opt.value_or(cfg.off_pos);
-    cfg.need_loosening = on_loosen_opt.has_value() && off_loosen_opt.has_value();
-
-    auto ina_address = servo_parser.GetNumber<uint8_t>("ina219_address");
-    if (ina_address.has_value()) {
-      cfg.measure_current_and_voltage = true;
-      cfg.ina219_i2c_address = ina_address.value();
-    } else {
-      cfg.measure_current_and_voltage = false;
-    }
-
-    auto mosfet_id = servo_parser.GetNumber<uint8_t>("mosfet_id");
-    if (mosfet_id.has_value()) {
-      cfg.need_mosfet = true;
-      cfg.mosfet_id = mosfet_id.value();
-    }
-
-    cfg.timing.mosfet_power_on_delay_ms =
-        servo_parser.GetNumber<uint16_t>("mosfet_power_on_delay_ms")
-            .value_or(kDefaultMosfetPowerOnDelayMs);
-    cfg.timing.servo_move_time_ms =
-        servo_parser.GetNumber<uint16_t>("servo_move_time_ms")
-            .value_or(kDefaultServoMoveTimeMs);
-
-    if (auto servo_delay = servo_parser.GetNumber<uint16_t>("servo_delay");
-        servo_delay.has_value()) {
-      cfg.timing.mosfet_power_on_delay_ms = servo_delay.value();
-    }
-    if (auto mosfet_delay = servo_parser.GetNumber<uint16_t>("mosfet_delay");
-        mosfet_delay.has_value()) {
-      if (mosfet_delay.value() > cfg.timing.mosfet_power_on_delay_ms) {
-        cfg.timing.servo_move_time_ms =
-            mosfet_delay.value() - cfg.timing.mosfet_power_on_delay_ms;
-      } else {
-        logger_.LogWarn() << "ServoController.LoadConfig: mosfet_delay <= servo_delay for actuator " <<
-                              std::to_string(static_cast<int>(actuator_id.value())) <<
-                              ", using default move time";
-        cfg.timing.servo_move_time_ms = kDefaultServoMoveTimeMs;
-      }
-    }
-    if (auto legacy_move = servo_parser.GetNumber<uint16_t>("servo_move_time");
-        legacy_move.has_value()) {
-      cfg.timing.servo_move_time_ms = legacy_move.value();
-    }
-
-    EnsureTimingConsistency(&cfg);
-    cfg.last_state = kCloseState;
-    db.emplace(actuator_id.value(), cfg);
-    logger_.LogInfo() << "ServoController.LoadConfig: registered actuator " <<
-                          std::to_string(static_cast<int>(actuator_id.value()));
-  }
-
-  return db;
+  return cfg.value().position;
 }
+
+bool ServoController::ChangeConfigPosition(const uint8_t actuator_id,
+                                           const uint16_t new_open_val,
+                                           const uint16_t new_close_val) {
+          
+  if (!servo_cfg_mng.ChangeServoConfigPosition(actuator_id, new_open_val, new_close_val)) {
+    return false;
+  }
+  auto cfg = servo_cfg_mng.GetServoConfig(actuator_id);
+  if (!cfg.has_value()) {
+    return false;
+  }
+  return servo_ctr_.SetServoPosition(cfg.value(), kCloseState);
+}
+
 
 }  // namespace service
 }  // namespace srp

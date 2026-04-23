@@ -35,7 +35,6 @@ cc_library(
         "//deployment/apps/fc/radio_app:someip_lib",
         "//apps/fc/recovery_service:ParachuteController",
         "//apps/ec/primer_service/controller:primer_controller",
-        "//apps/ec/engine_service:vent_controller",
     ],
 )
 

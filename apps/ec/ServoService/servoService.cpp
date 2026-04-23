@@ -111,14 +111,7 @@ int ServoService::Initialize(const std::map<ara::core::StringView, ara::core::St
 
   ara::log::LogDebug() << "ServoService.Initialize: using app path " << app_path;
 
-  auto err = this->servo_controller->Init(
-      app_path, std::make_shared<srp::i2c::PCA9685>(),
-      std::make_unique<gpio::GPIOController>(), std::make_unique<srp::i2c::I2CController>());
-
-  if (err != core::ErrorCode::kOk) {
-    ara::log::LogError() << "ServoService.Initialize: cannot initialize servo controller";
-    return 1;
-  }
+  this->servo_controller->Init(app_path);
 
   main_servo_service_did_ = std::make_unique<ServoServiceDiD>(diag_main_instance, servo_controller, kMainValveID);
   vent_servo_service_did_ = std::make_unique<ServoServiceDiD>(diag_venv_instance, servo_controller, kVentValveID);

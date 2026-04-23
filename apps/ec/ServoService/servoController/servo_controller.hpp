@@ -20,62 +20,26 @@
 
 #include "ara/log/logging_menager.h"
 #include "core/common/error_code.h"
-#include "core/json/json_parser.h"
-#include "mw/gpio_server/controller/gpio_controller.hpp"
-#include "mw/i2c_service/controller/pca9685/controller.hpp"
-#include "mw/i2c_service/controller/ina219/controller.hpp"
+#include "apps/ec/ServoService/servoController/servo_config_reader.hpp"
+#include "apps/ec/ServoService/servoController/servo_driver.hpp"
+
 
 namespace srp {
 namespace service {
 
-
-struct ServoTimingConfig {
-  uint16_t mosfet_power_on_delay_ms{1};
-  uint16_t servo_move_time_ms{400};
-  uint16_t loosening_delay_ms{50};
-};
-
-struct ServoRuntimeConfig {
-  uint16_t on_pos{0};
-  uint16_t off_pos{0};
-  uint16_t on_loosening{0};
-  uint16_t off_loosening{0};
-  uint8_t channel{0};
-  uint8_t last_state{0};
-  bool need_mosfet{false};
-  uint8_t mosfet_id{0};
-  bool need_loosening{false};
-  ServoTimingConfig timing{};
-  bool measure_current_and_voltage{false};
-  uint8_t ina219_i2c_address;
-};
-
 class ServoController {
  private:
-  std::unordered_map<uint8_t, ServoRuntimeConfig> servo_db_;
-  i2c::INA219 current_measure_;
-  std::shared_ptr<srp::i2c::PCA9685> driver_;
-  std::unique_ptr<gpio::IGPIOController> gpio_;
+  ConfigReader servo_cfg_mng;
+  ServoDriver servo_ctr_;
   const ara::log::Logger& logger_;
-  mutable std::mutex servo_operation_mutex_;
-
-  std::optional<std::unordered_map<uint8_t,
-                ServoRuntimeConfig>> LoadConfig(const std::string& file_path);
-  core::ErrorCode InitializeServosToDefault();
-  void EnsureTimingConsistency(ServoRuntimeConfig* cfg) const;
-  void ExecuteServoMovement(const uint8_t actuator_id, const uint8_t state);
+  std::jthread closing_thread;
 
  public:
   ServoController();
-  core::ErrorCode Init(const std::string& app_path,
-                std::shared_ptr<srp::i2c::PCA9685> driver = std::make_shared<srp::i2c::PCA9685>(),
-                std::unique_ptr<gpio::IGPIOController> gpio = std::make_unique<gpio::GPIOController>(),
-                std::unique_ptr<srp::i2c::II2CController> i2c_impl = std::make_unique<srp::i2c::I2CController>());
-  core::ErrorCode AutoSetServoPosition(uint8_t actuator_id, uint8_t state);
+  void Init(const std::string& app_path);
+  bool AutoSetServoPosition(const uint8_t actuator_id, const uint8_t state);
   std::optional<uint8_t> ReadServoPosition(uint8_t actuator_id);
-  std::optional<uint16_t> ReadRawServoPosition(uint8_t actuator_id);
   bool ChangeConfigPosition(uint8_t actuator_id, uint16_t new_open_val, uint16_t new_close_val);
-  std::shared_ptr<srp::i2c::PCA9685> GetDriver() const { return driver_; }
 };
 
 }  // namespace service

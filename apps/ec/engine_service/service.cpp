@@ -19,7 +19,6 @@ namespace service {
 MyEngineServiceSkeleton::MyEngineServiceSkeleton(ara::core::InstanceSpecifier instance):
                                                             EngineServiceSkeleton{instance} {
     state_ctr_ = core::rocketState::RocketStateController::GetInstance();
-    vent_ctr_ = engine::VentController::GetInstance();
 }
 
 
@@ -33,10 +32,6 @@ ara::core::Result<std::uint8_t> MyEngineServiceSkeleton::GetMode() {
     return ara::core::Result<uint8_t>{state_ctr_->GetState()};
 }
 
-ara::core::Result<void> MyEngineServiceSkeleton::SetVentValve(const std::uint8_t& in_parm) {
-    auto req_state = static_cast<engine::VentState_e>(in_parm);
-    vent_ctr_->ChangeState(req_state);
-}
 
 }  // namespace service
 }  // namespace apps

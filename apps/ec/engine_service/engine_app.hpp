@@ -25,7 +25,6 @@
 #include "mw/gpio_server/controller/gpio_controller.hpp"
 #include "srp/apps/MainService/MainServiceHandler.h"
 #include "srp/apps/FileLoggerApp/FileLoggerAppHandler.h"
-#include "apps/ec/engine_service/vent_controller.hpp"
 
 
 namespace srp {
@@ -34,6 +33,7 @@ namespace apps {
 struct ArmPinConfig_t {
     uint8_t pin_id;
     std::string name;
+    std::string func;
 };
 
 class EngineApp final : public ara::exec::AdaptiveApplication {
@@ -47,7 +47,6 @@ class EngineApp final : public ara::exec::AdaptiveApplication {
   PrimerServiceProxy primer_proxy;
   ServoServiceProxy servo_proxy;
   std::shared_ptr<core::rocketState::RocketStateController> state_ctr;
-  std::shared_ptr<engine::VentController> vent_ctr_;
 
   MainServiceProxy main_proxy;
   std::shared_ptr<MainServiceHandler> main_handler;
