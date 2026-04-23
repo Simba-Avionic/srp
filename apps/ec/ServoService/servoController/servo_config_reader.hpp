@@ -16,15 +16,19 @@
 #include <unordered_map>
 #include <utility>
 #include <mutex>  // NOLINT
+#include <vector>
+#include <algorithm>
+#include <string>
 
 #include "core/json/json_parser.h"
 #include "ara/log/log.h"
 
 namespace srp {
 namespace service {
+using Clock = std::chrono::high_resolution_clock;
 
 struct ServoRuntimeConfig {
-  using timepoint = std::chrono::high_resolution_clock::time_point;
+  using timepoint = Clock::time_point;
   uint16_t on_pos;
   uint16_t off_pos;
   uint8_t channel;
@@ -33,6 +37,7 @@ struct ServoRuntimeConfig {
   uint16_t auto_closing;
   timepoint open_time_end;
   uint8_t position;
+  uint16_t pulsing_time;
 
 
   ServoRuntimeConfig(const uint16_t on_pos_, const uint16_t off_pos_, const uint8_t channel_):
@@ -64,12 +69,14 @@ class ConfigReader {
         cfg.mosfet_id = entry.GetNumber<uint8_t>("mosfet_id").value_or(0);
         cfg.ina219_i2c_address = entry.GetNumber<uint8_t>("ina219_address").value_or(0);
         cfg.auto_closing = entry.GetNumber<uint16_t>("auto_closing_time").value_or(0);
+        cfg.pulsing_time = entry.GetNumber<uint16_t>("pulsing_time_ms").value_or(0);
 
         ara::log::LogDebug() << "ServoController.LoadConfig: parsed actuator "
                              << std::to_string(static_cast<int>(actuator_id.value()))
                              << ", channel " << std::to_string(static_cast<int>(cfg.channel));
         return servo_cfg{cfg, actuator_id.value()};
     }
+
  public:
     std::optional<ServoRuntimeConfig> GetServoConfig(const uint8_t& actuator_id) {
         std::lock_guard<std::mutex> lock(db_mtx_);
@@ -87,7 +94,7 @@ class ConfigReader {
     std::vector<uint8_t> GetServosID() const {
         std::vector<uint8_t> res;
         std::lock_guard<std::mutex> lock(db_mtx_);
-        for (const auto& servo: db) {
+        for (const auto& servo : db) {
             res.push_back(servo.first);
         }
         return res;
@@ -128,7 +135,7 @@ class ConfigReader {
         }
 
         if (state == 1) {
-            auto new_closing_time = std::chrono::high_resolution_clock::now();
+            auto new_closing_time = Clock::now();
             new_closing_time += std::chrono::milliseconds(it->second.auto_closing);
             it->second.open_time_end = std::max(it->second.open_time_end, new_closing_time);
         }
@@ -169,6 +176,6 @@ class ConfigReader {
     }
 };
 
-}
-}
+}  // namespace service
+}  // namespace srp
 #endif  // APPS_EC_SERVOSERVICE_SERVOCONTROLLER_SERVO_CONFIG_READER_HPP_

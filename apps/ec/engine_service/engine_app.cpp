@@ -301,7 +301,7 @@ void EngineApp::OnAbort() {
   }
   if (servo_handler_ != nullptr) {
     servo_handler_->SetDumpValue(1);
-    servo_handler_->SetVentServoValue(1);
+    servo_handler_->SetVentServoValue(2);
   }
 }
 

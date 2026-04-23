@@ -14,6 +14,7 @@
 #include <string>
 #include <thread>  // NOLINT
 #include <utility>
+#include <algorithm>
 
 #include "core/common/condition.h"
 
@@ -22,18 +23,11 @@ namespace service {
 
 ServoController::ServoController():
       logger_(ara::log::LoggingMenager::GetInstance()->CreateLogger(
-          "srvc", "", ara::log::LogLevel::kDebug)) {}
+          "srct", "", ara::log::LogLevel::kDebug)) {}
 
-void ServoController::Init(const std::string& app_path) {
-  logger_.LogInfo() << "ServoController.Init: start initialization for path " << app_path;
-
-  servo_cfg_mng.LoadServoConfig(app_path + "etc/config.json");
-
-  servo_ctr_.Init();
-
-  closing_thread = std::jthread([this](const std::stop_token& t) {
-    while (!t.stop_requested()) {
-      auto now = std::chrono::high_resolution_clock::now();
+void ServoController::closingThreadLoop(const std::stop_token& token) {
+    while (!token.stop_requested()) {
+      auto now = Clock::now();
       auto can_sleep_for = std::chrono::milliseconds(1000);
       const auto ids = servo_cfg_mng.GetServosID();
       for (const auto& id : ids) {
@@ -55,20 +49,65 @@ void ServoController::Init(const std::string& app_path) {
           can_sleep_for = std::min(can_sleep_for, time_until_end);
         }
       }
-      core::condition::wait_for(std::chrono::milliseconds(can_sleep_for), t);
-    } 
-  });
+      core::condition::wait_for(std::chrono::milliseconds(can_sleep_for), token);
+    }
+}
+
+void ServoController::pulsingThreadLoop(const std::stop_token& token) {
+  while (!token.stop_requested()) {
+    auto now = Clock::now();
+    auto can_sleep_for = std::chrono::milliseconds(1000);
+    const auto ids = servo_cfg_mng.GetServosID();
+    for (const auto& id : ids) {
+      auto cfg = servo_cfg_mng.GetServoConfig(id);
+      if (!cfg.has_value()) {
+        continue;
+      }
+      if (cfg.value().pulsing_time == 0) {
+        continue;
+      }
+      if (cfg.value().position == kCloseState) {
+        pulsing_db.erase(id);
+        servo_ctr_.SetServoPosition(cfg.value(), kCloseState);
+        continue;
+      }
+      {
+        std::lock_guard<std::mutex> lock(pulsing_mtx_);
+        auto pulse_cfg = pulsing_db.find(id);
+        if (pulse_cfg == pulsing_db.end()) {
+          continue;
+        }
+        auto now = Clock::now();
+        if (now >= pulse_cfg->second.pulse_deadline) {
+          pulse_cfg->second.pulse_state = !pulse_cfg->second.pulse_state;
+          servo_ctr_.SetServoPosition(cfg.value(), pulse_cfg->second.pulse_state);
+          pulse_cfg->second.pulse_deadline = now + std::chrono::milliseconds(cfg.value().pulsing_time);
+        }
+        auto new_sleep_time =
+            std::chrono::duration_cast<std::chrono::milliseconds>(pulse_cfg->second.pulse_deadline - now);
+        can_sleep_for = std::min(can_sleep_for, new_sleep_time);
+      }
+      core::condition::wait_for(std::chrono::milliseconds(can_sleep_for), token);
+    }
+  }
+}
+
+
+void ServoController::Init(const std::string& app_path) {
+  logger_.LogInfo() << "ServoController.Init: start initialization for path " << app_path;
+
+  servo_cfg_mng.LoadServoConfig(app_path + "etc/config.json");
+
+  servo_ctr_.Init();
+
+  closing_thread = std::jthread([this](const std::stop_token& t) { closingThreadLoop(t); });
+  pulsing_thread = std::jthread([this](const std::stop_token& t) { pulsingThreadLoop(t); });
 
   logger_.LogInfo() << "ServoController.Init: initialization completed";
 }
 
 bool ServoController::AutoSetServoPosition(const uint8_t actuator_id,
                                                       const uint8_t state) {
-  if (!(state == 0 || state == 1)) {
-    logger_.LogError() << "ServoController.ExecuteServoMovement: unsupported state "
-                       << std::to_string(static_cast<int>(state));
-    return false;
-  }
   const auto cfg = servo_cfg_mng.GetServoConfig(actuator_id);
   if (!cfg.has_value()) {
     return false;
@@ -78,17 +117,31 @@ bool ServoController::AutoSetServoPosition(const uint8_t actuator_id,
                     << std::to_string(static_cast<int>(actuator_id))
                     << " channel " << std::to_string(static_cast<int>(servo.channel))
                     << " target state " << std::to_string(static_cast<int>(state));
-  
+
+  logger_.LogInfo() << "ServoController.ExecuteServoMovement: actuator "
+                  << std::to_string(static_cast<int>(actuator_id))
+                  << " moved successfully, state "
+                  << std::to_string(static_cast<int>(state));
+
+  if (cfg.value().position == state) {
+    return true;
+  }
+
   if (!servo_ctr_.SetServoPosition(servo, state)) {
     return false;
   }
-
   servo_cfg_mng.SetServoPosition(actuator_id, state);
 
-  logger_.LogInfo() << "ServoController.ExecuteServoMovement: actuator "
-                    << std::to_string(static_cast<int>(actuator_id))
-                    << " moved successfully, state "
-                    << std::to_string(static_cast<int>(state));
+  if (state == 2) {
+    return true;
+  }
+  if (cfg.value().pulsing_time != 0) {
+    const auto pulse_deadline = Clock::now() + std::chrono::milliseconds(cfg.value().pulsing_time);
+    std::lock_guard<std::mutex> lock(pulsing_mtx_);
+    pulsing_db[actuator_id] = Pulsing_t{.pulse_state = 1, .pulse_deadline = pulse_deadline};
+  }
+
+
   return true;
 }
 
@@ -104,7 +157,6 @@ std::optional<uint8_t> ServoController::ReadServoPosition(const uint8_t actuator
 bool ServoController::ChangeConfigPosition(const uint8_t actuator_id,
                                            const uint16_t new_open_val,
                                            const uint16_t new_close_val) {
-          
   if (!servo_cfg_mng.ChangeServoConfigPosition(actuator_id, new_open_val, new_close_val)) {
     return false;
   }

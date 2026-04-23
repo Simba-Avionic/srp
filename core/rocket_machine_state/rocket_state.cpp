@@ -32,7 +32,7 @@ namespace {
         {RocketState_t::FIRST_PARACHUTE,          {RocketState_t::SECOND_PARACHUTE}},
         {RocketState_t::SECOND_PARACHUTE,         {RocketState_t::DROP}},
         {RocketState_t::DROP,                     {RocketState_t::TOUCHDOWN}},
-        {RocketState_t::CONNECTION_LOST,          {RocketState_t::DISARM}}
+        {RocketState_t::CONNECTION_LOST,          {RocketState_t::DISARM, RocketState_t::ABORT}}
     };
     static std::shared_ptr<RocketStateController> instance = nullptr;
 }  // namespace

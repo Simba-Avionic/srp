@@ -40,6 +40,16 @@
                             "ctx_id": "exec",
                             "log_level": "kWarn",
                             "ctx_des": "Default ctx for ara::exec"
+                        },
+                        {
+                            "ctx_id": "srdr",
+                            "log_level": "kWarn",
+                            "ctx_des": "Servo Driver Logger"
+                        },
+                        {
+                            "ctx_id": "srct",
+                            "log_level": "kWarn",
+                            "ctx_des": "Servo Controller Logger"
                         }
                     ]
                 }

@@ -12,12 +12,13 @@
         {
             "actuator_id":61,
             "channel": 0,
-            "on_pos" : 300,
+            "on_pos" : 350,
             "off_pos" : 110,
             "mosfet_id" : 16,
             "desc": "J12, VENT VALVE, off: 102 - on: 404, calculate open % by changing on pos",
             "ina219_address": 69,
-            "auto_closing_time": 1500
+            "auto_closing_time": 1500,
+            "pulsing_time_ms": 250
         },
         {
             "actuator_id":62,

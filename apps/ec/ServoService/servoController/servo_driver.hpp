@@ -21,11 +21,12 @@
 #include "mw/i2c_service/controller/pca9685/controller.hpp"
 #include "mw/i2c_service/controller/ina219/controller.hpp"
 #include "ara/log/log.h"
+#include "ara/log/logging_menager.h"
 
 namespace srp {
 namespace service {
 
-namespace {
+namespace {  // NOLINT
   static constexpr auto kDefault_mosfet_active_time_ms = 2000;
   static constexpr uint8_t kOpenState = 1U;
   static constexpr uint8_t kCloseState = 0U;
@@ -36,27 +37,31 @@ class ServoDriver {
   srp::i2c::PCA9685 driver_;
   gpio::GPIOController gpio_;
   mutable std::mutex operation_mtx;
+  const ara::log::Logger& logger_;
 
  public:
   void Init() {
     driver_.Init();
   }
+  ServoDriver():
+      logger_(ara::log::LoggingMenager::GetInstance()->CreateLogger(
+          "srdr", "", ara::log::LogLevel::kWarn)) {}
   bool SetServoPosition(const srp::service::ServoRuntimeConfig& cfg, const uint8_t state) {
     std::unique_lock<std::mutex> lock(operation_mtx);
     if (cfg.mosfet_id != 0) {
-        if (gpio_.SetPinValue(cfg.mosfet_id, kOpenState, kDefault_mosfet_active_time_ms) != core::ErrorCode::kOk) {
-        ara::log::LogError() << "ServoController.ExecuteServoMovement: failed to enable MOSFET " <<
+      if (gpio_.SetPinValue(cfg.mosfet_id, kOpenState, kDefault_mosfet_active_time_ms) != core::ErrorCode::kOk) {
+        logger_.LogError() << "ServoController.ExecuteServoMovement: failed to enable MOSFET " <<
                                 std::to_string(static_cast<int>(cfg.mosfet_id));
         return false;
-        }
+      }
     }
 
     const uint16_t target_position = (state == kOpenState) ? cfg.on_pos : cfg.off_pos;
-    ara::log::LogDebug() << "ServoController.ExecuteServoMovement: setting actuator "
+    logger_.LogDebug() << "ServoController.ExecuteServoMovement: setting actuator "
                         << "to PWM " << std::to_string(target_position);
 
     if (driver_.SetChannelPosition(cfg.channel, target_position) != core::ErrorCode::kOk) {
-        ara::log::LogWarn() << "ServoController.ExecuteServoMovement: failed to set PWM ";
+        logger_.LogWarn() << "ServoController.ExecuteServoMovement: failed to set PWM ";
         return false;
     }
     return true;
@@ -68,6 +73,6 @@ class ServoDriver {
   }
 };
 
-}
-}
-#endif //  APPS_EC_SERVOSERVICE_SERVOCONTROLLER_SERVO_DRIVER_HPP_
+}  // namespace service
+}  // namespace srp
+#endif  //  APPS_EC_SERVOSERVICE_SERVOCONTROLLER_SERVO_DRIVER_HPP_
