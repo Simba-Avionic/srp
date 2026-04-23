@@ -19,6 +19,7 @@
 #include "ara/log/log.h"
 #include "srp/env/EnvAppSkeleton.h"
 #include "mw/i2c_service/controller/ads7828/controller.hpp"
+#include "core/app_heartbeat/controller.hpp"
 
 namespace srp {
 namespace envService {
@@ -178,7 +179,8 @@ void EnvService::GenericPressureLoop(
 }
 
 int EnvService::Run(const std::stop_token& token) {
-    std::jthread tenso_thread;
+    core::hb::HeartBeatController hb_controller;
+    hb_controller.Init(core::hb::SERVICES_e::SERVICE_EC_ENV);
     std::jthread pressure_thread([this, token] {
         GenericPressureLoop(token, PRESS_SENSOR_ID,
                             std::chrono::milliseconds(kPressureDelayMs),
@@ -226,9 +228,6 @@ int EnvService::Run(const std::stop_token& token) {
     core::condition::wait(token);
     pressure_thread.request_stop();
     differential_pressure_thread.request_stop();
-    if (kTensoEnabled) {
-        tenso_thread.request_stop();
-    }
 
     service_ipc.StopOffer();
     service_udp.StopOffer();

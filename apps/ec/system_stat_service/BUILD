@@ -16,5 +16,6 @@ cc_binary(
         "//deployment/apps/system_stat_service:ara",
         "//deployment/apps/system_stat_service:someip_lib",
         "//core/sys:system_status",
+        "//core/app_heartbeat:heartbeat_controller",
     ],
 )

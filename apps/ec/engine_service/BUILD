@@ -20,6 +20,8 @@ cc_binary(
         "//mw/gpio_server/controller:gpio_controller",
         "//core/rocket_machine_state:rocket_state_base",
         "//apps/ec/engine_service:vent_controller",
+        "//core/app_heartbeat:heartbeat_master",
+        "//core/app_heartbeat:heartbeat_controller",
     ],
 )
 

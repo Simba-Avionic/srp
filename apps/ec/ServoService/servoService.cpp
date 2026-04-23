@@ -20,6 +20,7 @@
 #include "mw/i2c_service/controller/pca9685/controller.hpp"
 #include "mw/i2c_service/controller/i2c_controller.h"
 #include "mw/gpio_server/controller/gpio_controller.hpp"
+#include "core/app_heartbeat/controller.hpp"
 
 namespace srp {
 namespace service {
@@ -72,6 +73,8 @@ int ServoService::Run(const std::stop_token& token) {
                     " servo status: " << std::to_string(static_cast<int>(val.value()));
       }
   };
+  core::hb::HeartBeatController hb_controller;
+  hb_controller.Init(core::hb::SERVICES_e::SERVICE_EC_SERVO);
 
   while (!token.stop_requested()) {
     if (gpio_.SetPinValue(kHeartBeatPinID, 1, 500) != core::ErrorCode::kOk) {

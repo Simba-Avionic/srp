@@ -22,5 +22,6 @@ cc_binary(
         "//core/time:sys_time_change_lib",
         "@srp_platform//ara/diag:uds_lib",
         "//mw/gpio_server/controller:gpio_controller",
+        "//core/app_heartbeat:heartbeat_controller",
     ],
 )

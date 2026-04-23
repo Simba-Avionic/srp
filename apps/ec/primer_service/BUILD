@@ -34,6 +34,7 @@ cc_library(
         "@srp_platform//ara/exec:adaptive_application_lib",
         "//core/common:condition_lib",
         "//mw/gpio_server/controller:gpio_controller",
+        "//core/app_heartbeat:heartbeat_controller",
     ],
     srcs = [
         "app.cpp",

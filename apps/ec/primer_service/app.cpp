@@ -16,6 +16,7 @@
 #include "apps/ec/primer_service/app.hpp"
 #include "core/common/condition.h"
 #include "ara/log/log.h"
+#include "core/app_heartbeat/controller.hpp"
 
 namespace srp {
 namespace primer {
@@ -27,6 +28,8 @@ namespace {
 }
 
 int PrimerService::Run(const std::stop_token& token) {
+  core::hb::HeartBeatController hb_controller;
+  hb_controller.Init(core::hb::SERVICES_e::SERVICE_EC_IGNITER);
   while (!token.stop_requested()) {
     if (gpio_.SetPinValue(kHeartBeatPinID, 1, 500) != core::ErrorCode::kOk) {
       ara::log::LogWarn() << "EngineApp::Run: Failed to toggle heartbeat pin";

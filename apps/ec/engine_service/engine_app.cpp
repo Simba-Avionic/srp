@@ -82,6 +82,7 @@ EngineApp::EngineApp():
 
 int EngineApp::Run(const std::stop_token& token) {
   ara::log::LogInfo() << "EngineApp::Run: Starting main event loop";
+  hb_controller.Init(core::hb::SERVICES_e::SERVICE_EC_ENG);
   while (!token.stop_requested()) {
     ara::log::LogDebug() << "EngineApp::Run: Main loop iteration";
 
@@ -94,6 +95,12 @@ int EngineApp::Run(const std::stop_token& token) {
 
     service_ipc.CurrentMode.Update(static_cast<uint8_t>(state));
     service_udp.CurrentMode.Update(static_cast<uint8_t>(state));
+
+    auto apps_alive = hb_master.GetAppsAlive();
+    
+    service_ipc.NewHBStatus.Update(apps_alive);
+    service_udp.NewHBStatus.Update(apps_alive);
+
     ara::log::LogDebug() << "EngineApp::Run: Updated service state";
 
     core::condition::wait_for(std::chrono::seconds(1), token);
@@ -116,6 +123,10 @@ int EngineApp::Initialize(const std::map<ara::core::StringView, ara::core::Strin
   if (parms.find("app_path") == parms.end()) {
       return 1;
   }
+  hb_master.Init([this](const uint16_t apps_alive) {
+    service_ipc.NewHBStatus.Update(apps_alive);
+    service_udp.NewHBStatus.Update(apps_alive);
+  });
   std::this_thread::sleep_for(std::chrono::seconds(5));
   ara::log::LogInfo() << "EngineApp::Initialize: Starting initialization sequence";
   std::string config_path = std::string(parms.at("app_path")) + "etc/config.json";

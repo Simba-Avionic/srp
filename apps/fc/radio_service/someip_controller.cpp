@@ -346,6 +346,17 @@ void SomeIPController::SomeIpInit() {
           this->event_data->SetComputerState(BoardType_e::EB,
                                   static_cast<RocketState_t>(res.Value()));
         });
+        engine_service_handler->NewHBStatus.Subscribe(1, [this](const uint8_t status) {
+          someip_logger.LogDebug() << "Subscribed to Engine NewHBStatus, status=" << std::to_string(status);
+          engine_service_handler->NewHBStatus.SetReceiveHandler([this] () {
+            auto res = engine_service_handler->NewHBStatus.GetNewSamples();
+            if (!res.HasValue()) {
+              return;
+            }
+            someip_logger.LogDebug() << "Engine NewHBStatus sample: " << std::to_string(res.Value());
+            this->event_data->SetComputerAppsAlive(BoardType_e::EB, res.Value());
+          })
+        })
       });
     }));
     this->primer_service_proxy.StartFindService([this](auto handler) {

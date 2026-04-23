@@ -26,6 +26,8 @@
 #include "srp/apps/MainService/MainServiceHandler.h"
 #include "srp/apps/FileLoggerApp/FileLoggerAppHandler.h"
 #include "apps/ec/engine_service/vent_controller.hpp"
+#include "core/app_heartbeat/master.hpp"
+#include "core/app_heartbeat/controller.hpp"
 
 
 namespace srp {
@@ -54,6 +56,9 @@ class EngineApp final : public ara::exec::AdaptiveApplication {
 
   service::MyEngineServiceSkeleton service_ipc;
   service::MyEngineServiceSkeleton service_udp;
+
+  core::hb::HeartBeatMaster hb_master;
+  core::hb::HeartBeatController hb_controller;
 
  protected:
   void OnLaunch();

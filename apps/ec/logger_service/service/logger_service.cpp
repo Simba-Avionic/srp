@@ -16,7 +16,7 @@
 #include "core/time/sys_time.hpp"
 #include "core/csvdriver/csvdriver.h"
 #include "apps/ec/logger_service/service/logger_builder.hpp"
-
+#include "core/app_heartbeat/controller.hpp"
 
 namespace srp {
 namespace logger {
@@ -83,6 +83,8 @@ void LoggerService::SaveLoop(const std::stop_token& token,
 }
 
 int LoggerService::Run(const std::stop_token& token) {
+  core::hb::HeartBeatController hb_controller;
+  hb_controller.Init(core::hb::SERVICES_e::SERVICE_EC_ENV);
   while (!token.stop_requested()) {
     if (gpio_.SetPinValue(kHeartBeatPinID, 1, 500) != core::ErrorCode::kOk) {
       ara::log::LogWarn() << "EngineApp::Run: Failed to toggle heartbeat pin";

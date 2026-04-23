@@ -18,6 +18,7 @@
 #include "core/common/condition.h"
 #include "ara/log/log.h"
 #include "core/sys/system_stat.hpp"
+#include "core/app_heartbeat/controller.hpp"
 
 namespace srp {
 namespace sysService {
@@ -43,6 +44,8 @@ int SystemStatService::Initialize(const std::map<ara::core::StringView, ara::cor
 
 
 int SystemStatService::Run(const std::stop_token& token) {
+    core::hb::HeartBeatController hb_controller;
+    hb_controller.Init(core::hb::SERVICES_e::SERVICE_EC_STAT);
     while (!token.stop_requested()) {
         apps::SysStatType stats;
         auto cpu_usage_opt = core::stat::SystemStats::get_cpu_usage();

@@ -67,8 +67,14 @@ class EventData {
     ThreadSafe<computer_telemetry_t> eb_telemetry;
     ThreadSafe<computer_telemetry_t> mb_telemetry;
 
+    ThreadSafe<uint16_t> eb_apps_alive;
+    ThreadSafe<uint16_t> mb_apps_alive;
+
  public:
   static std::shared_ptr<EventData> GetInstance();
+
+  uint16_t GetComputerAppsAlive(const BoardType_e BoardType);
+  void SetComputerAppsAlive(const BoardType_e BoardType, const uint16_t apps_alive);
 
   core::rocketState::RocketState_t GetComputerState(const BoardType_e BoardType);
   void SetComputerState(const BoardType_e BoardType, const core::rocketState::RocketState_t state);
