@@ -17,6 +17,7 @@
 #include <map>
 #include <memory>
 #include <utility>
+#include <mutex>  // NOLINT
 
 #include "mw/temp/controller/temp_controller.h"
 #include "ara/exec/adaptive_application.h"
@@ -30,6 +31,7 @@ class EnvService final : public ara::exec::AdaptiveApplication {
  private:
   std::unique_ptr<mw::temp::TempController> temp_{};
   std::shared_ptr<i2c::ADCSensorController> press_{};
+  std::mutex press_mtx_;
   // [sensor_id] = {name, physical_id}
   std::unordered_map<std::uint8_t, std::pair<std::string, std::string>> sensorIdsToPaths{};
 

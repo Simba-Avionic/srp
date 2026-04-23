@@ -28,6 +28,7 @@ namespace {
     static constexpr uint8_t D_PRESS_SENSOR_ID =         11;
     static constexpr auto kPressureDelayMs =             100;
     static constexpr auto kDifferentialPressureDelayMs = 100;
+    static constexpr auto kPressure_sensor_multiplicator = 100;
 }  // namespace
 
 
@@ -143,7 +144,11 @@ void EnvService::GenericPressureLoop(
             auto& eventUdp) {
     while (!token.stop_requested()) {
         auto start = std::chrono::high_resolution_clock::now();
-        auto pressValue = this->press_->GetValue(sensorId);
+        std::optional<float> pressValue;
+        {
+            std::lock_guard<std::mutex> lock(press_mtx_);
+            pressValue = this->press_->GetValue(sensorId);
+        }
 
         if (pressValue.has_value()) {
             float val = pressValue.value();
@@ -152,7 +157,7 @@ void EnvService::GenericPressureLoop(
             ss << std::fixed << std::setprecision(2) << val;
             ara::log::LogDebug() << "Receive new " << label << ": " << ss.str() << " Bar";
 
-            uint16_t encodedVal = static_cast<uint16_t>(val * 100);
+            uint16_t encodedVal = static_cast<uint16_t>(val * kPressure_sensor_multiplicator);
             eventIpc.Update(encodedVal);
             service_udp.SetTankPressure(encodedVal);
             eventUdp.Update(encodedVal);
