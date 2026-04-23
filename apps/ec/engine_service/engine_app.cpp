@@ -58,10 +58,11 @@ std::optional<std::vector<ArmPinConfig_t>> EngineApp::LoadArmPinConfig(const std
       }
       auto arm_pin_id = pin_config.value().GetNumber<uint8_t>("id");
       auto arm_pin_desc = pin_config.value().GetString("desc");
-      if (!arm_pin_desc.has_value() || !arm_pin_id.has_value()) {
+      auto arm_pin_func = pin_config.value().GetString("func");
+      if (!arm_pin_func.has_value() || !arm_pin_id.has_value()) {
         continue;
       }
-      respons.push_back(ArmPinConfig_t{arm_pin_id.value(), arm_pin_desc.value()});
+      respons.push_back(ArmPinConfig_t{arm_pin_id.value(), arm_pin_desc.value_or(""), arm_pin_func.value()});
     }
     if (respons.size() == 0) {
       return std::nullopt;
@@ -127,12 +128,6 @@ int EngineApp::Initialize(const std::map<ara::core::StringView, ara::core::Strin
   }
   this->arm_pins_id = std::move(arm_pins.value());
   state_ctr = core::rocketState::RocketStateController::GetInstance();
-  vent_ctr_ = engine::VentController::GetInstance();
-  vent_ctr_->BindVentHandler([this](const uint8_t& state) {
-    if (servo_handler_) {
-      servo_handler_->SetVentServoValue(state);
-    }
-  });
   state_ctr->RegisterRequirementsCallback([this](RocketState_t state) {
     switch (state) {
       case RocketState_t::ARM:
@@ -270,7 +265,7 @@ void EngineApp::OnArm() {
 void EngineApp::OnDisarm() {
   ara::log::LogInfo() << "EngineApp::OnDisarm: DISARM sequence completed";
   for (const ArmPinConfig_t& pin : arm_pins_id) {
-    bool disable_later = (pin.name == "Vent Servo Power" || pin.name == "Dump Valve Servo Power");
+    bool disable_later = (pin.func == "VS" || pin.func == "PFMS");
     if (gpio_.SetPinValue(pin.pin_id,
                           disable_later ? kPin_on : kPin_off,
                           disable_later ? 3500 : 0,
@@ -280,7 +275,7 @@ void EngineApp::OnDisarm() {
   }
   if (servo_handler_ != nullptr) {
     servo_handler_->SetDumpValue(0);
-    vent_ctr_->ChangeState(engine::VentState_e::CLOSE);
+    servo_handler_->SetVentServoValue(0);
   }
   if (logger_handler_) {
     this->logger_handler_->Stop();
@@ -296,7 +291,7 @@ void EngineApp::OnAbort() {
   ara::log::LogWarn() << "EngineApp::OnAbort: ABORT sequence initiated";
 
   for (const ArmPinConfig_t& pin : arm_pins_id) {
-    bool disable_later = (pin.name == "Vent Servo Power" || pin.name == "Dump Valve Servo Power");
+    bool disable_later = (pin.func == "VS" || pin.func == "PFMS");
     if (gpio_.SetPinValue(pin.pin_id,
                           disable_later ? kPin_on : kPin_off,
                           disable_later ? 3500 : 0,
@@ -306,7 +301,7 @@ void EngineApp::OnAbort() {
   }
   if (servo_handler_ != nullptr) {
     servo_handler_->SetDumpValue(1);
-    vent_ctr_->ChangeState(engine::VentState_e::OPEN);
+    servo_handler_->SetVentServoValue(2);
   }
 }
 

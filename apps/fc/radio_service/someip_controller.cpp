@@ -30,7 +30,7 @@ namespace {
 }  // namespace
 
 SomeIPController::SomeIPController():
-    someip_logger{ara::log::LoggingMenager::GetInstance()->CreateLogger("SOME", "", ara::log::LogLevel::kDebug)},
+    someip_logger{ara::log::LoggingMenager::GetInstance()->CreateLogger("SOME", "", ara::log::LogLevel::kWarn)},
     event_data(EventData::GetInstance()),
     primer_service_proxy{ara::core::InstanceSpecifier{kPrimer_service_path_name}},
     primer_service_handler{nullptr},

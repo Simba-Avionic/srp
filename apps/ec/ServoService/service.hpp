@@ -34,11 +34,11 @@ class MyServoService : public ServoServiceSkeleton {
     if (!servo_) {
         return ara::com::MakeErrorCode(ara::com::ComErrc::kUnsetFailure, "Servo controller is not initialized");
     }
-    if (value > 1) {
+    if (value > 2) {
         return ara::com::MakeErrorCode(ara::com::ComErrc::kFieldValueIsNotValid, "Value must be 0 or 1");
     }
     auto res = servo_->AutoSetServoPosition(servo_id, value);
-    if (res != core::ErrorCode::kOk) {
+    if (!res) {
         return ara::com::MakeErrorCode(ara::com::ComErrc::kUnsetFailure, "Unknown error from mw::ServoService");
     }
     return true;

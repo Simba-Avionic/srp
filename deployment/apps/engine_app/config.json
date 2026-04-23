@@ -3,32 +3,38 @@
         {
             "id": 9,
             "name": "P8_11",
-            "desc": "Pressure Feed Vent Servo Power (USED AS DUMP VALVE)"
+            "desc": "Pressure Feed Vent Servo Power (USED AS DUMP VALVE)",
+            "func": "PFVS"
         },
         {
             "id": 5,
             "name": "P8_7",
-            "desc": "Main Servo Power"
+            "desc": "Main Servo Power",
+            "func": "MS"
         },
         {
             "id": 6,
             "name": "P8_8",
-            "desc": "Vent Servo Power"
+            "desc": "Vent Servo Power",
+            "func": "VS"
         },
         {
             "id": 7,
             "name": "P8_9",
-            "desc": "Pressure Feed Main Servo Power"
+            "desc": "Pressure Feed Main Servo Power",
+            "func": "PFMS"
         },
         {
             "id": 14,
             "name": "P8_17",
-            "desc": "Dump Valve Servo Power (Required for Igniter)"
+            "desc": "Dump Valve Servo Power (Required for Igniter)",
+            "func": "DS"
         },
         {
             "id": 8,
             "name": "P8_10",
-            "desc": "Igniter Power"
+            "desc": "Igniter Power",
+            "func": "IP"
         }
     ]
 }
