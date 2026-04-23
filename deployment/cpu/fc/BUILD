@@ -27,6 +27,7 @@ cpu_def(
         "//deployment/apps/fc/radio_app:RadioApp",
         "//deployment/apps/fc/main_app:MainApp",
         "//deployment/apps/fc/system_stat_service:FcSysStatService",
+        "//deployment/apps/fc/logger_service:FcFileLoggerApp",
     ],
 )
 
