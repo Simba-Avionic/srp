@@ -27,6 +27,7 @@
 #include "apps/fc/radio_service/someip_controller.hpp"
 #include "apps/fc/radio_service/radio_controller.hpp"
 #include "apps/fc/radio_service/gs_hb_guider.hpp"
+#include "core/onTimerCallback/onTimer.hpp"
 
 
 namespace srp {
@@ -41,12 +42,11 @@ class RadioApp : public ara::exec::AdaptiveApplication {
   radio::MavRadioController radio_controller;
   gpio::GPIOController gpio_;
   radio::GSHeartbeatGuard heartbeat_controller;
+  core::TimerController timer_ctr_;
 
   timepoint last_received_hb;
 
   bool IsStateChangeApproved(const RocketState_t req_state);
-  void WaitUntillTimeEnd(const timepoint& start, const uint32_t req_loop_time,
-                                                  const std::stop_token& token);
 
   std::pair<RocketState_t, uint8_t> req_rocket_state;
   std::shared_ptr<EventData> event_data;
@@ -59,7 +59,6 @@ class RadioApp : public ara::exec::AdaptiveApplication {
   void HBHangleActuators(const uint8_t values);
   void HBHangleState(const uint8_t values);
   void OnGSHEARTBEAT(const mavlink_message_t& msg);
-  void TransmittingLoop(const std::stop_token& token);
   void RxMsgCallback(const mavlink_message_t& msg);
   void OnRadioStatusMsg(const mavlink_message_t& msg);
 

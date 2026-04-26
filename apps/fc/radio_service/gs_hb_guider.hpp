@@ -30,11 +30,12 @@ class GSHeartbeatGuard {
 
   GsConLossCB callback;
   std::jthread guard_thread;
+  void GSHeartbeatGuardLoop(const std::stop_token& t);
+
  public:
   GSHeartbeatGuard();
   void OnNewHbCallback();
   void Init(GsConLossCB cb);
-  void GSHeartbeatGuardLoop(const std::stop_token& t);
 };
 
 }  // namespace radio

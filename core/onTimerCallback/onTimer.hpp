@@ -43,6 +43,7 @@ class TimerController {
     TimerController& operator=(const TimerController&) = delete;
     TimerController(TimerController&&) = delete;
     TimerController& operator=(TimerController&&) = delete;
+    TimerController();
 
     void AddOnTimerCallback(OnTimerCallback callback, u_int32_t Interval_ms);
     void Start();
