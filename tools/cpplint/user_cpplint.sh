@@ -5,7 +5,7 @@ if ! command -v cpplint &> /dev/null; then
     exit 1
 fi
 
-cpp_files=$(find . -type f \( -name "*.cc" -o -name "*.cpp" -o -name "*.h" -o -name "*.hpp" \) -not -path "./libdoip/*" -not -path "./tools/diag_app_frontend/*")
+cpp_files=$(find . -type f \( -name "*.cc" -o -name "*.cpp" -o -name "*.h" -o -name "*.hpp" \) -not -path "./libdoip/*" -not -path "./tools/diag_app_frontend/*" -not -path "./third_party/*")
 
 total_errors=0
 for file in $cpp_files; do

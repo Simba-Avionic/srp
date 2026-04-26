@@ -177,6 +177,29 @@ void RadioApp::OnGSHEARTBEAT(const mavlink_message_t& msg) {
   HBHangleActuators(values);
 }
 
+void RadioApp::OnRadioStatusMsg(const mavlink_message_t& msg) {
+  mavlink_radio_status_t radio_status;
+  mavlink_msg_radio_status_decode(&msg, &radio_status);
+  ara::log::LogWarn() <<
+      "rxErrors: "      << std::to_string(radio_status.rxerrors) <<
+      " TxFreeBuf: "    << std::to_string(radio_status.txbuf)    <<
+      " Fixed: "        << std::to_string(radio_status.fixed)    <<
+      " rssi: "         << std::to_string(radio_status.rssi)     <<
+      " remote rssi: "  << std::to_string(radio_status.remrssi)  <<
+      " noise: "        << std::to_string(radio_status.noise)    <<
+      " remote noise: " << std::to_string(radio_status.remnoise);
+  RadioDataType someip_radio_data;
+  someip_radio_data.rxerrors = radio_status.rxerrors;
+  someip_radio_data.txbuf = radio_status.txbuf;
+  someip_radio_data.fixed = radio_status.fixed;
+  someip_radio_data.rssi = radio_status.rssi;
+  someip_radio_data.remrssi = radio_status.remrssi;
+  someip_radio_data.noise = radio_status.noise;
+  someip_radio_data.remnoise = radio_status.remnoise;
+  service_ipc.RadioStatusEvent.Update(someip_radio_data);
+  service_udp.RadioStatusEvent.Update(someip_radio_data);
+}
+
 void RadioApp::RxMsgCallback(const mavlink_message_t& msg) {
   switch (msg.msgid) {
     case MAVLINK_MSG_ID_SIMBA_ACTUATOR_CMD:
@@ -184,6 +207,9 @@ void RadioApp::RxMsgCallback(const mavlink_message_t& msg) {
       break;
     case MAVLINK_MSG_ID_SIMBA_GS_HEARTBEAT:
       OnGSHEARTBEAT(msg);
+      break;
+    case MAVLINK_MSG_ID_RADIO_STATUS:
+      OnRadioStatusMsg(msg);
       break;
     default:
       ara::log::LogInfo() << "Received unknown msg with ID: " <<
