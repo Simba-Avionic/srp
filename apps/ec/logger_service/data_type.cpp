@@ -170,15 +170,15 @@ void Data_t::SetTemp3(const tempType& temp) {
   std::unique_lock<std::shared_mutex> lock(this->mutex_);
   this->temp3 = temp;
 }
-void Data_t::SetBoardTemp1(const tempType& temp){
+void Data_t::SetBoardTemp1(const tempType& temp) {
   std::unique_lock<std::shared_mutex> lock(this->mutex_);
   this->board_temp1 = temp;
 }
-void Data_t::SetBoardTemp2(const tempType& temp){
+void Data_t::SetBoardTemp2(const tempType& temp) {
   std::unique_lock<std::shared_mutex> lock(this->mutex_);
   this->board_temp2 = temp;
 }
-void Data_t::SetBoardTemp3(const tempType& temp){
+void Data_t::SetBoardTemp3(const tempType& temp) {
   std::unique_lock<std::shared_mutex> lock(this->mutex_);
   this->board_temp3 = temp;
 }

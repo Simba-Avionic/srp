@@ -20,9 +20,14 @@
                 "logger": {
                     "app_id": "FLOG",
                     "app_des": "Log data to FILE",
-                    "log_level": "kInfo",
+                    "log_level": "kDebug",
                     "log_mode": "kRemote",
                     "ctx": [
+                        {
+                            "ctx_id": "SOME",
+                            "log_level": "kDebug",
+                            "ctx_des": "Logs From someip"
+                        },
                         {
                             "ctx_id": "ara",
                             "log_level": "kWarn",
@@ -93,4 +98,3 @@
         }
     }
 }
-

@@ -20,6 +20,7 @@
 #include <atomic>
 
 #include "ara/exec/adaptive_application.h"
+#include "ara/log/logging_menager.h"
 #include "srp/env/EnvApp/EnvAppHandler.h"
 #include "core/timestamp/timestamp_driver.hpp"
 #include "core/csvdriver/csvdriver.h"
@@ -37,6 +38,7 @@ namespace logger {
 
 class LoggerService final : public ara::exec::AdaptiveApplication {
  private:
+  const ara::log::Logger& someip_logger;
   env::EnvAppProxy env_service_proxy;
   gpio::GPIOController gpio_;
   apps::SysStatServiceProxy stat_service_proxy;
