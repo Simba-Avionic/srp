@@ -23,16 +23,16 @@ namespace srp {
 namespace logger {
 
 namespace {
-constexpr auto kLoggerFilename = "_fc_log.csv";
-constexpr auto kLoggerFilenamePrefix = "/home/root/";
-constexpr std::uint16_t kSaveIntervalMs = 5000;
-constexpr auto kEnvServicePathName = "srp/env/EnvAppFc/envServiceFc_ipc";
-constexpr auto kUdpServicePathName = "srp/apps/FcFileLoggerApp/logService_udp";
-constexpr auto kIpcServicePathName = "srp/apps/FcFileLoggerApp/logService_ipc";
-constexpr auto kSysStatServicePathName = "srp/apps/FcSysStatService/FcSysStatService_ipc";
-constexpr auto kFileDidPathName = "/srp/apps/FcFileLoggerApp/logger_did";
-constexpr std::uint8_t kLogsOn = 1;
-constexpr std::uint8_t kLogsOff = 0;
+  static constexpr auto kLoggerFilename = "_fc_log.csv";
+  static constexpr auto kLoggerFilenamePrefix = "/home/root/";
+  static constexpr std::uint16_t kSaveIntervalMs = 5000;
+  static constexpr auto kEnvServicePathName = "srp/apps/FcFileLoggerApp/envServiceFc_ipc";
+  static constexpr auto kUdpServicePathName = "srp/apps/FcFileLoggerApp/logService_udp";
+  static constexpr auto kIpcServicePathName = "srp/apps/FcFileLoggerApp/logService_ipc";
+  static constexpr auto kSysStatServicePathName = "srp/apps/FcFileLoggerApp/FcSysStatService_ipc";
+  static constexpr auto kFileDidPathName = "/srp/apps/FcFileLoggerApp/logger_did";
+  static constexpr std::uint8_t kLogsOn = 1;
+  static constexpr std::uint8_t kLogsOff = 0;
 }  // namespace
 
 LoggerService::LoggerService()
