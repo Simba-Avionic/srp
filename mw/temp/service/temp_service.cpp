@@ -25,39 +25,77 @@ namespace mw {
 namespace temp {
 
 namespace {
-    static constexpr char const*
-        kTempServiceName = "SRP.TEMP.SERVICE";
-    static constexpr char const*
-        kSubscriberPrefix = "SRP.TEMP.";
-    constexpr uint8_t kSensor_resolution = 10;
-    constexpr auto kSensor_Delay = 750;
-    constexpr uint16_t kDefault_Response_Time = 125;
-}
-
+    static constexpr auto kTempServiceName = "SRP.TEMP.SERVICE";
+    static constexpr auto kSubscriberPrefix = "SRP.TEMP.";
+    static constexpr auto kSensor_resolution = 10;
+    static consteval uint16_t GetSensorResponseTimeMs() {
+        switch (kSensor_resolution) {
+        case 9:
+            return 94;
+        case 10:
+            return 188;
+        case 11:
+            return 375;
+        case 12:
+            return 750;
+        default:
+            return 750;
+        }
+    }
+}  // namespace
 
 TempService::TempService(): did_instance{"/srp/mw/temp_service/temp_status_did"} {
     temp_driver_ = std::make_unique<core::temp::TempDriver>();
-    delay_time = 0;
 }
 
 int TempService::Run(const std::stop_token& token) {
-    std::vector<srp::mw::temp::TempReadHdr> readings;
+    std::vector<std::future<std::optional<srp::mw::temp::TempReadHdr>>> futures;
+    futures.reserve(10);
+
     while (!token.stop_requested()) {
-        readings = RetrieveTempReadings();
-        for (const auto& read : readings) {
-            this->temp_did_->UpdateTemp(read.actuator_id, read.value);
+        core::condition::wait_for(std::chrono::milliseconds(GetSensorResponseTimeMs()), token);
+        std::vector<std::pair<std::string, std::uint8_t>> sensors_snapshot;
+        {
+            std::lock_guard<std::mutex> lock(mtx_);
+            if (sensorPathsToIds.empty()) {
+                continue;
+            }
+            sensors_snapshot.reserve(sensorPathsToIds.size());
+            for (const auto& sensor : sensorPathsToIds) {
+                sensors_snapshot.emplace_back(sensor.first, sensor.second);
+            }
         }
-        SendTempReadings(readings);
-        readings.clear();
-        std::this_thread::sleep_for(std::chrono::milliseconds(kSensor_Delay-kDefault_Response_Time));
+
+        for (const auto& sensor : sensors_snapshot) {
+            futures.push_back(std::async(std::launch::async,
+                                [this, sensor]() -> std::optional<srp::mw::temp::TempReadHdr> {
+                auto res = temp_driver_->ReadTemp(sensor.first);
+                if (res.HasValue()) {
+                    double val = res.ValueOr(0.00);
+                    return srp::mw::temp::TempReadHdr{sensor.second, static_cast<float>(val)};
+                }
+                return std::nullopt;
+            }));
+        }
+
+        for (auto& future : futures) {
+            auto result = future.get();
+            if (result.has_value()) {
+                this->temp_did_->UpdateTemp(result.value().actuator_id, result.value().value);
+                SendTempReading(result.value());
+            }
+        }
+        futures.clear();
     }
     this->sub_sock_->StopRXThread();
     this->temp_did_->StopOffer();
     return 0;
 }
 
+
 int TempService::Initialize(const std::map<ara::core::StringView, ara::core::StringView>
                       parms) {
+    nextSensorId = 1;
     ara::log::LogInfo() << "Starting TempService Initialization";
     this->sub_sock_ = std::move(std::make_unique<com::soc::StreamIpcSocket>());
     this->sock = std::move(std::make_unique<com::soc::IpcSocket>());
@@ -69,13 +107,11 @@ int TempService::Initialize(const std::map<ara::core::StringView, ara::core::Str
     }
 
     this->sub_sock_->SetRXCallback(
-        std::bind(&srp::mw::temp::TempService::SubCallback, this,
-            std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+        [this](const std::string& ip, const uint16_t& port,
+                const std::vector<std::uint8_t>& data) -> std::vector<std::uint8_t> {
+            return SubCallback(ip, port, data);
+        });
     this->sub_sock_->StartRXThread();
-    std::vector<uint8_t> sensors_id;
-    for (const auto& id : sensorPathsToIds) {
-        sensors_id.push_back(id.second);
-    }
     auto sensors = temp_driver_->GetAllAccessibleSensor();
     if (!sensors.HasValue()) {
         ara::log::LogWarn() << "Cant get avaliable temp sensors";
@@ -86,7 +122,7 @@ int TempService::Initialize(const std::map<ara::core::StringView, ara::core::Str
         ss << name << ", ";
     }
     ara::log::LogInfo() << ss.str();
-    this->temp_did_ = std::make_unique<TempMWDID>(did_instance, sensors_id);
+    this->temp_did_ = std::make_unique<TempMWDID>(did_instance);
     this->temp_did_->Offer();
     return srp::core::ErrorCode::kOk;
 }
@@ -97,8 +133,6 @@ int TempService::ConfigSensor(std::string sensorId) {
     } else {
         ara::log::LogDebug() <<("Set resolution for sensor: " + sensorId);
     }
-    auto res = temp_driver_->GetResponseTime(sensorId);
-    this->delay_time = res.ValueOr(kDefault_Response_Time);
     return srp::core::ErrorCode::kOk;
 }
 
@@ -127,78 +161,59 @@ std::vector<uint8_t> TempService::SubCallback(const std::string& ip, const uint1
         hdr.physical_id_11,
         hdr.physical_id_12
     };
-
-
-    if (!this->sensorPathsToIds.count(physical_id)) {
-        if (ConfigSensor(physical_id) != srp::core::ErrorCode::kOk) {
-            ara::log::LogError() << "Error configuring new temp sensor";
-            return std::vector<uint8_t>{};
-        }
-        this->sensorPathsToIds[physical_id] = nextSensorId;
-        ara::log::LogInfo() << "Registered new sensor with id: " <<
-                        physical_id << " as " << std::to_string(nextSensorId);
-        this->subscribers[nextSensorId].insert(service_id);
-        ara::log::LogInfo() <<("Registered new client with id: "
-            + std::to_string(service_id) + " to sensor nr: " + std::to_string(this->sensorPathsToIds[physical_id]));
-    } else if (!this->subscribers[this->sensorPathsToIds[physical_id]].contains(service_id)) {
-        this->subscribers[this->sensorPathsToIds[physical_id]].insert(service_id);
-        ara::log::LogInfo() << "Registered new client with id: " <<
-                    std::to_string(service_id) << " to sensor nr: " <<
-                    std::to_string(this->sensorPathsToIds[physical_id]);
-    }
-    return std::vector<uint8_t>{nextSensorId++};
-}
-
-
-std::vector<srp::mw::temp::TempReadHdr> TempService::RetrieveTempReadings() const {
-    std::vector<std::future<std::optional<srp::mw::temp::TempReadHdr>>> futures;
-    for (const auto& sensor : sensorPathsToIds) {
-        futures.push_back(std::async(std::launch::async,
-                            [this, &sensor]() -> std::optional<srp::mw::temp::TempReadHdr> {
-            auto res = temp_driver_->ReadTemp(sensor.first);
-            if (res.HasValue()) {
-                double val = res.ValueOr(0.00);
-                return srp::mw::temp::TempReadHdr{sensor.second, static_cast<float>(val)};
+    bool new_sensor = false;
+    std::uint8_t assigned_sensor_id = 0;
+    {
+        std::lock_guard<std::mutex> lock(mtx_);
+        auto it = sensorPathsToIds.find(physical_id);
+        if (it == sensorPathsToIds.end()) {
+            if (ConfigSensor(physical_id) != srp::core::ErrorCode::kOk) {
+                ara::log::LogError() << "Error configuring new temp sensor";
+                return std::vector<uint8_t>{};
             }
-            return std::nullopt;
-        }));
-    }
-    std::vector<srp::mw::temp::TempReadHdr> readings;
-    for (auto& future : futures) {
-        auto result = future.get();
-        if (result.has_value()) {
-            readings.push_back(result.value());
+            sensorPathsToIds[physical_id] = nextSensorId;
+            new_sensor = true;
+            assigned_sensor_id = nextSensorId;
+        } else {
+            assigned_sensor_id = it->second;
         }
+        subscribers[assigned_sensor_id].insert(service_id);
     }
-    return readings;
-}
-std::vector<uint8_t> TempService::Conv(const std::vector<srp::mw::temp::TempReadHdr>& readings) const {
-    std::vector<uint8_t> out;
-    for (const auto read : readings) {
-        auto part = srp::data::Convert2Vector<srp::mw::temp::TempReadHdr>::Conv(read);
-        out.insert(out.end(), part.begin(), part.end());
+    ara::log::LogInfo() <<("Registered new client with id: "
+        + std::to_string(service_id) + " to sensor nr: " + std::to_string(assigned_sensor_id));
+
+    auto res = assigned_sensor_id;
+    if (new_sensor) {
+        nextSensorId++;
     }
-    return out;
+    return std::vector<uint8_t>{res};
 }
 
 
-void TempService::SendTempReadings(const std::vector<srp::mw::temp::TempReadHdr>& readings) const {
-    for (const auto& read : readings) {
-        auto it = this->subscribers.find(read.actuator_id);
+void TempService::SendTempReading(const TempReadHdr& read) {
+    std::set<uint16_t> subs;
+    {
+        std::lock_guard<std::mutex> lock(mtx_);
+        const auto it = this->subscribers.find(read.actuator_id);
         if (it == this->subscribers.end()) {
             ara::log::LogDebug() << "Can't find any subscriber for sensor: " <<
                                 std::to_string(static_cast<int>(read.actuator_id));
+            return;
+        }
+        if (it->second.empty()) {
+            return;
+        }
+        subs = it->second;
+    }
+
+    std::vector<uint8_t> data = srp::data::Convert2Vector<srp::mw::temp::TempReadHdr>::Conv(read);
+    for (const auto& client_id : subs) {
+        std::string ip = kSubscriberPrefix + std::to_string(static_cast<int>(client_id));
+        if (this->sock->Transmit(ip, 0, data)) {
+            ara::log::LogError() << "Can't send message to: " << ip;
             continue;
         }
-        for (const auto& client_id : it->second) {
-            std::string ip = kSubscriberPrefix + std::to_string(static_cast<int>(client_id));
-            std::vector<uint8_t> data = srp::data::Convert2Vector<srp::mw::temp::TempReadHdr>::Conv(read);
-            if (this->sock->Transmit(ip, 0, data)) {
-                ara::log::LogError() << "Can't send message to: " << ip;
-                continue;
-            }
-            ara::log::LogDebug() << "Sent new temp data to " << std::to_string(client_id);
-        }
+        ara::log::LogDebug() << "Sent new temp data to " << std::to_string(client_id);
     }
 }
 

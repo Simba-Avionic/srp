@@ -58,18 +58,9 @@ class TempMWDID : public ara::diag::GenericDiD {
 
  public:
   void UpdateTemp(uint8_t sensor_id, float temp) {
-    auto it = data.find(sensor_id);
-    if (it == data.end()) {
-      return;
-    }
-    it->second = temp;
+    data[sensor_id] = temp;
   }
-  TempMWDID(const ara::core::InstanceSpecifier &specifier,
-          std::vector<uint8_t> sensors): ara::diag::GenericDiD{specifier} {
-    for (const auto& sensor : sensors) {
-      data[sensor] = 0.0;
-    }
-    }
+  explicit TempMWDID(const ara::core::InstanceSpecifier &specifier): ara::diag::GenericDiD{specifier} {}
 };
 
 }  // namespace mw
