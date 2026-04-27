@@ -55,7 +55,7 @@ class GPIOMWService : public ara::exec::AdaptiveApplication {
     std::jthread pin_expire_thread;
     std::mutex pin_expire_mutex;
 
-    void CheckPinsExpired();
+    std::chrono::milliseconds CheckPinsExpired();
     void PollSubscribedPinsLoop(const std::stop_token& token);
     std::vector<uint8_t> RxCallback(const std::string& ip, const std::uint16_t& port,
           const std::vector<std::uint8_t> data);

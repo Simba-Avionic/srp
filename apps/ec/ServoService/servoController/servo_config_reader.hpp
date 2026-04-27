@@ -29,19 +29,19 @@ using Clock = std::chrono::high_resolution_clock;
 
 struct ServoRuntimeConfig {
   using timepoint = Clock::time_point;
-  uint16_t on_pos;
-  uint16_t off_pos;
-  uint8_t channel;
-  uint8_t mosfet_id;
-  uint8_t ina219_i2c_address;
-  uint16_t auto_closing;
-  timepoint open_time_end;
-  uint8_t position;
-  uint16_t pulsing_time;
+  uint16_t on_pos{0};
+  uint16_t off_pos{0};
+  uint8_t channel{0};
+  uint8_t mosfet_id{0};
+  uint8_t ina219_i2c_address{0};
+  uint16_t auto_closing{0};
+  timepoint open_time_end{Clock::time_point::min()};
+  uint8_t position{0};
+  uint16_t pulsing_time{0};
 
 
   ServoRuntimeConfig(const uint16_t on_pos_, const uint16_t off_pos_, const uint8_t channel_):
-                        on_pos(on_pos_), off_pos(off_pos_), channel(channel_){}
+                        on_pos(on_pos_), off_pos(off_pos_), channel(channel_) {}
 };
 
 struct servo_cfg {

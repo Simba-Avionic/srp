@@ -19,6 +19,7 @@
 #include <vector>
 #include <map>
 #include <unordered_map>
+#include <mutex>  // NOLINT
 #include <set>
 #include "core/json/json_parser.h"
 #include "nlohmann/json.hpp"
@@ -49,10 +50,10 @@ class TempService final : public ara::exec::AdaptiveApplication {
   std::unique_ptr<TempMWDID> temp_did_;
   const ara::core::InstanceSpecifier did_instance;
   std::unordered_map<uint8_t, std::set<uint16_t>> subscribers{};
-  uint16_t delay_time;
-  uint8_t nextSensorId = 0;
   //                 physical ID, sensor ID
   std::unordered_map<std::string, std::uint8_t> sensorPathsToIds{};
+  std::mutex mtx_;
+  uint8_t nextSensorId;
 
 
   int ConfigSensor(std::string sensorId);
@@ -71,10 +72,8 @@ class TempService final : public ara::exec::AdaptiveApplication {
   int Initialize(const std::map<ara::core::StringView, ara::core::StringView>
                       parms) override;
 
-  std::vector<srp::mw::temp::TempReadHdr> RetrieveTempReadings() const;
 
-  void SendTempReadings(const std::vector<srp::mw::temp::TempReadHdr>& readings) const;
-  std::vector<uint8_t> Conv(const std::vector<srp::mw::temp::TempReadHdr>& readings) const;
+  void SendTempReading(const TempReadHdr& read);
 
  public:
   TempService();
