@@ -33,9 +33,9 @@ namespace mw {
 namespace {
     static constexpr auto SOCKET_PATH = "SRP.GPIO";
     static constexpr auto CALLBACK_PATH_PREFIX = "SRP.GPIO.";
-    static constexpr auto AUTO_DISABLE_PIN_DELAY = 100;
     static constexpr auto STATE_POLL_DELAY = std::chrono::milliseconds(100);
     static constexpr auto kDID_instance_name = "/srp/mw/gpio_service/gpio_pin_did";
+    static constexpr auto kMin_auto_disable_sleep_ms = std::chrono::milliseconds(5);
 }
 
 int GPIOMWService::Init(std::unique_ptr<srp::com::soc::ISocketStream> socket,
@@ -190,7 +190,8 @@ GPIOMWService::~GPIOMWService() {
     this->sock_->~ISocketStream();
 }
 
-void GPIOMWService::CheckPinsExpired() {
+std::chrono::milliseconds GPIOMWService::CheckPinsExpired() {
+    auto allowed_sleep = std::chrono::milliseconds(1000);
     auto now = std::chrono::high_resolution_clock::now();
     std::lock_guard<std::mutex> lock(pin_expire_mutex);
 
@@ -200,6 +201,9 @@ void GPIOMWService::CheckPinsExpired() {
             continue;
         }
         if (now < it->second.disable_tp) {
+            auto can_sleep_for = std::chrono::duration_cast<
+                        std::chrono::milliseconds>(it->second.disable_tp - now);
+            allowed_sleep = std::min(allowed_sleep, can_sleep_for);
             ++it;
             continue;
         }
@@ -214,13 +218,15 @@ void GPIOMWService::CheckPinsExpired() {
         gpio_driver_->setValue(pin_config->second.pinNum, 0);
         it = pin_expire.erase(it);
     }
+    return allowed_sleep;
 }
 
 int GPIOMWService::Run(const std::stop_token& token) {
     pin_expire_thread = std::jthread([this](const std::stop_token& token){
         while (!token.stop_requested()){
-            CheckPinsExpired();
-            core::condition::wait_for(std::chrono::milliseconds(AUTO_DISABLE_PIN_DELAY), token);
+            auto allowed_sleep_time = CheckPinsExpired();
+            allowed_sleep_time = std::max(allowed_sleep_time, kMin_auto_disable_sleep_ms);
+            core::condition::wait_for(allowed_sleep_time, token);
         }
     });
     pin_did_ = std::make_unique<GpioMWDID>(this->did_instance, this->gpio_driver_, config);
