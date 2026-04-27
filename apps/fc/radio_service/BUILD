@@ -9,6 +9,7 @@ cc_binary(
         "//core/timestamp:timestamp_controller",
         "@srp_platform//ara/log",
         "//apps/fc/main_service:MainService",
+        "//core/onTimerCallback:on_timer_callback_lib",
     ],
     srcs = [
         "radio_app.cc",

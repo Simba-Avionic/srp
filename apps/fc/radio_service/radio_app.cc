@@ -21,7 +21,12 @@
 namespace srp {
 namespace apps {
 namespace {
-  static constexpr auto kTime =        990;
+  static constexpr auto kHB_send_time_ms =        990;
+  static constexpr auto kMax_altitude_send_time_ms = 1000;
+  static constexpr auto kEngine_sensor_send_time_ms = 1000;
+  static constexpr auto kGps_send_time_ms = 1000;
+  static constexpr auto kComputer_telemetry_send_time_ms = 1000;
+
   static constexpr auto kRequired_mavlink_messages_to_change_state = 4;
 
   static constexpr auto kStatic_test_mode = false;
@@ -32,43 +37,6 @@ namespace {
   static constexpr auto kService_udp_instance =       "srp/apps/RadioApp/RadioService_udp";
 }  // namespace
 
-
-
-void RadioApp::WaitUntillTimeEnd(const timepoint& start, const uint32_t req_loop_time,
-                                                  const std::stop_token& token) {
-  auto end = std::chrono::high_resolution_clock::now();
-  auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-  auto target = std::chrono::milliseconds(req_loop_time);
-  if (target > elapsed) {
-      core::condition::wait_for(target - elapsed, token);
-  }
-}
-
-void RadioApp::TransmittingLoop(const std::stop_token& token) {
-  while (!token.stop_requested()) {
-    auto start = std::chrono::high_resolution_clock::now();
-
-    // HB
-    auto hb = telemetry_provider.GetHeartbeatMsg();
-    if (hb.has_value()) {
-      radio_controller.Push(hb.value());
-    }
-
-    // Max Altitude
-    radio_controller.Push(telemetry_provider.GetMaxAltitudeMsg());
-
-    // Tank Sensors
-    radio_controller.Push(telemetry_provider.GetTankSensorsMsg());
-
-    // GPS
-    radio_controller.Push(telemetry_provider.GetGpsMsg());
-
-    // Computers telemetry
-    radio_controller.Push(telemetry_provider.GetComputersTelemetryMsg());
-
-    WaitUntillTimeEnd(start, kTime, token);
-  }
-}
 
 void RadioApp::OnActuatorCMD(const mavlink_message_t& msg) {
   // TODO(matikrajek42@gmail.com) IMplement this maybe
@@ -177,6 +145,32 @@ void RadioApp::OnGSHEARTBEAT(const mavlink_message_t& msg) {
   HBHangleActuators(values);
 }
 
+void RadioApp::OnRadioStatusMsg(const mavlink_message_t& msg) {
+  mavlink_radio_status_t radio_status;
+  mavlink_msg_radio_status_decode(&msg, &radio_status);
+  ara::log::LogWarn()
+      << "rxErrors: "      << radio_status.rxerrors
+      << " TxFreeBuf: "    << static_cast<uint32_t>(radio_status.txbuf)
+      << " Fixed: "        << radio_status.fixed
+      << " rssi: "         << static_cast<uint32_t>(radio_status.rssi)
+      << " remote rssi: "  << static_cast<uint32_t>(radio_status.remrssi)
+      << " noise: "        << static_cast<uint32_t>(radio_status.noise)
+      << " remote noise: " << static_cast<uint32_t>(radio_status.remnoise);
+
+  RadioDataType someip_radio_data {
+      .rxerrors = radio_status.rxerrors,
+      .fixed    = radio_status.fixed,
+      .rssi     = radio_status.rssi,
+      .remrssi  = radio_status.remrssi,
+      .txbuf    = radio_status.txbuf,
+      .noise    = radio_status.noise,
+      .remnoise = radio_status.remnoise
+  };
+
+  service_ipc.RadioStatusEvent.Update(someip_radio_data);
+  service_udp.RadioStatusEvent.Update(someip_radio_data);
+}
+
 void RadioApp::RxMsgCallback(const mavlink_message_t& msg) {
   switch (msg.msgid) {
     case MAVLINK_MSG_ID_SIMBA_ACTUATOR_CMD:
@@ -184,6 +178,9 @@ void RadioApp::RxMsgCallback(const mavlink_message_t& msg) {
       break;
     case MAVLINK_MSG_ID_SIMBA_GS_HEARTBEAT:
       OnGSHEARTBEAT(msg);
+      break;
+    case MAVLINK_MSG_ID_RADIO_STATUS:
+      OnRadioStatusMsg(msg);
       break;
     default:
       ara::log::LogInfo() << "Received unknown msg with ID: " <<
@@ -205,14 +202,7 @@ int RadioApp::Run(const std::stop_token& token) {
     }
   });
   ara::log::LogDebug() << "RadioApp Run starting threads";
-
-  std::jthread transmitting_thread([this](const std::stop_token& t) {
-    this->TransmittingLoop(t);
-  });
-
-  std::jthread gs_communication_guard_thread([this](const std::stop_token& t) {
-    heartbeat_controller.GSHeartbeatGuardLoop(t);
-  });
+  timer_ctr_.Start();
   service_ipc.StartOffer();
   service_udp.StartOffer();
 
@@ -222,7 +212,7 @@ int RadioApp::Run(const std::stop_token& token) {
     }
     core::condition::wait_for(std::chrono::milliseconds(kHeartbeat_time_ms * 2), token);
   }
-
+  timer_ctr_.Stop();
   service_ipc.StopOffer();
   service_udp.StopOffer();
   return core::ErrorCode::kOk;
@@ -231,6 +221,33 @@ int RadioApp::Run(const std::stop_token& token) {
 int RadioApp::Initialize(const std::map<ara::core::StringView,
   ara::core::StringView> parms) {
   event_data = EventData::GetInstance();
+  timer_ctr_.AddOnTimerCallback([this](){
+    auto hb = telemetry_provider.GetHeartbeatMsg();
+    if (hb.has_value()) {
+      radio_controller.Push(hb.value());
+    }
+  }, kHB_send_time_ms);
+
+  timer_ctr_.AddOnTimerCallback([this](){
+    // Max Altitude
+    radio_controller.Push(telemetry_provider.GetMaxAltitudeMsg());
+  }, kMax_altitude_send_time_ms);
+
+  timer_ctr_.AddOnTimerCallback([this](){
+    // Tank Sensors
+    radio_controller.Push(telemetry_provider.GetTankSensorsMsg());
+  }, kEngine_sensor_send_time_ms);
+
+  timer_ctr_.AddOnTimerCallback([this](){
+    // GPS
+    radio_controller.Push(telemetry_provider.GetGpsMsg());
+  }, kGps_send_time_ms);
+
+  timer_ctr_.AddOnTimerCallback([this](){
+    // Computers telemetry
+    radio_controller.Push(telemetry_provider.GetComputersTelemetryMsg());
+  }, kComputer_telemetry_send_time_ms);
+
   return core::ErrorCode::kOk;
 }
 

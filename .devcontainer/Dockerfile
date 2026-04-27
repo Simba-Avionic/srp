@@ -2,7 +2,7 @@ FROM mcr.microsoft.com/devcontainers/cpp:1-ubuntu-24.04
 
 # Instalacja wszystkich narzędzi w jednej warstwie
 RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
-    && apt-get install -y python3-pip curl git \
+    && apt-get install -y python3-pip curl git qemu-system-arm qemu-utils \
     && pip3 install cpplint==1.6.1 --break-system-packages \
     # Pobieranie Bazeliska
     && curl -L https://github.com/bazelbuild/bazelisk/releases/latest/download/bazelisk-linux-amd64 -o /usr/local/bin/bazel \

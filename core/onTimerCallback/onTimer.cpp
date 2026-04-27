@@ -77,5 +77,7 @@ void TimerController::Stop() {
     }
 }
 
+TimerController::TimerController() {}
+
 }  // namespace core
 }  // namespace srp
