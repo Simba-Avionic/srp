@@ -47,6 +47,7 @@ void ServoController::closingThreadLoop(const std::stop_token& token) {
           auto time_until_end = std::chrono::duration_cast<
                   std::chrono::milliseconds>(cfg.value().open_time_end - now);
           can_sleep_for = std::min(can_sleep_for, time_until_end);
+          can_sleep_for = std::max(can_sleep_for, std::chrono::milliseconds(1));
         }
       }
       core::condition::wait_for(std::chrono::milliseconds(can_sleep_for), token);
@@ -86,9 +87,10 @@ void ServoController::pulsingThreadLoop(const std::stop_token& token) {
         auto new_sleep_time =
             std::chrono::duration_cast<std::chrono::milliseconds>(pulse_cfg->second.pulse_deadline - now);
         can_sleep_for = std::min(can_sleep_for, new_sleep_time);
+        can_sleep_for = std::max(can_sleep_for, std::chrono::milliseconds(1));
       }
-      core::condition::wait_for(std::chrono::milliseconds(can_sleep_for), token);
     }
+    core::condition::wait_for(can_sleep_for, token);
   }
 }
 
