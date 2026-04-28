@@ -3,6 +3,9 @@
         "deployment/system_definition/someip/logger_service/service.json",
         "deployment/system_definition/someip/env_service/service.json",
         "deployment/system_definition/someip/sys_stat_service/service.json",
+        "deployment/system_definition/someip/prim_service/service.json",
+        "deployment/system_definition/someip/servo_service/service.json",
+        "deployment/system_definition/someip/engine_service/service.json",
         "deployment/system_definition/diag/jobs/file_logger/file_logger_did.json"
     ],
     "package": "srp.apps",
@@ -17,9 +20,14 @@
                 "logger": {
                     "app_id": "FLOG",
                     "app_des": "Log data to FILE",
-                    "log_level": "kInfo",
+                    "log_level": "kDebug",
                     "log_mode": "kRemote",
                     "ctx": [
+                        {
+                            "ctx_id": "SOME",
+                            "log_level": "kDebug",
+                            "ctx_des": "Logs From someip"
+                        },
                         {
                             "ctx_id": "ara",
                             "log_level": "kWarn",
@@ -70,9 +78,23 @@
                     "name": "SysStatService as SysStatService",
                     "on": "ipc",
                     "instance": 2
+                },
+                {
+                    "name": "PrimerService as PrimerService",
+                    "on": "ipc",
+                    "instance": 2
+                },
+                {
+                    "name": "ServoService as ServoService",
+                    "on": "ipc",
+                    "instance": 2
+                },
+                {
+                    "name": "EngineService as EngineService",
+                    "on": "ipc",
+                    "instance": 2
                 }
             ]
         }
     }
 }
-
