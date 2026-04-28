@@ -45,7 +45,7 @@ std::string GpioDriver::getEndpointPath(const uint16_t& pinNumber, const std::st
 
 core::ErrorCode GpioDriver::setValue(const uint16_t& pinNumber , const uint8_t& value) {
     ara::log::LogInfo() << "SET VALUE PIN with ID:" << pinNumber
-    << "value:" << std::to_string(static_cast<uint16_t>(value));
+    << "value:" << static_cast<uint16_t>(value);
     return core::ErrorCode::kOk;
 }
 

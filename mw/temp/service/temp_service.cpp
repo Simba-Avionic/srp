@@ -179,8 +179,8 @@ std::vector<uint8_t> TempService::SubCallback(const std::string& ip, const uint1
         }
         subscribers[assigned_sensor_id].insert(service_id);
     }
-    ara::log::LogInfo() <<("Registered new client with id: "
-        + std::to_string(service_id) + " to sensor nr: " + std::to_string(assigned_sensor_id));
+    ara::log::LogInfo() << "Registered new client with id: "
+            << service_id << " to sensor nr: " << assigned_sensor_id;
 
     auto res = assigned_sensor_id;
     if (new_sensor) {
@@ -196,8 +196,8 @@ void TempService::SendTempReading(const TempReadHdr& read) {
         std::lock_guard<std::mutex> lock(mtx_);
         const auto it = this->subscribers.find(read.actuator_id);
         if (it == this->subscribers.end()) {
-            ara::log::LogDebug() << "Can't find any subscriber for sensor: " <<
-                                std::to_string(static_cast<int>(read.actuator_id));
+            ara::log::LogDebug() << "Can't find any subscriber for sensor: "
+                                 << read.actuator_id;
             return;
         }
         if (it->second.empty()) {
@@ -213,7 +213,7 @@ void TempService::SendTempReading(const TempReadHdr& read) {
             ara::log::LogError() << "Can't send message to: " << ip;
             continue;
         }
-        ara::log::LogDebug() << "Sent new temp data to " << std::to_string(client_id);
+        ara::log::LogDebug() << "Sent new temp data to " << client_id;
     }
 }
 

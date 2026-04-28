@@ -83,13 +83,12 @@ core::ErrorCode EEPROM24LC32AT::WaitForWriteCycle() const {
 core::ErrorCode EEPROM24LC32AT::WriteByte(uint16_t address, uint8_t data) {
   if (address > EEPROM_MAX_ADDRESS) {
     eeprom_logger_.LogWarn() << "EEPROM24LC32AT.WriteByte: address out of range " <<
-                                std::to_string(address);
+                                address;
     return core::ErrorCode::kError;
   }
 
   eeprom_logger_.LogDebug() << "EEPROM24LC32AT.WriteByte: address " <<
-                               std::to_string(address) << " data " <<
-                               std::to_string(static_cast<int>(data));
+                               address << " data " << data;
 
   auto address_bytes = GenerateAddressBytes(address);
   std::vector<uint8_t> write_data = {address_bytes[0], address_bytes[1], data};
@@ -110,8 +109,7 @@ core::ErrorCode EEPROM24LC32AT::WriteByte(uint16_t address, uint8_t data) {
 
   if (read_result.value() != data) {
     eeprom_logger_.LogWarn() << "EEPROM24LC32AT.WriteByte: write verification failed - "
-                                "expected 0x" << std::to_string(static_cast<int>(data)) <<
-                                " but read 0x" << std::to_string(static_cast<int>(read_result.value()));
+                "expected 0x" << data << " but read 0x" << read_result.value();
     return core::ErrorCode::kError;
   }
 
@@ -122,7 +120,7 @@ core::ErrorCode EEPROM24LC32AT::WriteByte(uint16_t address, uint8_t data) {
 core::ErrorCode EEPROM24LC32AT::WritePage(uint16_t address, const std::vector<uint8_t>& data) {
   if (address > EEPROM_MAX_ADDRESS) {
     eeprom_logger_.LogWarn() << "EEPROM24LC32AT.WritePage: address out of range " <<
-                                std::to_string(address);
+                                address;
     return core::ErrorCode::kError;
   }
 
@@ -150,8 +148,7 @@ core::ErrorCode EEPROM24LC32AT::WritePage(uint16_t address, const std::vector<ui
   size_t write_size = (data.size() > PAGE_SIZE) ? PAGE_SIZE : data.size();
 
   eeprom_logger_.LogDebug() << "EEPROM24LC32AT.WritePage: address " <<
-                               std::to_string(address) << " size " <<
-                               std::to_string(write_size);
+                    address << " size " << write_size;
 
   auto address_bytes = GenerateAddressBytes(address);
   std::vector<uint8_t> write_data;
@@ -179,16 +176,16 @@ core::ErrorCode EEPROM24LC32AT::WritePage(uint16_t address, const std::vector<ui
   if (read_result.value().size() != write_size) {
     verification_failed = true;
     eeprom_logger_.LogWarn() << "EEPROM24LC32AT.WritePage: write verification failed - "
-                                "expected " << std::to_string(write_size) << " bytes but read " <<
-                                std::to_string(read_result.value().size()) << " bytes";
+                                "expected " << write_size << " bytes but read " <<
+                                read_result.value().size() << " bytes";
   } else {
     for (size_t i = 0; i < write_size; ++i) {
       if (read_result.value()[i] != data[i]) {
         verification_failed = true;
         eeprom_logger_.LogWarn() << "EEPROM24LC32AT.WritePage: write verification failed - "
-                                    "byte " << std::to_string(i) << " expected 0x" << std::to_string(data[i])
+                                    "byte " << i << " expected 0x" << data[i]
                                     << " but read 0x" <<
-                                    std::to_string(static_cast<int>(read_result.value()[i]));
+                                    read_result.value()[i];
         break;
       }
     }
@@ -205,12 +202,12 @@ core::ErrorCode EEPROM24LC32AT::WritePage(uint16_t address, const std::vector<ui
 std::optional<uint8_t> EEPROM24LC32AT::ReadByte(uint16_t address) {
   if (address > EEPROM_MAX_ADDRESS) {
     eeprom_logger_.LogWarn() << "EEPROM24LC32AT.ReadByte: address out of range " <<
-                                 std::to_string(address);
+                                 address;
     return std::nullopt;
   }
 
   eeprom_logger_.LogDebug() << "EEPROM24LC32AT.ReadByte: address " <<
-                                std::to_string(address);
+                                address;
 
   auto address_bytes = GenerateAddressBytes(address);
   // For EEPROM: write 2-byte address, then read
@@ -227,15 +224,15 @@ std::optional<uint8_t> EEPROM24LC32AT::ReadByte(uint16_t address) {
 
   uint8_t data = result.value()[0];
   eeprom_logger_.LogDebug() << "EEPROM24LC32AT.ReadByte: address " <<
-                                std::to_string(address) << " data " <<
-                                std::to_string(static_cast<int>(data));
+                                address << " data " <<
+                                data;
   return data;
 }
 
 std::optional<std::vector<uint8_t>> EEPROM24LC32AT::ReadSequential(uint16_t address, uint8_t size) {
   if (address > EEPROM_MAX_ADDRESS) {
     eeprom_logger_.LogWarn() << "EEPROM24LC32AT.ReadSequential: address out of range " <<
-                                 std::to_string(address);
+                                 address;
     return std::nullopt;
   }
 
@@ -251,8 +248,8 @@ std::optional<std::vector<uint8_t>> EEPROM24LC32AT::ReadSequential(uint16_t addr
   }
 
   eeprom_logger_.LogDebug() << "EEPROM24LC32AT.ReadSequential: address " <<
-                                std::to_string(address) << " size " <<
-                                std::to_string(static_cast<int>(size));
+                                address << " size " <<
+                                size;
 
   auto address_bytes = GenerateAddressBytes(address);
   if (this->i2c_->Write(device_address_, address_bytes) != core::ErrorCode::kOk) {
@@ -267,7 +264,7 @@ std::optional<std::vector<uint8_t>> EEPROM24LC32AT::ReadSequential(uint16_t addr
   }
 
   eeprom_logger_.LogDebug() << "EEPROM24LC32AT.ReadSequential: read " <<
-                                std::to_string(result.value().size()) << " bytes";
+                                result.value().size() << " bytes";
   return result;
 }
 

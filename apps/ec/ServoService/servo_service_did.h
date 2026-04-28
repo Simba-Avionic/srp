@@ -40,8 +40,8 @@ class ServoServiceDiD : public ara::diag::GenericDiD {
       return ara::diag::MakeErrorCode(
         ara::diag::UdsDiagErrc::kInvalidMessageLengthFormat);
     }
-    ara::log::LogInfo() << "Set position:" << std::to_string(payload[0]) <<
-        ", to actuator ID:" << std::to_string(this->actuator_id);
+    ara::log::LogInfo() << "Set position:" << payload[0] <<
+        ", to actuator ID:" << this->actuator_id;
     auto res = this->servoController->AutoSetServoPosition(this->actuator_id, payload[0]);
     if (res != core::ErrorCode::kOk) {
       return ara::diag::MakeErrorCode(

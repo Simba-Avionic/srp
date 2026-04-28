@@ -61,7 +61,7 @@ void PrimerController::VerifyPrimerConection() {
         return;
     }
     auto mean = sum / static_cast<float>(sample_num);
-    ara::log::LogWarn() << "Read value: " << std::to_string(mean);
+    ara::log::LogWarn() << "Read value: " << mean;
     if (mean >= kIgniter_connected_treshold_mV) {
         primerState.store(PrimerState_t::kCONNECTED);
     } else {

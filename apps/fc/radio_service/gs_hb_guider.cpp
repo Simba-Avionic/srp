@@ -36,9 +36,9 @@ void GSHeartbeatGuard::OnNewHbCallback() {
   }
   auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(now - last_hb_time_).count();
   if (duration > (1000 * kHbDelayWarning)) {
-    ara::log::LogWarn() << "GS Heartbeat received with duration: " << std::to_string(duration);
+    ara::log::LogWarn() << "GS Heartbeat received with duration: " << duration;
   } else {
-    ara::log::LogDebug() << "GS Heartbeat received with duration: " << std::to_string(duration);
+    ara::log::LogDebug() << "GS Heartbeat received with duration: " << duration;
   }
 }
 

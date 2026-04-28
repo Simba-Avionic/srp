@@ -74,7 +74,7 @@ core::ErrorCode I2CDriver::PageWrite(std::vector<uint8_t> data) {
 }
 std::optional<std::vector<uint8_t>> I2CDriver::ReadWrite(const uint8_t& reg, const uint8_t size) {
     if (write(i2cFile, &reg, 1) == -1) {
-      i2c_logger_.LogWarn() << ("Cant select reg "+ std::to_string(static_cast<int>(reg)));
+      i2c_logger_.LogWarn() << "Cant select reg " << reg;
       return std::nullopt;
     }
     std::vector<uint8_t> buffer(size);

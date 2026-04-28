@@ -92,8 +92,7 @@ std::vector<uint8_t> PCA9685::GenerateData(const uint8_t &channel, const uint16_
 
 core::ErrorCode PCA9685::SetChannelPosition(uint8_t channel, uint16_t pos) {
   pac_logger_.LogDebug() << "PCA9685.SetChannelPosition: channel " <<
-                             std::to_string(static_cast<int>(channel)) <<
-                             " pos " << std::to_string(pos);
+                             channel << " pos " << pos;
   return this->i2c_->Write(PCA9685_ADDRESS, GenerateData(channel, pos));
 }
 
@@ -109,13 +108,12 @@ std::optional<uint16_t> PCA9685::ReadChannelPosition(const uint8_t &channel) {
     auto val_opt = i2c_->Read(PCA9685_ADDRESS, LED_ON_L_LOOKUP[channel], 4);
     if (!val_opt.has_value()) {
         pac_logger_.LogWarn() << "PCA9685.ReadChannelPosition: failed to read channel " <<
-                                  std::to_string(static_cast<int>(channel));
+                                  channel;
         return std::nullopt;
     }
     auto position = ComposePosition(val_opt.value());
     pac_logger_.LogDebug() << "PCA9685.ReadChannelPosition: channel " <<
-                               std::to_string(static_cast<int>(channel)) <<
-                               " pos " << std::to_string(position);
+                               channel << " pos " << position;
     return position;
 }
 

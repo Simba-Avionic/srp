@@ -137,8 +137,7 @@ void RadioApp::OnGSHEARTBEAT(const mavlink_message_t& msg) {
   auto timestamp = mavlink_msg_simba_gs_heartbeat_get_timestamp(&msg);
   auto values = mavlink_msg_simba_gs_heartbeat_get_values(&msg);
   ara::log::LogInfo() << "GS Heartbeat: ts="
-                      << std::to_string(static_cast<int64_t>(timestamp))
-                      << " flags=" << std::to_string(static_cast<int>(values));
+                      << timestamp << " flags=" << values;
 
   HBHangleState(values);
 
@@ -184,7 +183,7 @@ void RadioApp::RxMsgCallback(const mavlink_message_t& msg) {
       break;
     default:
       ara::log::LogInfo() << "Received unknown msg with ID: " <<
-          std::to_string(msg.msgid) << ", with size: " << std::to_string(msg.len);
+          msg.msgid << ", with size: " << msg.len;
       break;
   }
 }

@@ -79,7 +79,7 @@ int GPSApp::Run(const std::stop_token& token) {
           continue;
         }
         if (GetTimeDelata(last_frame) > KGps_expected_interval + kGps_freq_tolerance) {
-            ara::log::LogWarn() << "Missing GPS frame in row: " << std::to_string(warn_num);
+            ara::log::LogWarn() << "Missing GPS frame in row: " << warn_num;
             warn_num +=1;
         }
       }
@@ -106,9 +106,9 @@ int GPSApp::Run(const std::stop_token& token) {
       }
 
       if (std::abs(delta - KGps_expected_interval) > kGps_freq_tolerance) {
-        ara::log::LogWarn() << "GPS frequency deviation detected: interval = " << std::to_string(delta) << " ms";
+        ara::log::LogWarn() << "GPS frequency deviation detected: interval = " << delta << " ms";
       }
-      ara::log::LogDebug() << "GPS frequency interval = " << std::to_string(delta) << " ms";
+      ara::log::LogDebug() << "GPS frequency interval = " << delta << " ms";
 
       service_ipc.GPSStatusEvent.Update(res.value());
       service_udp.GPSStatusEvent.Update(res.value());

@@ -91,7 +91,7 @@ int EngineApp::Run(const std::stop_token& token) {
     }
 
     auto state = state_ctr->GetState();
-    ara::log::LogDebug() << "EngineApp::Run: Current state = " << std::to_string(static_cast<int>(state));
+    ara::log::LogDebug() << "EngineApp::Run: Current state = " << state;
 
     service_ipc.CurrentMode.Update(static_cast<uint8_t>(state));
     service_udp.CurrentMode.Update(static_cast<uint8_t>(state));
@@ -196,7 +196,7 @@ int EngineApp::Initialize(const std::map<ara::core::StringView, ara::core::Strin
   int i = 0;
   while ((servo_handler_ == nullptr || primer_handler_ == nullptr) && i < kInit_max_intervals) {
     i += 1;
-    ara::log::LogWarn() << "Retry setting servo handler or primer_handler i: " << std::to_string(i-1);
+    ara::log::LogWarn() << "Retry setting servo handler or primer_handler i: " << i-1;
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
   }
   if (i >= kInit_max_intervals) {
@@ -217,7 +217,7 @@ int EngineApp::Initialize(const std::map<ara::core::StringView, ara::core::Strin
 
 void EngineApp::OnStateChange(RocketState_t new_state) {
   ara::log::LogDebug() << "EngineApp::OnStateChange: Updating services with new state "
-                                        << std::to_string(static_cast<int>(new_state));
+                        << new_state;
   service_ipc.CurrentMode.Update(static_cast<uint8_t>(new_state));
   service_udp.CurrentMode.Update(static_cast<uint8_t>(new_state));
 }
@@ -234,7 +234,7 @@ void EngineApp::OnLaunch() {
     ara::log::LogDebug() << "EngineApp::OnLaunch: Primer started successfully";
 
     ara::log::LogDebug() << "EngineApp::OnLaunch: Waiting "
-                          << std::to_string(kPrimerDelay) << "ms before servo activation";
+                         << kPrimerDelay << "ms before servo activation";
     std::this_thread::sleep_for(std::chrono::milliseconds(kPrimerDelay));
     auto res2 = this->servo_handler_->SetMainServoValue(1);
     if (!res2.HasValue()) {
