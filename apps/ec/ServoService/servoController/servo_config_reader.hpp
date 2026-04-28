@@ -72,8 +72,7 @@ class ConfigReader {
         cfg.pulsing_time = entry.GetNumber<uint16_t>("pulsing_time_ms").value_or(0);
 
         ara::log::LogDebug() << "ServoController.LoadConfig: parsed actuator "
-                             << std::to_string(static_cast<int>(actuator_id.value()))
-                             << ", channel " << std::to_string(static_cast<int>(cfg.channel));
+                             << actuator_id.value() << ", channel " << cfg.channel;
         return servo_cfg{cfg, actuator_id.value()};
     }
 
@@ -83,11 +82,11 @@ class ConfigReader {
         auto it = db.find(actuator_id);
         if (it == db.end()) {
             ara::log::LogWarn() << "ConfigReader.GetServoConfig: actuator not found "
-                                << std::to_string(static_cast<int>(actuator_id));
+                                << actuator_id;
             return std::nullopt;
         }
         ara::log::LogDebug() << "ConfigReader.GetServoConfig: returned actuator "
-                             << std::to_string(static_cast<int>(actuator_id));
+                             << actuator_id;
         return it->second;
     }
 
@@ -106,15 +105,13 @@ class ConfigReader {
         auto it = db.find(actuator_id);
         if (it == db.end()) {
             ara::log::LogWarn() << "ConfigReader.ChangeServoConfigPosition: actuator not found "
-                                << std::to_string(static_cast<int>(actuator_id));
+                                << actuator_id;
             return false;
         }
         it->second.on_pos = new_open_val;
         it->second.off_pos = new_close_val;
         ara::log::LogInfo() << "ConfigReader.ChangeServoConfigPosition: actuator "
-                            << std::to_string(static_cast<int>(actuator_id))
-                            << " open=" << std::to_string(new_open_val)
-                            << " close=" << std::to_string(new_close_val);
+            << actuator_id << " open=" << new_open_val << " close=" << new_close_val;
         return true;
     }
 
@@ -123,13 +120,12 @@ class ConfigReader {
         auto it = db.find(actuator_id);
         if (it == db.end()) {
             ara::log::LogWarn() << "ConfigReader.SetServoPosition: actuator not found "
-                                << std::to_string(static_cast<int>(actuator_id));
+                                << actuator_id;
             return false;
         }
         it->second.position = state;
         ara::log::LogDebug() << "ConfigReader.SetServoPosition: actuator "
-                        << std::to_string(static_cast<int>(actuator_id))
-                        << " state=" << std::to_string(static_cast<int>(state));
+                        << actuator_id << " state=" << state;
         if (it->second.auto_closing == 0) {
             return true;
         }
@@ -167,12 +163,10 @@ class ConfigReader {
                     db.emplace(cfg.value().actuator_id, cfg.value().cfg);
                 }
                 ara::log::LogInfo() << "ServoController.LoadConfig: registered actuator " <<
-                                    std::to_string(static_cast<int>(cfg.value().actuator_id));
+                                    cfg.value().actuator_id;
             }
         }
-        ara::log::LogInfo() << "ServoController.LoadConfig: loaded "
-                            << std::to_string(static_cast<int>(db.size()))
-                            << " actuators";
+        ara::log::LogInfo() << "ServoController.LoadConfig: loaded " << db.size() << " actuators";
     }
 };
 

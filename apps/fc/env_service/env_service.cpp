@@ -79,7 +79,7 @@ int EnvServiceFc::Initialize(const std::map<ara::core::StringView, ara::core::St
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
         res = this->temp_->Initialize(529, std::bind(&EnvServiceFc::TempRxCallback,
             this, std::placeholders::_1), std::make_unique<com::soc::StreamIpcSocket>());
-        ara::log::LogInfo() << "Cant connect to temp by id:529, try num: " << std::to_string(i);
+        ara::log::LogInfo() << "Cant connect to temp by id:529, try num: " << i;
         i++;
     } while (res != core::ErrorCode::kOk && i < 6);
     if (res != core::ErrorCode::kOk) {
@@ -151,7 +151,7 @@ void EnvServiceFc::Bme280Loop(const std::stop_token& token) {
         }
         auto end = std::chrono::high_resolution_clock::now();
         auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-        ara::log::LogDebug() << "loop taken:" << std::to_string(duration.count()) << "ms";
+        ara::log::LogDebug() << "loop taken:" << duration.count() << "ms";
         if (duration < std::chrono::milliseconds(kBME280_delay_ms)) {
             core::condition::wait_for(std::chrono::milliseconds(kBME280_delay_ms) - duration, token);  // 1 Hz
         }

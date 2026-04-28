@@ -76,8 +76,8 @@ void NtpController::thread_loop(std::stop_token token) {
         auto offset = CalculateOffset(hdr.t0, hdr.t1, hdr.t2, t3);
         auto round_trip_time = CalculateRoundTripDelay(hdr.t0, hdr.t1, hdr.t2, t3);
         this->timestamp_.CorrectStartPoint(offset);
-        ara::log::LogDebug() << "Round trip time [ms]: " << std::to_string(round_trip_time)
-                << " ,offset value [ms]: " << std::to_string(static_cast<int>(offset));
+        ara::log::LogDebug() << "Round trip time [ms]: " << round_trip_time
+                << " ,offset value [ms]: " << offset;
         core::condition::wait_for(std::chrono::milliseconds(kDelay_time), token);
     }
 }

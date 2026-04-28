@@ -69,7 +69,7 @@ int ServoService::Run(const std::stop_token& token) {
           ipc_event.Update(val.value());
           udp_event.Update(val.value());
           ara::log::LogDebug() << "ServoService.Run: updated " << name <<
-                    " servo status: " << std::to_string(static_cast<int>(val.value()));
+                    " servo status: " << val.value();
       }
   };
 

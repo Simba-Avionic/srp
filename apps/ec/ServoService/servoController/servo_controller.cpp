@@ -116,14 +116,11 @@ bool ServoController::AutoSetServoPosition(const uint8_t actuator_id,
   }
   auto& servo = cfg.value();
   logger_.LogInfo() << "ServoController.ExecuteServoMovement: actuator "
-                    << std::to_string(static_cast<int>(actuator_id))
-                    << " channel " << std::to_string(static_cast<int>(servo.channel))
-                    << " target state " << std::to_string(static_cast<int>(state));
+                    << actuator_id << " channel " << servo.channel
+                    << " target state " << state;
 
   logger_.LogInfo() << "ServoController.ExecuteServoMovement: actuator "
-                  << std::to_string(static_cast<int>(actuator_id))
-                  << " moved successfully, state "
-                  << std::to_string(static_cast<int>(state));
+                    << actuator_id << " moved successfully, state " << state;
 
   if (cfg.value().position == state) {
     return true;
@@ -150,7 +147,7 @@ bool ServoController::AutoSetServoPosition(const uint8_t actuator_id,
 std::optional<uint8_t> ServoController::ReadServoPosition(const uint8_t actuator_id) {
   auto cfg = servo_cfg_mng.GetServoConfig(actuator_id);
   if (!cfg.has_value()) {
-    ara::log::LogWarn() << " cant find actuator with id: " << std::to_string(actuator_id);
+    ara::log::LogWarn() << " cant find actuator with id: " << actuator_id;
     return std::nullopt;
   }
   return cfg.value().position;

@@ -168,7 +168,7 @@ void EnvService::GenericPressureLoop(
         auto end = std::chrono::high_resolution_clock::now();
         auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
 
-        ara::log::LogDebug() << label << " loop taken: " << std::to_string(duration.count()) << "ms";
+        ara::log::LogDebug() << label << " loop taken: " << duration.count() << "ms";
 
         if (duration < delay) {
             core::condition::wait_for(delay - duration, token);

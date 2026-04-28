@@ -51,14 +51,14 @@ class ServoDriver {
     if (cfg.mosfet_id != 0) {
       if (gpio_.SetPinValue(cfg.mosfet_id, kOpenState, kDefault_mosfet_active_time_ms) != core::ErrorCode::kOk) {
         logger_.LogError() << "ServoController.ExecuteServoMovement: failed to enable MOSFET " <<
-                                std::to_string(static_cast<int>(cfg.mosfet_id));
+                              cfg.mosfet_id;
         return false;
       }
     }
 
     const uint16_t target_position = (state == kOpenState) ? cfg.on_pos : cfg.off_pos;
     logger_.LogDebug() << "ServoController.ExecuteServoMovement: setting actuator "
-                        << "to PWM " << std::to_string(target_position);
+                       << "to PWM " << target_position;
 
     if (driver_.SetChannelPosition(cfg.channel, target_position) != core::ErrorCode::kOk) {
         logger_.LogWarn() << "ServoController.ExecuteServoMovement: failed to set PWM ";

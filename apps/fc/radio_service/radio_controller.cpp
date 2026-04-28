@@ -38,8 +38,7 @@ void MavRadioController::RxThreadLoop(const std::stop_token& t) {
         continue;
       }
       mavl_logger.LogDebug() << "Parsed MAVLink msg id="
-                          + std::to_string(msg.msgid)
-                          + " len=" + std::to_string(msg.len);
+                    << msg.msgid << " len=" << msg.len;
       callback(msg);
     }
   }

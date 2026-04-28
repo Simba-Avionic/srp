@@ -68,92 +68,85 @@ void SomeIPController::SomeIpInit() {
       this->env_service_handler = handler;
       env_service_handler->newTempEvent_1.Subscribe(1, [this](const uint8_t status) {
         someip_logger.LogDebug() << "Subscribed to Env newTempEvent_1, status="
-                             + std::to_string(static_cast<int>(status));
+                                 << status;
         env_service_handler->newTempEvent_1.SetReceiveHandler([this] () {
           auto res = env_service_handler->newTempEvent_1.GetNewSamples();
           if (!res.HasValue()) {
             return;
           }
-          someip_logger.LogDebug() << "Env newTempEvent_1 sample: "
-                               + std::to_string(res.Value());
+          someip_logger.LogDebug() << "Env newTempEvent_1 sample: " << res.Value();
           event_data->SetTemp(0, res.Value());
         });
       });
       env_service_handler->newTempEvent_2.Subscribe(1, [this](const uint8_t status) {
         someip_logger.LogDebug() << "Subscribed to Env newTempEvent_2, status="
-                             + std::to_string(static_cast<int>(status));
+                                 << status;
         env_service_handler->newTempEvent_2.SetReceiveHandler([this] () {
           auto res = env_service_handler->newTempEvent_2.GetNewSamples();
           if (!res.HasValue()) {
             return;
           }
-          someip_logger.LogDebug() << "Env newTempEvent_2 sample: "
-                               + std::to_string(res.Value());
+          someip_logger.LogDebug() << "Env newTempEvent_2 sample: " << res.Value();
           event_data->SetTemp(1, res.Value());
         });
       });
       env_service_handler->newTempEvent_3.Subscribe(1, [this](const uint8_t status) {
         someip_logger.LogDebug() << "Subscribed to Env newTempEvent_3, status="
-                             + std::to_string(static_cast<int>(status));
+                                 << status;
         env_service_handler->newTempEvent_3.SetReceiveHandler([this] () {
           auto res = env_service_handler->newTempEvent_3.GetNewSamples();
           if (!res.HasValue()) {
             return;
           }
-          someip_logger.LogDebug() << "Env newTempEvent_3 sample: "
-                               + std::to_string(res.Value());
+          someip_logger.LogDebug() << "Env newTempEvent_3 sample: " << res.Value();
           event_data->SetTemp(2, res.Value());
         });
       });
       env_service_handler->newPressEvent.Subscribe(1, [this](const uint8_t status) {
         someip_logger.LogDebug() << "Subscribed to Env newPressEvent, status="
-                             + std::to_string(static_cast<int>(status));
+                                 << status;
         env_service_handler->newPressEvent.SetReceiveHandler([this] () {
           auto res = env_service_handler->newPressEvent.GetNewSamples();
           if (!res.HasValue()) {
             return;
           }
-          someip_logger.LogDebug() << "Env newPressEvent sample: "
-                               + std::to_string(res.Value());
+          someip_logger.LogDebug() << "Env newPressEvent sample: " << res.Value();
           event_data->SetPress(res.Value());
         });
       });
       env_service_handler->newBoardTempEvent1.Subscribe(1, [this](const uint8_t status) {
         someip_logger.LogDebug() << "Subscribed to Env newBoardTempEvent1, status="
-                             + std::to_string(static_cast<int>(status));
+                                 << status;
         env_service_handler->newBoardTempEvent1.SetReceiveHandler([this] () {
           auto res = env_service_handler->newBoardTempEvent1.GetNewSamples();
           if (!res.HasValue()) {
             return;
           }
-          someip_logger.LogDebug() << "Env newBoardTempEvent1 sample: "
-                               + std::to_string(res.Value());
+          someip_logger.LogDebug() << "Env newBoardTempEvent1 sample: " << res.Value();
           event_data->SetComputerTemp(BoardType_e::EB, 0,  res.Value());
         });
       });
       env_service_handler->newBoardTempEvent2.Subscribe(1, [this](const uint8_t status) {
         someip_logger.LogDebug() << "Subscribed to Env newBoardTempEvent2, status="
-                             + std::to_string(static_cast<int>(status));
+                                 << status;
         env_service_handler->newBoardTempEvent2.SetReceiveHandler([this] () {
           auto res = env_service_handler->newBoardTempEvent2.GetNewSamples();
           if (!res.HasValue()) {
             return;
           }
-          someip_logger.LogDebug() << "Env newBoardTempEvent2 sample: "
-                               + std::to_string(res.Value());
+          someip_logger.LogDebug() << "Env newBoardTempEvent2 sample: " << res.Value();
           event_data->SetComputerTemp(BoardType_e::EB, 1,  res.Value());
         });
       });
       env_service_handler->newBoardTempEvent3.Subscribe(1, [this](const uint8_t status) {
         someip_logger.LogDebug() << "Subscribed to Env newBoardTempEvent3, status="
-                             + std::to_string(static_cast<int>(status));
+                                 << status;
         env_service_handler->newBoardTempEvent3.SetReceiveHandler([this] () {
           auto res = env_service_handler->newBoardTempEvent3.GetNewSamples();
           if (!res.HasValue()) {
             return;
           }
-          someip_logger.LogDebug() << "Env newBoardTempEvent3 sample: "
-                               + std::to_string(res.Value());
+          someip_logger.LogDebug() << "Env newBoardTempEvent3 sample: " << res.Value();
           event_data->SetComputerTemp(BoardType_e::EB, 2,  res.Value());
         });
       });
@@ -163,7 +156,7 @@ void SomeIPController::SomeIpInit() {
       this->gps_service_handler = handler;
       gps_service_handler->GPSStatusEvent.Subscribe(1, [this](const uint8_t status) {
         someip_logger.LogDebug() << "Subscribed to GPSStatusEvent, status="
-                             + std::to_string(static_cast<int>(status));
+                                 << status;
         gps_service_handler->GPSStatusEvent.SetReceiveHandler([this] () {
           auto res_opt = gps_service_handler->GPSStatusEvent.GetNewSamples();
           if (!res_opt.HasValue()) {
@@ -171,9 +164,9 @@ void SomeIPController::SomeIpInit() {
           }
           auto res = res_opt.Value();
           someip_logger.LogDebug() << "GPSStatusEvent sample: lon="
-                               + std::to_string(res.longitude)
-                               + ", lat=" + std::to_string(res.latitude)
-                               + ", alt=" + std::to_string(res.altitude);
+                                   << res.longitude
+                                   << ", lat=" << res.latitude
+                                   << ", alt=" << res.altitude;
           event_data->SetGPS(res.longitude, res.latitude, res.altitude);
         });
       });
@@ -183,40 +176,37 @@ void SomeIPController::SomeIpInit() {
       this->servo_service_handler = handler;
       servo_service_handler->ServoStatusEvent.Subscribe(1, [this](const uint8_t status) {
         someip_logger.LogDebug() << "Subscribed to ServoStatusEvent, status="
-                             + std::to_string(static_cast<int>(status));
+                                 << status;
         servo_service_handler->ServoStatusEvent.SetReceiveHandler([this] () {
           auto res = servo_service_handler->ServoStatusEvent.GetNewSamples();
           if (!res.HasValue()) {
             return;
           }
-          someip_logger.LogDebug() << "ServoStatusEvent sample: "
-                               + std::to_string(res.Value());
+          someip_logger.LogDebug() << "ServoStatusEvent sample: " << res.Value();
           event_data->SetActuatorState(SIMBA_ACTUATOR_FLAGS_MAIN_VALVE, res.Value());
         });
       });
       servo_service_handler->ServoVentStatusEvent.Subscribe(1, [this](const uint8_t status) {
         someip_logger.LogDebug() << "Subscribed to ServoVentStatusEvent, status="
-                             + std::to_string(static_cast<int>(status));
+                                 << status;
         servo_service_handler->ServoVentStatusEvent.SetReceiveHandler([this] () {
           auto res = servo_service_handler->ServoVentStatusEvent.GetNewSamples();
           if (!res.HasValue()) {
             return;
           }
-          someip_logger.LogDebug() << "ServoVentStatusEvent sample: "
-                               + std::to_string(res.Value());
+          someip_logger.LogDebug() << "ServoVentStatusEvent sample: " << res.Value();
           event_data->SetActuatorState(SIMBA_ACTUATOR_FLAGS_VENT_VALVE, res.Value());
         });
       });
       servo_service_handler->ServoDumpStatusEvent.Subscribe(1, [this](const uint8_t status) {
         someip_logger.LogDebug() << "Subscribed to ServoDumpStatusEvent, status="
-                             + std::to_string(static_cast<int>(status));
+                                 << status;
         servo_service_handler->ServoDumpStatusEvent.SetReceiveHandler([this] () {
           auto res = servo_service_handler->ServoDumpStatusEvent.GetNewSamples();
           if (!res.HasValue()) {
             return;
           }
-          someip_logger.LogDebug() << "ServoDumpStatusEvent sample: "
-                               + std::to_string(res.Value());
+          someip_logger.LogDebug() << "ServoDumpStatusEvent sample: " << res.Value();
           event_data->SetActuatorState(SIMBA_ACTUATOR_FLAGS_DUMP_VALVE, res.Value());
         });
       });
@@ -226,14 +216,14 @@ void SomeIPController::SomeIpInit() {
       this->recovery_service_handler = handler;
       recovery_service_handler->NewParachuteStatusEvent.Subscribe(1, [this](const uint8_t status){
         someip_logger.LogDebug() << "Subscribed to ParachuteStatusEvent, status="
-                             + std::to_string(static_cast<int>(status));
+                                 << status;
         recovery_service_handler->NewParachuteStatusEvent.SetReceiveHandler([this] (){
           auto res = recovery_service_handler->NewParachuteStatusEvent.GetNewSamples();
           if (!res.HasValue()) {
             return;
           }
           someip_logger.LogDebug() << "NewParachuteStatusEvent sample: "
-                      << std::to_string(res.Value());
+                                   << res.Value();
           switch (static_cast<srp::apps::recovery::ParachuteState_t> (res.Value())) {
             case recovery::ParachuteState_t::CLOSED:
               this->event_data->SetActuatorState(SIMBA_ACTUATOR_FLAGS_RECOVERY_SERVO, 0);
@@ -260,53 +250,53 @@ void SomeIPController::SomeIpInit() {
       this->env_fc_service_handler = handler;
       env_fc_service_handler->newBME280Event.Subscribe(1, [this](const uint8_t status){
         someip_logger.LogDebug() << "Subscribed to BME280 event, status="
-                             + std::to_string(static_cast<int>(status));
+                                 << status;
         env_fc_service_handler->newBME280Event.SetReceiveHandler([this] (){
           auto res = env_fc_service_handler->newBME280Event.GetNewSamples();
           if (!res.HasValue()) {
             return;
           }
           someip_logger.LogDebug() << "Altitude sample: "
-                      << std::to_string(res.Value().altitude);
+                                   << res.Value().altitude;
           this->event_data->SetMaxAltitude(static_cast<int32_t>(res.Value().altitude));
         });
       });
       env_fc_service_handler->newBoardTempEvent_1.Subscribe(1, [this](const uint8_t status){
         someip_logger.LogDebug() << "Subscribed to newBoardTempEvent_1 event, status="
-                             + std::to_string(static_cast<int>(status));
+                                 << status;
         env_fc_service_handler->newBoardTempEvent_1.SetReceiveHandler([this] (){
           auto res = env_fc_service_handler->newBoardTempEvent_1.GetNewSamples();
           if (!res.HasValue()) {
             return;
           }
           someip_logger.LogDebug() << "newBoardTempEvent_1 sample: "
-                      << std::to_string(res.Value());
+                                   << res.Value();
           this->event_data->SetComputerTemp(BoardType_e::MB, 0, res.Value());
         });
       });
       env_fc_service_handler->newBoardTempEvent_2.Subscribe(1, [this](const uint8_t status){
         someip_logger.LogDebug() << "Subscribed to newBoardTempEvent_2 event, status="
-                             + std::to_string(static_cast<int>(status));
+                                 << status;
         env_fc_service_handler->newBoardTempEvent_2.SetReceiveHandler([this] (){
           auto res = env_fc_service_handler->newBoardTempEvent_2.GetNewSamples();
           if (!res.HasValue()) {
             return;
           }
           someip_logger.LogDebug() << "newBoardTempEvent_2 sample: "
-                      << std::to_string(res.Value());
+                                   << res.Value();
           this->event_data->SetComputerTemp(BoardType_e::MB, 1, res.Value());
         });
       });
       env_fc_service_handler->newBoardTempEvent_3.Subscribe(1, [this](const uint8_t status){
         someip_logger.LogDebug() << "Subscribed to newBoardTempEvent_3 event, status="
-                             + std::to_string(static_cast<int>(status));
+                                 << status;
         env_fc_service_handler->newBoardTempEvent_3.SetReceiveHandler([this] (){
           auto res = env_fc_service_handler->newBoardTempEvent_3.GetNewSamples();
           if (!res.HasValue()) {
             return;
           }
           someip_logger.LogDebug() << "newBoardTempEvent_3 sample: "
-                      << std::to_string(res.Value());
+                                   << res.Value();
           this->event_data->SetComputerTemp(BoardType_e::MB, 2, res.Value());
         });
       });
@@ -318,7 +308,7 @@ void SomeIPController::SomeIpInit() {
       this->main_service_handler = handler;
       main_service_handler->CurrentModeStatusEvent.Subscribe(1, [this](const uint8_t status) {
         someip_logger.LogDebug() << "Subscribed to Main CurrentModeStatusEvent, status="
-                             + std::to_string(static_cast<int>(status));
+                                 << status;
         main_service_handler->CurrentModeStatusEvent.SetReceiveHandler([this] () {
           auto res = main_service_handler->CurrentModeStatusEvent.GetNewSamples();
           if (!res.HasValue()) {
@@ -335,7 +325,7 @@ void SomeIPController::SomeIpInit() {
       someip_logger.LogDebug() << "Engine service handler discovered";
       this->engine_service_handler = handler;
       engine_service_handler->CurrentMode.Subscribe(1, [this](const uint8_t status) {
-        someip_logger.LogDebug() << "Subscribed to Engine CurrentMode, status=" << std::to_string(status);
+        someip_logger.LogDebug() << "Subscribed to Engine CurrentMode, status=" << status;
         engine_service_handler->CurrentMode.SetReceiveHandler([this] () {
           auto res = engine_service_handler->CurrentMode.GetNewSamples();
           if (!res.HasValue()) {
@@ -357,7 +347,7 @@ void SomeIPController::SomeIpInit() {
           return;
         }
         someip_logger.LogDebug() << "Primer state sample: "
-                               << std::to_string(res.Value());
+                                 << res.Value();
         this->event_data->SetPrimerState(res.Value());
       });
     });
