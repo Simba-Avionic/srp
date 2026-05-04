@@ -18,6 +18,8 @@
 #include "communication-core/sockets/tcp_socket.h"
 #include "core/timestamp/timestamp_driver.hpp"
 #include "srp/mw/tinyNTP/ntpStruct.h"
+#include "mw/timestamp_mw/ntp/config/config_manager.hpp"
+#include "mw/timestamp_mw/ntp/discovery/discovery_manager.hpp"
 namespace srp {
 namespace tinyNTP {
 
@@ -27,14 +29,19 @@ class NtpController {
   core::timestamp::TimestampMaster timestamp_;
   std::jthread ntp_thread;
   std::string myIP;
+  uint8_t ntp_class_;
+  uint32_t t_hb_ms_;
+
+  DiscoveryManager discovery_manager_;
  public:
+  bool Init(const NtpConfig& config);
+
   std::optional<std::string> readMyIP();
   std::vector<uint8_t> socket_callback(const std::string& ip, const std::uint16_t& port,
                                                        const std::vector<std::uint8_t> payload);
   void thread_loop(std::stop_token token);
   int64_t CalculateOffset(const int64_t T0, const int64_t T1, const int64_t T2, const int64_t T3);
   uint64_t CalculateRoundTripDelay(const int64_t T0, const int64_t T1, const int64_t T2, const int64_t T3);
-  bool Init();
   int64_t GetTimestamp();
 };
 

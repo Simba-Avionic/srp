@@ -15,6 +15,7 @@
 #include "core/common/condition.h"
 #include "core/json/json_parser.h"
 #include "ara/log/log.h"
+#include <iostream>
 namespace srp {
 namespace tinyNTP {
 namespace {
@@ -24,6 +25,20 @@ namespace {
     constexpr auto masterIP = "192.168.10.102";
     constexpr auto kHeader_size = 33;
     constexpr auto kDelay_time = 4000;
+}
+
+bool NtpController::Init(const NtpConfig& config) {
+    myIP = config.ip;
+    ntp_class_ = config.ntp_class;
+    t_hb_ms_ = config.t_hb_ms;
+
+    timestamp_.Init();
+
+    ara::log::LogInfo() << "NtpController initialized with IP: " << myIP
+                        << ", NTP Class: " << static_cast<int>(ntp_class_)
+                        << ", interval [ms]: " << t_hb_ms_;
+
+    return true;
 }
 
 int64_t NtpController::CalculateOffset(const int64_t T0, const int64_t T1,
@@ -82,39 +97,25 @@ void NtpController::thread_loop(std::stop_token token) {
     }
 }
 
-bool NtpController::Init() {
-    auto ip = readMyIP();
-    if (!ip.has_value()) {
-        return false;
-    }
-    myIP = ip.value();
-    timestamp_.Init();
-    if (myIP == masterIP) {
-        sock_.Init(com::soc::SocketConfig{myIP, kRX_port, kTx_port});
-        this->sock_.SetRXCallback(std::bind(&NtpController::socket_callback, this, std::placeholders::_1,
-                                                       std::placeholders::_2, std::placeholders::_3));
-        sock_.StartRXThread();
-    } else {
-        ntp_thread = std::jthread([this](std::stop_token token){
-            thread_loop(token);
-        });
-    }
-    return true;
-}
-
-// TODO(matikrajek42@gmail.com)  fix this shit func
-std::optional<std::string> NtpController::readMyIP() {
-    const std::string path = kIp_file_path;
-    auto parser = core::json::JsonParser::Parser(path);
-    if (!parser.has_value()) {
-        return std::nullopt;
-    }
-    auto ip = parser.value().GetString("ip");
-    if (!ip.has_value()) {
-        return std::nullopt;
-    }
-    return ip.value();
-}
+// bool NtpController::Init() {
+//     auto ip = readMyIP();
+//     if (!ip.has_value()) {
+//         return false;
+//     }
+//     myIP = ip.value();
+    
+//     if (myIP == masterIP) {
+//         sock_.Init(com::soc::SocketConfig{myIP, kRX_port, kTx_port});
+//         this->sock_.SetRXCallback(std::bind(&NtpController::socket_callback, this, std::placeholders::_1,
+//                                                        std::placeholders::_2, std::placeholders::_3));
+//         sock_.StartRXThread();
+//     } else {
+//         ntp_thread = std::jthread([this](std::stop_token token){
+//             thread_loop(token);
+//         });
+//     }
+//     return true;
+// }
 
 }  // namespace tinyNTP
 }  // namespace srp

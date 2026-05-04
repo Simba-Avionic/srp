@@ -6,6 +6,8 @@ cc_library(
         "//core/json:simba_json",
         "//core/timestamp:timestamp_controller",
         "//mw/timestamp_mw/ntp/controller:ntp_com_data",
+        "//mw/timestamp_mw/ntp/config:ntp_config_manager",
+        "//mw/timestamp_mw/ntp/discovery:ntp_discovery",
     ],
     srcs = ["ntp_controller.cpp"],
     hdrs = ["ntp_controller.hpp"],
