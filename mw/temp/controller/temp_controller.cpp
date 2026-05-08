@@ -53,9 +53,12 @@ srp::core::ErrorCode TempController::SetUp(TempRXCallback callback) {
     return res;
 }
 
+void TempController::StartRxThread() {
+    this->sock->StartRXThread();
+}
+
 std::optional<uint8_t> TempController::Register(std::string name) {
     auto sensor_id = Subscribe(name);
-    this->sock->StartRXThread();
     return (sensor_id && !sensor_id->empty()) ? std::make_optional(sensor_id->front()) : std::nullopt;
 }
 

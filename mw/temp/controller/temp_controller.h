@@ -51,6 +51,7 @@ class TempController {
   srp::core::ErrorCode Init(uint16_t service_id, std::unique_ptr<com::soc::StreamIpcSocket> sock);
   srp::core::ErrorCode SetUp(TempRXCallback callback);
   std::vector<srp::mw::temp::TempReadHdr> Conv(const std::vector<uint8_t>& data) const;
+  std::optional<std::vector<uint8_t>> Subscribe(std::string name);
 
  public:
  /**
@@ -63,8 +64,8 @@ class TempController {
   */
   srp::core::ErrorCode Initialize(uint16_t service_id, TempRXCallback callback,
                                   std::unique_ptr<com::soc::StreamIpcSocket> sock);
-  std::optional<std::vector<uint8_t>> Subscribe(std::string name);
   std::optional<uint8_t> Register(std::string name);
+  void StartRxThread();
 };
 
 }  // namespace temp

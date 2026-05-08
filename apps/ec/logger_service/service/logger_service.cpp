@@ -112,7 +112,7 @@ LoggerService::~LoggerService() {}
 
 LoggerService::LoggerService():
       someip_logger{ara::log::LoggingMenager::GetInstance()->CreateLogger(
-          "SOME", "", ara::log::LogLevel::kDebug)},
+          "SOME", "", ara::log::LogLevel::kWarn)},
       env_service_proxy{ara::core::InstanceSpecifier{kEnv_service_path_name}},
       stat_service_proxy{ara::core::InstanceSpecifier{kSysStat_service_path_name}},
       primer_service_proxy{ara::core::InstanceSpecifier{kPrimer_service_path_name}},
