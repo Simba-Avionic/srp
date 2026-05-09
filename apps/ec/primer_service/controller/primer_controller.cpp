@@ -85,6 +85,7 @@ bool PrimerController::DisablePrimer() {
             return false;
         }
     }
+    return true;
 }
 
 bool PrimerController::EnablePrimer(const bool auto_disable) {

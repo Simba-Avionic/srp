@@ -32,16 +32,16 @@
       "physical_id" : "28-3c29e381356d",
       "name" : "sensor_temp_3"
     },
-          {
-      "physical_id" : "28-000011105db5",
+    {
+      "physical_id" : "28-0000107b3c59",
       "name" : "board_1"
     },
     {
-      "physical_id" : "28-00001110db5a",
+      "physical_id" : "28-00001110e48e",
       "name" : "board_2"
     },
     {
-      "physical_id" : "28-00001110e849",
+      "physical_id" : "28-00001110ff83",
       "name" : "board_3"
     }
   ]

@@ -92,8 +92,6 @@ int EnvService::Initialize(const std::map<ara::core::StringView, ara::core::Stri
         ara::log::LogError() << "Failed to load temperature configuration";
         return core::ErrorCode::kInitializeError;
     }
-    service_ipc.StartOffer();
-    service_udp.StartOffer();
     return core::ErrorCode::kOk;
 }
 
@@ -177,7 +175,9 @@ void EnvService::GenericPressureLoop(
 }
 
 int EnvService::Run(const std::stop_token& token) {
-    std::jthread tenso_thread;
+    service_ipc.StartOffer();
+    service_udp.StartOffer();
+    temp_->StartRxThread();
     std::jthread pressure_thread([this, token] {
         GenericPressureLoop(token, PRESS_SENSOR_ID,
                             std::chrono::milliseconds(kPressureDelayMs),

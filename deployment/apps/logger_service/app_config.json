@@ -25,7 +25,7 @@
                     "ctx": [
                         {
                             "ctx_id": "SOME",
-                            "log_level": "kDebug",
+                            "log_level": "kWarn",
                             "ctx_des": "Logs From someip"
                         },
                         {
