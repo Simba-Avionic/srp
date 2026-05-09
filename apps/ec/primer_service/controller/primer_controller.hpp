@@ -49,7 +49,6 @@ class PrimerController {
   bool DisablePrimer();
   PrimerState_t GetPrimerState() const noexcept;
   void VerifyPrimerConection();
-
 };
 
 }  // namespace primer

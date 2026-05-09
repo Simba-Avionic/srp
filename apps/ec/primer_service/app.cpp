@@ -37,8 +37,8 @@ int PrimerService::Run(const std::stop_token& token) {
     const auto current_state = controller->GetPrimerState();
     if (current_state != last_state) {
       ara::log::LogInfo() << "PrimerService::Run: primer state changed from "
-                          << static_cast<uint8_t>(last_state) << " to "
-                          << static_cast<uint8_t>(current_state);
+                          << last_state << " to "
+                          << current_state;
       last_state = current_state;
     }
     auto state = static_cast<uint8_t>(current_state);
