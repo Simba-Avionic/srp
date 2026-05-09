@@ -27,19 +27,30 @@ namespace {
 }
 
 int PrimerService::Run(const std::stop_token& token) {
+  ara::log::LogInfo() << "PrimerService::Run: event loop started";
+  auto last_state = controller->GetPrimerState();
   while (!token.stop_requested()) {
     if (gpio_.SetPinValue(kHeartBeatPinID, 1, 500) != core::ErrorCode::kOk) {
-      ara::log::LogWarn() << "EngineApp::Run: Failed to toggle heartbeat pin";
+      ara::log::LogWarn() << "PrimerService::Run: failed to toggle heartbeat pin";
     }
-    controller->VerifyPrimerConection();
-    auto state = static_cast<uint8_t>(controller->GetPrimerState());
+    // controller->VerifyPrimerConection();
+    const auto current_state = controller->GetPrimerState();
+    if (current_state != last_state) {
+      ara::log::LogInfo() << "PrimerService::Run: primer state changed from "
+                          << static_cast<uint8_t>(last_state) << " to "
+                          << static_cast<uint8_t>(current_state);
+      last_state = current_state;
+    }
+    auto state = static_cast<uint8_t>(current_state);
     service_ipc.primeStatusEvent.Update(state);
     service_udp.primeStatusEvent.Update(state);
     core::condition::wait_for(std::chrono::milliseconds(kEvent_interval_ms), token);
   }
+  ara::log::LogInfo() << "PrimerService::Run: stop requested, stopping offers";
   service_ipc.StopOffer();
   service_udp.StopOffer();
   primer_did_->StopOffer();
+  ara::log::LogInfo() << "PrimerService::Run: stopped cleanly";
   return 0;
 }
 
@@ -53,10 +64,12 @@ PrimerService::PrimerService() :
 
   int PrimerService::Initialize(const std::map<ara::core::StringView, ara::core::StringView>
                       parms) {
-  controller->Initialize(parms.at("app_path") + "etc/config.json");
+  ara::log::LogInfo() << "PrimerService::Initialize: starting";
+  controller->Initialize();
   primer_did_->Offer();
   service_ipc.StartOffer();
   service_udp.StartOffer();
+  ara::log::LogInfo() << "PrimerService::Initialize: offers started";
   return 0;
 }
 
