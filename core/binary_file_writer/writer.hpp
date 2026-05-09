@@ -17,6 +17,7 @@
 #include <fstream>
 #include <vector>
 #include <cstdint>
+#include "ara/log/logging_menager.h"
 
 namespace srp {
 namespace core {
@@ -25,7 +26,9 @@ namespace binaryWriter {
 class BinaryFileWriter {
  private:
     std::fstream file_;
+    const ara::log::Logger& logger_;
  public:
+    BinaryFileWriter();
     ~BinaryFileWriter();
     bool open(const std::string& path);
     void close();

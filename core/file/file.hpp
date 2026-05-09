@@ -15,11 +15,13 @@
 #include <optional>
 #include <fstream>
 #include "core/file/Ifile.hpp"
+#include "ara/log/logging_menager.h"
 namespace srp {
 namespace core {
 class FileHandler: public IFileHandler {
  private:
     std::fstream file_;
+    const ara::log::Logger& logger_;
  public:
     ~FileHandler() override;
     FileHandler();

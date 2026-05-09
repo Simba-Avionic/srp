@@ -15,12 +15,15 @@
 #include <memory>
 #include <vector>
 #include "core/pd-33x/modbus/modbus.hpp"
+#include "ara/log/logging_menager.h"
 namespace srp {
 namespace core {
 class PD33X {
  private:
   std::unique_ptr<MODBUS> modbus_;
+  const ara::log::Logger& logger_;
  public:
+  PD33X();
   bool Init(const RS485_conf_t& config, const uint8_t slave_id = 0x01,
                 std::unique_ptr<MODBUS> modbus = std::make_unique<MODBUS>());
   std::optional<float> ReadP1();

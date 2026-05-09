@@ -13,8 +13,9 @@
 namespace srp {
 namespace core {
 
-FileHandler::FileHandler() {
-}
+FileHandler::FileHandler():
+    logger_(ara::log::LoggingMenager::GetInstance()->CreateLogger(
+        "file", "", ara::log::LogLevel::kWarn)) {}
 FileHandler::~FileHandler() {
     this->close();
 }

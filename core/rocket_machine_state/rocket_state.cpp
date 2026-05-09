@@ -49,7 +49,11 @@ std::shared_ptr<RocketStateController> RocketStateController::GetInstance() {
     return instance;
 }
 
-RocketStateController::RocketStateController(): actual_state{RocketState_t::INIT}, prev_state{RocketState_t::INIT} {
+RocketStateController::RocketStateController():
+    actual_state{RocketState_t::INIT},
+    prev_state{RocketState_t::INIT},
+    logger_(ara::log::LoggingMenager::GetInstance()->CreateLogger(
+        "rstm", "", ara::log::LogLevel::kWarn)) {
     RegisterOnStateChangeCallback([](RocketState_t new_state) {
     });
     RegisterRequirementsCallback([](RocketState_t new_state) {
@@ -86,16 +90,16 @@ void RocketStateController::RegisterRequirementsCallback(ChangeRequestCallback c
 bool RocketStateController::SetState(const RocketState_t state) {
     std::lock_guard<std::mutex> lock_(mtx_);
     if (state == actual_state) {
-        ara::log::LogInfo() << "Requested change to same state: " << core::rocketState::to_string(state);
+        logger_.LogInfo() << "Requested change to same state: " << core::rocketState::to_string(state);
         return false;
     }
     if (!TransitionAllowed(this->actual_state, state)) {
-        ara::log::LogWarn() << "Transition from: " << core::rocketState::to_string(actual_state) <<
-                                " To state: " << core::rocketState::to_string(state) << " rejected";
+        logger_.LogWarn() << "Transition from: " << core::rocketState::to_string(actual_state) <<
+                            " To state: " << core::rocketState::to_string(state) << " rejected";
         return false;
     }
     if (!requirements_callback_(state)) {
-        ara::log::LogWarn() << "Requirements were not met to change state";
+        logger_.LogWarn() << "Requirements were not met to change state";
         return false;
     }
 

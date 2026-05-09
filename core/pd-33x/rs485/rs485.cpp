@@ -17,6 +17,11 @@ namespace {
     constexpr auto OFF = 0;
 }
 
+RS485::RS485():
+    pin_id(0),
+    logger_(ara::log::LoggingMenager::GetInstance()->CreateLogger(
+        "r485", "", ara::log::LogLevel::kWarn)) {}
+
 bool RS485::Init(const RS485_conf_t& config, std::unique_ptr<uart::IUartDriver>&& uart,
                                             std::unique_ptr<srp::gpio::IGPIOController>&& gpio) {
     this->uart_ = std::move(uart);

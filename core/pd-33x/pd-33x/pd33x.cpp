@@ -18,6 +18,10 @@ namespace {
     constexpr uint16_t kT1_start_addr = 0x08;
     constexpr uint16_t kQuantity = 0x02;
 }
+PD33X::PD33X():
+    logger_(ara::log::LoggingMenager::GetInstance()->CreateLogger(
+        "pd33", "", ara::log::LogLevel::kWarn)) {}
+
 bool PD33X::Init(const RS485_conf_t& config, const uint8_t slave_id, std::unique_ptr<MODBUS> modbus) {
     this->modbus_ = std::move(modbus);
     this->modbus_->Init(config, slave_id);

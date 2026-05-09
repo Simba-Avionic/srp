@@ -29,9 +29,10 @@ namespace {
     constexpr auto kSensorPath = "/sys/bus/w1/devices/";
     constexpr auto kManagerName = "w1_bus_master1";
 }
-TempDriver::TempDriver() {
-     ara::log::LoggingMenager::GetInstance()->CreateLogger("Dtem", "", ara::log::LogLevel::kInfo);
+TempDriver::TempDriver(): logger_(ara::log::LoggingMenager::GetInstance()
+        ->CreateLogger("Dtem", "", ara::log::LogLevel::kInfo)) {
 }
+
 ara::core::Result<double> TempDriver::ReadTemp(const std::string& sensorPhysicalID) {
     ara::log::LogInfo() << "Receive Reading REQ from sensor " << sensorPhysicalID;
     return 33.33;

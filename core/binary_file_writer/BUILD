@@ -10,5 +10,6 @@ cc_library(
         "//visibility:public",
         ],
     deps = [
+        "@srp_platform//ara/log",
     ],
 )
