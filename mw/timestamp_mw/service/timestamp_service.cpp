@@ -17,16 +17,19 @@ namespace srp {
 namespace mw {
 
 int TimestampService::Run(const std::stop_token& token) {
+    ara::log::LogInfo() << "TimestampService::Run started";
     core::condition::wait(token);
+    ara::log::LogInfo() << "TimestampService::Run stopping";
     return 0;
 }
 int TimestampService::Initialize(const std::map<ara::core::StringView, ara::core::StringView>
                     parms) {
+    ara::log::LogInfo() << "TimestampService::Initialize started";
     if (!this->ntp_controller.Init()) {
         ara::log::LogError() << "NTP controller initialization failed.";
         return -1;
     }
-    ara::log::LogInfo() << "Init completed";
+    ara::log::LogInfo() << "TimestampService::Initialize completed";
     return 0;
 }
 
