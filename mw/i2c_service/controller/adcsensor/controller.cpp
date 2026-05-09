@@ -45,8 +45,8 @@ core::ErrorCode ADCSensorController::Init(const std::string path,
   this->db_ = this->ReadConfig(obj_r.value());
   for (const auto sensor : this->db_) {
     std::ostringstream ss;
-    ss << "register sensor id: " << std::to_string(sensor.first) << " on ADC channel: " <<
-                        std::to_string(static_cast<int>(sensor.second.channel))<< " with y = "
+    ss << "register sensor id: " << sensor.first << " on ADC channel: " <<
+                        sensor.second.channel << " with y = "
                         << std::fixed << std::setprecision(2) << sensor.second.a << " * V "
                         << (sensor.second.b >= 0 ? "+ " : "- ") << abs(sensor.second.b);
     ara::log::LogInfo() << ss.str();

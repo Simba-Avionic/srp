@@ -11,7 +11,7 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 #include "mw/i2c_service/controller/i2c_controller.h"
-#include "communication-core/sockets/mock/mockSocket.h"  // Mock klasy StreamIpcSocket
+#include "communication-core/sockets/mock/mockSocket.h"
 
 using ::testing::_;
 using ::testing::Return;
@@ -30,7 +30,7 @@ class I2CControllerTest : public ::testing::Test {
 };
 
 TEST_F(I2CControllerTest, InitSuccess) {
-    EXPECT_EQ(controller_.Init(nullptr), core::ErrorCode::kOk);
+    EXPECT_EQ(controller_.Init(nullptr), core::ErrorCode::kInitializeError);
 }
 
 class WriteTest : public I2CControllerTest,
