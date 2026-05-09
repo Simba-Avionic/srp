@@ -41,10 +41,12 @@ namespace {
 int GPIOMWService::Init(std::unique_ptr<srp::com::soc::ISocketStream> socket,
                               std::shared_ptr<core::gpio::IGpioDriver> gpio) {
   if (!socket || !gpio) {
+    ara::log::LogError() << "GPIOMWService::Init failed: invalid socket or gpio driver";
     return 1;
   }
   this->sock_ = std::move(socket);
   this->gpio_driver_ = std::move(gpio);
+  ara::log::LogInfo() << "GPIOMWService::Init complete";
   return 0;
 }
 GPIOMWService::GPIOMWService():did_instance(kDID_instance_name) {
@@ -54,6 +56,7 @@ std::vector<uint8_t> GPIOMWService::RxCallback(const std::string& ip, const std:
   const std::vector<std::uint8_t> data) {
     std::optional<srp::mw::gpio::GpioHdr> hdr = srp::data::Convert<srp::mw::gpio::GpioHdr>::Conv(data);
     if (!hdr.has_value()) {
+        ara::log::LogWarn() << "RxCallback: failed to parse GPIO header";
         return {0};
     }
     auto it = this->config.find(hdr.value().pin_id);
@@ -69,11 +72,12 @@ std::vector<uint8_t> GPIOMWService::RxCallback(const std::string& ip, const std:
                 return {core::ErrorCode::kError};
             }
             if (this->gpio_driver_->setValue(it->second.pinNum, hdr.value().value) != core::ErrorCode::kOk) {
+                ara::log::LogError() << "SET failed for pin ID: " << hdr.value().pin_id;
                 return {core::ErrorCode::kError};
             }
-            ara::log::LogDebug() << "Change pin with ID:" << it->first
-                                 << ", to value:" << hdr.value().value
-                                 << "for: " << hdr.value().time_period << "s";
+            ara::log::LogInfo() << "SET pin ID: " << it->first
+                                << " value: " << hdr.value().value
+                                << " active_ms: " << hdr.value().time_period;
             if (hdr.value().value == 0) {
                 return {core::ErrorCode::kOk};
             }
@@ -101,6 +105,8 @@ std::vector<uint8_t> GPIOMWService::RxCallback(const std::string& ip, const std:
         }
         case srp::gpio::ACTION::GET: {
             auto val = this->gpio_driver_->getValue(it->second.pinNum);
+            ara::log::LogDebug() << "GET pin ID: " << hdr.value().pin_id
+                                 << " returned value: " << val;
             srp::mw::gpio::GpioHdr hdr2{srp::gpio::ACTION::RES, hdr.value().pin_id, val};
             return srp::data::Convert2Vector<srp::mw::gpio::GpioHdr>::Conv(hdr2);
         }
@@ -145,18 +151,21 @@ std::vector<uint8_t> GPIOMWService::RxCallback(const std::string& ip, const std:
             if (pin_callbacks.empty()) {
                 subscribed_pins_states.erase(pin_id);
             }
+            callbacks[pin_id] = pin_callbacks;
             ara::log::LogDebug() << "controller ID: " << controller_id
                                  << " successfully unsubscribed from pin ID: " << pin_id;
             return {1};
         }
 
         default:
+            ara::log::LogWarn() << "RxCallback: unsupported action: "
+                                << action;
             return {};
     }
 }
 
 void GPIOMWService::PollSubscribedPinsLoop(const std::stop_token& token) {
-    ara::log::LogDebug() << "Starting subscribed pins polling loop";
+    ara::log::LogInfo() << "Starting subscribed pins polling loop";
     for (auto pair : subscribed_pins_states) {
         // subscribed pins are checked for existence before being added to the set
         pair.second = this->gpio_driver_->getValue(config[pair.first].pinNum);
@@ -175,8 +184,6 @@ void GPIOMWService::PollSubscribedPinsLoop(const std::stop_token& token) {
                 auto buf = srp::data::Convert2Vector<srp::mw::gpio::GpioHdr>::Conv(hdr);
                 std::string callback_path = CALLBACK_PATH_PREFIX + std::to_string(controller_id);
                 auto res = this->sock_->Transmit(callback_path, 0, buf);
-                ara::log::LogDebug() << "callback to controller ID: " << controller_id
-                                     << " for pin ID: " << pair.first;
                 if (!res.has_value()) {
                     ara::log::LogWarn() << "callback to controller ID: " << controller_id << " failed";
                 }
@@ -215,13 +222,19 @@ std::chrono::milliseconds GPIOMWService::CheckPinsExpired() {
             continue;
         }
 
-        gpio_driver_->setValue(pin_config->second.pinNum, 0);
+        const auto disable_res = gpio_driver_->setValue(pin_config->second.pinNum, 0);
+        if (disable_res != core::ErrorCode::kOk) {
+            ara::log::LogWarn() << "Auto-disable failed for pin ID: " << pin_id;
+        } else {
+            ara::log::LogInfo() << "Auto-disabled pin ID: " << pin_id;
+        }
         it = pin_expire.erase(it);
     }
     return allowed_sleep;
 }
 
 int GPIOMWService::Run(const std::stop_token& token) {
+    ara::log::LogInfo() << "GPIOMWService::Run started";
     pin_expire_thread = std::jthread([this](const std::stop_token& token){
         while (!token.stop_requested()){
             auto allowed_sleep_time = CheckPinsExpired();
@@ -233,13 +246,16 @@ int GPIOMWService::Run(const std::stop_token& token) {
     pin_did_->Offer();
     this->sock_->StartRXThread();
     PollSubscribedPinsLoop(token);
+    ara::log::LogInfo() << "GPIOMWService::Run stopping";
     this->sock_->StopRXThread();
     this->pin_did_->StopOffer();
+    ara::log::LogInfo() << "GPIOMWService::Run stopped cleanly";
     return core::ErrorCode::kOk;
 }
 
 int GPIOMWService::Initialize(const std::map<ara::core::StringView,
     ara::core::StringView> parms) {
+    ara::log::LogInfo() << "GPIOMWService::Initialize started";
     this->Init(std::make_unique<com::soc::StreamIpcSocket>(),
             std::make_shared<core::gpio::GpioDriver>(std::make_unique<core::FileHandler>()));
     this->sock_->Init({SOCKET_PATH, 0, 0});
@@ -248,24 +264,27 @@ int GPIOMWService::Initialize(const std::map<ara::core::StringView,
     const std::string path = parms.at("app_path") + "etc/config.json";
     auto config_opt = ReadConfig(path);
     if (!config_opt.has_value()) {
-        ara::log::LogError() << "fail to read config";
+        ara::log::LogError() << "Initialize failed: cannot read config from " << path;
         exit(1);
         return core::ErrorCode::kError;
     }
     config = config_opt.value();
     this->InitPins();
+    ara::log::LogInfo() << "GPIOMWService::Initialize complete, configured pins: " << config.size();
     return 0;
 }
 std::optional<std::unordered_map<uint8_t, GpioConf>> GPIOMWService::ReadConfig(
       const std::string& path) const {
     auto parser_opt = core::json::JsonParser::Parser(path);
     if (!parser_opt.has_value()) {
+        ara::log::LogError() << "ReadConfig failed: cannot parse json file " << path;
         return std::nullopt;
     }
     std::unordered_map<uint8_t, GpioConf> db;
     auto parser = parser_opt.value();
     auto gpio_opt = parser.GetArray<nlohmann::json>("gpio");
     if (!gpio_opt.has_value()) {
+        ara::log::LogError() << "ReadConfig failed: missing 'gpio' array in " << path;
         return std::nullopt;
     }
     for (const auto & data : gpio_opt.value()) {
@@ -295,6 +314,9 @@ int GPIOMWService::InitPins() {
         if (r != 0) {
             ara::log::LogWarn() << "Cant Initialize pin with actuator_ID" << pin.first;
             res = r;
+        } else {
+            ara::log::LogDebug() << "Initialized pin actuator_ID: " << pin.first
+                                 << ", pin num: " << pin.second.pinNum;
         }
     }
     return res;

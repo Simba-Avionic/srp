@@ -14,7 +14,7 @@
                 "logger": {
                     "app_id": "ENVA",
                     "app_des": "Enviroment Adaptive application",
-                    "log_level": "kDebug",
+                    "log_level": "kWarn",
                     "log_mode": "kRemote",
                     "ctx": [
                         {

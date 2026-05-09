@@ -142,7 +142,7 @@ LoggerService::LoggerService():
 }
 
 void LoggerService::start_func_handler(const std::uint8_t status) {
-  ara::log::LogWarn() << "LoggerService::start_func_handler: status=" << static_cast<unsigned>(status)
+  ara::log::LogWarn() << "LoggerService::start_func_handler: status=" << status
                       << " save_thread_=" << (this->save_thread_ ? "set" : "null");
   if (status == 1 && !this->save_thread_) {
     this->save_thread_ = std::make_shared<std::jthread>(

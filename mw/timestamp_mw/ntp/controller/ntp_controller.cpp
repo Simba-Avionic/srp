@@ -40,15 +40,15 @@ return static_cast<uint64_t>((T3 - T0) - (T2 - T1));
 std::vector<uint8_t> NtpController::socket_callback(const std::string& ip, const std::uint16_t& port,
                                                                 const std::vector<std::uint8_t> payload) {
     auto now_ms = GetTimestamp();
-    ara::log::LogDebug() << "Receive socket callback";
     auto val = srp::data::Convert<srp::mw::tinyNTP::ntpStruct>::Conv(payload);
     if (!val.has_value()) {
+        ara::log::LogWarn() << "NTP callback decode failed from " << ip << ":" << port;
         return {};
     }
     mw::tinyNTP::ntpStruct hdr = val.value();
     hdr.t1 = now_ms;
-    ara::log::LogDebug() << "Success send response for callback";
     hdr.t2 = GetTimestamp();
+    ara::log::LogDebug() << "NTP callback handled for " << ip << ":" << port;
     return srp::data::Convert2Vector<srp::mw::tinyNTP::ntpStruct>::Conv(hdr);
 }
 
@@ -59,17 +59,21 @@ int64_t NtpController::GetTimestamp() {
 
 void NtpController::thread_loop(std::stop_token token) {
     while (!token.stop_requested()) {
-        ara::log::LogDebug() << "Start NTP SYNC";
+        ara::log::LogDebug() << "Starting NTP sync cycle";
         srp::mw::tinyNTP::ntpStruct header;
         header.t0 = GetTimestamp();
         auto buf = srp::data::Convert2Vector<srp::mw::tinyNTP::ntpStruct>::Conv(header);
         auto res = this->sock_.Transmit(masterIP, kRX_port, buf);
         auto t3 = GetTimestamp();
         if (!res.has_value()) {
+            ara::log::LogWarn() << "NTP sync transmit failed to " << masterIP << ":" << kRX_port;
+            core::condition::wait_for(std::chrono::milliseconds(kDelay_time), token);
             continue;
         }
         auto val = srp::data::Convert<srp::mw::tinyNTP::ntpStruct>::Conv(res.value());
         if (!val.has_value()) {
+            ara::log::LogWarn() << "NTP sync response decode failed";
+            core::condition::wait_for(std::chrono::milliseconds(kDelay_time), token);
             continue;
         }
         srp::mw::tinyNTP::ntpStruct hdr = val.value();
@@ -85,20 +89,28 @@ void NtpController::thread_loop(std::stop_token token) {
 bool NtpController::Init() {
     auto ip = readMyIP();
     if (!ip.has_value()) {
+        ara::log::LogError() << "NTP init failed: cannot read local IP";
         return false;
     }
     myIP = ip.value();
     timestamp_.Init();
     if (myIP == masterIP) {
-        sock_.Init(com::soc::SocketConfig{myIP, kRX_port, kTx_port});
+        ara::log::LogInfo() << "NTP running in master mode on " << myIP;
+        if (sock_.Init(com::soc::SocketConfig{myIP, kRX_port, kTx_port}) != core::ErrorCode::kOk) {
+            ara::log::LogError() << "NTP init failed: socket init error for master mode";
+            return false;
+        }
         this->sock_.SetRXCallback(std::bind(&NtpController::socket_callback, this, std::placeholders::_1,
                                                        std::placeholders::_2, std::placeholders::_3));
         sock_.StartRXThread();
     } else {
+        ara::log::LogInfo() << "NTP running in client mode, local IP: " << myIP
+                            << ", master: " << masterIP;
         ntp_thread = std::jthread([this](std::stop_token token){
             thread_loop(token);
         });
     }
+    ara::log::LogInfo() << "NTP controller initialized";
     return true;
 }
 
@@ -107,10 +119,12 @@ std::optional<std::string> NtpController::readMyIP() {
     const std::string path = kIp_file_path;
     auto parser = core::json::JsonParser::Parser(path);
     if (!parser.has_value()) {
+        ara::log::LogError() << "readMyIP failed: cannot parse " << path;
         return std::nullopt;
     }
     auto ip = parser.value().GetString("ip");
     if (!ip.has_value()) {
+        ara::log::LogError() << "readMyIP failed: missing 'ip' in " << path;
         return std::nullopt;
     }
     return ip.value();

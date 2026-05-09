@@ -28,17 +28,19 @@ I2CService::I2CService():
 core::ErrorCode I2CService::Init(std::shared_ptr<core::i2c::II2CDriver> i2c,
                               std::unique_ptr<srp::com::soc::ISocketStream> socket) {
   if (!socket || !i2c) {
+    i2c_logger_.LogError() << "I2CService::Init failed: invalid socket or i2c driver";
     return core::ErrorCode::kInitializeError;
   }
   this->sock_ = std::move(socket);
   this->i2c_ = std::move(i2c);
+  i2c_logger_.LogInfo() << "I2CService::Init complete";
   return core::ErrorCode::kOk;
 }
 
 std::optional<std::vector<uint8_t>> I2CService::ReadWrite(
                   const std::vector<uint8_t> &payload, std::shared_ptr<i2c::Header> headerPtr) {
   if (payload.size()%2 != 0) {
-    i2c_logger_.LogWarn() << ("Invalid payload size");
+    i2c_logger_.LogWarn() << "Read request rejected: invalid payload size " << payload.size();
     return std::nullopt;
   }
   return i2c_->ReadWrite(payload[0], payload[1]);
@@ -50,18 +52,25 @@ std::optional<std::vector<uint8_t>> I2CService::WriteRead(const std::vector<uint
    *  data to write (0-255B)
    */
   if (payload.size() != 2) {
+    i2c_logger_.LogWarn() << "WriteRead request rejected: invalid payload size " << payload.size();
     return std::nullopt;
   }
+  uint8_t read_size = payload[0];
   uint8_t dataToWrite = payload[1];
   auto res = this->i2c_->Write({dataToWrite});
   if (res != core::ErrorCode::kOk) {
+    i2c_logger_.LogWarn() << "WriteRead failed: write stage error";
     return std::nullopt;
   }
-  return this->i2c_->Read(2);
+  return this->i2c_->Read(read_size);
 }
 
 std::vector<uint8_t> I2CService::ActionLogic(const std::shared_ptr<srp::i2c::Header> headerPtr,
                                                       std::optional<std::vector<uint8_t>> payload) {
+  if (!payload.has_value()) {
+    i2c_logger_.LogWarn() << "ActionLogic failed: missing payload";
+    return {};
+  }
   if (headerPtr->GetAction() == i2c::ACTION::kWrite) {
       if (payload.value().size() == 1) {
         if (i2c_->Write(payload.value()[0]) == core::ErrorCode::kOk) {
@@ -101,39 +110,47 @@ std::vector<uint8_t> I2CService::RxCallback(const std::string& ip, const std::ui
                                          const std::vector<std::uint8_t>& data) {
     auto headerPtr = i2c::I2CFactory::GetHeader(data);
     if (!headerPtr) {
+      i2c_logger_.LogWarn() << "RxCallback failed: invalid header";
       return {};
     }
     std::unique_lock<std::mutex> lock(this->i2c_mtx);
     if (this->i2c_->Ioctl(headerPtr->GetAddress()) != core::ErrorCode::kOk) {
+      i2c_logger_.LogWarn() << "RxCallback failed: ioctl error for address " << headerPtr->GetAddress();
       return {};
     }
     auto payload = i2c::I2CFactory::GetPayload(data);
     if (!payload.has_value()) {
+      i2c_logger_.LogWarn() << "RxCallback failed: payload decode error";
       return {};
     }
     return ActionLogic(headerPtr, payload);
 }
 
 int I2CService::Run(const std::stop_token& token) {
+    i2c_logger_.LogInfo() << "I2CService::Run started";
     core::condition::wait(token);
+    i2c_logger_.LogInfo() << "I2CService::Run stopping";
     this->sock_->StopRXThread();
+    i2c_logger_.LogInfo() << "I2CService::Run stopped cleanly";
     return core::ErrorCode::kOk;
 }
 int I2CService::Initialize(
     const std::map<ara::core::StringView, ara::core::StringView> parms) {
+    i2c_logger_.LogInfo() << "I2CService::Initialize started";
     this->Init(std::make_shared<core::i2c::I2CDriver>(), std::make_unique<com::soc::StreamIpcSocket>());
     if (this->i2c_->Init() != core::ErrorCode::kOk) {
-      i2c_logger_.LogWarn() << ("Cant init i2c");
+      i2c_logger_.LogWarn() << "Initialize failed: can't init i2c driver";
       return core::ErrorCode::kInitializeError;
     }
 
     if (this->sock_->Init(com::soc::SocketConfig(I2C_IPC_ADDR, 0, 0)) != core::ErrorCode::kOk) {
-      i2c_logger_.LogWarn() << ("Cant init sock");
+      i2c_logger_.LogWarn() << "Initialize failed: can't init socket";
       return core::ErrorCode::kInitializeError;
     }
     this->sock_->SetRXCallback(std::bind(&I2CService::RxCallback, this, std::placeholders::_1,
                 std::placeholders::_2, std::placeholders::_3));
     this->sock_->StartRXThread();
+    i2c_logger_.LogInfo() << "I2CService::Initialize complete";
     return core::ErrorCode::kOk;
 }
 
