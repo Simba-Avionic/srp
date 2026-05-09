@@ -63,25 +63,39 @@ int ServoService::Run(const std::stop_token& token) {
   service_ipc->StartOffer();
   service_udp->StartOffer();
 
-  auto update_servo_status = [&](std::uint8_t id, auto& ipc_event, auto& udp_event, const char* name) {
+  auto update_servo_status =
+      [&](std::uint8_t id, auto& ipc_event, auto& udp_event, const char* name,
+          std::optional<uint8_t>& last_value) {
       auto val = this->servo_controller->ReadServoPosition(id);
       if (val.has_value()) {
           ipc_event.Update(val.value());
           udp_event.Update(val.value());
-          ara::log::LogDebug() << "ServoService.Run: updated " << name <<
-                    " servo status: " << val.value();
+          if (!last_value.has_value() || last_value.value() != val.value()) {
+            ara::log::LogInfo() << "ServoService.Run: " << name
+                                << " servo status changed to " << val.value();
+            last_value = val.value();
+          }
+      } else {
+          ara::log::LogWarn() << "ServoService.Run: failed to read " << name
+                              << " servo status";
       }
   };
 
+  std::optional<uint8_t> last_main_state;
+  std::optional<uint8_t> last_vent_state;
+  std::optional<uint8_t> last_dump_state;
+
   while (!token.stop_requested()) {
     if (gpio_.SetPinValue(kHeartBeatPinID, 1, 500) != core::ErrorCode::kOk) {
-      ara::log::LogWarn() << "EngineApp::Run: Failed to toggle heartbeat pin";
+      ara::log::LogWarn() << "ServoService::Run: failed to toggle heartbeat pin";
     }
-    update_servo_status(kMainValveID, service_ipc->ServoStatusEvent,     service_udp->ServoStatusEvent,     "main");
-    update_servo_status(kVentValveID, service_ipc->ServoVentStatusEvent, service_udp->ServoVentStatusEvent, "vent");
-    update_servo_status(kDumpValveID, service_ipc->ServoDumpStatusEvent, service_udp->ServoDumpStatusEvent, "dump");
+    update_servo_status(kMainValveID, service_ipc->ServoStatusEvent, service_udp->ServoStatusEvent,
+                        "main", last_main_state);
+    update_servo_status(kVentValveID, service_ipc->ServoVentStatusEvent, service_udp->ServoVentStatusEvent,
+                        "vent", last_vent_state);
+    update_servo_status(kDumpValveID, service_ipc->ServoDumpStatusEvent, service_udp->ServoDumpStatusEvent,
+                        "dump", last_dump_state);
 
-    ara::log::LogDebug() << "ServoService.Run: status events check cycle completed";
     core::condition::wait_for(kEventIntervalMs, token);
   }
 
