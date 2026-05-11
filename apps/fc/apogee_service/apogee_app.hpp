@@ -13,14 +13,14 @@
 #include <memory>
 #include <map>
 
-// tak było w radio_app zapytać Mati- po co skąd itp
 #include "ara/exec/adaptive_application.h"
-#include "srp/env/EnvAppFc/EnvAppFcHandler.h"
-#include "srp/nav/NavAppFc/NavAppFcHandler.h"
-#include "srp/apps/ApogeeApp/ApogeeAppSkeleton.h"
-
+#include "srp/apps/ApogeeDetectServiceSkeleton.h"
+#include "srp/env/EnvApp/EnvAppHandler.h"
 #include "core/apogee/ApogeeDetector.h"
-constexpr double kBasePressure = 1013.25; // hPa
+
+constexpr double kBasePressure = 1013.25;
+constexpr double kEncodedBarToHpa = 10.0;
+
 namespace srp
 {
 namespace apps {
@@ -28,25 +28,18 @@ namespace apps {
         {
         private:
             // zapytać co tam dokładnie czym jest
-            env::EnvAppFcProxy env_service_proxy;
-            std::shared_ptr<env::EnvAppFcHandler> env_service_handler;
-
-            nav::NavAppFcProxy nav_service_proxy;
-            std::shared_ptr<nav::NavAppFcHandler> nav_service_handler;
-
-            std::unique_ptr<apps::ApogeeAppSkeleton> apogee_skeleton;
-
+            env::EnvAppProxy env_service_proxy;
+            std::shared_ptr<env::EnvAppHandler> env_service_handler;
+            apps::ApogeeDetectServiceSkeleton service_ipc;
+            apps::ApogeeDetectServiceSkeleton service_udp;
             RealTimeApogee apogee_detector_{15, -0.5, 0.0}; 
-
+            
             std::atomic<double> latest_height_{0.0};
             std::atomic<double> latest_velocity_{0.0};
 
             std::chrono::steady_clock::time_point last_imu_time_;
             bool first_imu_measurement_ = true;
 
-
-            const double base_pressure_ = kBasePressure; 
-            
             void SomeIpInit();
             void EvaluateApogee();
 
