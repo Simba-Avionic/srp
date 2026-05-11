@@ -44,7 +44,6 @@ class EnvServiceFc final : public ara::exec::AdaptiveApplication {
   int LoadTempConfig(
     const std::map<ara::core::StringView, ara::core::StringView>& parms);
   void TempRxCallback(const std::vector<srp::mw::temp::TempReadHdr>& data);
-  void Bme280Loop(const std::stop_token& token);
 
  protected:
   /**

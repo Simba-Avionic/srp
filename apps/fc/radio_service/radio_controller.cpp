@@ -49,6 +49,7 @@ void MavRadioController::TxThreadLoop(const std::stop_token& t) {
       if (!package_opt.has_value()) {
         continue;
       }
+      ara::log::LogWarn() << "Send: " << package_opt.value();
       uart_.Write(package_opt.value());
     }
 }
