@@ -59,6 +59,11 @@ std::optional<std::vector<uint8_t>> I2CDriver::ReadWrite(const uint8_t& reg, con
     ara::log::LogInfo() << "READ_WRITE from reg:" << reg << ", size:" << size;
     return std::nullopt;
 }
+std::optional<std::vector<uint8_t>> I2CDriver::ReadWrite(
+    const std::vector<uint8_t>& write_data, const uint8_t size) {
+    ara::log::LogInfo() << "READ_WRITE from buffer:" << write_data << ", size:" << size;
+    return std::nullopt;
+}
 }  // namespace i2c
 }  // namespace core
 }  // namespace srp

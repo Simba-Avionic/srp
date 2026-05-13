@@ -32,6 +32,8 @@ class II2CDriver {
   virtual std::optional<std::vector<uint8_t>> Read(const uint8_t size = 1) = 0;
   virtual core::ErrorCode PageWrite(std::vector<uint8_t> data) = 0;
   virtual std::optional<std::vector<uint8_t>> ReadWrite(const uint8_t& reg, const uint8_t size = 1) = 0;
+  virtual std::optional<std::vector<uint8_t>> ReadWrite(
+      const std::vector<uint8_t>& write_data, const uint8_t size) = 0;
 };
 }  // namespace i2c
 }  // namespace core

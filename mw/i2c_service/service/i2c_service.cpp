@@ -65,6 +65,21 @@ std::optional<std::vector<uint8_t>> I2CService::WriteRead(const std::vector<uint
   return this->i2c_->Read(read_size);
 }
 
+std::optional<std::vector<uint8_t>> I2CService::WriteReadBuffer(
+    const std::vector<uint8_t> &payload, std::shared_ptr<i2c::Header> headerPtr) {
+  /*  format payload
+   *  size data to read (uint8_t)
+   *  data bytes to write before repeated START
+   */
+  if (payload.size() < 2) {
+    i2c_logger_.LogWarn() << "WriteReadBuffer request rejected: invalid payload size " << payload.size();
+    return std::nullopt;
+  }
+  uint8_t read_size = payload[0];
+  std::vector<uint8_t> write_data(payload.begin() + 1, payload.end());
+  return this->i2c_->ReadWrite(write_data, read_size);
+}
+
 std::vector<uint8_t> I2CService::ActionLogic(const std::shared_ptr<srp::i2c::Header> headerPtr,
                                                       std::optional<std::vector<uint8_t>> payload) {
   if (!payload.has_value()) {
@@ -97,6 +112,12 @@ std::vector<uint8_t> I2CService::ActionLogic(const std::shared_ptr<srp::i2c::Hea
       return res.value();
     } else if (headerPtr->GetAction() == i2c::ACTION::kWriteRead) {
       auto res = this->WriteRead(payload.value(), headerPtr);
+      if (!res.has_value()) {
+        return {};
+      }
+      return res.value();
+    } else if (headerPtr->GetAction() == i2c::ACTION::kWriteReadBuffer) {
+      auto res = this->WriteReadBuffer(payload.value(), headerPtr);
       if (!res.has_value()) {
         return {};
       }

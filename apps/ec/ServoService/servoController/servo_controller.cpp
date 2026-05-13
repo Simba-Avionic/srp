@@ -106,10 +106,15 @@ void ServoController::Init(const std::string& app_path) {
   pulsing_thread = std::jthread([this](const std::stop_token& t) { pulsingThreadLoop(t); });
 
   logger_.LogInfo() << "ServoController.Init: initialization completed";
+  auto servo_ids = servo_cfg_mng.GetServosID();
+  for (const auto& servo : servo_ids) {
+    AutoSetServoPosition(servo, 0, true);
+  }
+  logger_.LogInfo() << "ServoController.Init: default servos position setted";
 }
 
 bool ServoController::AutoSetServoPosition(const uint8_t actuator_id,
-                                                      const uint8_t state) {
+                                                      const uint8_t state, bool force) {
   const auto cfg = servo_cfg_mng.GetServoConfig(actuator_id);
   if (!cfg.has_value()) {
     return false;
@@ -122,8 +127,10 @@ bool ServoController::AutoSetServoPosition(const uint8_t actuator_id,
   logger_.LogInfo() << "ServoController.ExecuteServoMovement: actuator "
                     << actuator_id << " moved successfully, state " << state;
 
-  if (cfg.value().position == state) {
-    return true;
+  if (!force) {
+    if (cfg.value().position == state) {
+      return true;
+    }
   }
 
   if (!servo_ctr_.SetServoPosition(servo, state)) {

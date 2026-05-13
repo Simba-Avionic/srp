@@ -34,7 +34,8 @@ namespace i2c {
 
 class I2CDriver : public II2CDriver {
  private:
-  int i2cFile;
+  int i2cFile{-1};
+  uint8_t current_address_{0};
   const ara::log::Logger& i2c_logger_;
  public:
   I2CDriver();
@@ -52,6 +53,8 @@ class I2CDriver : public II2CDriver {
   std::optional<std::vector<uint8_t>> Read(const uint8_t size = 1) override;
   core::ErrorCode PageWrite(std::vector<uint8_t> data) override;
   std::optional<std::vector<uint8_t>> ReadWrite(const uint8_t& reg, const uint8_t size = 1) override;
+  std::optional<std::vector<uint8_t>> ReadWrite(
+      const std::vector<uint8_t>& write_data, const uint8_t size) override;
 };
 }  // namespace i2c
 }  // namespace core

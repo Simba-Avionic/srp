@@ -26,7 +26,9 @@ I2CDriver::I2CDriver(): i2c_logger_ {
 }
 
 I2CDriver::~I2CDriver() {
-  close(this->i2cFile);
+  if (this->i2cFile >= 0) {
+    close(this->i2cFile);
+  }
 }
 core::ErrorCode I2CDriver::Init() {
   if ((this->i2cFile = open(kPath, O_RDWR)) < 0) {
@@ -40,13 +42,17 @@ core::ErrorCode I2CDriver::Ioctl(const uint8_t address, const uint16_t type) {
       i2c_logger_.LogWarn() << ("Cant ioctl device");
         return core::ErrorCode::kInitializeError;
     }
+    current_address_ = address;
     return core::ErrorCode::kOk;
 }
 
 core::ErrorCode I2CDriver::Write(const std::vector<uint8_t>& RegData) {
-  for (uint16_t i = 0; i < RegData.size(); i += 2) {
-    uint8_t buf[2] = {RegData[i], RegData[i + 1]};
-    if (write(i2cFile, buf, 2) != 2) {
+  if (RegData.empty() || (RegData.size() % 2) != 0) {
+    return core::ErrorCode::kInitializeError;
+  }
+  for (std::size_t i = 0; i < RegData.size(); i += 2) {
+    const uint8_t buf[2] = {RegData[i], RegData[i + 1]};
+    if (write(i2cFile, buf, sizeof(buf)) != sizeof(buf)) {
       return core::ErrorCode::kInitializeError;
     }
   }
@@ -66,7 +72,6 @@ std::optional<std::vector<uint8_t>> I2CDriver::Read(const uint8_t size) {
   return data;
 }
 core::ErrorCode I2CDriver::PageWrite(std::vector<uint8_t> data) {
-  data.insert(data.begin(), 0x00);
   if (static_cast<std::size_t>(write(i2cFile, data.data(), data.size())) != data.size()) {
     return core::ErrorCode::kInitializeError;
   }
@@ -83,6 +88,33 @@ std::optional<std::vector<uint8_t>> I2CDriver::ReadWrite(const uint8_t& reg, con
       return std::nullopt;
     }
     return std::vector<uint8_t>(buffer);
+}
+
+std::optional<std::vector<uint8_t>> I2CDriver::ReadWrite(
+    const std::vector<uint8_t>& write_data, const uint8_t size) {
+    if (write_data.empty() || size == 0) {
+      return std::nullopt;
+    }
+
+    std::vector<uint8_t> read_buffer(size);
+    struct i2c_msg messages[2];
+    messages[0].addr = current_address_;
+    messages[0].flags = 0;
+    messages[0].len = static_cast<__u16>(write_data.size());
+    messages[0].buf = const_cast<__u8*>(write_data.data());
+    messages[1].addr = current_address_;
+    messages[1].flags = I2C_M_RD;
+    messages[1].len = static_cast<__u16>(read_buffer.size());
+    messages[1].buf = read_buffer.data();
+
+    struct i2c_rdwr_ioctl_data ioctl_data;
+    ioctl_data.msgs = messages;
+    ioctl_data.nmsgs = 2;
+    if (ioctl(i2cFile, I2C_RDWR, &ioctl_data) < 0) {
+      i2c_logger_.LogWarn() << "Cant write/read data";
+      return std::nullopt;
+    }
+    return read_buffer;
 }
 }  // namespace i2c
 }  // namespace core

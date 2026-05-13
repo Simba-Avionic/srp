@@ -4,7 +4,7 @@
             "actuator_id":60,
             "channel": 3,
             "on_pos" : 102,
-            "off_pos" : 540,
+            "off_pos" : 512,
             "mosfet_id" : 15,
             "desc": "J11, MAIN VALVE, 102 to 0.5ms, 540 prawdopodobnie 2.5ms",
             "ina219_address": 68
@@ -13,7 +13,7 @@
             "actuator_id":61,
             "channel": 0,
             "on_pos" : 350,
-            "off_pos" : 110,
+            "off_pos" : 102,
             "mosfet_id" : 16,
             "desc": "J12, VENT VALVE, off: 102 - on: 404, calculate open % by changing on pos",
             "ina219_address": 69,
@@ -24,7 +24,7 @@
             "actuator_id":62,
             "channel": 1,
             "on_pos" : 180,
-            "off_pos" : 520,
+            "off_pos" : 512,
             "mosfet_id" : 11,
             "desc": "J13, DUMP VALVE",
             "ina219_address": 64

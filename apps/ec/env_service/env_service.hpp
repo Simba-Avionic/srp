@@ -23,12 +23,14 @@
 #include "ara/exec/adaptive_application.h"
 #include "apps/ec/env_service/service.hpp"
 #include "mw/i2c_service/controller/adcsensor/controller.hpp"
+#include "mw/i2c_service/controller/24lc32at/eeprom_config/cfg_manager.hpp"
 
 namespace srp {
 namespace envService {
 
 class EnvService final : public ara::exec::AdaptiveApplication {
  private:
+  eeprom::ConfigManager config;
   std::unique_ptr<mw::temp::TempController> temp_{};
   std::shared_ptr<i2c::ADCSensorController> press_{};
   std::mutex press_mtx_;

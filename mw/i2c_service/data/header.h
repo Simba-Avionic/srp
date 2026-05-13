@@ -26,6 +26,7 @@ enum ACTION:uint8_t {
     kWriteRead = 0x03,
     kRES = 0x04,
     kPageWrite = 0x05,
+    kWriteReadBuffer = 0x06,
 };
 
 class Header : public com::core::network::NetworkDataStructure {

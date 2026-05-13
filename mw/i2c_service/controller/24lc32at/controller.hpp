@@ -27,8 +27,8 @@ namespace i2c {
 class EEPROM24LC32AT {
  private:
   std::unique_ptr<II2CController> i2c_;
-  const ara::log::Logger& eeprom_logger_;
   uint8_t device_address_;
+  const ara::log::Logger& eeprom_logger_;
 
  protected:
   std::vector<uint8_t> GenerateAddressBytes(uint16_t address) const;
@@ -43,8 +43,18 @@ class EEPROM24LC32AT {
   core::ErrorCode Init(std::unique_ptr<II2CController> i2c = std::make_unique<I2CController>());
   core::ErrorCode WriteByte(uint16_t address, uint8_t data);
   core::ErrorCode WritePage(uint16_t address, const std::vector<uint8_t>& data);
+  /**
+   * @brief Writes an arbitrary-length buffer, automatically splitting across
+   *        physical 32-byte pages as required by 24LC32A datasheet section 6.2.
+   */
+  core::ErrorCode WriteBuffer(uint16_t address, const std::vector<uint8_t>& data);
   std::optional<uint8_t> ReadByte(uint16_t address);
   std::optional<std::vector<uint8_t>> ReadSequential(uint16_t address, uint8_t size);
+  /**
+   * @brief Reads an arbitrary-length buffer, splitting into multiple
+   *        sequential reads when needed (ReadSequential is limited to 255 B).
+   */
+  std::optional<std::vector<uint8_t>> ReadBuffer(uint16_t address, std::size_t size);
 };
 
 }  // namespace i2c

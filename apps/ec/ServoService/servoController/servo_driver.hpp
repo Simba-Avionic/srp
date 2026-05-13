@@ -22,6 +22,7 @@
 #include "mw/i2c_service/controller/ina219/controller.hpp"
 #include "ara/log/log.h"
 #include "ara/log/logging_menager.h"
+#include "mw/i2c_service/controller/24lc32at/eeprom_config/cfg_manager.hpp"
 
 namespace srp {
 namespace service {
@@ -38,10 +39,19 @@ class ServoDriver {
   gpio::GPIOController gpio_;
   mutable std::mutex operation_mtx;
   const ara::log::Logger& logger_;
+  eeprom::EEPROM_config config;
 
  public:
   void Init() {
     driver_.Init();
+    auto cfg_mng = eeprom::ConfigManager();
+    cfg_mng.Init();
+    auto cfg = cfg_mng.GetConfig();
+    if (cfg.has_value()) {
+      config = cfg.value();
+    } else {
+      ara::log::LogWarn() << "Cant get Eeprom corelation data";
+    }
   }
   ServoDriver():
       logger_(ara::log::LoggingMenager::GetInstance()->CreateLogger(
@@ -56,7 +66,9 @@ class ServoDriver {
       }
     }
 
-    const uint16_t target_position = (state == kOpenState) ? cfg.on_pos : cfg.off_pos;
+    const uint16_t target_position = ((state == kOpenState) ? cfg.on_pos : cfg.off_pos)
+                          * config.pca9685_XO_corelation;
+
     logger_.LogDebug() << "ServoController.ExecuteServoMovement: setting actuator "
                        << "to PWM " << target_position;
 
