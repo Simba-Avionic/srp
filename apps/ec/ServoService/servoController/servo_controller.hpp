@@ -52,7 +52,7 @@ class ServoController {
  public:
   ServoController();
   void Init(const std::string& app_path);
-  bool AutoSetServoPosition(const uint8_t actuator_id, const uint8_t state);
+  bool AutoSetServoPosition(const uint8_t actuator_id, const uint8_t state, bool force = false);
   std::optional<uint8_t> ReadServoPosition(uint8_t actuator_id);
   bool ChangeConfigPosition(uint8_t actuator_id, uint16_t new_open_val, uint16_t new_close_val);
 };
