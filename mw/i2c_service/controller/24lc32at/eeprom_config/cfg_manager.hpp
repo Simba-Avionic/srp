@@ -8,8 +8,8 @@
  * @copyright Copyright (c) 2026
  * 
  */
-#ifndef SRP_EEPROM_CFG_MANAGER_HPP_
-#define SRP_EEPROM_CFG_MANAGER_HPP_
+#ifndef MW_I2C_SERVICE_CONTROLLER_24LC32AT_EEPROM_CONFIG_CFG_MANAGER_HPP_
+#define MW_I2C_SERVICE_CONTROLLER_24LC32AT_EEPROM_CONFIG_CFG_MANAGER_HPP_
 
 #include <cstdint>
 #include <cstring>
@@ -78,4 +78,4 @@ class ConfigManager {
 }  // namespace eeprom
 }  // namespace srp
 
-#endif  // SRP_EEPROM_CFG_MANAGER_HPP_
+#endif  // MW_I2C_SERVICE_CONTROLLER_24LC32AT_EEPROM_CONFIG_CFG_MANAGER_HPP_

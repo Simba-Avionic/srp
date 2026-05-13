@@ -114,15 +114,18 @@ int EnvService::Initialize(const std::map<ara::core::StringView, ara::core::Stri
         sensorIdsToPaths[sensor_id.value()] = std::make_pair(label, physical_id);
         return core::ErrorCode::kOk;
     };
-    if (register_sensor(eeprom_cfg.value().board_temp1_id, "board_1") != core::ErrorCode::kOk) return core::ErrorCode::kInitializeError;
-    if (register_sensor(eeprom_cfg.value().board_temp2_id, "board_2") != core::ErrorCode::kOk) return core::ErrorCode::kInitializeError;
-    if (register_sensor(eeprom_cfg.value().board_temp3_id, "board_3") != core::ErrorCode::kOk) return core::ErrorCode::kInitializeError;
-    
+    if (register_sensor(eeprom_cfg.value().board_temp1_id, "board_1") !=
+                                            core::ErrorCode::kOk) return core::ErrorCode::kInitializeError;
+    if (register_sensor(eeprom_cfg.value().board_temp2_id, "board_2") !=
+                                            core::ErrorCode::kOk) return core::ErrorCode::kInitializeError;
+    if (register_sensor(eeprom_cfg.value().board_temp3_id, "board_3") !=
+                                            core::ErrorCode::kOk) return core::ErrorCode::kInitializeError;
+
     // eeprom::EEPROM_config cfg{};
-    // cfg.pca9685_XO_corelation = 1.059;
-    // strncpy(cfg.board_temp1_id, "00001110e849", sizeof(cfg.board_temp1_id));
-    // strncpy(cfg.board_temp2_id, "00001110db5a", sizeof(cfg.board_temp2_id));
-    // strncpy(cfg.board_temp3_id, "000011105db5", sizeof(cfg.board_temp3_id));
+    // cfg.pca9685_XO_corelation = 1.038;
+    // strncpy(cfg.board_temp1_id, "00001110ff83", sizeof(cfg.board_temp1_id));
+    // strncpy(cfg.board_temp2_id, "00001110e48e", sizeof(cfg.board_temp2_id));
+    // strncpy(cfg.board_temp3_id, "0000107b3c59", sizeof(cfg.board_temp3_id));
     // if (config.SetConfig(cfg) != core::ErrorCode::kOk) {
     //     ara::log::LogError() << "cant set eeprom";
     // } else {

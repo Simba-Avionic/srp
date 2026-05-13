@@ -107,7 +107,7 @@ void ServoController::Init(const std::string& app_path) {
 
   logger_.LogInfo() << "ServoController.Init: initialization completed";
   auto servo_ids = servo_cfg_mng.GetServosID();
-  for (const auto& servo: servo_ids) {
+  for (const auto& servo : servo_ids) {
     AutoSetServoPosition(servo, 0, true);
   }
   logger_.LogInfo() << "ServoController.Init: default servos position setted";
