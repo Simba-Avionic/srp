@@ -8,7 +8,9 @@
  * @copyright Copyright (c) 2024
  * 
  */
+#include <algorithm>
 #include <chrono>  // NOLINT
+#include <cstddef>
 #include <string>
 #include <thread>  // NOLINT
 #include <utility>
@@ -26,6 +28,9 @@ namespace {
     constexpr uint16_t EEPROM_MAX_ADDRESS = 0x0FFF;
     constexpr uint8_t PAGE_SIZE = 32;
     constexpr uint16_t WRITE_CYCLE_TIME_MS = 5;
+    constexpr uint16_t WRITE_CYCLE_POLL_TIMEOUT_MS = 50;
+    constexpr uint16_t WRITE_CYCLE_POLL_INTERVAL_MS = 1;
+    constexpr uint8_t SEQUENTIAL_READ_CHUNK = 128;
 }  // namespace
 
 EEPROM24LC32AT::EEPROM24LC32AT(uint8_t address)
@@ -75,7 +80,18 @@ std::vector<uint8_t> EEPROM24LC32AT::GenerateAddressBytes(uint16_t address) cons
 }
 
 core::ErrorCode EEPROM24LC32AT::WaitForWriteCycle() const {
-  // EEPROM write cycle time is typically 5ms
+  const auto address_bytes = GenerateAddressBytes(0);
+  const auto deadline = std::chrono::steady_clock::now() +
+                        std::chrono::milliseconds(WRITE_CYCLE_POLL_TIMEOUT_MS);
+  while (std::chrono::steady_clock::now() < deadline) {
+    if (this->i2c_ != nullptr &&
+        this->i2c_->Write(device_address_, address_bytes) == core::ErrorCode::kOk) {
+      return core::ErrorCode::kOk;
+    }
+    std::this_thread::sleep_for(std::chrono::milliseconds(WRITE_CYCLE_POLL_INTERVAL_MS));
+  }
+  eeprom_logger_.LogWarn() << "EEPROM24LC32AT.WaitForWriteCycle: ACK poll timed out, "
+                              "falling back to fixed Twc delay";
   std::this_thread::sleep_for(std::chrono::milliseconds(WRITE_CYCLE_TIME_MS));
   return core::ErrorCode::kOk;
 }
@@ -210,13 +226,7 @@ std::optional<uint8_t> EEPROM24LC32AT::ReadByte(uint16_t address) {
                                 address;
 
   auto address_bytes = GenerateAddressBytes(address);
-  // For EEPROM: write 2-byte address, then read
-  if (this->i2c_->Write(device_address_, address_bytes) != core::ErrorCode::kOk) {
-    eeprom_logger_.LogWarn() << "EEPROM24LC32AT.ReadByte: failed to set address";
-    return std::nullopt;
-  }
-
-  auto result = this->i2c_->Read(device_address_, address_bytes[1], 1);
+  auto result = this->i2c_->WriteReadBuffer(device_address_, address_bytes, 1);
   if (!result.has_value() || result.value().empty()) {
     eeprom_logger_.LogWarn() << "EEPROM24LC32AT.ReadByte: failed to read byte";
     return std::nullopt;
@@ -252,12 +262,7 @@ std::optional<std::vector<uint8_t>> EEPROM24LC32AT::ReadSequential(uint16_t addr
                                 size;
 
   auto address_bytes = GenerateAddressBytes(address);
-  if (this->i2c_->Write(device_address_, address_bytes) != core::ErrorCode::kOk) {
-    eeprom_logger_.LogWarn() << "EEPROM24LC32AT.ReadSequential: failed to set address";
-    return std::nullopt;
-  }
-
-  auto result = this->i2c_->Read(device_address_, address_bytes[1], size);
+  auto result = this->i2c_->WriteReadBuffer(device_address_, address_bytes, size);
   if (!result.has_value() || result.value().empty()) {
     eeprom_logger_.LogWarn() << "EEPROM24LC32AT.ReadSequential: failed to read data";
     return std::nullopt;
@@ -266,6 +271,61 @@ std::optional<std::vector<uint8_t>> EEPROM24LC32AT::ReadSequential(uint16_t addr
   eeprom_logger_.LogDebug() << "EEPROM24LC32AT.ReadSequential: read " <<
                                 result.value().size() << " bytes";
   return result;
+}
+
+core::ErrorCode EEPROM24LC32AT::WriteBuffer(uint16_t address,
+                                            const std::vector<uint8_t>& data) {
+  if (data.empty()) {
+    return core::ErrorCode::kError;
+  }
+  std::size_t offset = 0;
+  while (offset < data.size()) {
+    const uint16_t current_address = static_cast<uint16_t>(address + offset);
+    if (current_address > EEPROM_MAX_ADDRESS) {
+      eeprom_logger_.LogWarn() << "EEPROM24LC32AT.WriteBuffer: write exceeds EEPROM size";
+      return core::ErrorCode::kError;
+    }
+    const uint16_t page_end =
+        static_cast<uint16_t>((current_address / PAGE_SIZE) * PAGE_SIZE + PAGE_SIZE - 1);
+    const std::size_t bytes_left_in_page =
+        static_cast<std::size_t>(page_end - current_address + 1);
+    const std::size_t chunk_size = std::min(bytes_left_in_page, data.size() - offset);
+    std::vector<uint8_t> chunk(data.begin() + offset, data.begin() + offset + chunk_size);
+    if (WritePage(current_address, chunk) != core::ErrorCode::kOk) {
+      eeprom_logger_.LogWarn() << "EEPROM24LC32AT.WriteBuffer: chunk write failed at address "
+                               << current_address;
+      return core::ErrorCode::kError;
+    }
+    offset += chunk_size;
+  }
+  return core::ErrorCode::kOk;
+}
+
+std::optional<std::vector<uint8_t>> EEPROM24LC32AT::ReadBuffer(uint16_t address,
+                                                               std::size_t size) {
+  if (size == 0) {
+    return std::nullopt;
+  }
+  if (address + size - 1 > EEPROM_MAX_ADDRESS) {
+    eeprom_logger_.LogWarn() << "EEPROM24LC32AT.ReadBuffer: read exceeds EEPROM size";
+    return std::nullopt;
+  }
+  std::vector<uint8_t> out;
+  out.reserve(size);
+  std::size_t offset = 0;
+  while (offset < size) {
+    const std::size_t chunk_size = std::min<std::size_t>(SEQUENTIAL_READ_CHUNK, size - offset);
+    const uint16_t current_address = static_cast<uint16_t>(address + offset);
+    auto chunk = ReadSequential(current_address, static_cast<uint8_t>(chunk_size));
+    if (!chunk.has_value() || chunk.value().size() != chunk_size) {
+      eeprom_logger_.LogWarn() << "EEPROM24LC32AT.ReadBuffer: chunk read failed at address "
+                               << current_address;
+      return std::nullopt;
+    }
+    out.insert(out.end(), chunk.value().begin(), chunk.value().end());
+    offset += chunk_size;
+  }
+  return out;
 }
 
 }  // namespace i2c

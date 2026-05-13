@@ -42,6 +42,9 @@ class I2CService final : public ara::exec::AdaptiveApplication {
   std::optional<std::vector<uint8_t>> WriteRead(
       const std::vector<uint8_t>& payload,
       std::shared_ptr<i2c::Header> headerPtr);
+  std::optional<std::vector<uint8_t>> WriteReadBuffer(
+      const std::vector<uint8_t>& payload,
+      std::shared_ptr<i2c::Header> headerPtr);
   std::vector<uint8_t> ActionLogic(
       const std::shared_ptr<srp::i2c::Header> headerPtr,
       std::optional<std::vector<uint8_t>> payload);

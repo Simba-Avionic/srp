@@ -53,6 +53,8 @@ class I2CController: public II2CController{
   std::optional<std::vector<uint8_t>> Read(const uint8_t address, const uint8_t reg, const uint8_t size = 1) override;
   std::optional<std::vector<uint8_t>> WriteRead(const uint8_t address,
                                                         const uint8_t WriteData, const uint8_t ReadSize = 1) override;
+  std::optional<std::vector<uint8_t>> WriteReadBuffer(
+      const uint8_t address, const std::vector<uint8_t>& write_data, const uint8_t read_size) override;
 };
 }  // namespace i2c
 }  // namespace srp

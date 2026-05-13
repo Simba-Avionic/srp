@@ -8,6 +8,7 @@
  * @copyright Copyright (c) 2024
  * 
  */
+#include <cstring>
 #include <memory>
 #include <map>
 #include <string>
@@ -38,6 +39,10 @@ core::ErrorCode EnvService::Init(std::unique_ptr<mw::temp::TempController> temp)
       return core::ErrorCode::kInitializeError;
     }
     this->temp_ = std::move(temp);
+    if (config.Init() != core::ErrorCode::kOk) {
+      ara::log::LogError() << "EnvService::Init: EEPROM ConfigManager init failed";
+      return core::ErrorCode::kInitializeError;
+    }
     return core::ErrorCode::kOk;
 }
 
@@ -92,6 +97,47 @@ int EnvService::Initialize(const std::map<ara::core::StringView, ara::core::Stri
         ara::log::LogError() << "Failed to load temperature configuration";
         return core::ErrorCode::kInitializeError;
     }
+    const std::optional<eeprom::EEPROM_config> eeprom_cfg = config.GetConfig();
+    if (!eeprom_cfg.has_value()) {
+        ara::log::LogError() << "Failed to load EEPROM temperature configuration";
+        return core::ErrorCode::kInitializeError;
+    }
+    auto register_sensor = [&](const std::string& raw_id, const std::string& label) -> core::ErrorCode {
+        std::string physical_id = "28-" + raw_id;
+        auto sensor_id = this->temp_->Register(physical_id);
+
+        if (!sensor_id.has_value()) {
+            ara::log::LogError() << "Sensor_id is empty for " << label;
+            return core::ErrorCode::kInitializeError;
+        }
+
+        sensorIdsToPaths[sensor_id.value()] = std::make_pair(label, physical_id);
+        return core::ErrorCode::kOk;
+    };
+    if (register_sensor(eeprom_cfg.value().board_temp1_id, "board_1") !=
+                                            core::ErrorCode::kOk) return core::ErrorCode::kInitializeError;
+    if (register_sensor(eeprom_cfg.value().board_temp2_id, "board_2") !=
+                                            core::ErrorCode::kOk) return core::ErrorCode::kInitializeError;
+    if (register_sensor(eeprom_cfg.value().board_temp3_id, "board_3") !=
+                                            core::ErrorCode::kOk) return core::ErrorCode::kInitializeError;
+
+    // eeprom::EEPROM_config cfg{};
+    // cfg.pca9685_XO_corelation = 1.038;
+    // strncpy(cfg.board_temp1_id, "00001110ff83", sizeof(cfg.board_temp1_id));
+    // strncpy(cfg.board_temp2_id, "00001110e48e", sizeof(cfg.board_temp2_id));
+    // strncpy(cfg.board_temp3_id, "0000107b3c59", sizeof(cfg.board_temp3_id));
+    // if (config.SetConfig(cfg) != core::ErrorCode::kOk) {
+    //     ara::log::LogError() << "cant set eeprom";
+    // } else {
+    //     auto read_back = config.GetConfig();
+    //     if (!read_back.has_value()) {
+    //         ara::log::LogError() << "EEPROM read-back failed after SetConfig";
+    //     } else if (std::memcmp(&read_back.value(), &cfg, sizeof(cfg)) != 0) {
+    //         ara::log::LogError() << "EEPROM read-back mismatch after SetConfig";
+    //     } else {
+    //         ara::log::LogInfo() << "EEPROM SetConfig + GetConfig roundtrip OK";
+    //     }
+    // }
     return core::ErrorCode::kOk;
 }
 

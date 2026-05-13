@@ -13,6 +13,7 @@ cc_library(
         "//mw/i2c_service/controller/ina219:ina219_controller",
         "@srp_platform//ara/log",
         "//apps/ec/ServoService/servoController:servo_config",
+        "//mw/i2c_service/controller/24lc32at/eeprom_config:eeprom_config",
     ],
     visibility = [
         "//apps:__subpackages__",
