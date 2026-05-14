@@ -18,7 +18,7 @@ namespace apps {
 namespace {
   static constexpr auto kService_ipc_instance =       "srp/apps/GPSApp/GPSService_ipc";
   static constexpr auto kService_udp_instance =       "srp/apps/GPSApp/GPSService_udp";
-  static constexpr auto KGPS_UART_path =              "/dev/ttyS0";
+  static constexpr auto KGPS_UART_path =              "/dev/ttyS4";
   static constexpr auto KGPS_UART_baudrate =          B230400;
   static constexpr uint16_t KGps_expected_interval =  1000;
   static constexpr auto kGps_freq_tolerance =         100;

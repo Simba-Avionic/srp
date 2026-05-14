@@ -17,6 +17,7 @@
 #include <functional>
 #include "core/uart/Iuart_driver.hpp"
 #include "core/common/error_code.h"
+#include "ara/log/logging_menager.h"
 
 namespace srp {
 namespace core {
@@ -25,8 +26,10 @@ namespace uart {
 class UartDriver: public IUartDriver {
  private:
   int serial_port;
+  const ara::log::Logger& logger_;
 
  public:
+  UartDriver();
   bool Open(const std::string& portName, const uint32_t& baudrate = B9600, const uint8_t timeout = 10) override;
   std::optional<std::vector<uint8_t>> Read(const uint16_t size = 0) override;
   core::ErrorCode Write(const std::vector<uint8_t>& data) override;
