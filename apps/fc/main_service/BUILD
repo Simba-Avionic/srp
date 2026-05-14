@@ -9,7 +9,8 @@ cc_binary(
     visibility = [
         "//deployment/apps/fc/main_app:__subpackages__",
         "//apps/fc/radio_service:__subpackages__",
-        ],
+        "//apps/ec/radio_service:__subpackages__",
+    ],
     deps = [
         "@srp_platform//ara/exec:adaptive_application_lib",
         "@srp_platform//ara/diag:uds_lib",
