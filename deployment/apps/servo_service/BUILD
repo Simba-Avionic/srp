@@ -18,7 +18,8 @@ filegroup(
         "//mw/i2c_service:__subpackages__",
         "//deployment/apps/fc/radio_app:__subpackages__",
         "//deployment/apps/logger_service:__subpackages__",
-        ],
+        "//deployment/apps/radio_app:__subpackages__",
+    ],
 )
 
 ara_someip_lib(
