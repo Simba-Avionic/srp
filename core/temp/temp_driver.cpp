@@ -29,13 +29,13 @@ namespace {
     constexpr auto kSensorPath = "/sys/bus/w1/devices/";
     constexpr auto kManagerName = "w1_bus_master1";
 }
-TempDriver::TempDriver() {
-     ara::log::LoggingMenager::GetInstance()->CreateLogger("temp", "", ara::log::LogLevel::kInfo);
-}
+TempDriver::TempDriver():
+    logger_(ara::log::LoggingMenager::GetInstance()->CreateLogger(
+        "temp", "", ara::log::LogLevel::kWarn)) {}
 ara::core::Result<double> TempDriver::ReadTemp(const std::string& sensorPhysicalID) {
     std::ifstream file(kSensorPath + sensorPhysicalID + "/temperature");
     if (!file) {
-        ara::log::LogDebug() << "Sensor " << sensorPhysicalID << " not available!";
+        logger_.LogDebug() << "Sensor " << sensorPhysicalID << " not available!";
         return ara::com::MakeErrorCode(
             ara::com::ComErrc::kErroneousFileHandle, "Can't open file for 1Wire sensor");
     }
@@ -44,11 +44,11 @@ ara::core::Result<double> TempDriver::ReadTemp(const std::string& sensorPhysical
     try {
         const double value = std::stod(line) / 1000.0;
         if (value == 85.0 || value == -127.0) {
-            ara::log::LogWarn() << "Sensor " << sensorPhysicalID << " returned power-on reset value (85C)";
+            logger_.LogWarn() << "Sensor " << sensorPhysicalID << " returned power-on reset value (85C)";
         }
         return value;
     } catch (const std::exception& e) {
-        ara::log::LogWarn() << "Conversion error for sensor " << sensorPhysicalID << ": " << e.what();
+        logger_.LogWarn() << "Conversion error for sensor " << sensorPhysicalID << ": " << e.what();
         return ara::com::MakeErrorCode(ara::com::ComErrc::kErroneousFileHandle, "Parsing error");
     }
 }
@@ -57,7 +57,7 @@ ara::core::Result<double> TempDriver::ReadTemp(const std::string& sensorPhysical
 ara::core::Result<bool> TempDriver::SetResolution(const std::string& sensorPhysicalID, uint8_t resolution) {
     std::ofstream file(kSensorPath + sensorPhysicalID + "/resolution");
     if (!file) {
-        ara::log::LogWarn() << "Sensor " << sensorPhysicalID << " not available!";
+        logger_.LogWarn() << "Sensor " << sensorPhysicalID << " not available!";
         return ara::com::MakeErrorCode(
             ara::com::ComErrc::kErroneousFileHandle, "Can't open file for 1Wire sensor");
     }
@@ -68,7 +68,7 @@ ara::core::Result<bool> TempDriver::SetResolution(const std::string& sensorPhysi
 ara::core::Result<uint8_t> TempDriver::ReadResolution(const std::string& sensorPhysicalID) {
     std::ifstream file(kSensorPath + sensorPhysicalID + "/resolution");
     if (!file) {
-        ara::log::LogWarn() << "Sensor " << sensorPhysicalID << " not available!";
+        logger_.LogWarn() << "Sensor " << sensorPhysicalID << " not available!";
         return ara::com::MakeErrorCode(
             ara::com::ComErrc::kErroneousFileHandle, "Can't open file for 1Wire sensor");
     }
@@ -76,10 +76,10 @@ ara::core::Result<uint8_t> TempDriver::ReadResolution(const std::string& sensorP
     std::getline(file, line);
     try {
         const uint8_t value = std::stoi(line);
-        ara::log::LogDebug() << "Read from ID: " << sensorPhysicalID << ", resolution: " << value;
+        logger_.LogDebug() << "Read from ID: " << sensorPhysicalID << ", resolution: " << value;
         return value;
     } catch (const std::invalid_argument& e) {
-        ara::log::LogWarn() << "Invalid resolution data for sensor " << sensorPhysicalID;
+        logger_.LogWarn() << "Invalid resolution data for sensor " << sensorPhysicalID;
         return ara::com::MakeErrorCode(
             ara::com::ComErrc::kErroneousFileHandle, "Invalid resolution data");
     }
@@ -103,7 +103,7 @@ ara::core::Result<std::vector<std::string>> TempDriver::GetAllAccessibleSensor()
 ara::core::Result<uint16_t> TempDriver::GetResponseTime(const std::string& sensorPhysicalID) {
     std::ifstream file(kSensorPath + sensorPhysicalID + "/conv_time");
     if (!file) {
-        ara::log::LogWarn() << "Sensor " << sensorPhysicalID << " not available!";
+        logger_.LogWarn() << "Sensor " << sensorPhysicalID << " not available!";
         return ara::com::MakeErrorCode(
             ara::com::ComErrc::kErroneousFileHandle, "Can't open file for 1Wire sensor");
     }
@@ -111,10 +111,10 @@ ara::core::Result<uint16_t> TempDriver::GetResponseTime(const std::string& senso
     std::getline(file, line);
     try {
         uint16_t value = std::stoi(line);
-        ara::log::LogDebug() << "Read from ID: " << sensorPhysicalID << ", Resp Time: " << value;
+        logger_.LogDebug() << "Read from ID: " << sensorPhysicalID << ", Resp Time: " << value;
         return value;
     } catch (const std::invalid_argument& e) {
-        ara::log::LogWarn() << "Invalid Resp TIme data for sensor " << sensorPhysicalID;
+        logger_.LogWarn() << "Invalid Resp TIme data for sensor " << sensorPhysicalID;
         return ara::com::MakeErrorCode(
             ara::com::ComErrc::kErroneousFileHandle, "Invalid RESP data");
     }

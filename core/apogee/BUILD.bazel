@@ -13,6 +13,7 @@ cc_library(
     ],
     deps = [
         "//core/apogee:basic_matrix_lib",
+        "@srp_platform//ara/log",
     ],
     visibility = ["//visibility:public"],
 )
@@ -36,6 +37,7 @@ cc_library(
     deps = [
         "//core/apogee:KalmanFilter_lib",
         "//core/apogee:basic_matrix_lib",
+        "@srp_platform//ara/log",
     ],
     visibility = ["//visibility:public"],
 )

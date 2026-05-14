@@ -23,6 +23,11 @@ namespace srp {
 namespace core {
 namespace uart {
 
+UartDriver::UartDriver():
+    serial_port(-1),
+    logger_(ara::log::LoggingMenager::GetInstance()->CreateLogger(
+        "uart", "", ara::log::LogLevel::kWarn)) {}
+
 core::ErrorCode UartDriver::Write(const std::vector<uint8_t>& data) {
     auto n = write(serial_port, data.data(), data.size());
     if (n < 0) {

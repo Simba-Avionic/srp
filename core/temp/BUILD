@@ -7,6 +7,7 @@ cc_library(
     deps = [
         "//core/common:condition_lib",
         "@srp_platform//ara/com:com_error_domain",
+        "@srp_platform//ara/log",
     ],
     visibility = ["//core:__subpackages__"],
 )

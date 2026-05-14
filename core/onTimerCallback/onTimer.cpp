@@ -77,7 +77,9 @@ void TimerController::Stop() {
     }
 }
 
-TimerController::TimerController() {}
+TimerController::TimerController():
+    logger_(ara::log::LoggingMenager::GetInstance()->CreateLogger(
+        "tmr-", "", ara::log::LogLevel::kWarn)) {}
 
 }  // namespace core
 }  // namespace srp

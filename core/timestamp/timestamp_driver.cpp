@@ -38,7 +38,11 @@ bool TimestampController::Init() {
   }
   return true;
 }
-TimestampController::TimestampController(): instance_(kTimestamp_instance), proxy_(this->instance_) {
+TimestampController::TimestampController():
+    instance_(kTimestamp_instance),
+    proxy_(this->instance_),
+    logger_(ara::log::LoggingMenager::GetInstance()->CreateLogger(
+        "tsct", "", ara::log::LogLevel::kWarn)) {
 }
 int64_t TimestampController::GetDeltaTime(const int64_t now, const int64_t previous) {
   return now - previous;
@@ -52,7 +56,12 @@ std::optional<int64_t> TimestampController::GetNewTimeStamp() {
     return GetNow() - res.Value();
 }
 
-TimestampMaster::TimestampMaster(): instance_(kTimestamp_instance), skeleton_(instance_) {
+TimestampMaster::TimestampMaster():
+    instance_(kTimestamp_instance),
+    skeleton_(instance_),
+    start(0),
+    logger_(ara::log::LoggingMenager::GetInstance()->CreateLogger(
+        "tsms", "", ara::log::LogLevel::kWarn)) {
 }
 
 bool TimestampMaster::Init() {

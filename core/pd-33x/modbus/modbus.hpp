@@ -16,6 +16,7 @@
 #include <string>
 #include <utility>
 #include "core/pd-33x/rs485/rs485.hpp"
+#include "ara/log/logging_menager.h"
 namespace srp {
 namespace core {
 
@@ -23,9 +24,11 @@ class MODBUS {
  protected:
   std::unique_ptr<core::IRS485> rs485_;
   uint8_t slave_id;
+  const ara::log::Logger& logger_;
   uint16_t Calculate_CRC16(const std::vector<uint8_t>& data);
   bool Validate_CRC16(const std::vector<uint8_t>& data);
  public:
+  MODBUS();
   bool Init(const RS485_conf_t& config, const uint8_t slave_id,
               std::unique_ptr<core::IRS485> rs485 = std::make_unique<core::RS485>());
   std::optional<std::vector<uint8_t>> SendRequest(uint8_t function_code, uint16_t start_addr, uint16_t quantity);

@@ -16,6 +16,10 @@ namespace srp {
 namespace core {
 namespace binaryWriter {
 
+BinaryFileWriter::BinaryFileWriter():
+    logger_(ara::log::LoggingMenager::GetInstance()->CreateLogger(
+        "bfwr", "", ara::log::LogLevel::kWarn)) {}
+
 BinaryFileWriter::~BinaryFileWriter() {
     close();
 }

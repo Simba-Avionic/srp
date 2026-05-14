@@ -27,10 +27,12 @@ namespace {
     static constexpr auto kBME280_delay_ms =           100;
     static constexpr auto kService_instance_path_ipc = "srp/env/EnvAppFc/envServiceFc_ipc";
     static constexpr auto kService_instance_path_udp = "srp/env/EnvAppFc/envServiceFc_udp";
+    static constexpr auto kSomeIPServiceID = 529;
 }  // namespace
 
-EnvServiceFc::EnvServiceFc(): service_ipc(ara::core::InstanceSpecifier{kService_instance_path_ipc}),
-                  service_udp(ara::core::InstanceSpecifier{kService_instance_path_udp}) {
+EnvServiceFc::EnvServiceFc():
+                service_ipc(ara::core::InstanceSpecifier{kService_instance_path_ipc}),
+                service_udp(ara::core::InstanceSpecifier{kService_instance_path_udp}) {
 }
 
 
@@ -47,7 +49,6 @@ core::ErrorCode EnvServiceFc::Init(std::unique_ptr<mw::temp::TempController> tem
 int EnvServiceFc::Initialize(const std::map<ara::core::StringView, ara::core::StringView>
                       parms) {
     ara::log::LogInfo() << "EnvService has been started";
-    // Check if app_path exists in parameters
     auto app_path_it = parms.find("app_path");
     if (app_path_it == parms.end()) {
         ara::log::LogError() << "app_path parameter not found in parms";
@@ -77,9 +78,9 @@ int EnvServiceFc::Initialize(const std::map<ara::core::StringView, ara::core::St
     uint8_t i = 0;
     do {
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
-        res = this->temp_->Initialize(529, std::bind(&EnvServiceFc::TempRxCallback,
+        res = this->temp_->Initialize(kSomeIPServiceID, std::bind(&EnvServiceFc::TempRxCallback,
             this, std::placeholders::_1), std::make_unique<com::soc::StreamIpcSocket>());
-        ara::log::LogInfo() << "Cant connect to temp by id:529, try num: " << i;
+        ara::log::LogInfo() << "Cant connect to temp by id:" << kSomeIPServiceID << ", try num: " << i;
         i++;
     } while (res != core::ErrorCode::kOk && i < 6);
     if (res != core::ErrorCode::kOk) {
@@ -135,8 +136,11 @@ int EnvServiceFc::LoadTempConfig(const std::map<ara::core::StringView, ara::core
     return srp::core::ErrorCode::kOk;
 }
 
-void EnvServiceFc::Bme280Loop(const std::stop_token& token) {
-     while (!token.stop_requested()) {
+
+int EnvServiceFc::Run(const std::stop_token& token) {
+    ara::log::LogDebug() << "Leci run";
+
+    while (!token.stop_requested()) {
         const auto start = std::chrono::high_resolution_clock::now();
         const auto pressValue = this->bme->getPressure();
         const auto tempValue = this->bme->getTemperature();
@@ -156,12 +160,6 @@ void EnvServiceFc::Bme280Loop(const std::stop_token& token) {
             core::condition::wait_for(std::chrono::milliseconds(kBME280_delay_ms) - duration, token);  // 1 Hz
         }
     }
-}
-
-int EnvServiceFc::Run(const std::stop_token& token) {
-    ara::log::LogDebug() << "Leci run";
-
-    Bme280Loop(token);
 
     service_ipc.StopOffer();
     service_udp.StopOffer();

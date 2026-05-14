@@ -13,6 +13,7 @@ cc_library(
         "//mw/gpio_server/controller:gpio_controller",
         "//core/uart:uart_driver",
         "//core/pd-33x/rs485:rs485_base",
+        "@srp_platform//ara/log",
     ],
     srcs = ["rs485.cpp"],
     hdrs = ["rs485.hpp"],
