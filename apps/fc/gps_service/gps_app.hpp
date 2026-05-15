@@ -14,6 +14,7 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+#include <variant>
 #include <map>
 #include <memory>
 #include <mutex>  // NOLINT
@@ -29,6 +30,7 @@
 namespace srp {
 namespace apps {
 using timepoint = std::chrono::high_resolution_clock::time_point;
+using GPSDataVariant = std::variant<GPSDataStructure, GPSRMCDataStructure, GPSVTGDataStructure>;
 
 class GPSApp final : public ara::exec::AdaptiveApplication {
  private:
@@ -45,9 +47,11 @@ class GPSApp final : public ara::exec::AdaptiveApplication {
   std::mutex mtx_;
 
  public:
-  static std::optional<GPSDataStructure> ParseGPSData(const std::vector<uint8_t>& data);
+  static std::optional<GPSDataVariant> ParseGPSData(const std::vector<uint8_t>& data);
   void Init(std::unique_ptr<core::uart::IUartDriver> uart);
   static GPSDataStructure GetSomeIPData(const core::GPS_DATA_T& data);
+  static GPSRMCDataStructure GetSomeIPData(const core::GPS_DATA_RMC_T& data);
+  static GPSVTGDataStructure GetSomeIPData(const core::GPS_DATA_VTG_T& data);
   /**
    * @brief This function is called to launch the application
    *

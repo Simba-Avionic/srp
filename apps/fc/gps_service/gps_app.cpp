@@ -39,21 +39,59 @@ GPSDataStructure GPSApp::GetSomeIPData(const core::GPS_DATA_T& data) {
     return someip_data;
 }
 
+GPSRMCDataStructure GPSApp::GetSomeIPData(const core::GPS_DATA_RMC_T& data) {
+    GPSRMCDataStructure someip_data;
+    someip_data.latitude = data.latitude;
+    someip_data.longitude = data.longitude;
+    someip_data.speed = data.speed;
+    someip_data.angle = data.angle;
+    if (data.latitude_dir == 'S') {
+      someip_data.latitude *= -1;
+    }
+    if (data.longitude_dir == 'W') {
+      someip_data.longitude *= -1;
+    }
+    return someip_data;
+}
+
+GPSVTGDataStructure GPSApp::GetSomeIPData(const core::GPS_DATA_VTG_T& data) {
+    GPSVTGDataStructure someip_data;
+    someip_data.trueCourse = data.trueCourseOverGround;
+    someip_data.relativeSpeed = data.relativeSpeed;
+    return someip_data;
+}
+
 void GPSApp::Init(std::unique_ptr<core::uart::IUartDriver> uart) {
   this->uart_ = std::move(uart);
 }
 
-std::optional<GPSDataStructure> GPSApp::ParseGPSData(const std::vector<uint8_t>& data) {
+std::optional<GPSDataVariant> GPSApp::ParseGPSData(const std::vector<uint8_t>& data) {
   std::string s(data.begin(), data.end());
   auto res = core::Nmea::Parse(s);
   if (!res.has_value()) {
     return std::nullopt;
   }
-  auto someip_data = GetSomeIPData(res.value());
-  ara::log::LogDebug() << "GPS latitude: " << someip_data.latitude
-      << ", longtitude: " << someip_data.longitude << ",height(M):"
-      << res.value().height << "satelite_nr: " << res.value().satellite_nr;
-  return someip_data;
+
+  const auto* gps_data = std::get_if<core::GPS_DATA_T>(&res.value());
+  if (gps_data != nullptr) {
+    auto someip_data = GetSomeIPData(*gps_data);
+    ara::log::LogDebug() << "GPS latitude: " << someip_data.latitude
+        << ", longtitude: " << someip_data.longitude << ",height(M):"
+        << gps_data->height << "satelite_nr: " << gps_data->satellite_nr;
+    return someip_data;
+  }
+
+  const auto* gps_rmc_data = std::get_if<core::GPS_DATA_RMC_T>(&res.value());
+  if (gps_rmc_data != nullptr) {
+    return GetSomeIPData(*gps_rmc_data);
+  }
+
+  const auto* gps_vtg_data = std::get_if<core::GPS_DATA_VTG_T>(&res.value());
+  if (gps_vtg_data != nullptr) {
+    return GetSomeIPData(*gps_vtg_data);
+  }
+
+  return std::nullopt;
 }
 
 int64_t GPSApp::GetTimeDelata(const timepoint last_frame_time) const {
@@ -92,6 +130,19 @@ int GPSApp::Run(const std::stop_token& token) {
     }
     auto res = ParseGPSData(data.value());
     if (res.has_value()) {
+      if (const auto* gps_data = std::get_if<GPSDataStructure>(&res.value())) {
+        service_ipc.GPSStatusEvent.Update(*gps_data);
+        service_udp.GPSStatusEvent.Update(*gps_data);
+      } else if (const auto* rmc_data = std::get_if<GPSRMCDataStructure>(&res.value())) {
+        service_ipc.GPSRMCStatusEvent.Update(*rmc_data);
+        service_udp.GPSRMCStatusEvent.Update(*rmc_data);
+        continue;
+      } else if (const auto* vtg_data = std::get_if<GPSVTGDataStructure>(&res.value())) {
+        service_ipc.GPSVTGStatusEvent.Update(*vtg_data);
+        service_udp.GPSVTGStatusEvent.Update(*vtg_data);
+        continue;
+      }
+
       int64_t delta;
       {
         std::lock_guard<std::mutex> lock(mtx_);
@@ -109,9 +160,6 @@ int GPSApp::Run(const std::stop_token& token) {
         ara::log::LogWarn() << "GPS frequency deviation detected: interval = " << delta << " ms";
       }
       ara::log::LogDebug() << "GPS frequency interval = " << delta << " ms";
-
-      service_ipc.GPSStatusEvent.Update(res.value());
-      service_udp.GPSStatusEvent.Update(res.value());
     }
   }
   service_ipc.StopOffer();
@@ -145,4 +193,3 @@ GPSApp::GPSApp(): service_ipc{ara::core::InstanceSpecifier{kService_ipc_instance
 
 }  // namespace apps
 }  // namespace srp
-

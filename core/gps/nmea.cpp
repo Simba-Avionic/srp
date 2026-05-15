@@ -19,6 +19,11 @@
 #include <algorithm>
 namespace srp {
 namespace core {
+
+namespace {
+    constexpr float knotsToKilometersPerHour = 1.852f;
+}
+
 std::vector<std::string> Nmea::splitString(const std::string& str, const char& delimiter) {
     std::vector<std::string> result;
     std::stringstream ss(str);
@@ -28,16 +33,17 @@ std::vector<std::string> Nmea::splitString(const std::string& str, const char& d
     }
     return result;
 }
-std::optional<GPS_DATA_T> Nmea::Parse(const std::string& gps_data) {
+std::optional<Nmea::NmeaType> Nmea::Parse(const std::string& gps_data) {
     try {
     const auto start_p = gps_data.find(',');
     if (start_p == std::string::npos) {
         return std::nullopt;
     }
     const std::string seq_type = gps_data.substr(0, start_p);
+    const std::string data_part = gps_data.substr(start_p + 1);
+    auto res = splitString(data_part);
+
     if (seq_type == "$GNGGA") {
-        const std::string data_part = gps_data.substr(start_p + 1);
-        auto res = splitString(data_part);
         if (res.size() != 14) {
             return std::nullopt;
         }
@@ -53,9 +59,43 @@ std::optional<GPS_DATA_T> Nmea::Parse(const std::string& gps_data) {
         data.satellite_nr = std::stoul(res[6]);
         data.HDOP = std::stof(res[7]);
         data.height = std::stof(res[8]);
-        return data;
+        return NmeaType{data};
+    } else if (seq_type == "$GNRMC") {
+        if (res.size() < 8) {
+            return std::nullopt;
+        }
+
+        GPS_DATA_RMC_T data;
+        if (res[1] == "V") {
+            return std::nullopt;
+        }
+
+        data.timestamp = std::stod(res[0]);
+        data.latitude = std::stod(res[2]);
+        data.latitude_dir = res[3][0];
+        data.longitude = std::stod(res[4]);
+        data.longitude_dir = res[5][0];
+        data.speed = std::stod(res[6]);
+        data.angle = std::stod(res[7]);
+        return NmeaType{data};
+    } else if (seq_type == "$GNVTG") {
+        if (res.size() < 8) {
+            return std::nullopt;
+        }
+
+        GPS_DATA_VTG_T data;
+        if (res.size() > 8 && !res[8].empty() && res[8][0] != 'A' && res[8][0] != 'D') {
+            return std::nullopt;
+        }
+
+        data.trueCourseOverGround = std::stof(res[0]);
+        data.relativeSpeed = std::stof(res[6]);
+
+        data.trueCourseOverGround *= knotsToKilometersPerHour;
+        return NmeaType{data};
     }
-    // TODO(simba) add support for other MSG types than GNGGA
+
+
     return std::nullopt;
     } catch (const std::exception& e) {
         return std::nullopt;
@@ -64,4 +104,3 @@ std::optional<GPS_DATA_T> Nmea::Parse(const std::string& gps_data) {
 
 }  // namespace core
 }  // namespace srp
-
