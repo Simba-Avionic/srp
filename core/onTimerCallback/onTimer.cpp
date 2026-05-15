@@ -36,6 +36,13 @@ void TimerController::Loop(const std::stop_token& token) {
                 if (elapsed > timer.Interval_ms) {
                     timer.last_call += std::chrono::milliseconds(timer.Interval_ms);
                     callbacks_to_run.push_back(timer.callback);
+                    const auto next_elapsed = std::chrono::duration_cast<
+                        std::chrono::milliseconds>(now - timer.last_call).count();
+                    const int64_t time_to_next =
+                        static_cast<int64_t>(timer.Interval_ms) - next_elapsed;
+                    const uint32_t sleep_cap = static_cast<uint32_t>(
+                        std::max<int64_t>(0, time_to_next));
+                    can_sleep_for_ms = std::min(can_sleep_for_ms, sleep_cap);
                 } else {
                     uint32_t time_to_next_callback = timer.Interval_ms - elapsed;
                     can_sleep_for_ms = std::min(can_sleep_for_ms, time_to_next_callback);
