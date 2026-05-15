@@ -25,7 +25,7 @@ jobs:
 
       - name: Run cpplint
         run: |
-          /bin/bash ./tools/cpplint/cpplint.sh
+          ./tools/cpplint/cpplint.sh
 
   build-and-test:
     name: SRP Build & Test SRP
