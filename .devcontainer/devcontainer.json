@@ -2,9 +2,7 @@
 // README at: https://github.com/devcontainers/templates/tree/main/src/ubuntu
 {
     "name": "C++ Bazel Podman (Native)",
-    "build": {
-        "dockerfile": "Dockerfile"
-    },
+    "image": "ghcr.io/simba-avionic/simba_avionics_dockers/devcontainer",
 	"customizations": {
         "vscode": {
             "extensions": [
@@ -25,7 +23,11 @@
                 "bsv.bazel.executable": "/usr/local/bin/bazel",
                 "bsv.buildozer.executable": "/usr/local/bin/buildozer",
                 "doxdocgen.generic.authorName": "${localEnv:DEV_AUTHOR_NAME}",
-                "doxdocgen.generic.authorEmail": "${localEnv:DEV_AUTHOR_EMAIL}"
+                "doxdocgen.generic.authorEmail": "${localEnv:DEV_AUTHOR_EMAIL}",
+                "editor.formatOnSave": true,
+                "[bazel]": {
+                    "editor.defaultFormatter": "bazelbuild.vscode-bazel"
+                }
             }
         }
     },
