@@ -1,0 +1,57 @@
+---
+name: Lint, build and test SRP-common
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+  merge_group:
+  workflow_dispatch:
+jobs:
+  cpplint:
+    name: CppLint Check
+    runs-on: ubuntu-latest
+    container:
+      image: twoja-nazwa-uzytkownika/twoj-obraz:tag
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Run cpplint
+        run: |
+          /bin/bash ./tools/cpplint/cpplint.sh
+
+  bazel-test:
+    name: SRP Unit Tests
+    needs: cpplint
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Run Bazel tests
+        run: |
+          ./tools/ut/unittest.sh --no_cache
+
+  build-all:
+    name: Build All
+    needs:
+      - bazel-test
+    runs-on: self-hosted
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Build All
+        run: |
+          ./tools/build_all/build_all.sh --no_cache
