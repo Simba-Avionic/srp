@@ -1,13 +1,13 @@
 {
     "include": [
-        "deployment/system_definition/someip/fc/apogee_detect_service/service.json",
-        "deployment/system_definition/someip/env_service/service.json"
+        "deployment/system_definition/someip/fc/apogee_service/service.json",
+        "deployment/system_definition/someip/fc/env_service/service.json"
     ],
     "package": "srp.apps",
     "adaptive_application": {
         "ApogeeDetectApp": {
             "app": {
-                "functional_groups":[
+                "functional_groups": [
                     "Running",
                     "SafetyMode"
                 ],
@@ -46,7 +46,7 @@
                     "name": "ApogeeDetectService as ApogeeDetectService_ipc",
                     "on": "ipc",
                     "instance": 2
-                },  
+                },
                 {
                     "name": "ApogeeDetectService as ApogeeDetectService_udp",
                     "on": "udp",
@@ -56,7 +56,7 @@
             ],
             "require": [
                 {
-                    "name": "srp.env.EnvApp as EnvApp",
+                    "name": "srp.env.EnvAppFc as EnvAppFc",
                     "on": "udp",
                     "port": "10001",
                     "instance": 1

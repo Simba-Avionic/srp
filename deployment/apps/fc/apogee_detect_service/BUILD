@@ -16,8 +16,8 @@ filegroup(
     name = "instance",
     srcs = [
         "app_config.json",
-        "//deployment/system_definition/someip/fc/apogee_detect_service:service_someipy",
-        "//deployment/system_definition/someip/env_service:service_someipy",
+        "//deployment/system_definition/someip/fc/apogee_service:service_someipy",
+        "//deployment/system_definition/someip/fc/env_service:service_someipy",
     ],
     visibility = [
         "//apps/fc:__subpackages__",

@@ -41,13 +41,11 @@ int ApogeeService::Initialize(const std::map<ara::core::StringView, ara::core::S
 void ApogeeService::SomeIpInit() {
   this->env_service_proxy.StartFindService([this](auto handler) {
     this->env_service_handler = handler;
-    this->env_service_handler->newPressEvent.Subscribe(1, [this](const uint8_t status) {
-      this->env_service_handler->newPressEvent.SetReceiveHandler([this] () {
-        auto res = this->env_service_handler->newPressEvent.GetNewSamples();
+    this->env_service_handler->newBME280Event.Subscribe(1, [this](const uint8_t status) {
+      this->env_service_handler->newBME280Event.SetReceiveHandler([this] () {
+        auto res = this->env_service_handler->newBME280Event.GetNewSamples();
         if (res.HasValue()) {
-            const double current_pressure = static_cast<double>(res.Value()) * kEncodedBarToHpa;
-            const double height = 44330.0 * (1.0 - std::pow(current_pressure / kBasePressure, 0.1903));
-            this->latest_height_.store(height);
+            this->latest_height_.store(res.Value().altitude);
             this->EvaluateApogee();
         }
       });
@@ -66,11 +64,12 @@ void ApogeeService::EvaluateApogee() {
     apogee_detector_.update(current_height, current_velocity);
 
     if (apogee_detector_.isApogeeReached()) {
-        ara::log::LogInfo() << "APOGEUM WYKRYT: " << "Max Wysokosc: "
-            << static_cast<float>(apogee_detector_.getApogee()) << " m, "
-            << "Ostatnia Predkosc: " << static_cast<float>(apogee_detector_.averageSpeed()) << " m/s";
-        this->service_ipc.ApogeeDetected.Update(true);
-        this->service_udp.ApogeeDetected.Update(true);
+      is_apogee_detected = true;
+      ara::log::LogInfo() << "APOGEUM WYKRYT: " << "Max Wysokosc: "
+          << static_cast<float>(apogee_detector_.getApogee()) << " m, "
+          << "Ostatnia Predkosc: " << static_cast<float>(apogee_detector_.averageSpeed()) << " m/s";
+      this->service_ipc.newApogeeDetected.Update(true);
+      this->service_udp.newApogeeDetected.Update(true);
     }
 }
 
@@ -78,6 +77,8 @@ int ApogeeService::Run(const std::stop_token& token) {
   ara::log::LogInfo() << "ApogeeService: Running in event-driven mode.";
 
   while (!token.stop_requested()) {
+    this->service_ipc.newApogeeDetected.Update(is_apogee_detected);
+    this->service_udp.newApogeeDetected.Update(is_apogee_detected);
     core::condition::wait_for(std::chrono::milliseconds(1000), token);
   }
   this->service_ipc.StopOffer();

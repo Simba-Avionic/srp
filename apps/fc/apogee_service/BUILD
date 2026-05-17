@@ -18,6 +18,7 @@ cc_binary(
         "apogee_app.cpp",
         "apogee_app.hpp",
     ],
+    linkopts = ["-lm"],
     visibility = [
         "//deployment/apps:__subpackages__"
     ],
