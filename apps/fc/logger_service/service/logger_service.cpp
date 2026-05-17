@@ -71,12 +71,12 @@ int LoggerService::Initialize(
 }
 
 int LoggerService::Run(const std::stop_token& token) {
+  StartFuncHandler(1);
   while (!token.stop_requested()) {
     service_ipc_->LoggingState.Update(save_state_.load());
     service_udp_->LoggingState.Update(save_state_.load());
     core::condition::wait_for(std::chrono::milliseconds(1000), token);
   }
-
   StartFuncHandler(0);
   service_ipc_->StopOffer();
   service_udp_->StopOffer();
