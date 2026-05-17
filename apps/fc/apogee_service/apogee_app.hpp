@@ -15,7 +15,7 @@
 
 #include "ara/exec/adaptive_application.h"
 #include "srp/apps/ApogeeDetectServiceSkeleton.h"
-#include "srp/env/EnvApp/EnvAppHandler.h"
+#include "srp/env/EnvAppFc/EnvAppFcHandler.h"
 #include "core/apogee/ApogeeDetector.h"
 
 constexpr double kBasePressure = 1013.25;
@@ -26,11 +26,13 @@ namespace apps {
 
 class ApogeeService : public ara::exec::AdaptiveApplication {
  private:
-    env::EnvAppProxy env_service_proxy;
-    std::shared_ptr<env::EnvAppHandler> env_service_handler;
+    env::EnvAppFcProxy env_service_proxy;
+    std::shared_ptr<env::EnvAppFcHandler> env_service_handler;
     apps::ApogeeDetectServiceSkeleton service_ipc;
     apps::ApogeeDetectServiceSkeleton service_udp;
     RealTimeApogee apogee_detector_{15, -0.5, 0.0};
+    
+    std::atomic<bool> is_apogee_detected{false};
 
     std::atomic<double> latest_height_{0.0};
     std::atomic<double> latest_velocity_{0.0};
