@@ -222,6 +222,22 @@ void EngineApp::OnStateChange(RocketState_t new_state) {
   service_udp.CurrentMode.Update(static_cast<uint8_t>(new_state));
 }
 
+void EngineApp::OnDisarm() {
+  ara::log::LogInfo() << "EngineApp::OnDisarm: DISARM sequence completed";
+  for (const ArmPinConfig_t& pin : arm_pins_id) {
+    if (gpio_.SetPinValue(pin.pin_id, kPin_off, 0)) {
+      ara::log::LogError() << "cant disarm pin: " << pin.name;
+    }
+  }
+}
+
+void EngineApp::OnArm() {
+  for (const auto & pin : arm_pins_id) {
+    if (gpio_.SetPinValue(pin.pin_id, kPin_on) != core::ErrorCode::kOk) {
+      ara::log::LogError() << "cant arm pin: " << pin.name;
+    }
+  }
+}
 
 void EngineApp::OnLaunch() {
   ara::log::LogInfo() << "EngineApp::OnLaunch: Launch initiated - starting async launch sequence";
@@ -251,21 +267,11 @@ void EngineApp::OnLaunch() {
   }).detach();
 }
 
-void EngineApp::OnArm() {
-  if (logger_handler_) {
-    this->logger_handler_->Start();
-  }
-  for (const auto & pin : arm_pins_id) {
-    if (gpio_.SetPinValue(pin.pin_id, kPin_on) != core::ErrorCode::kOk) {
-      ara::log::LogError() << "cant arm pin: " << pin.name;
-    }
-  }
-}
 
-void EngineApp::OnDisarm() {
-  ara::log::LogInfo() << "EngineApp::OnDisarm: DISARM sequence completed";
+void EngineApp::OnApogee() {
+  ara::log::LogInfo() << "EngineApp::OnApogee: Apogee detected - triggering abort sequence";
   for (const ArmPinConfig_t& pin : arm_pins_id) {
-    bool disable_later = (pin.func == "VS" || pin.func == "PFMS");
+    bool disable_later = (pin.func == "VS" || pin.func == "PFVS" || pin.func == "MS");
     if (gpio_.SetPinValue(pin.pin_id,
                           disable_later ? kPin_on : kPin_off,
                           disable_later ? 3500 : 0,
@@ -274,24 +280,17 @@ void EngineApp::OnDisarm() {
     }
   }
   if (servo_handler_ != nullptr) {
-    servo_handler_->SetDumpValue(0);
-    servo_handler_->SetVentServoValue(0);
+    servo_handler_->SetDumpValue(1);
+    servo_handler_->SetVentServoValue(1);
+    servo_handler_->SetMainServoValue(1);
   }
-  if (logger_handler_) {
-    this->logger_handler_->Stop();
-  }
-}
-
-void EngineApp::OnApogee() {
-  ara::log::LogInfo() << "EngineApp::OnApogee: Apogee detected - triggering abort sequence";
-  OnAbort();
 }
 
 void EngineApp::OnAbort() {
   ara::log::LogWarn() << "EngineApp::OnAbort: ABORT sequence initiated";
 
   for (const ArmPinConfig_t& pin : arm_pins_id) {
-    bool disable_later = (pin.func == "VS" || pin.func == "PFMS");
+    bool disable_later = (pin.func == "PFMS");
     if (gpio_.SetPinValue(pin.pin_id,
                           disable_later ? kPin_on : kPin_off,
                           disable_later ? 3500 : 0,

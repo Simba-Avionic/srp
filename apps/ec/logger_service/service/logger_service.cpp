@@ -85,6 +85,7 @@ void LoggerService::SaveLoop(const std::stop_token& token,
 }
 
 int LoggerService::Run(const std::stop_token& token) {
+  start_func_handler(1);
   while (!token.stop_requested()) {
     if (gpio_.SetPinValue(kHeartBeatPinID, 1, 500) != core::ErrorCode::kOk) {
       ara::log::LogWarn() << "EngineApp::Run: Failed to toggle heartbeat pin";
@@ -93,6 +94,7 @@ int LoggerService::Run(const std::stop_token& token) {
     service_udp->LoggingState.Update(save_state.load());
     core::condition::wait_for(std::chrono::milliseconds(1000), token);
   }
+  start_func_handler(0);
   service_ipc->StopOffer();
   service_udp->StopOffer();
   logger_did_->StopOffer();

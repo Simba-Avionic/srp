@@ -41,6 +41,7 @@ class MainService final : public ara::exec::AdaptiveApplication {
   void OnDisarm();
   void OnAbort();
   void OnLaunch();
+  void OnFlight();
   void OnApogee();
   void OnSecondParachute();
 
