@@ -28,6 +28,7 @@ cpu_def(
         "//deployment/apps/fc/main_app:MainApp",
         "//deployment/apps/fc/system_stat_service:FcSysStatService",
         "//deployment/apps/fc/logger_service:FcFileLoggerApp",
+        "//deployment/apps/fc/apogee_detect_service:ApogeeDetectAppFc",
     ],
 )
 
