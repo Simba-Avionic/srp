@@ -32,13 +32,13 @@ class ApogeeService : public ara::exec::AdaptiveApplication {
     apps::ApogeeDetectServiceSkeleton service_udp;
     RealTimeApogee apogee_detector_{15, -0.5, 0.0};
     
-    std::atomic<bool> is_apogee_detected{false};
+    std::atomic<bool> is_apogee_detected;
+    std::atomic<bool> is_main_parachute_detected;
 
-    std::atomic<double> latest_height_{0.0};
-    std::atomic<double> latest_velocity_{0.0};
+    std::atomic<double> latest_height_;
+    std::atomic<double> latest_velocity_;
 
-    std::chrono::steady_clock::time_point last_imu_time_;
-    bool first_imu_measurement_ = true;
+    std::atomic<bool> first_imu_measurement_;
 
     void SomeIpInit();
     void EvaluateApogee();
