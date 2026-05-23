@@ -97,11 +97,31 @@ int EnvService::Initialize(const std::map<ara::core::StringView, ara::core::Stri
         ara::log::LogError() << "Failed to load temperature configuration";
         return core::ErrorCode::kInitializeError;
     }
+    // eeprom::EEPROM_config cfg{};
+    // cfg.pca9685_XO_corelation = 1.0429;
+    // strncpy(cfg.board_temp1_id, "000010787a1b", sizeof(cfg.board_temp1_id));
+    // strncpy(cfg.board_temp2_id, "00001078e1cf", sizeof(cfg.board_temp2_id));
+    // strncpy(cfg.board_temp3_id, "000010794c9a", sizeof(cfg.board_temp3_id));
+    // if (config.SetConfig(cfg) != core::ErrorCode::kOk) {
+    //     ara::log::LogError() << "cant set eeprom";
+    // } else {
+    //     auto read_back = config.GetConfig();
+    //     if (!read_back.has_value()) {
+    //         ara::log::LogError() << "EEPROM read-back failed after SetConfig";
+    //     } else if (std::memcmp(&read_back.value(), &cfg, sizeof(cfg)) != 0) {
+    //         ara::log::LogError() << "EEPROM read-back mismatch after SetConfig";
+    //     } else {
+    //         ara::log::LogInfo() << "EEPROM SetConfig + GetConfig roundtrip OK";
+    //     }
+    // }
+
     const std::optional<eeprom::EEPROM_config> eeprom_cfg = config.GetConfig();
     if (!eeprom_cfg.has_value()) {
         ara::log::LogError() << "Failed to load EEPROM temperature configuration";
         return core::ErrorCode::kInitializeError;
     }
+
+
     auto register_sensor = [&](const std::string& raw_id, const std::string& label) -> core::ErrorCode {
         std::string physical_id = "28-" + raw_id;
         auto sensor_id = this->temp_->Register(physical_id);
@@ -121,23 +141,6 @@ int EnvService::Initialize(const std::map<ara::core::StringView, ara::core::Stri
     if (register_sensor(eeprom_cfg.value().board_temp3_id, "board_3") !=
                                             core::ErrorCode::kOk) return core::ErrorCode::kInitializeError;
 
-    // eeprom::EEPROM_config cfg{};
-    // cfg.pca9685_XO_corelation = 1.038;
-    // strncpy(cfg.board_temp1_id, "00001110ff83", sizeof(cfg.board_temp1_id));
-    // strncpy(cfg.board_temp2_id, "00001110e48e", sizeof(cfg.board_temp2_id));
-    // strncpy(cfg.board_temp3_id, "0000107b3c59", sizeof(cfg.board_temp3_id));
-    // if (config.SetConfig(cfg) != core::ErrorCode::kOk) {
-    //     ara::log::LogError() << "cant set eeprom";
-    // } else {
-    //     auto read_back = config.GetConfig();
-    //     if (!read_back.has_value()) {
-    //         ara::log::LogError() << "EEPROM read-back failed after SetConfig";
-    //     } else if (std::memcmp(&read_back.value(), &cfg, sizeof(cfg)) != 0) {
-    //         ara::log::LogError() << "EEPROM read-back mismatch after SetConfig";
-    //     } else {
-    //         ara::log::LogInfo() << "EEPROM SetConfig + GetConfig roundtrip OK";
-    //     }
-    // }
     return core::ErrorCode::kOk;
 }
 
@@ -199,7 +202,7 @@ void EnvService::GenericPressureLoop(
 
             std::ostringstream ss;
             ss << std::fixed << std::setprecision(2) << val;
-            ara::log::LogDebug() << "Receive new " << label << ": " << ss.str() << " Bar";
+            ara::log::LogInfo() << "Receive new " << label << ": " << ss.str() << " Bar";
 
             uint16_t encodedVal = static_cast<uint16_t>(val * kPressure_sensor_multiplicator);
             eventIpc.Update(encodedVal);

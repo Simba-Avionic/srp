@@ -33,7 +33,7 @@ int PrimerService::Run(const std::stop_token& token) {
     if (gpio_.SetPinValue(kHeartBeatPinID, 1, 500) != core::ErrorCode::kOk) {
       ara::log::LogWarn() << "PrimerService::Run: failed to toggle heartbeat pin";
     }
-    // controller->VerifyPrimerConection();
+    controller->VerifyPrimerConection();
     const auto current_state = controller->GetPrimerState();
     if (current_state != last_state) {
       ara::log::LogInfo() << "PrimerService::Run: primer state changed from "

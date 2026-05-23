@@ -16,7 +16,7 @@
     "adaptive_application": {
         "RadioApp": {
             "app": {
-                "functional_groups":[
+                "functional_groups": [
                     "Running",
                     "SafetyMode"
                 ],
@@ -24,7 +24,7 @@
                 "logger": {
                     "app_id": "RAD-",
                     "app_des": "czytanie i wysyłanie po radiu",
-                    "log_level": "kDebug",
+                    "log_level": "kInfo",
                     "log_mode": "kRemote",
                     "ctx": [
                         {
