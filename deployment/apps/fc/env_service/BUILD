@@ -23,6 +23,7 @@ filegroup(
         "//apps/fc/env_service:__pkg__",
         "//deployment/apps/logger_service:__subpackages__",
         "//deployment/apps/fc/radio_app:__subpackages__",
+        "//deployment/apps/radio_app:__subpackages__",
         "//deployment/apps/fc/logger_service:__subpackages__",
     ],
 )
