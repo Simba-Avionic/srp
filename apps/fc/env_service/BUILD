@@ -30,5 +30,6 @@ cc_binary(
         "//deployment/apps/fc/env_service:someip_lib",
         "//mw/i2c_service/controller/bme280:bme280_controller",
         "//core/json:simba_json",
+        "//mw/i2c_service/controller/24lc32at/eeprom_config:eeprom_config",
     ],
 )

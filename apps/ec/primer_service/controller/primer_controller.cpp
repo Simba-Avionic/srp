@@ -16,6 +16,7 @@
 #include <memory>
 
 #include "mw/gpio_server/controller/gpio_controller.hpp"
+#include "core/common/error_code.h"
 #include "ara/log/log.h"
 #include "core/common/condition.h"
 #include "core/json/json_parser.h"
@@ -29,8 +30,8 @@ namespace {
   static constexpr uint16_t kIgniter_active_time = 2500;
   static constexpr uint8_t kPrimer_on = 1;
   static constexpr uint8_t kPrimer_off = 0;
-  static constexpr bool kRequire_primer_veryfication = false;
-  static constexpr auto kIgniter_measureme_adc_channel = 4;
+  static constexpr bool kRequire_primer_veryfication = true;
+  static constexpr auto kIgniter_measureme_adc_channel = 3;
   static constexpr auto kIgniter_measurement_adc_samples = 5;
   static constexpr auto kIgniter_connected_treshold_mV = 1500;
 
@@ -60,6 +61,9 @@ PrimerController::PrimerController():
 }
 
 void PrimerController::VerifyPrimerConection() {
+    if (!kRequire_primer_veryfication) {
+        return;
+    }
     auto verify_required = [this]() {
         auto primer_state = primerState.load();
         return (primer_state == PrimerState_t::kUNKNOWN || primer_state == PrimerState_t::kNOT_CONNECTED ||
@@ -68,24 +72,13 @@ void PrimerController::VerifyPrimerConection() {
     if (!verify_required()) {
         return;
     }
-    float sum = 0;
-    auto sample_num = 0;
-    for (int i = 0; i < kIgniter_measurement_adc_samples; i++) {
-        auto voltage = adc_.GetAdcVoltage(kIgniter_measureme_adc_channel);
-        if (!voltage.has_value()) {
-            continue;
-        }
-        sum += voltage.value();
-        sample_num += 1;
-    }
-    if (sample_num == 0) {
-        prim_logger.LogWarn() << "Primer verification skipped: ADC returned no valid samples";
+    auto voltage = adc_.GetAdcVoltage(kIgniter_measureme_adc_channel);
+    if (!voltage.has_value()) {
         return;
     }
-    auto mean = sum / static_cast<float>(sample_num);
     const auto previous_state = primerState.load();
     auto next_state = previous_state;
-    if (mean >= kIgniter_connected_treshold_mV) {
+    if (voltage.value() >= kIgniter_connected_treshold_mV / 1000.0f) {
         next_state = PrimerState_t::kCONNECTED;
     } else {
         next_state = PrimerState_t::kNOT_CONNECTED;
@@ -95,14 +88,16 @@ void PrimerController::VerifyPrimerConection() {
     if (previous_state != next_state) {
         prim_logger.LogInfo() << "Primer state changed from " << PrimerStateToString(previous_state)
                               << " to " << PrimerStateToString(next_state)
-                              << " (ADC mean: " << mean << " mV)";
+                              << " (ADC voltage: " << voltage.value() << " mV)";
     }
 }
 
 void PrimerController::Initialize() {
     prim_logger.LogInfo() << "Initializing PrimerController";
     this->primerState = PrimerState_t::kUNKNOWN;
-    this->adc_.Init();
+    auto i2c = std::make_unique<srp::i2c::I2CController>();
+    i2c->Init(std::make_unique<com::soc::StreamIpcSocket>());
+    this->adc_.Init(std::move(i2c));
     prim_logger.LogInfo() << "PrimerController initialization complete";
 }
 
