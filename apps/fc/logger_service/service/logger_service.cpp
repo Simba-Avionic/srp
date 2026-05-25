@@ -27,6 +27,7 @@ namespace {
   static constexpr auto kLoggerFilenamePrefix = "/home/root/";
   static constexpr std::uint16_t kSaveIntervalMs = 5000;
   static constexpr auto kEnvServicePathName = "srp/apps/FcFileLoggerApp/envServiceFc_ipc";
+  static constexpr auto kApogeeServocePathName = "srp/apps/ApogeeDetectService/ApogeeDetectService";
   static constexpr auto kUdpServicePathName = "srp/apps/FcFileLoggerApp/logService_udp";
   static constexpr auto kIpcServicePathName = "srp/apps/FcFileLoggerApp/logService_ipc";
   static constexpr auto kSysStatServicePathName = "srp/apps/FcFileLoggerApp/FcSysStatService_ipc";
@@ -38,8 +39,10 @@ namespace {
 LoggerService::LoggerService()
     : env_service_proxy_{ara::core::InstanceSpecifier{kEnvServicePathName}},
       stat_service_proxy_{ara::core::InstanceSpecifier{kSysStatServicePathName}},
+      apogee_proxy_{ara::core::InstanceSpecifier{kApogeeServocePathName}},
       env_service_handler_{nullptr},
       stat_service_handler_{nullptr},
+      apogee_handler_{nullptr},
       did_instance_{kFileDidPathName},
       timestamp_{std::make_shared<core::timestamp::TimestampController>()},
       save_thread_{nullptr} {
@@ -129,17 +132,37 @@ void LoggerService::SaveLoop(const std::stop_token& token) {
 }
 
 void LoggerService::SomeIpInit() {
+  apogee_proxy_.StartFindService([this](auto handler) {
+    apogee_handler_ = handler;
+    apogee_handler_->newApogeeDetected.Subscribe(1, [this](std::uint8_t status) {
+      apogee_handler_->newApogeeDetected.SetReceiveHandler([this]() {
+        auto res_opt = apogee_handler_->newApogeeDetected.GetNewSamples();
+        if (!res_opt.HasValue()) {
+          return;
+        }
+        data_.SetApogeeDetected(res_opt.Value());
+      });
+    });
+    apogee_handler_->newMainParachuteDetected.Subscribe(1, [this](std::uint8_t status) {
+      apogee_handler_->newMainParachuteDetected.SetReceiveHandler([this]() {
+        auto res = apogee_handler_->newMainParachuteDetected.GetNewSamples();
+        if (!res.HasValue()) {
+          return;
+        }
+        data_.SetMainParachuteDetected(res.Value());
+      });
+    });
+  });
   stat_service_proxy_.StartFindService([this](auto handler) {
     stat_service_handler_ = handler;
     stat_service_handler_->NewSystemUsage.Subscribe(1, [this](std::uint8_t /*status*/) {
       stat_service_handler_->NewSystemUsage.SetReceiveHandler([this]() {
-        auto res = stat_service_handler_->NewSystemUsage.GetNewSamples();
-        if (!res.HasValue()) {
+        auto res_opt = stat_service_handler_->NewSystemUsage.GetNewSamples();
+        if (!res_opt.HasValue()) {
           return;
         }
-        data_.SetCpuUsage(res.Value().cpu_usage);
-        data_.SetMemUsage(res.Value().mem_usage);
-        data_.SetDiskUtilization(res.Value().disk_utilization);
+        const auto res = res_opt.Value();
+        data_.SetSystemUsage(res.cpu_usage, res.mem_usage, res.disk_utilization);
       });
     });
   });
@@ -176,13 +199,12 @@ void LoggerService::SomeIpInit() {
 
     env_service_handler_->newBME280Event.Subscribe(1, [this](std::uint8_t /*status*/) {
       env_service_handler_->newBME280Event.SetReceiveHandler([this]() {
-        auto res = env_service_handler_->newBME280Event.GetNewSamples();
-        if (!res.HasValue()) {
+        const auto res_opt = env_service_handler_->newBME280Event.GetNewSamples();
+        if (!res_opt.HasValue()) {
           return;
         }
-        data_.SetBmeTemp(res.Value().temperature);
-        data_.SetBmeHumidity(res.Value().humidity);
-        data_.SetBmeAltitude(res.Value().altitude);
+        const auto res = res_opt.Value();
+        data_.SetBmeData(res.temperature, res.humidity, res.altitude);
       });
     });
   });
