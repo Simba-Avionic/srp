@@ -21,6 +21,7 @@ filegroup(
     ],
     visibility = [
         "//apps/fc:__subpackages__",
+        "//deployment/apps:__subpackages__",
     ],
 )
 

@@ -20,6 +20,7 @@ filegroup(
         "//deployment/apps/fc/env_service:instance",
         "//deployment/apps/fc/system_stat_service:instance",
         "//deployment/system_definition/diag/jobs/file_logger:file_logger_job",
+        "//deployment/apps/fc/apogee_detect_service:instance",
     ],
     visibility = ["//visibility:public"],
 )

@@ -18,38 +18,32 @@
 #include "srp/env/EnvAppFc/EnvAppFcHandler.h"
 #include "core/apogee/ApogeeDetector.h"
 
-constexpr double kBasePressure = 1013.25;
-constexpr double kEncodedBarToHpa = 10.0;
-
 namespace srp {
 namespace apps {
 
 class ApogeeService : public ara::exec::AdaptiveApplication {
  private:
-    env::EnvAppFcProxy env_service_proxy;
-    std::shared_ptr<env::EnvAppFcHandler> env_service_handler;
-    apps::ApogeeDetectServiceSkeleton service_ipc;
-    apps::ApogeeDetectServiceSkeleton service_udp;
-    RealTimeApogee apogee_detector_{15, -0.5, 0.0};
-    
-    std::atomic<bool> is_apogee_detected;
-    std::atomic<bool> is_main_parachute_detected;
+  env::EnvAppFcProxy env_service_proxy;
+  std::shared_ptr<env::EnvAppFcHandler> env_service_handler;
+  apps::ApogeeDetectServiceSkeleton service_ipc;
+  apps::ApogeeDetectServiceSkeleton service_udp;
+  RealTimeApogee apogee_detector_{15, -0.5, 0.0};
+  std::atomic<bool> is_apogee_detected;
+  std::atomic<bool> is_main_parachute_detected;
+  std::atomic<double> latest_height_;
+  std::atomic<double> latest_velocity_;
+  std::atomic<bool> first_imu_measurement_;
 
-    std::atomic<double> latest_height_;
-    std::atomic<double> latest_velocity_;
-
-    std::atomic<bool> first_imu_measurement_;
-
-    void SomeIpInit();
-    void EvaluateApogee();
+  void SomeIpInit();
+  void EvaluateApogee();
 
  protected:
-    int Run(const std::stop_token &token) override;
-    int Initialize(const std::map<ara::core::StringView, ara::core::StringView> parms) override;
+  int Run(const std::stop_token &token) override;
+  int Initialize(const std::map<ara::core::StringView, ara::core::StringView> parms) override;
 
  public:
-    ApogeeService();
-    ~ApogeeService() = default;
+  ApogeeService();
+  ~ApogeeService() = default;
 };
 
 }  // namespace apps

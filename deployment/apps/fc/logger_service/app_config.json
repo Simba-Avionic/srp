@@ -2,7 +2,8 @@
     "include": [
         "deployment/system_definition/someip/fc/logger_service/service.json",
         "deployment/system_definition/someip/fc/env_service/service.json",
-        "deployment/system_definition/someip/fc/sys_stat_service/service.json"
+        "deployment/system_definition/someip/fc/sys_stat_service/service.json",
+        "deployment/system_definition/someip/fc/apogee_service/service.json"
     ],
     "package": "srp.apps",
     "adaptive_application": {
@@ -63,6 +64,11 @@
                 },
                 {
                     "name": "FcSysStatService as FcSysStatService_ipc",
+                    "on": "ipc",
+                    "instance": 2
+                },
+                {
+                    "name": "ApogeeDetectService as ApogeeDetectService",
                     "on": "ipc",
                     "instance": 2
                 }

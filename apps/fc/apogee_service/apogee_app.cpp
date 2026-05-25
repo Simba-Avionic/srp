@@ -17,11 +17,13 @@ namespace srp {
 namespace apps {
 
 namespace {
-  static constexpr auto kEnv_service_path = "srp/apps/ApogeeDetectApp/EnvApp";
+  static constexpr auto kEnv_service_path = "srp/apps/ApogeeDetectApp/EnvAppFc";
   static constexpr auto kService_ipc_instance = "srp/apps/ApogeeDetectApp/ApogeeDetectService_ipc";
   static constexpr auto kService_udp_instance = "srp/apps/ApogeeDetectApp/ApogeeDetectService_udp";
   static constexpr auto kAlgorithm_delay_ms = 100;
   static constexpr auto kMain_parachute_opening_apogee_m = 400;
+  static constexpr double kBasePressure = 1013.25;
+  static constexpr double kEncodedBarToHpa = 10.0;
 }
 
 ApogeeService::ApogeeService() :
@@ -98,7 +100,7 @@ int ApogeeService::Run(const std::stop_token& token) {
   ara::log::LogInfo() << "ApogeeService: Running in event-driven mode.";
 
   auto apogeeThread = std::jthread([this](const std::stop_token& token){
-    while(!token.stop_requested()) {
+    while (!token.stop_requested()) {
       EvaluateApogee();
       core::condition::wait_for(std::chrono::milliseconds(kAlgorithm_delay_ms), token);
     }

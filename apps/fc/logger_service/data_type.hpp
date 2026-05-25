@@ -34,6 +34,9 @@ class Data_t {
   std::atomic<float> sys_mem_usage_{0.0f};
   std::atomic<float> sys_disk_utilization_{0.0f};
 
+  std::atomic<bool> apogee_detected_{false};
+  std::atomic<bool> main_parachute_detected_{false};
+
  public:
   std::string get_header();
   std::string to_string(const std::string& timestamp);
@@ -42,6 +45,8 @@ class Data_t {
   void SetBoardTemp3(tempType temp);
   void SetBmeData(const float temp, const float humidity, const float altitude);
   void SetSystemUsage(const float cpu_usage, const float mem_usage, const float disk_usage);
+  void SetApogeeDetected(const bool apogee_detected);
+  void SetMainParachuteDetected(const bool main_parachute_detected);
 };
 
 }  // namespace logger

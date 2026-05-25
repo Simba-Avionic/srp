@@ -20,7 +20,7 @@ namespace {
   static constexpr auto kCsv_separator = ";";
   static constexpr auto kCsvHeader =
       "TIMESTAMP;BOARD_TEMP1;BOARD_TEMP2;BOARD_TEMP3;BME_TEMP;BME_HUMIDITY;"
-      "BME_ALTITUDE;CPU_USAGE;MEM_USAGE;DISK_UTILIZATION";
+      "BME_ALTITUDE;CPU_USAGE;MEM_USAGE;DISK_UTILIZATION;APOGEE_DETECTED;MAIN_PARACHUTE_DETECTED";
 }
 
 std::string Data_t::get_header() {
@@ -39,6 +39,8 @@ std::string Data_t::to_string(const std::string& timestamp) {
   const auto cpu  = sys_cpu_usage_.load(std::memory_order_relaxed);
   const auto mem  = sys_mem_usage_.load(std::memory_order_relaxed);
   const auto disk = sys_disk_utilization_.load(std::memory_order_relaxed);
+  const auto apogee  = apogee_detected_.load(std::memory_order_relaxed);
+  const auto mainParachute = main_parachute_detected_.load(std::memory_order_relaxed);
 
   std::stringstream res;
   res << std::fixed << std::setprecision(2);
@@ -51,7 +53,9 @@ std::string Data_t::to_string(const std::string& timestamp) {
   res << bme_alt << kCsv_separator;
   res << cpu << kCsv_separator;
   res << mem << kCsv_separator;
-  res << disk;
+  res << disk << kCsv_separator;
+  res << apogee << kCsv_separator;
+  res << mainParachute << kCsv_separator;
   return res.str();
 }
 
@@ -78,5 +82,12 @@ void Data_t::SetSystemUsage(const float cpu_usage, const float mem_usage, const 
   sys_disk_utilization_.store(disk_usage, std::memory_order_relaxed);
 }
 
+void Data_t::SetApogeeDetected(const bool apogee_detected) {
+  apogee_detected_.store(apogee_detected, std::memory_order_relaxed);
+}
+
+void Data_t::SetMainParachuteDetected(const bool main_parachute_detected) {
+  main_parachute_detected_.store(main_parachute_detected, std::memory_order_relaxed);
+}
 }  // namespace logger
 }  // namespace srp
