@@ -116,10 +116,17 @@ void IpcSocket::Loop(std::stop_token stoken) {
 }
 
 void IpcSocket::StopRXThread() {
+  if (!this->rx_thred) {
+    return;
+  }
   this->rx_thred->request_stop();
   this->rx_thred->join();
+  this->rx_thred.reset();
 }
 IpcSocket::~IpcSocket() {
+  if (!this->rx_thred) {
+    return;
+  }
   this->rx_thred->request_stop();
   this->rx_thred->join();
 }

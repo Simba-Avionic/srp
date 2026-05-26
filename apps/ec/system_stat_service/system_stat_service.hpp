@@ -19,6 +19,7 @@
 #include <utility>
 #include "ara/exec/adaptive_application.h"
 #include "srp/apps/SysStatServiceSkeleton.h"
+#include "core/sys/system_stat.hpp"
 
 namespace srp {
 namespace sysService {
@@ -28,6 +29,8 @@ class SystemStatService final : public ara::exec::AdaptiveApplication {
   apps::SysStatServiceSkeleton service_ipc;
   apps::SysStatServiceSkeleton service_udp;
 
+  core::stat::SystemStats stats_;
+  
   std::optional<apps::SysStatType> GetSysStats() const;
 
  protected:

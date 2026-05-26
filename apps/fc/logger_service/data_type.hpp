@@ -37,7 +37,27 @@ class Data_t {
   std::atomic<bool> apogee_detected_{false};
   std::atomic<bool> main_parachute_detected_{false};
 
+  // IMU
+  std::atomic<float> gyro_x_{0.0f};
+  std::atomic<float> gyro_y_{0.0f};
+  std::atomic<float> gyro_z_{0.0f};
+
+  std::atomic<float> accel_x_{0.0f};
+  std::atomic<float> accel_y_{0.0f};
+  std::atomic<float> accel_z_{0.0f};
+
+  std::atomic<float> lat_{0.0f};
+  std::atomic<float> lon_{0.0f};
+  std::atomic<float> alt_{0.0f};
+
+  // RADIO APP
+
+  std::atomic<uint8_t> FC_mode{0};
+
  public:
+  void SetIMU(float ax, float ay, float az, float gx, float gy, float gz);
+  void SetGpsData(const float lat, const float lot, const float alt);
+  void SetFCMode(const uint8_t mode);
   std::string get_header();
   std::string to_string(const std::string& timestamp);
   void SetBoardTemp1(tempType temp);

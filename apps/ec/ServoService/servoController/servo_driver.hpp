@@ -50,7 +50,8 @@ class ServoDriver {
     if (cfg.has_value()) {
       config = cfg.value();
     } else {
-      ara::log::LogWarn() << "Cant get Eeprom corelation data";
+      ara::log::LogFatal() << "Cant get Eeprom corelation data";
+      exit(1);
     }
   }
   ServoDriver():

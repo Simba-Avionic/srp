@@ -23,7 +23,7 @@ namespace srp {
 namespace eeprom {
 
 struct [[gnu::packed]] EEPROM_config {
-    float pca9685_XO_corelation;
+    float pca9685_XO_corelation{1.0f};
     char board_temp1_id[13];
     char board_temp2_id[13];
     char board_temp3_id[13];

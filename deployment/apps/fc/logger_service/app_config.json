@@ -3,7 +3,9 @@
         "deployment/system_definition/someip/fc/logger_service/service.json",
         "deployment/system_definition/someip/fc/env_service/service.json",
         "deployment/system_definition/someip/fc/sys_stat_service/service.json",
-        "deployment/system_definition/someip/fc/apogee_service/service.json"
+        "deployment/system_definition/someip/fc/apogee_service/service.json",
+        "deployment/system_definition/someip/fc/gps_service/service.json",
+        "deployment/system_definition/someip/fc/main_service/service.json"
     ],
     "package": "srp.apps",
     "adaptive_application": {
@@ -69,6 +71,16 @@
                 },
                 {
                     "name": "ApogeeDetectService as ApogeeDetectService",
+                    "on": "ipc",
+                    "instance": 2
+                },
+                {
+                    "name": "MainService as MainService",
+                    "on": "ipc",
+                    "instance": 2
+                },
+                {
+                    "name": "GPSService as GPSService",
                     "on": "ipc",
                     "instance": 2
                 }
