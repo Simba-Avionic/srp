@@ -37,8 +37,7 @@ std::vector<uint8_t> Data_t::get_bytes(const int64_t& timestamp) {
   const tempType board_temp3_local = board_temp3.load(std::memory_order_relaxed);
   const pressType tank_press_local = tank_press.load(std::memory_order_relaxed);
   const dPressType tank_d_press_local = tank_d_press.load(std::memory_order_relaxed);
-  
-  // Odczyt rozbitych pól systemowych
+
   const auto cpu_local = sys_cpu_usage.load(std::memory_order_relaxed);
   const auto mem_local = sys_mem_usage.load(std::memory_order_relaxed);
   const auto disk_local = sys_disk_utilization.load(std::memory_order_relaxed);
@@ -116,18 +115,18 @@ std::string Data_t::to_string(const std::string& timestamp) {
   const tempType board_temp3_local = board_temp3.load(std::memory_order_relaxed);
   const pressType tank_press_local = tank_press.load(std::memory_order_relaxed);
   const dPressType tank_d_press_local = tank_d_press.load(std::memory_order_relaxed);
-  
+
   const auto cpu_local = sys_cpu_usage.load(std::memory_order_relaxed);
   const auto mem_local = sys_mem_usage.load(std::memory_order_relaxed);
   const auto disk_local = sys_disk_utilization.load(std::memory_order_relaxed);
 
   const tensoType tenso_local = tenso.load(std::memory_order_relaxed);
-  const unsigned primer_local = static_cast<unsigned>(primer_status.load(std::memory_order_relaxed));
-  const unsigned servo_local = static_cast<unsigned>(servo_status.load(std::memory_order_relaxed));
-  const unsigned servo_dump_local = static_cast<unsigned>(servo_dump_status.load(std::memory_order_relaxed));
-  const unsigned servo_vent_local = static_cast<unsigned>(servo_vent_status.load(std::memory_order_relaxed));
-  const unsigned engine_mode_local = static_cast<unsigned>(engine_mode.load(std::memory_order_relaxed));
-  const unsigned engine_vent_valve_local = static_cast<unsigned>(engine_new_vent_valve_status.load(std::memory_order_relaxed));
+  const auto primer_local = primer_status.load(std::memory_order_relaxed);
+  const auto servo_local = servo_status.load(std::memory_order_relaxed);
+  const auto servo_dump_local = servo_dump_status.load(std::memory_order_relaxed);
+  const auto servo_vent_local = servo_vent_status.load(std::memory_order_relaxed);
+  const auto engine_mode_local = engine_mode.load(std::memory_order_relaxed);
+  const auto engine_vent_valve_local = engine_new_vent_valve_status.load(std::memory_order_relaxed);
 
   std::stringstream res;
   res << std::fixed << std::setprecision(2);

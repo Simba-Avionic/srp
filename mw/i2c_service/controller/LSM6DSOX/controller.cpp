@@ -33,7 +33,7 @@ namespace {
         return static_cast<int16_t>(
             static_cast<uint16_t>(lo) | (static_cast<uint16_t>(hi) << 8U));
     }
-}
+}  // namespace
 
 core::ErrorCode LSM6DSOX::InitializeGyro(const config_t& config) {
     gyroSensitivity = GetGyroSensitivity(config.gyro_scale);

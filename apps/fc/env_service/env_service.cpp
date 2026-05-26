@@ -136,6 +136,17 @@ int EnvServiceFc::Initialize(const std::map<ara::core::StringView, ara::core::St
     if (register_sensor(eeprom_cfg.value().board_temp3_id, "board_3") !=
                                             core::ErrorCode::kOk) return core::ErrorCode::kInitializeError;
 
+    auto i2c_imu = std::make_unique<i2c::I2CController>();
+    if (i2c_imu->Init(std::make_unique<com::soc::StreamIpcSocket>()) != core::ErrorCode::kOk) {
+        ara::log::LogError() << "EnvApp: Failed to initialize i2c pointer";
+        return core::ErrorCode::kInitializeError;
+    }
+    i2c::config_t config;
+    config.accel_scale = i2c::ACCEL_FULL_SCALE::k4g;
+    config.accel_speed = i2c::ACCEL_SPEED_t::k208;
+    config.gyro_scale = i2c::GYRO_FULL_SCALE::k2000;
+    config.gyro_speed = i2c::GYRO_SPEED_t::k208;
+    imu_.Initialize(std::move(i2c_imu), config);
     service_ipc.StartOffer();
     service_udp.StartOffer();
     return core::ErrorCode::kOk;
@@ -184,6 +195,28 @@ int EnvServiceFc::LoadTempConfig(const std::map<ara::core::StringView, ara::core
 
 int EnvServiceFc::Run(const std::stop_token& token) {
     ara::log::LogDebug() << "Leci run";
+
+    imu_thread = std::jthread([this](const std::stop_token& token) {
+        while (!token.stop_requested()) {
+            core::condition::wait_for(std::chrono::milliseconds(10), token);
+            const auto accel_data = imu_.ReadAccelData();
+            const auto gyro_data = imu_.ReadGyroData();
+            if (!accel_data || !gyro_data) {
+                if (!accel_data)
+                    ara::log::LogWarn() << "Cant read accel data";
+                if (!gyro_data)
+                    ara::log::LogWarn() << "Cant read gyro data";
+                continue;
+            }
+            const auto& a = *accel_data;
+            const auto& g = *gyro_data;
+
+            srp::env::IMUDataStructure data{g.x, g.y, g.z, a.x, a.y, a.z};
+            service_ipc.newIMUEvent.Update(data);
+            service_udp.newIMUEvent.Update(data);
+        }
+    });
+
     temp_->StartRxThread();
 
     while (!token.stop_requested()) {
