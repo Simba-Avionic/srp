@@ -48,7 +48,6 @@ class Data_t {
   std::atomic<float> sys_cpu_usage{0.0f};
   std::atomic<float> sys_mem_usage{0.0f};
   std::atomic<float> sys_disk_utilization{0.0f};
-  // RADIA
 
  public:
   Data_t() = default;
