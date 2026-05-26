@@ -53,7 +53,7 @@ core::ErrorCode LSM6DSOX::Initialize(std::unique_ptr<II2CController> i2c, const 
         return core::ErrorCode::kInitializeError;
     }
     const auto who = i2c_->Read(kI2C_ADDR, kWHO_AM_I_REG, 1);
-    if (!who.has_value() || who.value()[0] != kWHO_AM_I_EXPECTED) {
+    if (!who.has_value() || who->empty() || (*who)[0] != kWHO_AM_I_EXPECTED) {
         ara::log::LogError() << "LSM6DSO WHO_AM_I read failed or unexpected value";
         return core::ErrorCode::kInitializeError;
     }
@@ -78,14 +78,17 @@ core::ErrorCode LSM6DSOX::Initialize(std::unique_ptr<II2CController> i2c, const 
 }
 std::optional<SensorData> LSM6DSOX::ReadGyroData() {
     const auto status = this->i2c_->Read(kI2C_ADDR, kSTATUS_REG, 1);
-    if (!status.has_value() || (status.value()[0] & 0x02) == 0) {
+    if (!status.has_value() || status->empty() || ((*status)[0] & 0x02) == 0) {
         return std::nullopt;
     }
     const auto buffer_opt = this->i2c_->Read(kI2C_ADDR, kOUTX_L_G, 6);
     if (!buffer_opt.has_value()) {
         return std::nullopt;
     }
-    const auto buffer = buffer_opt.value();
+    const auto& buffer = buffer_opt.value();
+    if (buffer.size() < 6) {
+        return std::nullopt;
+    }
     const int16_t x = BytesToInt16(buffer[0], buffer[1]);
     const int16_t y = BytesToInt16(buffer[2], buffer[3]);
     const int16_t z = BytesToInt16(buffer[4], buffer[5]);
@@ -99,14 +102,17 @@ std::optional<SensorData> LSM6DSOX::ReadGyroData() {
 }
 std::optional<SensorData> LSM6DSOX::ReadAccelData() {
     const auto status = this->i2c_->Read(kI2C_ADDR, kSTATUS_REG, 1);
-    if (!status.has_value() || (status.value()[0] & 0x01) == 0) {
+    if (!status.has_value() || status->empty() || ((*status)[0] & 0x01) == 0) {
         return std::nullopt;
     }
     const auto buffer_opt = this->i2c_->Read(kI2C_ADDR, kOUTX_L_XL, 6);
     if (!buffer_opt.has_value()) {
         return std::nullopt;
     }
-    const auto buffer = buffer_opt.value();
+    const auto& buffer = buffer_opt.value();
+    if (buffer.size() < 6) {
+        return std::nullopt;
+    }
     const int16_t x = BytesToInt16(buffer[0], buffer[1]);
     const int16_t y = BytesToInt16(buffer[2], buffer[3]);
     const int16_t z = BytesToInt16(buffer[4], buffer[5]);

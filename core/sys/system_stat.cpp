@@ -19,7 +19,13 @@
 #include <string>
 #include <filesystem>
 #include <cmath>
+#include <thread>  // NOLINT
+#include <atomic>
+#include <chrono>
+#include <mutex>
+
 #include "ara/log/log.h"
+
 
 namespace srp {
 namespace core {
@@ -27,7 +33,7 @@ namespace stat {
 
 namespace {
     static constexpr auto kMemInfoPath = "/proc/meminfo";
-    static constexpr auto kCPU_THREADS = 1;
+    static constexpr std::chrono::milliseconds kCpuSampleInterval{100};
 }
 
 namespace fs = std::filesystem;
@@ -56,12 +62,85 @@ std::optional<float> SystemStats::get_ram_usage() {
     return 100.0f * static_cast<float>(total - available) / static_cast<float>(total);
 }
 
-std::optional<double> SystemStats::get_cpu_usage() {
-    double load[1];
-    if (getloadavg(load, 1) <= 0) return std::nullopt;
+struct CPUState {
+    unsigned long long user, nice, system, idle, iowait, irq, softirq, steal;
+};
 
-    double usage = load[0] * 100.0 / kCPU_THREADS;
-    return (usage > 100.0) ? 100.0 : usage;
+// Funkcja pomocnicza do czytania /proc/stat
+std::optional<CPUState> read_cpu_state() {
+    std::ifstream file("/proc/stat");
+    if (!file.is_open()) return std::nullopt;
+
+    std::string cpu;
+    CPUState state;
+    // Interesuje nas pierwsza linijka podsumowująca cały procesor
+    if (file >> cpu >> state.user >> state.nice >> state.system >> state.idle 
+             >> state.iowait >> state.irq >> state.softirq >> state.steal) {
+        return state;
+    }
+    return std::nullopt;
+}
+
+namespace {
+std::atomic<bool> g_cpu_sampler_started{false};
+std::atomic<bool> g_has_cpu_sample{false};
+std::atomic<double> g_last_cpu_usage{0.0};
+std::once_flag g_cpu_sampler_once;
+
+double calculate_cpu_usage(const CPUState& prev, const CPUState& curr) {
+    auto prev_idle = prev.idle + prev.iowait;
+    auto curr_idle = curr.idle + curr.iowait;
+
+    auto prev_total =
+        prev.user + prev.nice + prev.system + prev.idle + prev.iowait + prev.irq + prev.softirq +
+        prev.steal;
+    auto curr_total =
+        curr.user + curr.nice + curr.system + curr.idle + curr.iowait + curr.irq + curr.softirq +
+        curr.steal;
+
+    auto total_delta = curr_total - prev_total;
+    auto idle_delta = curr_idle - prev_idle;
+    if (total_delta == 0) {
+        return 0.0;
+    }
+
+    return 100.0 * static_cast<double>(total_delta - idle_delta) / static_cast<double>(total_delta);
+}
+
+void start_cpu_sampler_thread() {
+    std::call_once(g_cpu_sampler_once, [] {
+        std::thread([] {
+            auto prev = read_cpu_state();
+            if (!prev) {
+                return;
+            }
+
+            g_cpu_sampler_started.store(true, std::memory_order_release);
+
+            while (true) {
+                std::this_thread::sleep_for(kCpuSampleInterval);
+                auto curr = read_cpu_state();
+                if (!curr) {
+                    continue;
+                }
+
+                g_last_cpu_usage.store(calculate_cpu_usage(*prev, *curr), std::memory_order_release);
+                g_has_cpu_sample.store(true, std::memory_order_release);
+                prev = curr;
+            }
+        }).detach();
+    });
+}
+}  // namespace
+
+std::optional<double> SystemStats::get_cpu_usage() {
+    start_cpu_sampler_thread();
+    if (!g_cpu_sampler_started.load(std::memory_order_acquire) ||
+        !g_has_cpu_sample.load(std::memory_order_acquire)) {
+        return std::nullopt;
+    }
+
+    return g_last_cpu_usage.load(std::memory_order_acquire);
 }
 
 }  // namespace stat

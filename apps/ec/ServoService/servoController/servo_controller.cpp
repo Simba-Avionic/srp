@@ -38,11 +38,12 @@ void ServoController::closingThreadLoop(const std::stop_token& token) {
         if (cfg.value().auto_closing == 0) {
           continue;
         }
-        if (cfg.value().position != kOpenState) {
+        if (cfg.value().position == kCloseState) {
           continue;
         }
         if (cfg.value().open_time_end <= now) {
           servo_ctr_.SetServoPosition(cfg.value(), 0);
+          servo_cfg_mng.SetServoPosition(id, kCloseState);
         } else {
           auto time_until_end = std::chrono::duration_cast<
                   std::chrono::milliseconds>(cfg.value().open_time_end - now);
@@ -67,15 +68,15 @@ void ServoController::pulsingThreadLoop(const std::stop_token& token) {
       if (cfg.value().pulsing_time == 0) {
         continue;
       }
-      if (cfg.value().position == kCloseState) {
-        pulsing_db.erase(id);
-        servo_ctr_.SetServoPosition(cfg.value(), kCloseState);
-        continue;
-      }
       {
         std::lock_guard<std::mutex> lock(pulsing_mtx_);
         auto pulse_cfg = pulsing_db.find(id);
         if (pulse_cfg == pulsing_db.end()) {
+          continue;
+        }
+        if (cfg.value().position == kCloseState) {
+          pulsing_db.erase(id);
+          servo_ctr_.SetServoPosition(cfg.value(), kCloseState);
           continue;
         }
         auto now = Clock::now();
@@ -155,8 +156,6 @@ bool ServoController::AutoSetServoPosition(const uint8_t actuator_id,
     logger_.LogDebug() << "ServoController.AutoSetServoPosition: enabled pulsing for actuator "
                        << actuator_id << ", interval_ms " << cfg.value().pulsing_time;
   }
-
-
   return true;
 }
 

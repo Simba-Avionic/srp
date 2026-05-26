@@ -11,6 +11,7 @@
 #include <sstream>
 #include <iomanip>
 #include <cstring>
+#include "ara/log/log.h"
 
 namespace srp {
 namespace logger {
@@ -20,7 +21,7 @@ namespace {
                   "BOARD_TEMP2;BOARD_TEMP3;TANK_PRESS;"
                   "TANK_D_PRESS;CPU_USAGE;MEM_USAGE;DISK_UTILIZATION;TENSO;"
                   "PRIMER_STATUS;SERVO_STATUS;SERVO_DUMP_STATUS;"
-                  "SERVO_VENT_STATUS;ENGINE_MODE;ENGINE_NEW_VENT_VALVE_STATUS";
+                  "SERVO_VENT_STATUS;ENGINE_MODE;ENGINE_NEW_VENT_VALVE_STATUS;GPIO_STATE";
 }
 
 std::string Data_t::get_header() {
@@ -50,6 +51,8 @@ std::vector<uint8_t> Data_t::get_bytes(const int64_t& timestamp) {
   const engineType engine_mode_local = engine_mode.load(std::memory_order_relaxed);
   const engineType engine_new_vent_valve_status_local = engine_new_vent_valve_status.load(std::memory_order_relaxed);
 
+  const uint32_t gpio_ = gpio_states.load(std::memory_order_relaxed);
+
   constexpr std::size_t kTotalSize =
       sizeof(timestamp) +
       sizeof(temp1_local) +
@@ -69,7 +72,8 @@ std::vector<uint8_t> Data_t::get_bytes(const int64_t& timestamp) {
       sizeof(servo_dump_status_local) +
       sizeof(servo_vent_status_local) +
       sizeof(engine_mode_local) +
-      sizeof(engine_new_vent_valve_status_local);
+      sizeof(engine_new_vent_valve_status_local) +
+      sizeof(gpio_);
 
   std::vector<uint8_t> bytes;
   bytes.resize(kTotalSize);
@@ -101,6 +105,7 @@ std::vector<uint8_t> Data_t::get_bytes(const int64_t& timestamp) {
   append_bytes(offset, servo_vent_status_local);
   append_bytes(offset, engine_mode_local);
   append_bytes(offset, engine_new_vent_valve_status_local);
+  append_bytes(offset, gpio_);
 
   return bytes;
 }
@@ -121,15 +126,17 @@ std::string Data_t::to_string(const std::string& timestamp) {
   const auto disk_local = sys_disk_utilization.load(std::memory_order_relaxed);
 
   const tensoType tenso_local = tenso.load(std::memory_order_relaxed);
-  const auto primer_local = primer_status.load(std::memory_order_relaxed);
-  const auto servo_local = servo_status.load(std::memory_order_relaxed);
-  const auto servo_dump_local = servo_dump_status.load(std::memory_order_relaxed);
-  const auto servo_vent_local = servo_vent_status.load(std::memory_order_relaxed);
-  const auto engine_mode_local = engine_mode.load(std::memory_order_relaxed);
-  const auto engine_vent_valve_local = engine_new_vent_valve_status.load(std::memory_order_relaxed);
+  const auto primer_local = static_cast<int>(primer_status.load(std::memory_order_relaxed));
+  const auto servo_local = static_cast<int>(servo_status.load(std::memory_order_relaxed));
+  const auto servo_dump_local = static_cast<int>(servo_dump_status.load(std::memory_order_relaxed));
+  const auto servo_vent_local = static_cast<int>(servo_vent_status.load(std::memory_order_relaxed));
+  const auto engine_mode_local = static_cast<int>(engine_mode.load(std::memory_order_relaxed));
+  const auto engine_vent_valve_local = static_cast<int>(engine_new_vent_valve_status.load(std::memory_order_relaxed));
+
+  const uint32_t gpio_ = gpio_states.load(std::memory_order_relaxed);
 
   std::stringstream res;
-  res << std::fixed << std::setprecision(2);
+  res << std::fixed << std::setprecision(4);
   res << timestamp << ";";
   res << temp1_local << ";";
   res << temp2_local << ";";
@@ -148,7 +155,8 @@ std::string Data_t::to_string(const std::string& timestamp) {
   res << servo_dump_local << ";";
   res << servo_vent_local << ";";
   res << engine_mode_local << ";";
-  res << engine_vent_valve_local;
+  res << engine_vent_valve_local << ";";
+  res << gpio_;
   return res.str();
 }
 
@@ -157,6 +165,20 @@ void Data_t::SetSysStatus(const apps::SysStatType& sys_stat) {
   this->sys_mem_usage.store(sys_stat.mem_usage, std::memory_order_relaxed);
   this->sys_disk_utilization.store(sys_stat.disk_utilization, std::memory_order_relaxed);
 }
+
+void Data_t::SetGpioState(const uint8_t pin_id, const uint8_t state) {
+  if (pin_id >= 32) {
+    ara::log::LogWarn() << "GPIO pin_id out of range: " << static_cast<int>(pin_id);
+    return;
+  }
+  const uint32_t mask = 1U << pin_id;
+  if (state == 0) {
+    gpio_states.fetch_and(~mask, std::memory_order_relaxed);
+  } else {
+    gpio_states.fetch_or(mask, std::memory_order_relaxed);
+  }
+}
+
 
 void Data_t::SetTenso(tensoType tenso) {
   this->tenso.store(tenso, std::memory_order_relaxed);

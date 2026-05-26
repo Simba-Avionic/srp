@@ -44,6 +44,7 @@ class EnvServiceFc final : public ara::exec::AdaptiveApplication {
   std::jthread bme_thread;
 
   i2c::LSM6DSOX imu_;
+  bool imu_ready_{false};
 
   std::jthread imu_thread;
 

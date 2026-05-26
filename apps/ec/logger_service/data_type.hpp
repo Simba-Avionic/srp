@@ -48,6 +48,7 @@ class Data_t {
   std::atomic<float> sys_cpu_usage{0.0f};
   std::atomic<float> sys_mem_usage{0.0f};
   std::atomic<float> sys_disk_utilization{0.0f};
+  std::atomic<uint32_t> gpio_states{0};
 
  public:
   Data_t() = default;
@@ -58,6 +59,8 @@ class Data_t {
   std::string get_header();
   std::string to_string(const std::string& timestamp);
   std::vector<uint8_t> get_bytes(const int64_t& timestamp);
+
+  void SetGpioState(const uint8_t pin_id, const uint8_t state);
 
   void SetSysStatus(const apps::SysStatType& sys_stat);
   void SetTemp1(tempType temp);

@@ -40,9 +40,9 @@ std::string Data_t::to_string(const std::string& timestamp) {
   const auto cpu  = sys_cpu_usage_.load(std::memory_order_relaxed);
   const auto mem  = sys_mem_usage_.load(std::memory_order_relaxed);
   const auto disk = sys_disk_utilization_.load(std::memory_order_relaxed);
-  const auto apogee  = apogee_detected_.load(std::memory_order_relaxed);
-  const auto mainParachute = main_parachute_detected_.load(std::memory_order_relaxed);
-  const auto fc_mode = FC_mode.load(std::memory_order_relaxed);
+  const auto apogee  = static_cast<int>(apogee_detected_.load(std::memory_order_relaxed));
+  const auto mainParachute = static_cast<int>(main_parachute_detected_.load(std::memory_order_relaxed));
+  const auto fc_mode = static_cast<int>(FC_mode.load(std::memory_order_relaxed));
 
   const auto lat = lat_.load(std::memory_order_relaxed);
   const auto lon = lon_.load(std::memory_order_relaxed);

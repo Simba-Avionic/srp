@@ -33,7 +33,9 @@ srp::core::ErrorCode TempController::Init(uint16_t service_id, std::unique_ptr<c
         return core::ErrorCode::kInitializeError;
     }
     this->sub_sock_ = std::move(sock);
-    this->sock = std::move(std::make_unique<com::soc::IpcSocket>());
+    if (!this->sock) {
+        this->sock = std::make_unique<com::soc::IpcSocket>();
+    }
     if (!this->sock) {
         ara::log::LogError() << "TempController::Init failed: cannot allocate IPC socket";
         return core::ErrorCode::kInitializeError;
