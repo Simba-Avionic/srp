@@ -2,18 +2,15 @@
  * @file data_type.hpp
  * @author Mateusz Krajewski (matikrajek42@gmail.com)
  * @brief 
- * @version 0.1
- * @date 2024-11-22
- * 
- * @copyright Copyright (c) 2024
- * 
- */
+ * @version 0.2
+ * @date 2026-05-25
+ * * @copyright Copyright (c) 2024-2026
+ * */
 
 #ifndef APPS_EC_LOGGER_SERVICE_DATA_TYPE_HPP_
 #define APPS_EC_LOGGER_SERVICE_DATA_TYPE_HPP_
 
-#include <shared_mutex>
-#include <mutex>  // NOLINT
+#include <atomic>
 #include <cstdint>
 #include <vector>
 #include <memory>
@@ -32,44 +29,53 @@ class Data_t {
   using primerStatusType = uint8_t;
   using servoType = uint8_t;
   using engineType = uint8_t;
-  std::shared_mutex mutex_;
-  tensoType tenso;
-  tempType temp1;
-  tempType temp2;
-  tempType temp3;
-  tempType board_temp1;
-  tempType board_temp2;
-  tempType board_temp3;
-  pressType tank_press;
-  dPressType tank_d_press;
-  primerStatusType primer_status;
-  servoType servo_status;
-  servoType servo_dump_status;
-  servoType servo_vent_status;
-  engineType engine_mode;
-  engineType engine_new_vent_valve_status;
-  apps::SysStatType sys_status;
+
+  std::atomic<tensoType> tenso{0.0f};
+  std::atomic<tempType> temp1{0};
+  std::atomic<tempType> temp2{0};
+  std::atomic<tempType> temp3{0};
+  std::atomic<tempType> board_temp1{0};
+  std::atomic<tempType> board_temp2{0};
+  std::atomic<tempType> board_temp3{0};
+  std::atomic<pressType> tank_press{0.0f};
+  std::atomic<dPressType> tank_d_press{0.0f};
+  std::atomic<primerStatusType> primer_status{0};
+  std::atomic<servoType> servo_status{0};
+  std::atomic<servoType> servo_dump_status{0};
+  std::atomic<servoType> servo_vent_status{0};
+  std::atomic<engineType> engine_mode{0};
+  std::atomic<engineType> engine_new_vent_valve_status{0};
+  std::atomic<float> sys_cpu_usage{0.0f};
+  std::atomic<float> sys_mem_usage{0.0f};
+  std::atomic<float> sys_disk_utilization{0.0f};
+  // RADIA
 
  public:
+  Data_t() = default;
+
+  Data_t(const Data_t&) = delete;
+  Data_t& operator=(const Data_t&) = delete;
+
   std::string get_header();
   std::string to_string(const std::string& timestamp);
   std::vector<uint8_t> get_bytes(const int64_t& timestamp);
+  
   void SetSysStatus(const apps::SysStatType& sys_stat);
-  void SetTemp1(const tempType& temp);
-  void SetTemp2(const tempType& temp);
-  void SetTemp3(const tempType& temp);
-  void SetBoardTemp1(const tempType& temp);
-  void SetBoardTemp2(const tempType& temp);
-  void SetBoardTemp3(const tempType& temp);
-  void SetTankPress(const pressType& press);
-  void SetTankDPress(const dPressType& press);
-  void SetTenso(const tensoType& tenso);
-  void SetPrimerStatus(const primerStatusType& primer);
-  void SetServoStatus(const servoType& status);
-  void SetServoDumpStatus(const servoType& status);
-  void SetServoVentStatus(const servoType& status);
-  void SetEngineMode(const engineType& mode);
-  void SetNewVentValveStatus(const engineType& status);
+  void SetTemp1(tempType temp);
+  void SetTemp2(tempType temp);
+  void SetTemp3(tempType temp);
+  void SetBoardTemp1(tempType temp);
+  void SetBoardTemp2(tempType temp);
+  void SetBoardTemp3(tempType temp);
+  void SetTankPress(pressType press);
+  void SetTankDPress(dPressType press);
+  void SetTenso(tensoType tenso);
+  void SetPrimerStatus(primerStatusType primer);
+  void SetServoStatus(servoType status);
+  void SetServoDumpStatus(servoType status);
+  void SetServoVentStatus(servoType status);
+  void SetEngineMode(engineType mode);
+  void SetNewVentValveStatus(engineType status);
 };
 
 }  // namespace logger

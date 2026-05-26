@@ -25,7 +25,7 @@ namespace logger {
 namespace {
   static constexpr std::string kloger_filename = "_log.csv";
   static constexpr std::string kloger_filename_prefix = "/home/root/";
-  static constexpr uint16_t kSave_interval = 5;
+  static constexpr uint16_t kSave_interval = 10;
   static constexpr auto kEnv_service_path_name = "srp/apps/FileLoggerApp/EnvApp";
   static constexpr auto kUdp_service_path_name = "srp/apps/FileLoggerApp/logService_udp";
   static constexpr auto kIpc_service_path_name = "srp/apps/FileLoggerApp/logService_ipc";

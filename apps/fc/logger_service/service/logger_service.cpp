@@ -25,7 +25,7 @@ namespace logger {
 namespace {
   static constexpr auto kLoggerFilename = "_fc_log.csv";
   static constexpr auto kLoggerFilenamePrefix = "/home/root/";
-  static constexpr std::uint16_t kSaveIntervalMs = 5000;
+  static constexpr std::uint16_t kSaveIntervalMs = 10;
   static constexpr auto kEnvServicePathName = "srp/apps/FcFileLoggerApp/envServiceFc_ipc";
   static constexpr auto kApogeeServocePathName = "srp/apps/ApogeeDetectService/ApogeeDetectService";
   static constexpr auto kUdpServicePathName = "srp/apps/FcFileLoggerApp/logService_udp";
