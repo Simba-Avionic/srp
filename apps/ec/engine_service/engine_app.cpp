@@ -229,6 +229,7 @@ void EngineApp::OnDisarm() {
       ara::log::LogError() << "cant disarm pin: " << pin.name;
     }
   }
+  servo_handler_->SetMainServoValue(0);
   servo_handler_->SetVentServoValue(0);
   servo_handler_->SetDumpValue(0);
 }

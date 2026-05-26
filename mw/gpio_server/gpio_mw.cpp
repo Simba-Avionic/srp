@@ -94,11 +94,14 @@ std::vector<uint8_t> GPIOMWService::RxCallback(const std::string& ip, const std:
                 }
                 auto new_time = std::chrono::high_resolution_clock::now()
                                         + std::chrono::milliseconds(hdr.value().time_period);
-                expire_it->second.disable_tp = std::max(expire_it->second.disable_tp, new_time);
-                if (hdr.value().time_period == 0) {
-                    expire_it->second.infinite_active = true;
-                } else if (hdr.value().force_time_period) {
-                    expire_it->second.infinite_active = false;
+                if (hdr.value().force_time_period) {
+                    expire_it->second.disable_tp = new_time;
+                    expire_it->second.infinite_active = (hdr.value().time_period == 0);
+                } else {
+                    expire_it->second.disable_tp = std::max(expire_it->second.disable_tp, new_time);
+                    if (hdr.value().time_period == 0) {
+                        expire_it->second.infinite_active = true;
+                    }
                 }
             }
             return {core::ErrorCode::kOk};

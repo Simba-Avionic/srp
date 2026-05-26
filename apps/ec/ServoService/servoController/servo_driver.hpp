@@ -59,15 +59,24 @@ class ServoDriver {
   bool SetServoPosition(const srp::service::ServoRuntimeConfig& cfg, const uint8_t state) {
     std::unique_lock<std::mutex> lock(operation_mtx);
     if (cfg.mosfet_id != 0) {
-      if (gpio_.SetPinValue(cfg.mosfet_id, kOpenState, kDefault_mosfet_active_time_ms) != core::ErrorCode::kOk) {
+      core::ErrorCode mosfet_res;
+      if (state == kOpenState) {
+        mosfet_res = gpio_.SetPinValue(cfg.mosfet_id, kOpenState, 0);
+      } else if (cfg.pulsing_time > 0) {
+        mosfet_res = gpio_.SetPinValue(cfg.mosfet_id, kCloseState, 0);
+      } else {
+        mosfet_res = gpio_.SetPinValue(cfg.mosfet_id, kOpenState, kDefault_mosfet_active_time_ms, true);
+      }
+      if (mosfet_res != core::ErrorCode::kOk) {
         logger_.LogError() << "ServoController.ExecuteServoMovement: failed to enable MOSFET " <<
                               cfg.mosfet_id;
         return false;
       }
     }
 
-    const uint16_t target_position = ((state == kOpenState) ? cfg.on_pos : cfg.off_pos)
-                          * config.pca9685_XO_corelation;
+    const float corelation = (config.pca9685_XO_corelation > 0.0f) ? config.pca9685_XO_corelation : 1.0f;
+    const uint16_t target_position = static_cast<uint16_t>(
+        ((state == kOpenState) ? cfg.on_pos : cfg.off_pos) * corelation);
 
     logger_.LogDebug() << "ServoController.ExecuteServoMovement: setting actuator "
                        << "to PWM " << target_position;
