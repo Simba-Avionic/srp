@@ -41,12 +41,6 @@ void ServoController::closingThreadLoop(const std::stop_token& token) {
         if (cfg.value().position != kOpenState) {
           continue;
         }
-        {
-          std::lock_guard<std::mutex> lock(pulsing_mtx_);
-          if (pulsing_db.find(id) != pulsing_db.end()) {
-            continue;
-          }
-        }
         if (cfg.value().open_time_end <= now) {
           servo_ctr_.SetServoPosition(cfg.value(), 0);
           servo_cfg_mng.SetServoPosition(id, kCloseState);
