@@ -58,7 +58,7 @@ class Data_t {
   std::string get_header();
   std::string to_string(const std::string& timestamp);
   std::vector<uint8_t> get_bytes(const int64_t& timestamp);
-  
+
   void SetSysStatus(const apps::SysStatType& sys_stat);
   void SetTemp1(tempType temp);
   void SetTemp2(tempType temp);

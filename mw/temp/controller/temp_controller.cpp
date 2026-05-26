@@ -106,16 +106,15 @@ std::vector<srp::mw::temp::TempReadHdr> TempController::Conv(const std::vector<u
 }
 
 void TempController::SetTempRXCallback() {
-    srp::com::soc::RXCallbackStream lambdaCallback = [this](
-        const std::string& ip, const std::uint16_t& port,
-            const std::vector<std::uint8_t> data) {
+    srp::com::soc::RXCallback lambdaCallback = [this](
+        const std::string& /*ip*/, const std::uint16_t& /*port*/,
+        const std::vector<std::uint8_t>& data) {
         auto hdr = this->Conv(data);
         if (!this->callback_) {
             ara::log::LogWarn() << "Temp RX callback dropped: callback not set";
-            return std::vector<uint8_t>{};
+            return;
         }
         this->callback_(hdr);
-        return std::vector<uint8_t>{};
     };
     this->sock->SetRXCallback(lambdaCallback);
 }

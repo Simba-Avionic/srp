@@ -19,14 +19,14 @@ namespace apps {
 namespace radio {
 
 namespace {
-  static constexpr auto kEnv_service_path_name =      "srp/apps/FcRadioApp/EnvApp";
-  static constexpr auto kGPS_service_path_name =      "srp/apps/FcRadioApp/GPSService";
-  static constexpr auto kPrimer_service_path_name =   "srp/apps/FcRadioApp/PrimerService";
-  static constexpr auto kServo_service_path_name =    "srp/apps/FcRadioApp/ServoService";
-  static constexpr auto kRecovery_service_path_name = "srp/apps/FcRadioApp/RecoveryService";
-  static constexpr auto kMain_service_path_name =     "srp/apps/FcRadioApp/MainService";
-  static constexpr auto kEngine_service_path_name =   "srp/apps/FcRadioApp/EngineService";
-  static constexpr auto kEnv_fc_service_path_name =   "srp/apps/FcRadioApp/EnvAppFc";
+  static constexpr auto kEnv_service_path_name =      "srp/apps/RadioApp/EnvApp";
+  static constexpr auto kGPS_service_path_name =      "srp/apps/RadioApp/GPSService";
+  static constexpr auto kPrimer_service_path_name =   "srp/apps/RadioApp/PrimerService";
+  static constexpr auto kServo_service_path_name =    "srp/apps/RadioApp/ServoService";
+  static constexpr auto kRecovery_service_path_name = "srp/apps/RadioApp/RecoveryService";
+  static constexpr auto kMain_service_path_name =     "srp/apps/RadioApp/MainService";
+  static constexpr auto kEngine_service_path_name =   "srp/apps/RadioApp/EngineService";
+  static constexpr auto kEnv_fc_service_path_name =   "srp/apps/RadioApp/EnvAppFc";
 }  // namespace
 
 SomeIPController::SomeIPController():
