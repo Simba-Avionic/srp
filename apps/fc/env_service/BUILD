@@ -31,5 +31,6 @@ cc_binary(
         "//mw/i2c_service/controller/bme280:bme280_controller",
         "//core/json:simba_json",
         "//mw/i2c_service/controller/24lc32at/eeprom_config:eeprom_config",
+        "//mw/i2c_service/controller/LSM6DSOX:LSM6DSOX_controller",
     ],
 )

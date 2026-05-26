@@ -18,7 +18,7 @@
                 "logger": {
                     "app_id": "SERV",
                     "app_des": "Serwis od servo",
-                    "log_level": "kWarn",
+                    "log_level": "kDebug",
                     "log_mode": "kRemote",
                     "ctx": [
                         {
@@ -43,12 +43,12 @@
                         },
                         {
                             "ctx_id": "srdr",
-                            "log_level": "kWarn",
+                            "log_level": "kDebug",
                             "ctx_des": "Servo Driver Logger"
                         },
                         {
                             "ctx_id": "srct",
-                            "log_level": "kWarn",
+                            "log_level": "kDebug",
                             "ctx_des": "Servo Controller Logger"
                         }
                     ]

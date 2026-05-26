@@ -24,6 +24,7 @@
 #include "mw/i2c_service/controller/bme280/controller.hpp"
 #include "srp/env/EnvAppFcSkeleton.h"
 #include "mw/i2c_service/controller/24lc32at/eeprom_config/cfg_manager.hpp"
+#include "mw/i2c_service/controller/LSM6DSOX/controller.hpp"
 
 namespace srp {
 namespace envServiceFc {
@@ -41,6 +42,11 @@ class EnvServiceFc final : public ara::exec::AdaptiveApplication {
   env::EnvAppFcSkeleton service_udp;
 
   std::jthread bme_thread;
+
+  i2c::LSM6DSOX imu_;
+  bool imu_ready_{false};
+
+  std::jthread imu_thread;
 
   int LoadTempConfig(
     const std::map<ara::core::StringView, ara::core::StringView>& parms);

@@ -17,7 +17,6 @@
 #include "apps/ec/system_stat_service/system_stat_service.hpp"
 #include "core/common/condition.h"
 #include "ara/log/log.h"
-#include "core/sys/system_stat.hpp"
 
 namespace srp {
 namespace sysService {
@@ -43,17 +42,17 @@ int SystemStatService::Initialize(const std::map<ara::core::StringView, ara::cor
 
 std::optional<apps::SysStatType> SystemStatService::GetSysStats() const {
     apps::SysStatType stats;
-    auto cpu_usage_opt = core::stat::SystemStats::get_cpu_usage();
+    auto cpu_usage_opt = stats_.get_cpu_usage();
     if (!cpu_usage_opt.has_value()) {
         return std::nullopt;
     }
     stats.cpu_usage = static_cast<float>(cpu_usage_opt.value());
-    auto mem_usage_opt = core::stat::SystemStats::get_ram_usage();
+    auto mem_usage_opt = stats_.get_ram_usage();
     if (!mem_usage_opt.has_value()) {
         return std::nullopt;
     }
     stats.mem_usage = mem_usage_opt.value();
-    stats.disk_utilization = static_cast<float>(core::stat::SystemStats::get_disk_space());
+    stats.disk_utilization = static_cast<float>(stats_.get_disk_space());
     return stats;
 }
 
@@ -71,7 +70,7 @@ int SystemStatService::Run(const std::stop_token& token) {
                             << "%, mem usage: " << stats.mem_usage
                             << "%, disk usage: " << stats.disk_utilization << "%";
 
-        ara::log::LogDebug() << ss.str();
+        ara::log::LogWarn() << ss.str();
         service_ipc.NewSystemUsage.Update(stats);
         service_udp.NewSystemUsage.Update(stats);
     }

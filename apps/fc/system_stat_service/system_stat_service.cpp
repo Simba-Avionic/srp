@@ -17,7 +17,6 @@
 #include "apps/fc/system_stat_service/system_stat_service.hpp"
 #include "core/common/condition.h"
 #include "ara/log/log.h"
-#include "core/sys/system_stat.hpp"
 
 namespace srp {
 namespace sysService {
@@ -41,19 +40,20 @@ int FcSystemStatService::Initialize(const std::map<ara::core::StringView, ara::c
 
 std::optional<apps::FcSysStatType> FcSystemStatService::GetSysStats() const {
     apps::FcSysStatType stats;
-    auto cpu_usage_opt = core::stat::SystemStats::get_cpu_usage();
+    auto cpu_usage_opt = stats_.get_cpu_usage();
     if (!cpu_usage_opt.has_value()) {
         return std::nullopt;
     }
     stats.cpu_usage = static_cast<float>(cpu_usage_opt.value());
-    auto mem_usage_opt = core::stat::SystemStats::get_ram_usage();
+    auto mem_usage_opt = stats_.get_ram_usage();
     if (!mem_usage_opt.has_value()) {
         return std::nullopt;
     }
     stats.mem_usage = mem_usage_opt.value();
-    stats.disk_utilization = static_cast<float>(core::stat::SystemStats::get_disk_space());
+    stats.disk_utilization = static_cast<float>(stats_.get_disk_space());
     return stats;
 }
+
 
 int FcSystemStatService::Run(const std::stop_token& token) {
     service_ipc.StartOffer();

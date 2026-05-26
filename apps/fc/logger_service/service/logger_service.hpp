@@ -23,13 +23,19 @@
 #include "core/timestamp/timestamp_driver.hpp"
 #include "srp/apps/FcSysStatService/FcSysStatServiceHandler.h"
 #include "srp/env/EnvAppFc/EnvAppFcHandler.h"
+#include "srp/apps/MainService/MainServiceHandler.h"
 #include "srp/apps/ApogeeDetectService/ApogeeDetectServiceHandler.h"
+#include "srp/apps/GPSService/GPSServiceHandler.h"
 
 namespace srp {
 namespace logger {
 
 class LoggerService final : public ara::exec::AdaptiveApplication {
  private:
+  std::shared_ptr<apps::GPSServiceHandler> gps_handler_;
+  apps::GPSServiceProxy gps_proxy_;
+  std::shared_ptr<apps::MainServiceHandler> main_handler_;
+  apps::MainServiceProxy main_proxy_;
   env::EnvAppFcProxy env_service_proxy_;
   apps::FcSysStatServiceProxy stat_service_proxy_;
   std::shared_ptr<env::EnvAppFcHandler> env_service_handler_;

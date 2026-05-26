@@ -55,17 +55,17 @@ std::optional<std::vector<uint8_t>> StreamIpcSocket::Transmit(
   struct timeval timeout;
   timeout.tv_sec = 2;
   timeout.tv_usec = 0;
-  setsockopt(server_sock, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout));
+  setsockopt(server_socket, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout));
   struct sockaddr_un server_addr;
   server_addr.sun_family = AF_UNIX;
   strcpy(server_addr.sun_path, ("/run/" + ip).c_str());  // NOLINT
   if (connect(server_socket, (struct sockaddr*)&server_addr,
               sizeof(server_addr)) == -1) {
-    close(server_sock);
+    close(server_socket);
     return std::nullopt;
   }
   if (write(server_socket, payload.data(), payload.size()) < 0) {
-    close(server_sock);
+    close(server_socket);
     return std::nullopt;
   }
   std::array<char, 256 * 2> buffer;
