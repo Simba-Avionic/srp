@@ -292,7 +292,7 @@ void EngineApp::OnAbort() {
   ara::log::LogWarn() << "EngineApp::OnAbort: ABORT sequence initiated";
 
   for (const ArmPinConfig_t& pin : arm_pins_id) {
-    bool disable_later = (pin.func == "PFMS");
+    bool disable_later = (pin.func == "PFVS");
     if (gpio_.SetPinValue(pin.pin_id,
                           disable_later ? kPin_on : kPin_off,
                           disable_later ? 3500 : 0,
