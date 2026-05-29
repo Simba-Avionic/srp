@@ -128,6 +128,14 @@ std::vector<uint8_t> TelemetryProvider::GetComputersTelemetryMsg() {
     });
 }
 
+std::vector<uint8_t> TelemetryProvider::GetDefaultHeartbeat() {
+    return Pack([&](mavlink_message_t* m) {
+        mavlink_msg_heartbeat_pack(
+            kSystemId, kComponentId, m,
+            0, 0, 0, 0, 0);
+    });
+}
+
 }  // namespace radio
 }  // namespace apps
 }  // namespace srp

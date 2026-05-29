@@ -30,6 +30,9 @@ namespace {
     static constexpr auto kRecovery_instance_name = "srp/apps/MainApp/RecoveryService";
     static constexpr auto kEngine_instance_name =   "srp/apps/MainApp/EngineService";
     static constexpr auto kHeartBeatPinID = 1;
+    static constexpr auto kCamPowerPinID = 10;
+    static constexpr auto kCamButtonPinID = 9;
+    static constexpr auto kCam_button_enter_delay_ms = 500;
 }  // namespace
 using RocketState_t = core::rocketState::RocketState_t;
 
@@ -122,6 +125,10 @@ void MainService::OnDisarm() {
 
 void MainService::OnArm() {
     gpio_.SetPinValue(kArmPinID, kPin_on);
+
+    gpio_.SetPinValue(kCamPowerPinID, kPin_on);
+    std::this_thread::sleep_for(std::chrono::milliseconds(kCam_button_enter_delay_ms));
+    gpio_.SetPinValue(kCamButtonPinID, kPin_on);
     // TOFIX() here should be Linecutter ARM pin but it dont exist...
 }
 

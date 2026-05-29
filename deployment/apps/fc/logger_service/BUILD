@@ -22,6 +22,7 @@ filegroup(
         "//deployment/system_definition/diag/jobs/file_logger:file_logger_job",
         "//deployment/apps/fc/apogee_detect_service:instance",
         "//deployment/system_definition/someip/fc/gps_service:service_someipy",
+        "//deployment/system_definition/someip/fc/radio_service:service_someipy",
         "//deployment/system_definition/someip/fc/main_service:service_someipy"
     ],
     visibility = ["//visibility:public"],
