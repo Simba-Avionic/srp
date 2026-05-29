@@ -21,11 +21,24 @@ namespace {
   static constexpr auto kCsvHeader =
       "TIMESTAMP;BOARD_TEMP1;BOARD_TEMP2;BOARD_TEMP3;BME_TEMP;BME_HUMIDITY;"
       "BME_ALTITUDE;CPU_USAGE;MEM_USAGE;DISK_UTILIZATION;APOGEE_DETECTED;MAIN_PARACHUTE_DETECTED;"
-      "FC_MODE;GPS_LAT;GPS_LON;GPS_ALT;GYRO_X;GYRO_Y;GYRO_Z;ACCEL_X;ACCEL_Y;ACCEL_Z";
+      "FC_MODE;GPS_LAT;GPS_LON;GPS_ALT;GYRO_X;GYRO_Y;GYRO_Z;ACCEL_X;ACCEL_Y;ACCEL_Z;"
+      "RADIO_RXERRORS;RADIO_FIXED;RADIO_RSSI;RADIO_REMRSSI;RADIO_TXBUF;RADIO_NOISE;RADIO_REMNOISE";
 }
 
 std::string Data_t::get_header() {
   return kCsvHeader;
+}
+
+
+void Data_t::SetRadioStatus(uint16_t rxerrors, uint16_t fixed, uint8_t rssi,
+                           uint8_t remrssi, uint8_t txbuf, uint8_t noise, uint8_t remnoise) {
+  radio_rxerrors_.store(rxerrors, std::memory_order_relaxed);
+  radio_fixed_.store(fixed, std::memory_order_relaxed);
+  radio_rssi_.store(rssi, std::memory_order_relaxed);
+  radio_remrssi_.store(remrssi, std::memory_order_relaxed);
+  radio_txbuf_.store(txbuf, std::memory_order_relaxed);
+  radio_noise_.store(noise, std::memory_order_relaxed);
+  radio_remnoise_.store(remnoise, std::memory_order_relaxed);
 }
 
 std::string Data_t::to_string(const std::string& timestamp) {
@@ -56,6 +69,14 @@ std::string Data_t::to_string(const std::string& timestamp) {
   const auto accely = accel_y_.load(std::memory_order_relaxed);
   const auto accelz = accel_z_.load(std::memory_order_relaxed);
 
+  const auto radio_rxerrors = radio_rxerrors_.load(std::memory_order_relaxed);
+  const auto radio_fixed = radio_fixed_.load(std::memory_order_relaxed);
+  const auto radio_rssi = radio_rssi_.load(std::memory_order_relaxed);
+  const auto radio_remrssi = radio_remrssi_.load(std::memory_order_relaxed);
+  const auto radio_txbuf = radio_txbuf_.load(std::memory_order_relaxed);
+  const auto radio_noise = radio_noise_.load(std::memory_order_relaxed);
+  const auto radio_remnoise = radio_remnoise_.load(std::memory_order_relaxed);
+
   std::stringstream res;
   res << std::fixed << std::setprecision(2);
   res << timestamp << kCsv_separator;
@@ -79,7 +100,14 @@ std::string Data_t::to_string(const std::string& timestamp) {
   res << gyroz << kCsv_separator;
   res << accelx << kCsv_separator;
   res << accely << kCsv_separator;
-  res << accelz;
+  res << accelz << kCsv_separator;
+  res << radio_rxerrors << kCsv_separator;
+  res << radio_fixed << kCsv_separator;
+  res << static_cast<int>(radio_rssi) << kCsv_separator;
+  res << static_cast<int>(radio_remrssi) << kCsv_separator;
+  res << static_cast<int>(radio_txbuf) << kCsv_separator;
+  res << static_cast<int>(radio_noise) << kCsv_separator;
+  res << static_cast<int>(radio_remnoise);
   return res.str();
 }
 

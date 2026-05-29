@@ -30,6 +30,7 @@ namespace {
   static constexpr auto kApogeeServocePathName = "srp/apps/ApogeeDetectService/ApogeeDetectService";
   static constexpr auto kMainServicePathName = "srp/apps/MainService/MainService";
   static constexpr auto kGpsServicePathName = "srp/apps/GPSService/GPSService";
+  static constexpr auto kRadioServicePathName = "srp/apps/FcFileLoggerApp/RadioApp";
   static constexpr auto kUdpServicePathName = "srp/apps/FcFileLoggerApp/logService_udp";
   static constexpr auto kIpcServicePathName = "srp/apps/FcFileLoggerApp/logService_ipc";
   static constexpr auto kSysStatServicePathName = "srp/apps/FcFileLoggerApp/FcSysStatService_ipc";
@@ -44,6 +45,8 @@ LoggerService::LoggerService()
       apogee_proxy_{ara::core::InstanceSpecifier{kApogeeServocePathName}},
       main_proxy_{ara::core::InstanceSpecifier{kMainServicePathName}},
       gps_proxy_{ara::core::InstanceSpecifier{kGpsServicePathName}},
+      radio_proxy_{ara::core::InstanceSpecifier{kRadioServicePathName}},
+      radio_handler_{nullptr},
       gps_handler_{nullptr},
       env_service_handler_{nullptr},
       stat_service_handler_{nullptr},
@@ -138,6 +141,20 @@ void LoggerService::SaveLoop(const std::stop_token& token) {
 }
 
 void LoggerService::SomeIpInit() {
+  radio_proxy_.StartFindService([this](auto handler) {
+    radio_handler_ = handler;
+    radio_handler_->RadioStatusEvent.Subscribe(1, [this](std::uint8_t /*status*/) {
+      radio_handler_->RadioStatusEvent.SetReceiveHandler([this]() {
+        const auto res_opt = radio_handler_->RadioStatusEvent.GetNewSamples();
+        if (!res_opt.HasValue()) {
+          return;
+        }
+        const auto res = res_opt.Value();
+        data_.SetRadioStatus(res.rxerrors, res.fixed, res.rssi, res.remrssi,
+                             res.txbuf, res.noise, res.remnoise);
+      });
+    });
+  });
   gps_proxy_.StartFindService([this](auto handler) {
     gps_handler_ = handler;
     gps_handler_->GPSStatusEvent.Subscribe(1, [this](std::uint8_t status) {

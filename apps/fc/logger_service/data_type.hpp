@@ -50,11 +50,19 @@ class Data_t {
   std::atomic<float> lon_{0.0f};
   std::atomic<float> alt_{0.0f};
 
-  // RADIO APP
+  std::atomic<std::uint16_t> radio_rxerrors_{0};
+  std::atomic<std::uint16_t> radio_fixed_{0};
+  std::atomic<std::uint8_t> radio_rssi_{0};
+  std::atomic<std::uint8_t> radio_remrssi_{0};
+  std::atomic<std::uint8_t> radio_txbuf_{0};
+  std::atomic<std::uint8_t> radio_noise_{0};
+  std::atomic<std::uint8_t> radio_remnoise_{0};
 
   std::atomic<uint8_t> FC_mode{0};
 
  public:
+  void SetRadioStatus(uint16_t rxerrors, uint16_t fixed, uint8_t rssi,
+                  uint8_t remrssi, uint8_t txbuf, uint8_t noise, uint8_t remnoise);
   void SetIMU(float ax, float ay, float az, float gx, float gy, float gz);
   void SetGpsData(const float lat, const float lot, const float alt);
   void SetFCMode(const uint8_t mode);
