@@ -22,7 +22,7 @@ namespace srp {
 namespace apps {
 namespace {
   static constexpr auto kHB_send_time_ms =        990;
-  static constexpr auto kMax_altitude_send_time_ms = 1000;
+  static constexpr auto kMax_altitude_send_time_ms = 100;
   static constexpr auto kEngine_sensor_send_time_ms = 1000;
   static constexpr auto kGps_send_time_ms = 1000;
   static constexpr auto kComputer_telemetry_send_time_ms = 1000;
@@ -245,6 +245,10 @@ int RadioApp::Initialize(const std::map<ara::core::StringView,
   timer_ctr_.AddOnTimerCallback([this](){
     // Computers telemetry
     radio_controller.Push(telemetry_provider.GetComputersTelemetryMsg());
+  }, kComputer_telemetry_send_time_ms);
+
+  timer_ctr_.AddOnTimerCallback([this]() {
+    radio_controller.Push(telemetry_provider.GetDefaultHeartbeat());
   }, kComputer_telemetry_send_time_ms);
 
   return core::ErrorCode::kOk;
