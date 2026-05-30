@@ -56,6 +56,12 @@ class SomeIPController {
   EngineServiceProxy engine_service_proxy;
   std::shared_ptr<RecoveryServiceHandler> recovery_service_handler;
   RecoveryServiceProxy recovery_service_proxy;
+
+  SysStatServiceProxy eb_sys_stat_proxy_;
+  std::shared_ptr<SysStatServiceHandler> eb_sys_stat_handler_;
+  FcSysStatServiceProxy fc_sys_stat_proxy_;
+  std::shared_ptr<FcSysStatServiceHandler> fc_sys_stat_handler_;
+
   void SomeIpInit();
 
  public:

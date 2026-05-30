@@ -39,13 +39,24 @@ namespace {
     }
 
     uint8_t PrimerStateToMavlinState(const srp::primer::PrimerState_t state) {
+        using PrimerState_t = srp::primer::PrimerState_t;
         switch (state) {
-            using PrimerState_t = srp::primer::PrimerState_t;
-            case PrimerState_t::kUNKNOWN:       return SIMBA_PRIMER_STATE_UNKNOWN;
-            case PrimerState_t::kCONNECTED:     return SIMBA_PRIMER_STATE_CONNECTED;
-            case PrimerState_t::kNOT_CONNECTED: return SIMBA_PRIMER_STATE_NOT_CONNECTED;
-            case PrimerState_t::kSHORT_CIRCUIT: return SIMBA_PRIMER_STATE_SHORT_CIRCUIT;
-            default:                            return SIMBA_PRIMER_STATE_UNKNOWN;
+            case PrimerState_t::kUNKNOWN:
+                return SIMBA_PRIMER_STATE_UNKNOWN;
+                break;
+            case PrimerState_t::kCONNECTED:
+                return SIMBA_PRIMER_STATE_CONNECTED;
+                break;
+            case PrimerState_t::kNOT_CONNECTED:
+                return SIMBA_PRIMER_STATE_NOT_CONNECTED;
+                break;
+            case PrimerState_t::kSHORT_CIRCUIT:
+                return SIMBA_PRIMER_STATE_SHORT_CIRCUIT;
+                break;
+            case PrimerState_t::kFIRED:
+                return SIMBA_PRIMER_STATE_FIRED; 
+            default:
+                return SIMBA_PRIMER_STATE_UNKNOWN;
         }
     }
 }  // namespace

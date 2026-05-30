@@ -20,7 +20,7 @@
                 "logger": {
                     "app_id": "FLOG",
                     "app_des": "Log data to FILE",
-                    "log_level": "kDebug",
+                    "log_level": "kInfo",
                     "log_mode": "kRemote",
                     "ctx": [
                         {

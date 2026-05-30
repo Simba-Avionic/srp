@@ -18,12 +18,12 @@
                 "logger": {
                     "app_id": "SERV",
                     "app_des": "Serwis od servo",
-                    "log_level": "kDebug",
+                    "log_level": "kInfo",
                     "log_mode": "kRemote",
                     "ctx": [
                         {
                             "ctx_id": "ara",
-                            "log_level": "kWarn",
+                            "log_level": "kInfo",
                             "ctx_des": "Default ctx for ara"
                         },
                         {

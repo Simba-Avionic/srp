@@ -13,7 +13,6 @@
 #include <memory>
 #include <utility>
 #include "apps/fc/radio_service/event_data.h"
-#include "apps/fc/radio_service/someip_controller.hpp"
 #include "apps/fc/recovery_service/parachute_controller.hpp"
 #include "apps/ec/primer_service/controller/primer_controller.hpp"
 
@@ -57,6 +56,10 @@ class SomeIPController {
   EngineServiceProxy engine_service_proxy;
   std::shared_ptr<RecoveryServiceHandler> recovery_service_handler;
   RecoveryServiceProxy recovery_service_proxy;
+  SysStatServiceProxy eb_sys_stat_proxy_;
+  std::shared_ptr<SysStatServiceHandler> eb_sys_stat_handler_;
+  FcSysStatServiceProxy fc_sys_stat_proxy_;
+  std::shared_ptr<FcSysStatServiceHandler> fc_sys_stat_handler_;
   void SomeIpInit();
 
  public:

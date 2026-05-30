@@ -33,6 +33,8 @@ namespace {
     static constexpr auto kCamPowerPinID = 10;
     static constexpr auto kCamButtonPinID = 9;
     static constexpr auto kCam_button_enter_delay_ms = 500;
+    static constexpr auto kApogeePinID = 7;
+    static constexpr auto kApogeeDetected = 0;
 }  // namespace
 using RocketState_t = core::rocketState::RocketState_t;
 
@@ -72,6 +74,22 @@ int MainService::Initialize(const std::map<ara::core::StringView, ara::core::Str
     engine_proxy_.StartFindService([this](auto handler) {
         this->engine_handler = handler;
     });
+    gpio_.SetCallback([this](uint8_t pin_id, uint8_t status) {
+        if (state_ctr->GetState() != RocketState_t::FLIGHT) {
+            return;
+        }
+        if (pin_id != kApogeePinID) {
+            return;
+        }
+        if (status != kApogeeDetected) {
+            return;
+        }
+        if (engine_handler != nullptr) {
+            engine_handler->SetMode(static_cast<uint8_t>(RocketState_t::APOGEE));
+        }
+        state_ctr->SetState(RocketState_t::APOGEE);
+    });
+    gpio_.ManagePinSubscription(kApogeePinID, true);
     service_ipc->StartOffer();
     service_udp->StartOffer();
     return 0;

@@ -27,6 +27,18 @@ namespace {
   static constexpr auto kMain_service_path_name =     "srp/apps/RadioApp/MainService";
   static constexpr auto kEngine_service_path_name =   "srp/apps/RadioApp/EngineService";
   static constexpr auto kEnv_fc_service_path_name =   "srp/apps/RadioApp/EnvAppFc";
+  static constexpr auto kSysStat_service_path_name =  "srp/apps/RadioApp/SysStatService";
+  static constexpr auto kFcSysStat_service_path_name = "srp/apps/RadioApp/FcSysStatService";
+
+  uint8_t ToUsagePercent(const float usage) {
+    if (usage <= 0.f) {
+      return 0;
+    }
+    if (usage >= 100.f) {
+      return 100;
+    }
+    return static_cast<uint8_t>(usage + 0.5f);
+  }
 }  // namespace
 
 SomeIPController::SomeIPController():
@@ -47,7 +59,11 @@ SomeIPController::SomeIPController():
     engine_service_handler{nullptr},
     engine_service_proxy{ara::core::InstanceSpecifier{kEngine_service_path_name}},
     recovery_service_handler{nullptr},
-    recovery_service_proxy{ara::core::InstanceSpecifier{kRecovery_service_path_name}} {
+    recovery_service_proxy{ara::core::InstanceSpecifier{kRecovery_service_path_name}},
+    eb_sys_stat_proxy_{ara::core::InstanceSpecifier{kSysStat_service_path_name}},
+    eb_sys_stat_handler_{nullptr},
+    fc_sys_stat_proxy_{ara::core::InstanceSpecifier{kFcSysStat_service_path_name}},
+    fc_sys_stat_handler_{nullptr} {
     SomeIpInit();
 }
 std::shared_ptr<MainServiceHandler> SomeIPController::GetMainServiceHandler() {
@@ -338,20 +354,60 @@ void SomeIPController::SomeIpInit() {
         });
       });
     }));
+    this->eb_sys_stat_proxy_.StartFindService([this](auto handler) {
+      someip_logger.LogDebug() << "SysStat (EB) service handler discovered";
+      this->eb_sys_stat_handler_ = handler;
+      eb_sys_stat_handler_->NewSystemUsage.Subscribe(1, [this](const uint8_t status) {
+        someip_logger.LogDebug() << "Subscribed to SysStat NewSystemUsage, status="
+                                 << status;
+        eb_sys_stat_handler_->NewSystemUsage.SetReceiveHandler([this]() {
+          const auto res = eb_sys_stat_handler_->NewSystemUsage.GetNewSamples();
+          if (!res.HasValue()) {
+            return;
+          }
+          const auto stats = res.Value();
+          someip_logger.LogDebug() << "SysStat NewSystemUsage sample: cpu="
+                                   << stats.cpu_usage << ", mem=" << stats.mem_usage;
+          event_data->SetComputerCpuUsage(BoardType_e::EB, ToUsagePercent(stats.cpu_usage));
+          event_data->SetComputerMemUsage(BoardType_e::EB, ToUsagePercent(stats.mem_usage));
+        });
+      });
+    });
+    this->fc_sys_stat_proxy_.StartFindService([this](auto handler) {
+      someip_logger.LogDebug() << "FcSysStat (MB) service handler discovered";
+      this->fc_sys_stat_handler_ = handler;
+      fc_sys_stat_handler_->NewSystemUsage.Subscribe(1, [this](const uint8_t status) {
+        someip_logger.LogDebug() << "Subscribed to FcSysStat NewSystemUsage, status="
+                                 << status;
+        fc_sys_stat_handler_->NewSystemUsage.SetReceiveHandler([this]() {
+          const auto res = fc_sys_stat_handler_->NewSystemUsage.GetNewSamples();
+          if (!res.HasValue()) {
+            return;
+          }
+          const auto stats = res.Value();
+          someip_logger.LogDebug() << "FcSysStat NewSystemUsage sample: cpu="
+                                   << stats.cpu_usage << ", mem=" << stats.mem_usage;
+          event_data->SetComputerCpuUsage(BoardType_e::MB, ToUsagePercent(stats.cpu_usage));
+          event_data->SetComputerMemUsage(BoardType_e::MB, ToUsagePercent(stats.mem_usage));
+        });
+      });
+    });
     this->primer_service_proxy.StartFindService([this](auto handler) {
       someip_logger.LogDebug() << "Primer service handler discovered";
       this->primer_service_handler = handler;
-      primer_service_handler->primeStatusEvent.SetReceiveHandler([this] () {
-        const auto res = primer_service_handler->primeStatusEvent.GetNewSamples();
-        if (!res.HasValue()) {
-          return;
-        }
-        someip_logger.LogDebug() << "Primer state sample: "
-                                 << res.Value();
-        this->event_data->SetPrimerState(res.Value());
+      primer_service_handler->primeStatusEvent.Subscribe(1, [this](const uint8_t status) {
+        someip_logger.LogDebug() << "Subscribed to Primer primeStatusEvent, status="
+                                 << status;
+        primer_service_handler->primeStatusEvent.SetReceiveHandler([this]() {
+          const auto res = primer_service_handler->primeStatusEvent.GetNewSamples();
+          if (!res.HasValue()) {
+            return;
+          }
+          someip_logger.LogDebug() << "Primer state sample: " << res.Value();
+          this->event_data->SetPrimerState(res.Value());
+        });
       });
     });
-    // TODO(matikrajek42@gmail.com) Write MB Temp After GrKo write Env App for FC
 }
 
 SomeIPController::~SomeIPController() {
@@ -363,6 +419,8 @@ SomeIPController::~SomeIPController() {
   main_service_proxy.StopFindService();
   engine_service_proxy.StopFindService();
   env_fc_service_proxy.StopFindService();
+  eb_sys_stat_proxy_.StopFindService();
+  fc_sys_stat_proxy_.StopFindService();
 }
 
 }  // namespace radio

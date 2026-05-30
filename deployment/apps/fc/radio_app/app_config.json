@@ -29,7 +29,7 @@
                     "ctx": [
                         {
                             "ctx_id": "SOME",
-                            "log_level": "kDebug",
+                            "log_level": "kInfo",
                             "ctx_des": "Logs From someip"
                         },
                         {
