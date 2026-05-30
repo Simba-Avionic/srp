@@ -121,6 +121,9 @@ void StreamIpcSocket::Loop(std::stop_token stoken) {
     }
 }
 void StreamIpcSocket::StopRXThread() {
+  if (this->rx_thred == nullptr) {
+    return;
+  }
   this->rx_thred->request_stop();
   this->rx_thred->join();
 }

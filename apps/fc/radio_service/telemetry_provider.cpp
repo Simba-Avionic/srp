@@ -54,7 +54,7 @@ namespace {
                 return SIMBA_PRIMER_STATE_SHORT_CIRCUIT;
                 break;
             case PrimerState_t::kFIRED:
-                return SIMBA_PRIMER_STATE_FIRED; 
+                return SIMBA_PRIMER_STATE_FIRED;
             default:
                 return SIMBA_PRIMER_STATE_UNKNOWN;
         }

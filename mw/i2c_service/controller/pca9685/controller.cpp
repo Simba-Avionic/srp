@@ -82,6 +82,14 @@ core::ErrorCode PCA9685::setI2C(std::unique_ptr<II2CController> i2c) {
   return core::ErrorCode::kOk;
 }
 std::vector<uint8_t> PCA9685::GenerateData(const uint8_t &channel, const uint16_t &pos) const {
+    if (channel > 15) {
+        pac_logger_.LogWarn() << "PCA9685.GenerateData: channel out of range";
+        return {};
+    }
+    if (pos > 4095) {
+        pac_logger_.LogWarn() << "PCA9685.GenerateData: position out of range";
+        return {};
+    }
     return {
     LED_ON_L_LOOKUP[channel], 0,  // ON LOW REG Val
     LED_ON_H_LOOKUP[channel], 0,   // ON HIGH REG Val
@@ -98,6 +106,10 @@ core::ErrorCode PCA9685::SetChannelPosition(uint8_t channel, uint16_t pos) {
 
 
 uint16_t PCA9685::ComposePosition(const std::vector<uint8_t>& val) const {
+    if (val.size() != 4) {
+        pac_logger_.LogWarn() << "PCA9685.ComposePosition: invalid data size";
+        return 0;
+    }
     const uint8_t lsb =  val[2];
     const uint8_t msb = val[3];
     return static_cast<uint16_t>(lsb) | (static_cast<uint16_t>(msb) << 8);

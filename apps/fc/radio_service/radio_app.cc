@@ -35,6 +35,11 @@ namespace {
 
   static constexpr auto kService_ipc_instance =       "srp/apps/RadioApp/RadioService_ipc";
   static constexpr auto kService_udp_instance =       "srp/apps/RadioApp/RadioService_udp";
+
+  static constexpr auto kCamPowerPinID = 10;
+  static constexpr auto kCamButtonPinID = 9;
+  static constexpr auto kCam_button_enter_delay_ms = 500;
+  static constexpr auto kCamera_state_change_debounce_ms = 5000;
 }  // namespace
 
 
@@ -43,6 +48,8 @@ void RadioApp::OnActuatorCMD(const mavlink_message_t& msg) {
 }
 
 void RadioApp::HBHangleActuators(const uint8_t values) {
+  static auto last_camera_change = std::chrono::high_resolution_clock::now();
+  static uint8_t camera_state = 0;
   std::shared_ptr<ServoServiceHandler> servo_handler = someip_controller.GetServoServiceHandler();
   auto update_valve = [&](uint8_t gs_mask, uint8_t rocket_mask, const std::string& name, auto setter_func) {
     uint8_t requested = ((values & gs_mask) != 0);
@@ -73,6 +80,26 @@ void RadioApp::HBHangleActuators(const uint8_t values) {
       event_data->SetActuatorState(static_cast<SIMBA_ACTUATOR_FLAGS>(SIMBA_ACTUATOR_FLAGS_VENT_VALVE), requested);
       servo_handler->SetVentServoValue(requested);
     }
+  }
+  const uint8_t req_camera_state = ((values & SIMBA_GS_FLAGS_CAMERAS) != 0);
+  const auto now = std::chrono::high_resolution_clock::now();
+  const auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(
+                                                      now - last_camera_change);
+  if (req_camera_state == 1 && duration.count() > kCamera_state_change_debounce_ms) {
+    camera_state = !camera_state;
+    last_camera_change = std::chrono::high_resolution_clock::now();
+    std::jthread([this]() {
+    if (camera_state == 0) {
+      gpio_.SetPinValue(kCamButtonPinID, 0);
+      std::this_thread::sleep_for(std::chrono::milliseconds(5000));
+      gpio_.SetPinValue(kCamPowerPinID, 0);
+    } else {
+      gpio_.SetPinValue(kCamPowerPinID, 1);
+      std::this_thread::sleep_for(std::chrono::milliseconds(5000));
+      gpio_.SetPinValue(kCamButtonPinID, 1);
+    }
+    }).detach();
+    event_data->SetActuatorState(SIMBA_ACTUATOR_FLAGS_CAMERAS_ENABLED, camera_state);
   }
 
   // TODO(matikrajek42@gmail.com) Add missing Cameras handler
