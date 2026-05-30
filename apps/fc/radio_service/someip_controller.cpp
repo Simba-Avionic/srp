@@ -139,7 +139,7 @@ void SomeIPController::SomeIpInit() {
             return;
           }
           someip_logger.LogDebug() << "Env newBoardTempEvent1 sample: " << res.Value();
-          event_data->SetComputerTemp(BoardType_e::EB, 0,  res.Value());
+          event_data->SetComputerTemp(BoardType_e::EB, res.Value(), 0);
         });
       });
       env_service_handler->newBoardTempEvent2.Subscribe(1, [this](const uint8_t status) {
@@ -151,7 +151,7 @@ void SomeIPController::SomeIpInit() {
             return;
           }
           someip_logger.LogDebug() << "Env newBoardTempEvent2 sample: " << res.Value();
-          event_data->SetComputerTemp(BoardType_e::EB, 1,  res.Value());
+          event_data->SetComputerTemp(BoardType_e::EB, res.Value(), 1);
         });
       });
       env_service_handler->newBoardTempEvent3.Subscribe(1, [this](const uint8_t status) {
@@ -163,7 +163,7 @@ void SomeIPController::SomeIpInit() {
             return;
           }
           someip_logger.LogDebug() << "Env newBoardTempEvent3 sample: " << res.Value();
-          event_data->SetComputerTemp(BoardType_e::EB, 2,  res.Value());
+          event_data->SetComputerTemp(BoardType_e::EB, res.Value(), 2);
         });
       });
     });
@@ -287,7 +287,7 @@ void SomeIPController::SomeIpInit() {
           }
           someip_logger.LogDebug() << "newBoardTempEvent_1 sample: "
                                    << res.Value();
-          this->event_data->SetComputerTemp(BoardType_e::MB, 0, res.Value());
+          this->event_data->SetComputerTemp(BoardType_e::MB, res.Value(), 0);
         });
       });
       env_fc_service_handler->newBoardTempEvent_2.Subscribe(1, [this](const uint8_t status){
@@ -300,7 +300,7 @@ void SomeIPController::SomeIpInit() {
           }
           someip_logger.LogDebug() << "newBoardTempEvent_2 sample: "
                                    << res.Value();
-          this->event_data->SetComputerTemp(BoardType_e::MB, 1, res.Value());
+          this->event_data->SetComputerTemp(BoardType_e::MB, res.Value(), 1);
         });
       });
       env_fc_service_handler->newBoardTempEvent_3.Subscribe(1, [this](const uint8_t status){
@@ -313,7 +313,7 @@ void SomeIPController::SomeIpInit() {
           }
           someip_logger.LogDebug() << "newBoardTempEvent_3 sample: "
                                    << res.Value();
-          this->event_data->SetComputerTemp(BoardType_e::MB, 2, res.Value());
+          this->event_data->SetComputerTemp(BoardType_e::MB, res.Value(), 2);
         });
       });
     });
