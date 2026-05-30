@@ -59,6 +59,9 @@ std::optional<uint16_t> ADS7828::GetAdcRawRead(const uint8_t& channel) const {
     if (!res.has_value()) {
         return std::nullopt;
     }
+    if (res.value().size() != 2) {
+        return std::nullopt;
+    }
     uint16_t data = ((res.value()[0]) << 8);
     data |= res.value()[1];
     return data;

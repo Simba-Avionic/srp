@@ -74,6 +74,8 @@ std::tuple<uint8_t, std::optional<std::vector<uint8_t>>, std::optional<uint16_t>
 // tuple<channel, i2cWriteReadMockRes, expectedRawRead, expectedVoltage>
 INSTANTIATE_TEST_SUITE_P(GetAdcRawReadandVoltageTestParams, GetAdcRawReadandVoltageTest, ::testing::Values(
     std::make_tuple(0, std::optional<std::vector<uint8_t>>{}, std::optional<uint16_t>{}, std::optional<float>{}),
+    // Empty vector (i2c service closed mid-transaction, read() returned EOF): must not crash
+    std::make_tuple(0, std::optional<std::vector<uint8_t>>{std::vector<uint8_t>{}}, std::optional<uint16_t>{}, std::optional<float>{}),
     std::make_tuple(1, std::optional<std::vector<uint8_t>>{{0, 1}}, std::optional<uint16_t>{1},
       std::optional<float>{0.000805664051}),
     std::make_tuple(2, std::optional<std::vector<uint8_t>>{{1, 1}}, std::optional<uint16_t>{257},
