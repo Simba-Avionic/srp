@@ -21,8 +21,8 @@
 #include <cmath>
 #include <thread>  // NOLINT
 #include <atomic>
-#include <chrono>
-#include <mutex>
+#include <chrono>  // NOLINT
+#include <mutex>  // NOLINT
 
 #include "ara/log/log.h"
 
@@ -63,7 +63,7 @@ std::optional<float> SystemStats::get_ram_usage() {
 }
 
 struct CPUState {
-    unsigned long long user, nice, system, idle, iowait, irq, softirq, steal;
+    uint64_t user, nice, system, idle, iowait, irq, softirq, steal;
 };
 
 // Funkcja pomocnicza do czytania /proc/stat
@@ -74,7 +74,7 @@ std::optional<CPUState> read_cpu_state() {
     std::string cpu;
     CPUState state;
     // Interesuje nas pierwsza linijka podsumowująca cały procesor
-    if (file >> cpu >> state.user >> state.nice >> state.system >> state.idle 
+    if (file >> cpu >> state.user >> state.nice >> state.system >> state.idle
              >> state.iowait >> state.irq >> state.softirq >> state.steal) {
         return state;
     }

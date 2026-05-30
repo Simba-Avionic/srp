@@ -30,7 +30,7 @@ class SystemStatService final : public ara::exec::AdaptiveApplication {
   apps::SysStatServiceSkeleton service_udp;
 
   core::stat::SystemStats stats_;
-  
+
   std::optional<apps::SysStatType> GetSysStats() const;
 
  protected:
@@ -47,6 +47,7 @@ class SystemStatService final : public ara::exec::AdaptiveApplication {
    */
   int Initialize(const std::map<ara::core::StringView, ara::core::StringView>
                       parms) override;
+
  public:
   ~SystemStatService() = default;
   SystemStatService();

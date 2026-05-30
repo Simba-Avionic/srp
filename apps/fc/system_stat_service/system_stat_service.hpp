@@ -47,6 +47,7 @@ class FcSystemStatService final : public ara::exec::AdaptiveApplication {
    */
   int Initialize(const std::map<ara::core::StringView, ara::core::StringView>
                       parms) override;
+
  public:
   ~FcSystemStatService() = default;
   FcSystemStatService();
