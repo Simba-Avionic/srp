@@ -37,7 +37,7 @@ class EnvService final : public ara::exec::AdaptiveApplication {
   // [sensor_id] = {name, physical_id}
   std::unordered_map<std::uint8_t, std::pair<std::string, std::string>> sensorIdsToPaths{};
 
-
+  std::mutex service_mtx_;
   apps::MyEnvAppSkeleton service_ipc;
   apps::MyEnvAppSkeleton service_udp;
   core::ErrorCode LoadTempConfig(

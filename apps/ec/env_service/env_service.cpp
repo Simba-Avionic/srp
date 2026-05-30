@@ -62,7 +62,11 @@ int EnvService::Initialize(const std::map<ara::core::StringView, ara::core::Stri
 
     auto adc = std::make_unique<i2c::ADS7828>();
     auto i2c = std::make_unique<i2c::I2CController>();
-    i2c->Init(std::make_unique<com::soc::StreamIpcSocket>());
+    const auto i2c_error_code = i2c->Init(std::make_unique<com::soc::StreamIpcSocket>());
+    if (i2c_error_code != core::ErrorCode::kOk) {
+        ara::log::LogError() << "Failed to initialize I2C";
+        return core::ErrorCode::kInitializeError;
+    }
     auto adc_init_res = adc->Init(std::move(i2c));
     if (adc_init_res != core::ErrorCode::kOk) {
         ara::log::LogError() << "Failed to initialize ADC";
@@ -122,9 +126,11 @@ int EnvService::Initialize(const std::map<ara::core::StringView, ara::core::Stri
     }
 
 
-    auto register_sensor = [&](const std::string& raw_id, const std::string& label) -> core::ErrorCode {
-        std::string physical_id = "28-" + raw_id;
-        auto sensor_id = this->temp_->Register(physical_id);
+    auto register_sensor = [&](const char* raw_id, std::size_t raw_id_max_len,
+                               const std::string& label) -> core::ErrorCode {
+        const std::string raw_id_str(raw_id, strnlen(raw_id, raw_id_max_len));
+        const std::string physical_id = "28-" + raw_id_str;
+        const auto sensor_id = this->temp_->Register(physical_id);
 
         if (!sensor_id.has_value()) {
             ara::log::LogError() << "Sensor_id is empty for " << label;
@@ -134,19 +140,34 @@ int EnvService::Initialize(const std::map<ara::core::StringView, ara::core::Stri
         sensorIdsToPaths[sensor_id.value()] = std::make_pair(label, physical_id);
         return core::ErrorCode::kOk;
     };
-    if (register_sensor(eeprom_cfg.value().board_temp1_id, "board_1") !=
-                                            core::ErrorCode::kOk) return core::ErrorCode::kInitializeError;
-    if (register_sensor(eeprom_cfg.value().board_temp2_id, "board_2") !=
-                                            core::ErrorCode::kOk) return core::ErrorCode::kInitializeError;
-    if (register_sensor(eeprom_cfg.value().board_temp3_id, "board_3") !=
-                                            core::ErrorCode::kOk) return core::ErrorCode::kInitializeError;
+    if (register_sensor(eeprom_cfg.value().board_temp1_id,
+                        sizeof(eeprom_cfg.value().board_temp1_id), "board_1") !=
+        core::ErrorCode::kOk) {
+        return core::ErrorCode::kInitializeError;
+    }
+    if (register_sensor(eeprom_cfg.value().board_temp2_id,
+                        sizeof(eeprom_cfg.value().board_temp2_id), "board_2") !=
+        core::ErrorCode::kOk) {
+        return core::ErrorCode::kInitializeError;
+    }
+    if (register_sensor(eeprom_cfg.value().board_temp3_id,
+                        sizeof(eeprom_cfg.value().board_temp3_id), "board_3") !=
+        core::ErrorCode::kOk) {
+        return core::ErrorCode::kInitializeError;
+    }
 
     return core::ErrorCode::kOk;
 }
 
 core::ErrorCode EnvService::LoadTempConfig(const std::map<ara::core::StringView, ara::core::StringView>& parms) {
     ara::log::LogInfo() << "Starting function LoadTempConfig";
-    const std::string path = parms.at("app_path") + "etc/config.json";
+    const auto app_path_it = parms.find("app_path");
+    if (app_path_it == parms.end()) {
+        ara::log::LogError() << "app_path parameter not found in parms";
+        return core::ErrorCode::kInitializeError;
+    }
+    const std::string path =
+        std::string(app_path_it->second.data(), app_path_it->second.size()) + "etc/config.json";
     auto parser_opt = core::json::JsonParser::Parser(path);
     ara::log::LogInfo() << path;
     if (!parser_opt.has_value()) {
@@ -204,10 +225,16 @@ void EnvService::GenericPressureLoop(
             ss << std::fixed << std::setprecision(2) << val;
             ara::log::LogInfo() << "Receive new " << label << ": " << ss.str() << " Bar";
 
-            uint16_t encodedVal = static_cast<uint16_t>(val * kPressure_sensor_multiplicator);
-            eventIpc.Update(encodedVal);
-            service_udp.SetTankPressure(encodedVal);
-            eventUdp.Update(encodedVal);
+            const uint16_t encoded_val =
+                static_cast<uint16_t>(val * kPressure_sensor_multiplicator);
+            if (sensorId == PRESS_SENSOR_ID) {
+                service_udp.SetTankPressure(encoded_val);
+            }
+            {
+                std::lock_guard lock(service_mtx_);
+                eventIpc.Update(encoded_val);
+                eventUdp.Update(encoded_val);
+            }
         } else {
             ara::log::LogWarn() << "Don't receive new " << label;
         }
@@ -301,8 +328,6 @@ void EnvService::TempRxCallback(const std::vector<srp::mw::temp::TempReadHdr>& d
         }
     }
 }
-
-
 
 
 }  // namespace envService

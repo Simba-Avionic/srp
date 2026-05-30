@@ -112,7 +112,7 @@ int LoggerService::Initialize(const std::map<ara::core::StringView, ara::core::S
   gpio_.SetCallback([this](uint8_t pin_id, uint8_t state) {
     data.SetGpioState(pin_id, state);
   });
-  for (const auto& id: gpios_sub) {
+  for (const auto& id : gpios_sub) {
     if (gpio_.ManagePinSubscription(id, true) != core::ErrorCode::kOk) {
       ara::log::LogError() << "Failed to subscribe pin id: " << static_cast<int>(id);
     }
