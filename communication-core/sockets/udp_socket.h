@@ -8,8 +8,8 @@
  * @copyright Copyright (c) 2023
  *
  */
-#ifndef APPS_COMMON_SOMEIP_DEMON_CODE_COMMON_UDP_SOCKET_H_
-#define APPS_COMMON_SOMEIP_DEMON_CODE_COMMON_UDP_SOCKET_H_
+#ifndef COMMUNICATION_CORE_SOCKETS_UDP_SOCKET_H_
+#define COMMUNICATION_CORE_SOCKETS_UDP_SOCKET_H_
 #include <arpa/inet.h>
 #include <errno.h>
 #include <netdb.h>
@@ -109,4 +109,4 @@ class UdpSocket {
 }  // namespace com
 }  // namespace srp
 
-#endif  // APPS_COMMON_SOMEIP_DEMON_CODE_COMMON_UDP_SOCKET_H_
+#endif  // COMMUNICATION_CORE_SOCKETS_UDP_SOCKET_H_
