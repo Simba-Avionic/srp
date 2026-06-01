@@ -15,7 +15,8 @@
 #include <optional>
 #include <vector>
 #include <thread>  // NOLINT
-#include "communication-core/sockets/tcp_socket.h"
+#include "communication-core/sockets/udp_socket.h"
+#include "communication-core/sockets/udp_multicast_socket.h"
 #include "core/timestamp/timestamp_driver.hpp"
 #include "srp/mw/tinyNTP/ntpStruct.h"
 #include "mw/timestamp_mw/ntp/config/config_manager.hpp"
@@ -25,20 +26,26 @@ namespace tinyNTP {
 
 class NtpController {
  private:
-  com::soc::StreamTCPSocket sock_;
+  com::soc::UdpSocket udp_sock_;
+  com::soc::UdpMulticastSocket multicast_sock_;
+
   core::timestamp::TimestampMaster timestamp_;
   std::jthread ntp_thread;
   std::string myIP;
   uint8_t ntp_class_;
   uint32_t t_hb_ms_;
-
+  int64_t last_t0_;
   DiscoveryManager discovery_manager_;
+
+  void SendAnnounce();
+  uint8_t EncodeSettings(uint8_t device_class, bool is_holdover, uint8_t msg_type);
+  void SendSyncRequest(const std::string& current_master_ip);
  public:
   bool Init(const NtpConfig& config);
 
-  std::optional<std::string> readMyIP();
-  std::vector<uint8_t> socket_callback(const std::string& ip, const std::uint16_t& port,
-                                                       const std::vector<std::uint8_t> payload);
+  void socket_callback(const std::string& ip, const std::uint16_t& port,
+                                                       const std::vector<std::uint8_t>& payload);                                              
+                                                      
   void thread_loop(std::stop_token token);
   int64_t CalculateOffset(const int64_t T0, const int64_t T1, const int64_t T2, const int64_t T3);
   uint64_t CalculateRoundTripDelay(const int64_t T0, const int64_t T1, const int64_t T2, const int64_t T3);

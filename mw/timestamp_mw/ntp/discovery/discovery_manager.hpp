@@ -41,16 +41,20 @@ struct NodeInfo {
 
 class DiscoveryManager {
 private:
-    void RemoveExpiredNodes(int timeout_seconds = TIMEOUT_SECONDS);
-
+    NodeInfo local_node_;
     std::unordered_map<std::string, NodeInfo> neighbors_; // ip -> NodeInfo
+
+    void RemoveExpiredNodes(int timeout_seconds = TIMEOUT_SECONDS);
+    
     mutable std::mutex map_mutex_;
  public:
     DiscoveryManager() = default;
     ~DiscoveryManager() = default;
 
+    void Init(const std::string& ip, uint8_t ntp_class, bool holdover);
+
     void UpdateNode(const std::string& ip, uint8_t ntp_class, bool holdover);
-    std::optional<NodeInfo> GetBestMaster(const NodeInfo& local_node);
+    std::optional<NodeInfo> GetBestMaster();
 };
 
 }  // namespace tinyNTP

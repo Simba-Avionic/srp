@@ -14,6 +14,10 @@
 namespace srp {
 namespace tinyNTP {
 
+void DiscoveryManager::Init(const std::string& ip, uint8_t ntp_class, bool holdover) {
+    local_node_ = NodeInfo{ip, ntp_class, holdover};
+};
+
 /**
  * @brief Usuwa nieaktywne węzły z mapy urządzeń sieciowych
  * 
@@ -53,12 +57,12 @@ void DiscoveryManager::UpdateNode(const std::string& ip, uint8_t ntp_class, bool
  * @param local_node 
  * @return std::optional<NodeInfo> - W przypadku gdy lokalny node jest najlepszym w sieci zwrócony optional jest pusty
  */
-std::optional<NodeInfo> DiscoveryManager::GetBestMaster(const NodeInfo& local_node) {
+std::optional<NodeInfo> DiscoveryManager::GetBestMaster() {
     std::lock_guard<std::mutex> lock(map_mutex_);
 
     RemoveExpiredNodes();
 
-    NodeInfo best_neighbor = local_node;
+    NodeInfo best_neighbor = local_node_;
 
     for (const auto& [ip, node] : neighbors_) {
         if (node.ntp_class != best_neighbor.ntp_class) {
@@ -77,7 +81,7 @@ std::optional<NodeInfo> DiscoveryManager::GetBestMaster(const NodeInfo& local_no
 
     }
 
-    if (best_neighbor.ip == local_node.ip) return std::nullopt;
+    if (best_neighbor.ip == local_node_.ip) return std::nullopt;
     return best_neighbor;
 }
 

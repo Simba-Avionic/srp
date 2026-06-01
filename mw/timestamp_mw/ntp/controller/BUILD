@@ -2,7 +2,8 @@ load("@srp_platform//tools/model_generator/ara:data_structure_generator.bzl", "d
 cc_library(
     name = "ntp_controller",
     deps = [ 
-        "//communication-core/sockets:socket_tcp",
+        "//communication-core/sockets:socket_udp",
+        "//communication-core/sockets:socket_udp_multicast",
         "//core/json:simba_json",
         "//core/timestamp:timestamp_controller",
         "//mw/timestamp_mw/ntp/controller:ntp_com_data",
