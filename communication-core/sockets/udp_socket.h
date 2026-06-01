@@ -8,10 +8,11 @@
  * @copyright Copyright (c) 2023
  *
  */
-#ifndef COMMUNICATION_CORE_SOCKETS_UDP_SOCKET_H_
-#define COMMUNICATION_CORE_SOCKETS_UDP_SOCKET_H_
+#ifndef APPS_COMMON_SOMEIP_DEMON_CODE_COMMON_UDP_SOCKET_H_
+#define APPS_COMMON_SOMEIP_DEMON_CODE_COMMON_UDP_SOCKET_H_
 #include <arpa/inet.h>
 #include <errno.h>
+#include <netdb.h>
 #include <netinet/in.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -20,20 +21,50 @@
 #include <sys/types.h>
 #include <sys/un.h>
 
-#include <memory>
+#include <functional>
+#include <memory>  // NOLINT
+#include <mutex>   // NOLINT
 #include <string>
 #include <thread>  // NOLINT
 #include <vector>
 
-#include "communication-core/sockets/Isocket.h"
+#include "core/common/error_code.h"
+
 namespace srp {
 namespace com {
 namespace soc {
-class UdpSocket : public ISocket {
+class UdpSocket {
+ public:
+  using RXCallback =
+      std::function<void(const std::string& ip, const std::uint16_t& port,
+                         const std::vector<std::uint8_t>&)>;
+
  private:
-  int server_sock, len;
-  int bytes_rec = 0;
-  struct sockaddr_in server_sockaddr, peer_sock;
+  struct in_addr localInterface;
+  struct sockaddr_in groupSock;
+  struct sockaddr_in localSock;
+  struct ip_mreq group;
+  struct sockaddr_in srcaddr;
+  struct sockaddr_in cliaddr;
+  int sd;
+  std::string local_ip_;
+  std::string multicast_ip_;
+  std::uint16_t port_id_;
+  std::mutex sending_m_{};
+  int s;                        /* s = socket */
+  struct sockaddr_in in_addr;   /* Structure used for bind() */
+  struct sockaddr_in sock_addr; /* Output structure from getsockname */
+  struct sockaddr_in src_addr;  /* Used to receive (addr,port) of sender */
+  int src_addr_len;             /* Length of src_addr */
+  int len;                      /* Length of result from getsockname */
+  int mc_addr, port;
+  struct ip_mreq mreq;
+  struct hostent* host_entry_ptr;
+  char line[100];
+
+  //   int server_sock, len;
+  //   int bytes_rec = 0;
+  //   struct sockaddr_in server_sockaddr, peer_sock;
 
   std::unique_ptr<std::jthread> rx_thread;
   void Loop(std::stop_token stoken);
@@ -43,35 +74,39 @@ class UdpSocket : public ISocket {
   /**
    * @brief Socket init function
    *
-   * @param config Config file
+   * @pplatformm config Config file
    * @return core::ErrorCode initialiaze status
    */
-  srp::core::ErrorCode Init(const SocketConfig& config) override;
+  srp::core::ErrorCode Init(const std::string& local_ip,
+                              const std::uint16_t port_id);
   /**
    * @brief Setter for rx callback
    *
-   * @param callback
+   * @pplatformm callback
    */
-  void SetRXCallback(RXCallback callback) override;
+  void SetRXCallback(RXCallback callback);
   /**
    * @brief Function to send data by socket
    *
-   * @param ip target ip or path
-   * @param port target port or 0 for ipcs
-   * @param payload payload to send
+   * @pplatformm ip target ip or path
+   * @pplatformm port target port or 0 for ipcs
+   * @pplatformm payload payload to send
    * @return core::ErrorCode status
    */
-  srp::core::ErrorCode Transmit(const std::string& ip,
-                                  const std::uint16_t port,
-                                  std::vector<std::uint8_t> payload) override;
+  void Transmit(const std::string& ip, const uint16_t port,
+                const std::vector<std::uint8_t>& payload);
+
+  void Transmit(const uint32_t& ip, const uint16_t port,
+                const std::vector<std::uint8_t>& payload);
   /**
    * @brief This function start RX thread
    *
    */
-  void StartRXThread() override;
+  void StartRXThread();
+  UdpSocket() = default;
 };
 }  // namespace soc
 }  // namespace com
 }  // namespace srp
 
-#endif  // COMMUNICATION_CORE_SOCKETS_UDP_SOCKET_H_
+#endif  // APPS_COMMON_SOMEIP_DEMON_CODE_COMMON_UDP_SOCKET_H_
