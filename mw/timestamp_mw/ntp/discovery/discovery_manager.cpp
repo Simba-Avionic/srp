@@ -14,9 +14,9 @@
 namespace srp {
 namespace tinyNTP {
 
-void DiscoveryManager::Init(const std::string& ip, uint8_t ntp_class, bool holdover) {
+void DiscoveryManager::Init(const std::string& ip, const uint8_t ntp_class, const bool holdover) {
     local_node_ = NodeInfo{ip, ntp_class, holdover};
-};
+}
 
 /**
  * @brief Usuwa nieaktywne węzły z mapy urządzeń sieciowych
@@ -26,7 +26,7 @@ void DiscoveryManager::Init(const std::string& ip, uint8_t ntp_class, bool holdo
  * 
  * @param timeout_seconds Czas wygaśnięcia sąsiada
  */
-void DiscoveryManager::RemoveExpiredNodes(int timeout_seconds) {
+void DiscoveryManager::RemoveExpiredNodes(const int& timeout_seconds) {
     const auto now = std::chrono::steady_clock::now();
 
     for (auto it = neighbors_.begin(); it != neighbors_.end(); ) {
@@ -40,11 +40,11 @@ void DiscoveryManager::RemoveExpiredNodes(int timeout_seconds) {
     }
 }
 
-void DiscoveryManager::UpdateNode(const std::string& ip, uint8_t ntp_class, bool holdover) {
+void DiscoveryManager::UpdateNode(const std::string& ip, const uint8_t ntp_class, const bool holdover) {
     std::lock_guard<std::mutex> lock(map_mutex_);
 
     NodeInfo& node = neighbors_[ip];
-    
+
     node.ip = ip;
     node.ntp_class = ntp_class;
     node.holdover = holdover;
@@ -69,21 +69,18 @@ std::optional<NodeInfo> DiscoveryManager::GetBestMaster() {
             if (node.ntp_class < best_neighbor.ntp_class) {
                 best_neighbor = node;
             }
-        } 
-        else if (node.holdover != best_neighbor.holdover) {
+        } else if (node.holdover != best_neighbor.holdover) {
             if (!node.holdover) {
                 best_neighbor = node;
             }
-        }
-        else if (node.ip < best_neighbor.ip) {
+        } else if (node.ip < best_neighbor.ip) {
             best_neighbor = node;
-        } 
-
+        }
     }
 
     if (best_neighbor.ip == local_node_.ip) return std::nullopt;
     return best_neighbor;
 }
 
-} // namespace tinyNTP
-} // namespace srp
+}  // namespace tinyNTP
+}  // namespace srp

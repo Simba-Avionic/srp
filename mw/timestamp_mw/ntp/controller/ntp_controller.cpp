@@ -10,9 +10,9 @@
  */
 
 #include "mw/timestamp_mw/ntp/controller/ntp_controller.hpp"
-#include "mw/timestamp_mw/ntp/config/config_manager.hpp"
 #include <utility>
 #include <vector>
+#include "mw/timestamp_mw/ntp/config/config_manager.hpp"
 #include "core/common/condition.h"
 #include "core/json/json_parser.h"
 #include "ara/log/log.h"
@@ -64,41 +64,41 @@ bool NtpController::Init(const NtpConfig& config) {
     return true;
 }
 
-int64_t NtpController::CalculateOffset(const int64_t T0, const int64_t T1,
-    const int64_t T2, const int64_t T3) {
+int64_t NtpController::CalculateOffset(const int64_t& T0, const int64_t& T1,
+    const int64_t& T2, const int64_t& T3) {
 return ((T1 - T0) + (T2 - T3)) / 2;
 }
 
-uint64_t NtpController::CalculateRoundTripDelay(const int64_t T0, const int64_t T1,
-            const int64_t T2, const int64_t T3) {
+uint64_t NtpController::CalculateRoundTripDelay(const int64_t& T0, const int64_t& T1,
+            const int64_t& T2, const int64_t& T3) {
 return static_cast<uint64_t>((T3 - T0) - (T2 - T1));
 }
 
 uint8_t NtpController::EncodeSettings(uint8_t device_class, bool is_holdover, uint8_t msg_type) {
     uint8_t settings = 0;
-    
+
     // Bity 0-2: Klasa urządzenia
-    settings |= (device_class & 0x07); 
-    
+    settings |= (device_class & 0x07);
+
     // Bit 3: Holdover
     if (is_holdover) {
         settings |= (1 << 3);
     }
-    
+
     // Bity 4-5: Version
     // Bit 6: msg_type (0 dla Unicast, 1 dla Announce)
     if (msg_type == 1) {
         settings |= (1 << 6);
     }
-    
+
     // Bit 7: Reserved
-    
+
     return settings;
 }
 
 void NtpController::SendAnnounce() {
     srp::mw::tinyNTP::ntpStruct frame;
-    
+
     /**
      * @todo: Implement holdover
      */
@@ -119,18 +119,17 @@ void NtpController::SendSyncRequest(const std::string& current_master_ip) {
     header.settings = EncodeSettings(ntp_class_, false, 0);
     header.t0 = GetTimestamp();
     header.t1 = 0; header.t2 = 0; header.t3 = 0;
-    
+
     last_t0_ = header.t0;
 
     auto buf = srp::data::Convert2Vector<srp::mw::tinyNTP::ntpStruct>::Conv(header);
-    
-    this->udp_sock_.Transmit(current_master_ip, kRX_Tx_udp_port, buf); 
+
+    this->udp_sock_.Transmit(current_master_ip, kRX_Tx_udp_port, buf);
 }
 
-void NtpController::socket_callback(const std::string& ip, 
-                                    const uint16_t& port, 
+void NtpController::socket_callback(const std::string& ip,
+                                    const uint16_t& port,
                                     const std::vector<uint8_t>& payload) {
-
     int64_t now_ms = GetTimestamp();
 
     if (payload.size() != kHeader_size) {
@@ -141,9 +140,9 @@ void NtpController::socket_callback(const std::string& ip,
     // Zabezpieczenie przed odebraniem swojego announce
     if (ip == myIP) {
         ara::log::LogDebug() << "Rejecting own packet.";
-        return; 
+        return;
     }
-    
+
     auto val = srp::data::Convert<srp::mw::tinyNTP::ntpStruct>::Conv(payload);
     if (!val.has_value()) return;
     srp::mw::tinyNTP::ntpStruct header = val.value();
@@ -152,32 +151,30 @@ void NtpController::socket_callback(const std::string& ip,
     uint8_t sender_class = header.settings & 0x07;
     bool holdover = (header.settings >> 3) & 0x01;
 
-    if (msg_type == 1) { // Announce
+    if (msg_type == 1) {  // Announce
         ara::log::LogDebug() << "Updating node with ip: " << ip;
         discovery_manager_.UpdateNode(ip, sender_class, holdover);
-    } 
-    else if (msg_type == 0) { // Sync
+    } else if (msg_type == 0) {  // Sync
         auto master_opt = discovery_manager_.GetBestMaster();
         bool is_server = (!master_opt.has_value() || master_opt.value().ip == myIP);
 
         if (is_server) {
-            header.t1 = now_ms; 
+            header.t1 = now_ms;
             header.t2 = GetTimestamp();
-            
+
             auto buf = srp::data::Convert2Vector<srp::mw::tinyNTP::ntpStruct>::Conv(header);
-            
+
             udp_sock_.Transmit(ip, kRX_Tx_udp_port, buf);
-            
+
             ara::log::LogDebug() << "Sent sync response to " << ip;
-        } 
-        else {
+        } else {
             int64_t t3 = now_ms;
-            
+
             auto offset = CalculateOffset(header.t0, header.t1, header.t2, t3);
             auto round_trip_time = CalculateRoundTripDelay(header.t0, header.t1, header.t2, t3);
-            
+
             this->timestamp_.CorrectStartPoint(offset);
-            
+
             ara::log::LogDebug() << "Round trip time [ms]: " << round_trip_time
                                  << " ,offset value [ms]: " << offset;
         }
@@ -196,11 +193,10 @@ void NtpController::thread_loop(std::stop_token token) {
         auto master_opt = discovery_manager_.GetBestMaster();
 
         if (!master_opt.has_value() || master_opt.value().ip == myIP) {
-            ara::log::LogError() << "Working as a server. Broadcasting Announce.";
+            ara::log::LogDebug() << "Working as a server. Broadcasting Announce.";
             SendAnnounce();
-        } 
-        else {
-            ara::log::LogError() << "Sending Sync to Master: " << master_opt.value().ip;
+        } else {
+            ara::log::LogDebug() << "Sending Sync to Master: " << master_opt.value().ip;
             SendSyncRequest(master_opt.value().ip);
         }
 

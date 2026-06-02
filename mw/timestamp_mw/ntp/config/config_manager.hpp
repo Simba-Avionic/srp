@@ -18,7 +18,7 @@
 namespace srp {
 namespace tinyNTP {
 
-constexpr const char* CONFIG_FILEPATH = "/srp/opt/cpu_srp/ntp_config.json";
+constexpr auto kConfig_file_path = "/srp/opt/cpu_srp/ntp_config.json";
 
 struct NtpConfig {
     std::string ip;
@@ -34,7 +34,7 @@ class ConfigManager {
      * @param filepath Ścieżka do pliku konfiguracyjnego
      * @return NtpConfig Struktura z wczytanymi parametrami
      */
-    static NtpConfig LoadConfig(const std::string& filepath = CONFIG_FILEPATH);
+    static NtpConfig LoadConfig(const std::string& filepath = kConfig_file_path);
 };
 
 }  // namespace tinyNTP

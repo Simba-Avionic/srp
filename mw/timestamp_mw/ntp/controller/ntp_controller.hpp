@@ -40,15 +40,16 @@ class NtpController {
   void SendAnnounce();
   uint8_t EncodeSettings(uint8_t device_class, bool is_holdover, uint8_t msg_type);
   void SendSyncRequest(const std::string& current_master_ip);
+
  public:
   bool Init(const NtpConfig& config);
 
   void socket_callback(const std::string& ip, const std::uint16_t& port,
-                                                       const std::vector<std::uint8_t>& payload);                                              
-                                                      
+                                                       const std::vector<std::uint8_t>& payload);
+
   void thread_loop(std::stop_token token);
-  int64_t CalculateOffset(const int64_t T0, const int64_t T1, const int64_t T2, const int64_t T3);
-  uint64_t CalculateRoundTripDelay(const int64_t T0, const int64_t T1, const int64_t T2, const int64_t T3);
+  int64_t CalculateOffset(const int64_t& T0, const int64_t& T1, const int64_t& T2, const int64_t& T3);
+  uint64_t CalculateRoundTripDelay(const int64_t& T0, const int64_t& T1, const int64_t& T2, const int64_t& T3);
   int64_t GetTimestamp();
 };
 

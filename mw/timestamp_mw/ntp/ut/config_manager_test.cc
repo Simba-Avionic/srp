@@ -1,10 +1,21 @@
+/**
+ * @file config_manager_test.cc
+ * @author Wiktor Müller (wiktor.muller8@gmail.com)
+ * @brief 
+ * @version 0.1
+ * @date 2026-05-04
+ * 
+ * @copyright Copyright (c) 2025
+ * 
+ */
+
 #include <gtest/gtest.h>
 #include <fstream>
 #include <string>
 
 #include "mw/timestamp_mw/ntp/config/config_manager.hpp"
 
-using namespace srp::tinyNTP;
+using srp::tinyNTP::ConfigManager;
 
 class ConfigManagerTest : public ::testing::Test {
  protected:
@@ -17,7 +28,7 @@ class ConfigManagerTest : public ::testing::Test {
     }
 
     void TearDown() override {
-        std::remove(temp_filepath.c_str()); // Usuwamy plik testowy
+        std::remove(temp_filepath.c_str());  // Usuwamy plik testowy
     }
 };
 
@@ -60,7 +71,7 @@ TEST_F(ConfigManagerTest, UsesFallbackOnInvalidJsonSyntax) {
 TEST_F(ConfigManagerTest, ForcesFallbackClassIfOutOfBounds) {
     CreateJsonFile(R"({
         "ip": "10.0.0.2",
-        "ntp_class": 15, 
+        "ntp_class": 15,
         "T_hb_ms": 200
     })");
 
@@ -74,7 +85,7 @@ TEST_F(ConfigManagerTest, ForcesFallbackClassIfOutOfBounds) {
 TEST_F(ConfigManagerTest, HandlesMissingFieldsGracefully) {
     CreateJsonFile(R"({
         "ip": "172.16.0.5"
-    })"); // Brak ntp_class i T_hb_ms
+    })");  // Brak ntp_class i T_hb_ms
 
     auto config = ConfigManager::LoadConfig(temp_filepath);
 

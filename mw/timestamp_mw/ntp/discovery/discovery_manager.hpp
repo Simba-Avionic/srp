@@ -14,8 +14,8 @@
 
 #include <string>
 #include <unordered_map>
-#include <chrono>
-#include <mutex>
+#include <chrono>  // NOLINT
+#include <mutex>  // NOLINT
 #include <cstdint>
 #include <optional>
 
@@ -40,20 +40,20 @@ struct NodeInfo {
 };
 
 class DiscoveryManager {
-private:
+ private:
     NodeInfo local_node_;
-    std::unordered_map<std::string, NodeInfo> neighbors_; // ip -> NodeInfo
+    std::unordered_map<std::string, NodeInfo> neighbors_;  // ip -> NodeInfo
 
-    void RemoveExpiredNodes(int timeout_seconds = TIMEOUT_SECONDS);
-    
+    void RemoveExpiredNodes(const int& timeout_seconds = TIMEOUT_SECONDS);
+
     mutable std::mutex map_mutex_;
  public:
     DiscoveryManager() = default;
     ~DiscoveryManager() = default;
 
-    void Init(const std::string& ip, uint8_t ntp_class, bool holdover);
+    void Init(const std::string& ip, const uint8_t ntp_class, const bool holdover);
 
-    void UpdateNode(const std::string& ip, uint8_t ntp_class, bool holdover);
+    void UpdateNode(const std::string& ip, const uint8_t ntp_class, const bool holdover);
     std::optional<NodeInfo> GetBestMaster();
 };
 
