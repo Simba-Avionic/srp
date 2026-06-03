@@ -38,16 +38,19 @@ class NtpController {
   DiscoveryManager discovery_manager_;
 
   void SendAnnounce();
-  uint8_t EncodeSettings(uint8_t device_class, bool is_holdover, uint8_t msg_type);
   void SendSyncRequest(const std::string& current_master_ip);
+  std::optional<srp::mw::tinyNTP::ntpStruct> ParseAndValidatePayload(const std::vector<uint8_t>& payload, const std::string& ip);
 
  public:
   bool Init(const NtpConfig& config);
 
-  void socket_callback(const std::string& ip, const std::uint16_t& port,
+  void udp_socket_callback(const std::string& ip, const std::uint16_t& port,
                                                        const std::vector<std::uint8_t>& payload);
+  void multicast_socket_callback(const std::string& ip, const std::uint16_t& port,
+                                                       const std::vector<std::uint8_t>& payload);                                                     
 
   void thread_loop(std::stop_token token);
+  uint8_t EncodeSettings(uint8_t device_class, bool is_holdover, uint8_t msg_type);
   int64_t CalculateOffset(const int64_t& T0, const int64_t& T1, const int64_t& T2, const int64_t& T3);
   uint64_t CalculateRoundTripDelay(const int64_t& T0, const int64_t& T1, const int64_t& T2, const int64_t& T3);
   int64_t GetTimestamp();

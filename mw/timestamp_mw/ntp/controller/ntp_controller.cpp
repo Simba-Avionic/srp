@@ -45,9 +45,9 @@ bool NtpController::Init(const NtpConfig& config) {
         ara::log::LogInfo() << "Multicast socket initialized!";
     }
 
-    this->udp_sock_.SetRXCallback(std::bind(&NtpController::socket_callback, this, std::placeholders::_1,
+    this->udp_sock_.SetRXCallback(std::bind(&NtpController::udp_socket_callback, this, std::placeholders::_1,
                             std::placeholders::_2, std::placeholders::_3));
-    this->multicast_sock_.SetRXCallback(std::bind(&NtpController::socket_callback, this, std::placeholders::_1,
+    this->multicast_sock_.SetRXCallback(std::bind(&NtpController::multicast_socket_callback, this, std::placeholders::_1,
                             std::placeholders::_2, std::placeholders::_3));
 
     udp_sock_.StartRXThread();
@@ -127,60 +127,97 @@ void NtpController::SendSyncRequest(const std::string& current_master_ip) {
     this->udp_sock_.Transmit(current_master_ip, kRX_Tx_udp_port, buf);
 }
 
-void NtpController::socket_callback(const std::string& ip,
+std::optional<srp::mw::tinyNTP::ntpStruct> NtpController::ParseAndValidatePayload(
+                        const std::vector<uint8_t>& payload, const std::string& ip) {
+    if (payload.size() != kHeader_size) {
+        ara::log::LogError() << "Invalid payload size! Rejecting the packet.";
+        return std::nullopt;
+    }
+
+    if (ip == myIP) {
+        ara::log::LogDebug() << "Rejecting own packet.";
+        return std::nullopt;
+    }
+
+    return srp::data::Convert<srp::mw::tinyNTP::ntpStruct>::Conv(payload);
+}
+
+void NtpController::udp_socket_callback(const std::string& ip,
                                     const uint16_t& port,
                                     const std::vector<uint8_t>& payload) {
     int64_t now_ms = GetTimestamp();
 
-    if (payload.size() != kHeader_size) {
-        ara::log::LogError() << "Invalid payload size! Rejecting the packet.";
-        return;
-    }
-
-    // Zabezpieczenie przed odebraniem swojego announce
-    if (ip == myIP) {
-        ara::log::LogDebug() << "Rejecting own packet.";
-        return;
-    }
-
-    auto val = srp::data::Convert<srp::mw::tinyNTP::ntpStruct>::Conv(payload);
+    auto val = ParseAndValidatePayload(payload, ip);
     if (!val.has_value()) return;
     srp::mw::tinyNTP::ntpStruct header = val.value();
 
     uint8_t msg_type = (header.settings >> 6) & 0x01;
-    uint8_t sender_class = header.settings & 0x07;
-    bool holdover = (header.settings >> 3) & 0x01;
 
-    if (msg_type == 1) {  // Announce
-        ara::log::LogDebug() << "Updating node with ip: " << ip;
-        discovery_manager_.UpdateNode(ip, sender_class, holdover);
-    } else if (msg_type == 0) {  // Sync
-        auto master_opt = discovery_manager_.GetBestMaster();
-        bool is_server = (!master_opt.has_value() || master_opt.value().ip == myIP);
+    if (msg_type != 0) {
+        ara::log::LogWarn() << "Received non-Sync message on unicast socket from: " << ip;
+        return;
+    }
 
-        if (is_server) {
-            header.t1 = now_ms;
-            header.t2 = GetTimestamp();
+    auto master_opt = discovery_manager_.GetBestMaster();
+    bool is_server = (!master_opt.has_value() || master_opt.value().ip == myIP);
 
-            auto buf = srp::data::Convert2Vector<srp::mw::tinyNTP::ntpStruct>::Conv(header);
-
-            udp_sock_.Transmit(ip, kRX_Tx_udp_port, buf);
-
-            ara::log::LogDebug() << "Sent sync response to " << ip;
-        } else {
-            int64_t t3 = now_ms;
-
-            auto offset = CalculateOffset(header.t0, header.t1, header.t2, t3);
-            auto round_trip_time = CalculateRoundTripDelay(header.t0, header.t1, header.t2, t3);
-
-            this->timestamp_.CorrectStartPoint(offset);
-
-            ara::log::LogDebug() << "Round trip time [ms]: " << round_trip_time
-                                 << " ,offset value [ms]: " << offset;
+    if (is_server) {
+        if (header.t1 != 0 || header.t2 != 0) {
+            ara::log::LogWarn() << "Received Sync response, but I am the server now. Dropping.";
+            return;
         }
+
+        header.t1 = now_ms;
+        header.t2 = GetTimestamp();
+
+        auto buf = srp::data::Convert2Vector<srp::mw::tinyNTP::ntpStruct>::Conv(header);
+
+        udp_sock_.Transmit(ip, kRX_Tx_udp_port, buf);
+
+        ara::log::LogDebug() << "Sent sync response to " << ip;
+    } else {
+        if (header.t1 == 0 || header.t2 == 0) {
+            ara::log::LogWarn() << "Received Sync request, but I am a client now. Dropping.";
+            return;
+        }
+
+        if (header.t0 != last_t0_) {
+            ara::log::LogWarn() << "Received Sync response for an old or unknown request. Dropping.";
+            return;
+        }
+
+        int64_t t3 = now_ms;
+
+        auto offset = CalculateOffset(header.t0, header.t1, header.t2, t3);
+        auto round_trip_time = CalculateRoundTripDelay(header.t0, header.t1, header.t2, t3);
+
+        this->timestamp_.CorrectStartPoint(offset);
+
+        ara::log::LogDebug() << "Round trip time [ms]: " << round_trip_time
+                                << " ,offset value [ms]: " << offset;
     }
 }
 
+void NtpController::multicast_socket_callback(const std::string& ip,
+                                    const uint16_t& port,
+                                    const std::vector<uint8_t>& payload) {
+    auto val = ParseAndValidatePayload(payload, ip);
+    if (!val.has_value()) return;
+    srp::mw::tinyNTP::ntpStruct header = val.value();
+
+    uint8_t msg_type = (header.settings >> 6) & 0x01;
+
+    if (msg_type != 1) {
+        ara::log::LogWarn() << "Received non-Announce message on multicast socket from: " << ip;
+        return;
+    }
+
+    uint8_t sender_class = header.settings & 0x07;
+    bool holdover = (header.settings >> 3) & 0x01;
+
+    ara::log::LogDebug() << "Updating node with ip: " << ip;
+    discovery_manager_.UpdateNode(ip, sender_class, holdover);
+}
 
 int64_t NtpController::GetTimestamp() {
     return this->timestamp_.GetNewTimeStamp();
