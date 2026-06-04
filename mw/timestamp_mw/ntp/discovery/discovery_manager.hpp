@@ -53,6 +53,7 @@ class DiscoveryManager {
     ~DiscoveryManager() = default;
 
     void Init(const std::string& ip, const uint8_t ntp_class, const bool holdover);
+    void SetLocalNodeHoldover(bool newHoldover);
 
     void UpdateNode(const std::string& ip, const uint8_t ntp_class, const bool holdover);
     std::optional<NodeInfo> GetBestMaster();

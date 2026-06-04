@@ -29,17 +29,23 @@ class NtpController {
   com::soc::UdpSocket udp_sock_;
   com::soc::UdpMulticastSocket multicast_sock_;
 
-  core::timestamp::TimestampMaster timestamp_;
-  std::jthread ntp_thread;
   std::string myIP;
   uint8_t ntp_class_;
+  bool is_holdover_ = true;
   uint32_t t_hb_ms_;
+
   int64_t last_t0_;
+  int64_t last_sync_;
+
   DiscoveryManager discovery_manager_;
+  core::timestamp::TimestampMaster timestamp_;
+
+  std::jthread ntp_thread;
 
   void SendAnnounce();
   void SendSyncRequest(const std::string& current_master_ip);
-  std::optional<srp::mw::tinyNTP::ntpStruct> ParseAndValidatePayload(const std::vector<uint8_t>& payload, const std::string& ip);
+  std::optional<srp::mw::tinyNTP::ntpStruct> ParseAndValidatePayload(
+                        const std::vector<uint8_t>& payload, const std::string& ip);
 
  public:
   bool Init(const NtpConfig& config);
@@ -47,7 +53,7 @@ class NtpController {
   void udp_socket_callback(const std::string& ip, const std::uint16_t& port,
                                                        const std::vector<std::uint8_t>& payload);
   void multicast_socket_callback(const std::string& ip, const std::uint16_t& port,
-                                                       const std::vector<std::uint8_t>& payload);                                                     
+                                              const std::vector<std::uint8_t>& payload);
 
   void thread_loop(std::stop_token token);
   uint8_t EncodeSettings(uint8_t device_class, bool is_holdover, uint8_t msg_type);

@@ -10,6 +10,7 @@
  */
 
 #include "mw/timestamp_mw/ntp/discovery/discovery_manager.hpp"
+#include <cstdio>
 #include "core/common/condition.h"
 #include "ara/log/log.h"
 
@@ -17,7 +18,15 @@ namespace srp {
 namespace tinyNTP {
 namespace {
     constexpr auto kTimeout_seconds = 15;
-}
+
+    uint32_t IpToUint32(const std::string& ip) {
+        uint32_t a, b, c, d;
+        if (sscanf(ip.c_str(), "%u.%u.%u.%u", &a, &b, &c, &d) == 4) {
+            return (a << 24) | (b << 16) | (c << 8) | d;
+        }
+        return 0xFFFFFFFF;
+    }
+}  // namespace
 
 void DiscoveryManager::Init(const std::string& ip, const uint8_t ntp_class, const bool holdover) {
     local_node_ = NodeInfo{ip, ntp_class, holdover};
@@ -26,6 +35,13 @@ void DiscoveryManager::Init(const std::string& ip, const uint8_t ntp_class, cons
         cleanup_thread_loop(token);
     });
 }
+
+void DiscoveryManager::SetLocalNodeHoldover(bool newHoldover) {
+    std::lock_guard<std::mutex> lock(map_mutex_);
+
+    local_node_.holdover = newHoldover;
+}
+
 
 /**
  * @brief Usuwa nieaktywne węzły z mapy urządzeń sieciowych
@@ -89,7 +105,7 @@ std::optional<NodeInfo> DiscoveryManager::GetBestMaster() {
             if (!node.holdover) {
                 best_neighbor = node;
             }
-        } else if (node.ip < best_neighbor.ip) {
+        } else if (IpToUint32(node.ip) < IpToUint32(best_neighbor.ip)) {
             best_neighbor = node;
         }
     }

@@ -23,15 +23,17 @@ namespace {
     constexpr auto kRX_Tx_multicast_port = 9999;
     constexpr auto kMulticastIP = "231.255.42.99";
     constexpr auto kHeader_size = 33;
+    constexpr auto kHoldoverTimeoutMs = 5000;
 }
 
 bool NtpController::Init(const NtpConfig& config) {
     myIP = config.ip;
     ntp_class_ = config.ntp_class;
     t_hb_ms_ = config.t_hb_ms;
+    last_sync_ = GetTimestamp();
 
     timestamp_.Init();
-    discovery_manager_.Init(myIP, ntp_class_, false);
+    discovery_manager_.Init(myIP, ntp_class_, is_holdover_);
 
     if (udp_sock_.Init(myIP, kRX_Tx_udp_port) != srp::core::ErrorCode::kOk) {
         ara::log::LogError() << "Failed to initialize udp socket!";
@@ -46,8 +48,8 @@ bool NtpController::Init(const NtpConfig& config) {
 
     this->udp_sock_.SetRXCallback(std::bind(&NtpController::udp_socket_callback, this, std::placeholders::_1,
                             std::placeholders::_2, std::placeholders::_3));
-    this->multicast_sock_.SetRXCallback(std::bind(&NtpController::multicast_socket_callback, this, std::placeholders::_1,
-                            std::placeholders::_2, std::placeholders::_3));
+    this->multicast_sock_.SetRXCallback(std::bind(&NtpController::multicast_socket_callback, this,
+                            std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
 
     udp_sock_.StartRXThread();
     multicast_sock_.StartRXThread();
@@ -84,7 +86,8 @@ uint8_t NtpController::EncodeSettings(uint8_t device_class, bool is_holdover, ui
         settings |= (1 << 3);
     }
 
-    // Bity 4-5: Version
+    // Bity 4-5: Version (currently 00)
+    settings |= (0x00 << 4);
     // Bit 6: msg_type (0 dla Unicast, 1 dla Announce)
     if (msg_type == 1) {
         settings |= (1 << 6);
@@ -101,7 +104,7 @@ void NtpController::SendAnnounce() {
     /**
      * @todo: Implement holdover
      */
-    frame.settings = EncodeSettings(ntp_class_, false, 1);
+    frame.settings = EncodeSettings(ntp_class_, is_holdover_, 1);
     frame.t0 = 0; frame.t1 = 0; frame.t2 = 0; frame.t3 = 0;
 
     auto buf = srp::data::Convert2Vector<srp::mw::tinyNTP::ntpStruct>::Conv(frame);
@@ -115,7 +118,7 @@ void NtpController::SendAnnounce() {
 
 void NtpController::SendSyncRequest(const std::string& current_master_ip) {
     srp::mw::tinyNTP::ntpStruct header;
-    header.settings = EncodeSettings(ntp_class_, false, 0);
+    header.settings = EncodeSettings(ntp_class_, is_holdover_, 0);
     header.t0 = GetTimestamp();
     header.t1 = 0; header.t2 = 0; header.t3 = 0;
 
@@ -192,6 +195,10 @@ void NtpController::udp_socket_callback(const std::string& ip,
 
         this->timestamp_.CorrectStartPoint(offset);
 
+        is_holdover_ = master_opt.value().holdover;
+        discovery_manager_.SetLocalNodeHoldover(is_holdover_);
+        last_sync_ = now_ms;
+
         ara::log::LogDebug() << "Round trip time [ms]: " << round_trip_time
                                 << " ,offset value [ms]: " << offset;
     }
@@ -228,10 +235,17 @@ void NtpController::thread_loop(std::stop_token token) {
     while (!token.stop_requested()) {
         auto master_opt = discovery_manager_.GetBestMaster();
 
+        SendAnnounce();
+
         if (!master_opt.has_value() || master_opt.value().ip == myIP) {
-            ara::log::LogDebug() << "Working as a server. Broadcasting Announce.";
-            SendAnnounce();
+            ara::log::LogDebug() << "Working as a server";
         } else {
+            int64_t current_time = GetTimestamp();
+            if (current_time - last_sync_ > kHoldoverTimeoutMs) {
+                is_holdover_ = true;
+                discovery_manager_.SetLocalNodeHoldover(is_holdover_);
+            }
+
             ara::log::LogDebug() << "Sending Sync to Master: " << master_opt.value().ip;
             SendSyncRequest(master_opt.value().ip);
         }
