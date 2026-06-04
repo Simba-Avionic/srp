@@ -7,6 +7,8 @@ cc_library(
         "discovery_manager.hpp",
     ],
     deps = [
+        "//core/common:condition_lib",
+        "@srp_platform//ara/log",
     ],
     visibility = ["//visibility:public"],
 )

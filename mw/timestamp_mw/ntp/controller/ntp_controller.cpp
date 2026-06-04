@@ -14,7 +14,6 @@
 #include <vector>
 #include "mw/timestamp_mw/ntp/config/config_manager.hpp"
 #include "core/common/condition.h"
-#include "core/json/json_parser.h"
 #include "ara/log/log.h"
 
 namespace srp {
@@ -57,7 +56,7 @@ bool NtpController::Init(const NtpConfig& config) {
         thread_loop(token);
     });
 
-    ara::log::LogError() << "NtpController initialized with IP: " << myIP
+    ara::log::LogInfo() << "NtpController initialized with IP: " << myIP
                         << ", NTP Class: " << static_cast<int>(ntp_class_)
                         << ", interval [ms]: " << t_hb_ms_;
 
@@ -224,7 +223,7 @@ int64_t NtpController::GetTimestamp() {
 }
 
 void NtpController::thread_loop(std::stop_token token) {
-    ara::log::LogError() << "Start NTP Sync.";
+    ara::log::LogInfo() << "Start NTP Sync.";
 
     while (!token.stop_requested()) {
         auto master_opt = discovery_manager_.GetBestMaster();

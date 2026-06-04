@@ -4,11 +4,12 @@ cc_library(
     deps = [ 
         "//communication-core/sockets:socket_udp",
         "//communication-core/sockets:socket_udp_multicast",
-        "//core/json:simba_json",
         "//core/timestamp:timestamp_controller",
         "//mw/timestamp_mw/ntp/controller:ntp_com_data",
         "//mw/timestamp_mw/ntp/config:ntp_config_manager",
         "//mw/timestamp_mw/ntp/discovery:ntp_discovery",
+        "//core/common:condition_lib",
+        "@srp_platform//ara/log",
     ],
     srcs = ["ntp_controller.cpp"],
     hdrs = ["ntp_controller.hpp"],

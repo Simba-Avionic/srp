@@ -16,13 +16,12 @@
 #include <unordered_map>
 #include <chrono>  // NOLINT
 #include <mutex>  // NOLINT
+#include <thread>  // NOLINT
 #include <cstdint>
 #include <optional>
 
 namespace srp {
 namespace tinyNTP {
-
-constexpr int TIMEOUT_SECONDS = 15;
 
 /**
  * @brief Pojedynczy węzeł sieci
@@ -44,8 +43,10 @@ class DiscoveryManager {
     NodeInfo local_node_;
     std::unordered_map<std::string, NodeInfo> neighbors_;  // ip -> NodeInfo
 
-    void RemoveExpiredNodes(const int& timeout_seconds = TIMEOUT_SECONDS);
+    void RemoveExpiredNodes();
+    void cleanup_thread_loop(std::stop_token token);
 
+    std::jthread cleanup_thread_;
     mutable std::mutex map_mutex_;
  public:
     DiscoveryManager() = default;
