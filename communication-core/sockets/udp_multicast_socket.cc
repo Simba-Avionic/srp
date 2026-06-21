@@ -11,30 +11,24 @@
 
 #include "communication-core/sockets/udp_multicast_socket.h"
 
-#include <arpa/inet.h>
-
 #include <algorithm>
 #include <future>  // NOLINT
-#include <iostream>
 #include <string>
 #include <vector>
 
+#include "iostream"
 #include "unistd.h"
+
 namespace srp {
 namespace com {
 namespace soc {
 
 namespace {
-constexpr uint32_t kBufforSize{255 * 2};
+  constexpr uint32_t kBufforSize{255 * 2};
+  constexpr auto kMulticastIp = "231.255.42.99";
 }  // namespace
 
-srp::core::ErrorCode UdpMulticastSocket::Init(const std::string &local_ip,
-                                                const std::string &multicast_ip,
-                                                const std::uint16_t port_id) {
-  local_ip_ = local_ip;
-  multicast_ip_ = multicast_ip;
-  port_id_ = port_id;
-
+srp::core::ErrorCode UdpMulticastSocket::Init(const SocketConfig &config) {
   sd = socket(AF_INET, SOCK_DGRAM, 0);
   if (sd < 0) {
     return srp::core::ErrorCode::kError;
@@ -42,8 +36,8 @@ srp::core::ErrorCode UdpMulticastSocket::Init(const std::string &local_ip,
 
   memset((char *)&groupSock, 0, sizeof(groupSock));  // NOLINT
   groupSock.sin_family = AF_INET;
-  groupSock.sin_addr.s_addr = inet_addr(multicast_ip.c_str());
-  groupSock.sin_port = htons(port_id);
+  groupSock.sin_addr.s_addr = inet_addr(kMulticastIp);
+  groupSock.sin_port = htons(config.GetRxPort());
   // {
   //   char loopch = 0;
 
@@ -56,8 +50,8 @@ srp::core::ErrorCode UdpMulticastSocket::Init(const std::string &local_ip,
   // }
 
   srcaddr.sin_family = AF_INET;
-  srcaddr.sin_addr.s_addr = inet_addr(local_ip.c_str());
-  srcaddr.sin_port = htons(port_id_);
+  srcaddr.sin_addr.s_addr = inet_addr(config.GetIp().c_str());
+  srcaddr.sin_port = htons(config.GetRxPort());
 
   if (setsockopt(sd, IPPROTO_IP, IP_MULTICAST_IF,
                  (char *)&srcaddr,  // NOLINT
@@ -83,7 +77,7 @@ srp::core::ErrorCode UdpMulticastSocket::Init(const std::string &local_ip,
 
   memset((char *)&localSock, 0, sizeof(localSock));  // NOLINT
   localSock.sin_family = AF_INET;
-  localSock.sin_port = htons(port_id_);
+  localSock.sin_port = htons(config.GetRxPort());
   localSock.sin_addr.s_addr = INADDR_ANY;
 
   if (bind(sd, (struct sockaddr *)&localSock, sizeof(localSock))) {
@@ -91,8 +85,8 @@ srp::core::ErrorCode UdpMulticastSocket::Init(const std::string &local_ip,
     return srp::core::ErrorCode::kError;
   }
 
-  group.imr_multiaddr.s_addr = inet_addr(multicast_ip_.c_str());
-  group.imr_interface.s_addr = inet_addr(local_ip_.c_str());
+  group.imr_multiaddr.s_addr = inet_addr(kMulticastIp);
+  group.imr_interface.s_addr = inet_addr(config.GetIp().c_str());
   if (setsockopt(sd, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char *)&group,  // NOLINT
                  sizeof(group)) < 0) {
     close(sd);
@@ -105,7 +99,9 @@ void UdpMulticastSocket::SetRXCallback(RXCallback callback) {
   this->callback_ = callback;
 }
 
-srp::core::ErrorCode UdpMulticastSocket::Transmit(const std::vector<std::uint8_t> &payload) {
+srp::core::ErrorCode UdpMulticastSocket::Transmit(
+    const std::string &ip, const std::uint16_t port,
+    std::vector<std::uint8_t> payload) {
   std::uint8_t *buffor = new std::uint8_t[payload.size()];
   std::copy(payload.begin(), payload.end(), buffor);
   if (sendto(sd, buffor, payload.size(), 0, (struct sockaddr *)&groupSock,
@@ -142,7 +138,7 @@ void UdpMulticastSocket::Loop(std::stop_token stoken) {
         std::ignore = std::async(
             std::launch::async, [this, &si_other, &bytes_rec, &buffor]() {
               this->callback_(std::string(inet_ntoa(si_other.sin_addr)),
-                              htons(si_other.sin_port),
+                              ntohs(si_other.sin_port),
                               std::vector<uint8_t>{buffor.begin(),
                                                    buffor.begin() + bytes_rec});
             });
@@ -151,5 +147,5 @@ void UdpMulticastSocket::Loop(std::stop_token stoken) {
   }
 }
 }  //  namespace soc
-}  // namespace com
+}  //  namespace com
 }  //  namespace srp
