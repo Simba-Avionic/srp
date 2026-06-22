@@ -33,6 +33,7 @@ namespace tinyNTP {
  */
 struct NodeInfo {
     std::string ip;
+    uint32_t ip_numeric;
     uint8_t ntp_class;
     bool holdover;
     std::chrono::steady_clock::time_point last_seen;
@@ -45,6 +46,7 @@ class DiscoveryManager {
 
     void RemoveExpiredNodes();
     void cleanup_thread_loop(std::stop_token token);
+    static std::optional<uint32_t> IpToUint32(const std::string& ip);
 
     std::jthread cleanup_thread_;
     mutable std::mutex map_mutex_;
@@ -53,7 +55,7 @@ class DiscoveryManager {
     ~DiscoveryManager() = default;
 
     void Init(const std::string& ip, const uint8_t ntp_class, const bool holdover);
-    void SetLocalNodeHoldover(bool newHoldover);
+    void SetLocalNodeHoldover(const bool newHoldover);
 
     void UpdateNode(const std::string& ip, const uint8_t ntp_class, const bool holdover);
     std::optional<NodeInfo> GetBestMaster();

@@ -29,10 +29,8 @@ class NtpController {
   com::soc::UdpSocket udp_sock_;
   com::soc::UdpMulticastSocket multicast_sock_;
 
-  std::string myIP;
-  uint8_t ntp_class_;
+  NtpConfig ntp_config_;
   bool is_holdover_ = true;
-  uint32_t t_hb_ms_;
 
   int64_t last_t0_;
   int64_t last_sync_;
@@ -56,7 +54,7 @@ class NtpController {
                                               const std::vector<std::uint8_t>& payload);
 
   void thread_loop(std::stop_token token);
-  uint8_t EncodeSettings(uint8_t device_class, bool is_holdover, uint8_t msg_type);
+  uint8_t EncodeSettings(const uint8_t device_class, const bool is_holdover, const uint8_t msg_type);
   int64_t CalculateOffset(const int64_t& T0, const int64_t& T1, const int64_t& T2, const int64_t& T3);
   uint64_t CalculateRoundTripDelay(const int64_t& T0, const int64_t& T1, const int64_t& T2, const int64_t& T3);
   int64_t GetTimestamp();

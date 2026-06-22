@@ -24,8 +24,12 @@ int TimestampService::Run(const std::stop_token& token) {
 int TimestampService::Initialize(const std::map<ara::core::StringView, ara::core::StringView>
                     parms) {
     auto config = srp::tinyNTP::ConfigManager::LoadConfig();
+    if (!config.has_value()) {
+        ara::log::LogError() << "Ntp config was not loaded correctly. NtpController is not initialized.";
+        return -1;
+    }
 
-    if (!this->ntp_controller.Init(config)) {
+    if (!this->ntp_controller.Init(config.value())) {
         ara::log::LogError() << "NTP controller initialization failed.";
         return -1;
     }

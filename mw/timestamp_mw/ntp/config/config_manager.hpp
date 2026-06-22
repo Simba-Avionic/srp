@@ -14,6 +14,7 @@
 
 #include <string>
 #include <cstdint>
+#include <optional>
 
 namespace srp {
 namespace tinyNTP {
@@ -34,7 +35,7 @@ class ConfigManager {
      * @param filepath Ścieżka do pliku konfiguracyjnego
      * @return NtpConfig Struktura z wczytanymi parametrami
      */
-    static NtpConfig LoadConfig(const std::string& filepath = kConfig_file_path);
+    static std::optional<NtpConfig> LoadConfig(const std::string& filepath = kConfig_file_path);
 };
 
 }  // namespace tinyNTP

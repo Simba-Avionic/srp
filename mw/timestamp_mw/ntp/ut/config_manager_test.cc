@@ -12,6 +12,7 @@
 #include <gtest/gtest.h>
 #include <fstream>
 #include <string>
+#include <optional>
 
 #include "mw/timestamp_mw/ntp/config/config_manager.hpp"
 
@@ -41,20 +42,20 @@ TEST_F(ConfigManagerTest, LoadsValidConfigCorrectly) {
 
     auto config = ConfigManager::LoadConfig(temp_filepath);
 
-    EXPECT_EQ(config.ip, "192.168.1.100");
-    EXPECT_EQ(config.ntp_class, 3);
-    EXPECT_EQ(config.t_hb_ms, 500);
+    ASSERT_TRUE(config.has_value());
+
+    EXPECT_EQ(config->ip, "192.168.1.100");
+    EXPECT_EQ(config->ntp_class, 3);
+    EXPECT_EQ(config->t_hb_ms, 500);
 }
 
-TEST_F(ConfigManagerTest, UsesFallbackWhenFileDoesNotExist) {
+TEST_F(ConfigManagerTest, OptionalWhenFileDoesNotExist) {
     auto config = ConfigManager::LoadConfig("fake_path_that_doesnt_exist.json");
 
-    EXPECT_EQ(config.ip, "127.0.0.1");
-    EXPECT_EQ(config.ntp_class, 7);
-    EXPECT_EQ(config.t_hb_ms, 1000);
+    EXPECT_FALSE(config.has_value());
 }
 
-TEST_F(ConfigManagerTest, UsesFallbackOnInvalidJsonSyntax) {
+TEST_F(ConfigManagerTest, OptionalOnInvalidJsonSyntax) {
     CreateJsonFile(R"({
         "ip": "10.0.0.1",
         "ntp_class": 2
@@ -63,12 +64,10 @@ TEST_F(ConfigManagerTest, UsesFallbackOnInvalidJsonSyntax) {
 
     auto config = ConfigManager::LoadConfig(temp_filepath);
 
-    EXPECT_EQ(config.ip, "127.0.0.1");
-    EXPECT_EQ(config.ntp_class, 7);
-    EXPECT_EQ(config.t_hb_ms, 1000);
+    EXPECT_FALSE(config.has_value());
 }
 
-TEST_F(ConfigManagerTest, ForcesFallbackClassIfOutOfBounds) {
+TEST_F(ConfigManagerTest, ForcesFallbackNtpClassIfOutOfBounds) {
     CreateJsonFile(R"({
         "ip": "10.0.0.2",
         "ntp_class": 15,
@@ -77,19 +76,17 @@ TEST_F(ConfigManagerTest, ForcesFallbackClassIfOutOfBounds) {
 
     auto config = ConfigManager::LoadConfig(temp_filepath);
 
-    EXPECT_EQ(config.ip, "10.0.0.2");
-    EXPECT_EQ(config.t_hb_ms, 200);
-    EXPECT_EQ(config.ntp_class, 7);
+    EXPECT_EQ(config->ip, "10.0.0.2");
+    EXPECT_EQ(config->t_hb_ms, 200);
+    EXPECT_EQ(config->ntp_class, 7);
 }
 
-TEST_F(ConfigManagerTest, HandlesMissingFieldsGracefully) {
+TEST_F(ConfigManagerTest, OptionalOnMissingFields) {
     CreateJsonFile(R"({
         "ip": "172.16.0.5"
     })");  // Brak ntp_class i T_hb_ms
 
     auto config = ConfigManager::LoadConfig(temp_filepath);
 
-    EXPECT_EQ(config.ip, "172.16.0.5");
-    EXPECT_EQ(config.ntp_class, 7);
-    EXPECT_EQ(config.t_hb_ms, 1000);
+    EXPECT_FALSE(config.has_value());
 }

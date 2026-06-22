@@ -17,26 +17,36 @@
 namespace srp {
 namespace tinyNTP {
 namespace {
-    constexpr auto kTimeout_seconds = 15;
-
-    uint32_t IpToUint32(const std::string& ip) {
-        uint32_t a, b, c, d;
-        if (sscanf(ip.c_str(), "%u.%u.%u.%u", &a, &b, &c, &d) == 4) {
-            return (a << 24) | (b << 16) | (c << 8) | d;
-        }
-        return 0xFFFFFFFF;
-    }
+    static constexpr auto kTimeout_seconds = 15;
 }  // namespace
 
+std::optional<uint32_t> DiscoveryManager::IpToUint32(const std::string& ip) {
+    uint32_t a, b, c, d;
+    if (sscanf(ip.c_str(), "%u.%u.%u.%u", &a, &b, &c, &d) == 4) {
+        return (a << 24) | (b << 16) | (c << 8) | d;
+    }
+    return std::nullopt;
+}
+
 void DiscoveryManager::Init(const std::string& ip, const uint8_t ntp_class, const bool holdover) {
-    local_node_ = NodeInfo{ip, ntp_class, holdover};
+    const auto ip_numeric_opt = IpToUint32(ip);
+    if (!ip_numeric_opt.has_value()) {
+        ara::log::LogError() << "Discovery Manager init failed. Provided invalid ip string for local node.";
+        return;
+    }
+
+    local_node_.ip = ip;
+    local_node_.ip_numeric = ip_numeric_opt.value();
+    local_node_.ntp_class = ntp_class;
+    local_node_.holdover = holdover;
+    local_node_.last_seen = std::chrono::steady_clock::now();
 
     cleanup_thread_ = std::jthread([this](std::stop_token token) {
         cleanup_thread_loop(token);
     });
 }
 
-void DiscoveryManager::SetLocalNodeHoldover(bool newHoldover) {
+void DiscoveryManager::SetLocalNodeHoldover(const bool newHoldover) {
     std::lock_guard<std::mutex> lock(map_mutex_);
 
     local_node_.holdover = newHoldover;
@@ -74,22 +84,29 @@ void DiscoveryManager::cleanup_thread_loop(std::stop_token token) {
 }
 
 void DiscoveryManager::UpdateNode(const std::string& ip, const uint8_t ntp_class, const bool holdover) {
+    const auto ip_numeric_opt = IpToUint32(ip);
+    if (!ip_numeric_opt.has_value()) {
+        ara::log::LogError() << "Provided invalid ip string for node. Node is not added to discovery.";
+        return;
+    }
+
     std::lock_guard<std::mutex> lock(map_mutex_);
 
     auto result = neighbors_.insert({ip, NodeInfo{}});
     NodeInfo& node = result.first->second;
 
     node.ip = ip;
+    node.ip_numeric = ip_numeric_opt.value();
     node.ntp_class = ntp_class;
     node.holdover = holdover;
     node.last_seen = std::chrono::steady_clock::now();
 }
 
 /**
- * @brief Zwraca najlepszy węzeł w sieci
- * 
- * @param local_node 
- * @return std::optional<NodeInfo> - W przypadku gdy lokalny node jest najlepszym w sieci zwrócony optional jest pusty
+ * @brief Zwraca najlepszy węzeł (Master) wykryty w sieci 
+ * lub std::nullopt w przypadku gdy węzeł lokalny jest najlepszy.
+ * @return std::optional<NodeInfo> Najlepszy zewnętrzny Master. Zwraca std::nullopt, 
+ * jeśli sieć jest pusta lub to węzeł lokalny ma najlepsze parametry w sieci.
  */
 std::optional<NodeInfo> DiscoveryManager::GetBestMaster() {
     std::lock_guard<std::mutex> lock(map_mutex_);
@@ -105,7 +122,7 @@ std::optional<NodeInfo> DiscoveryManager::GetBestMaster() {
             if (!node.holdover) {
                 best_neighbor = node;
             }
-        } else if (IpToUint32(node.ip) < IpToUint32(best_neighbor.ip)) {
+        } else if (node.ip_numeric < best_neighbor.ip_numeric) {
             best_neighbor = node;
         }
     }

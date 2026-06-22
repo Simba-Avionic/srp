@@ -12,7 +12,6 @@
 #include "mw/timestamp_mw/ntp/controller/ntp_controller.hpp"
 #include <utility>
 #include <vector>
-#include "mw/timestamp_mw/ntp/config/config_manager.hpp"
 #include "core/common/condition.h"
 #include "ara/log/log.h"
 
@@ -27,29 +26,36 @@ namespace {
 }
 
 bool NtpController::Init(const NtpConfig& config) {
-    myIP = config.ip;
-    ntp_class_ = config.ntp_class;
-    t_hb_ms_ = config.t_hb_ms;
+    ntp_config_ = config;
     last_sync_ = GetTimestamp();
 
     timestamp_.Init();
-    discovery_manager_.Init(myIP, ntp_class_, is_holdover_);
+    discovery_manager_.Init(config.ip, config.ntp_class, is_holdover_);
 
-    if (udp_sock_.Init(myIP, kRX_Tx_udp_port) != srp::core::ErrorCode::kOk) {
+    const srp::com::soc::SocketConfig udp_sock_config = srp::com::soc::SocketConfig(
+                                        config.ip, kRX_Tx_udp_port, kRX_Tx_udp_port);
+    if (udp_sock_.Init(udp_sock_config) != srp::core::ErrorCode::kOk) {
         ara::log::LogError() << "Failed to initialize udp socket!";
     } else {
         ara::log::LogInfo() << "Udp socket initialized!";
     }
-    if (multicast_sock_.Init(myIP, kMulticastIP, kRX_Tx_multicast_port) != srp::core::ErrorCode::kOk) {
+
+    const srp::com::soc::SocketConfig multicast_sock_config = srp::com::soc::SocketConfig(
+                                        config.ip, kRX_Tx_multicast_port, kRX_Tx_multicast_port);
+    if (multicast_sock_.Init(multicast_sock_config) != srp::core::ErrorCode::kOk) {
         ara::log::LogError() << "Failed to initialize multicast socket!";
     } else {
         ara::log::LogInfo() << "Multicast socket initialized!";
     }
 
-    this->udp_sock_.SetRXCallback(std::bind(&NtpController::udp_socket_callback, this, std::placeholders::_1,
-                            std::placeholders::_2, std::placeholders::_3));
-    this->multicast_sock_.SetRXCallback(std::bind(&NtpController::multicast_socket_callback, this,
-                            std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+    this->udp_sock_.SetRXCallback([this](const std::string& ip, const uint16_t& port,
+        const std::vector<uint8_t>& payload) {
+            udp_socket_callback(ip, port, payload);
+        });
+    this->multicast_sock_.SetRXCallback([this](const std::string& ip, const uint16_t& port,
+        const std::vector<uint8_t>& payload) {
+            multicast_socket_callback(ip, port, payload);
+    });
 
     udp_sock_.StartRXThread();
     multicast_sock_.StartRXThread();
@@ -58,24 +64,24 @@ bool NtpController::Init(const NtpConfig& config) {
         thread_loop(token);
     });
 
-    ara::log::LogInfo() << "NtpController initialized with IP: " << myIP
-                        << ", NTP Class: " << static_cast<int>(ntp_class_)
-                        << ", interval [ms]: " << t_hb_ms_;
+    ara::log::LogInfo() << "NtpController initialized with IP: " << ntp_config_.ip
+                        << ", NTP Class: " << static_cast<int>(ntp_config_.ntp_class)
+                        << ", interval [ms]: " << ntp_config_.t_hb_ms;
 
     return true;
 }
 
 int64_t NtpController::CalculateOffset(const int64_t& T0, const int64_t& T1,
     const int64_t& T2, const int64_t& T3) {
-return ((T1 - T0) + (T2 - T3)) / 2;
+    return ((T1 - T0) + (T2 - T3)) / 2;
 }
 
 uint64_t NtpController::CalculateRoundTripDelay(const int64_t& T0, const int64_t& T1,
             const int64_t& T2, const int64_t& T3) {
-return static_cast<uint64_t>((T3 - T0) - (T2 - T1));
+    return static_cast<uint64_t>((T3 - T0) - (T2 - T1));
 }
 
-uint8_t NtpController::EncodeSettings(uint8_t device_class, bool is_holdover, uint8_t msg_type) {
+uint8_t NtpController::EncodeSettings(const uint8_t device_class, const bool is_holdover, const uint8_t msg_type) {
     uint8_t settings = 0;
 
     // Bity 0-2: Klasa urządzenia
@@ -104,12 +110,12 @@ void NtpController::SendAnnounce() {
     /**
      * @todo: Implement holdover
      */
-    frame.settings = EncodeSettings(ntp_class_, is_holdover_, 1);
+    frame.settings = EncodeSettings(ntp_config_.ntp_class, is_holdover_, 1);
     frame.t0 = 0; frame.t1 = 0; frame.t2 = 0; frame.t3 = 0;
 
-    auto buf = srp::data::Convert2Vector<srp::mw::tinyNTP::ntpStruct>::Conv(frame);
+    const auto buf = srp::data::Convert2Vector<srp::mw::tinyNTP::ntpStruct>::Conv(frame);
 
-    if (multicast_sock_.Transmit(buf) != srp::core::ErrorCode::kOk) {
+    if (multicast_sock_.Transmit(ntp_config_.ip, kRX_Tx_multicast_port, buf) != srp::core::ErrorCode::kOk) {
         ara::log::LogError() << "Failed to send Announce multicast frame!";
     } else {
         ara::log::LogDebug() << "Announce multicast frame sent correctly!";
@@ -118,13 +124,13 @@ void NtpController::SendAnnounce() {
 
 void NtpController::SendSyncRequest(const std::string& current_master_ip) {
     srp::mw::tinyNTP::ntpStruct header;
-    header.settings = EncodeSettings(ntp_class_, is_holdover_, 0);
+    header.settings = EncodeSettings(ntp_config_.ntp_class, is_holdover_, 0);
     header.t0 = GetTimestamp();
     header.t1 = 0; header.t2 = 0; header.t3 = 0;
 
     last_t0_ = header.t0;
 
-    auto buf = srp::data::Convert2Vector<srp::mw::tinyNTP::ntpStruct>::Conv(header);
+    const auto buf = srp::data::Convert2Vector<srp::mw::tinyNTP::ntpStruct>::Conv(header);
 
     this->udp_sock_.Transmit(current_master_ip, kRX_Tx_udp_port, buf);
 }
@@ -136,7 +142,7 @@ std::optional<srp::mw::tinyNTP::ntpStruct> NtpController::ParseAndValidatePayloa
         return std::nullopt;
     }
 
-    if (ip == myIP) {
+    if (ip == ntp_config_.ip) {
         ara::log::LogDebug() << "Rejecting own packet.";
         return std::nullopt;
     }
@@ -147,21 +153,21 @@ std::optional<srp::mw::tinyNTP::ntpStruct> NtpController::ParseAndValidatePayloa
 void NtpController::udp_socket_callback(const std::string& ip,
                                     const uint16_t& port,
                                     const std::vector<uint8_t>& payload) {
-    int64_t now_ms = GetTimestamp();
+    const int64_t now_ms = GetTimestamp();
 
-    auto val = ParseAndValidatePayload(payload, ip);
+    const auto val = ParseAndValidatePayload(payload, ip);
     if (!val.has_value()) return;
     srp::mw::tinyNTP::ntpStruct header = val.value();
 
-    uint8_t msg_type = (header.settings >> 6) & 0x01;
+    const uint8_t msg_type = (header.settings >> 6) & 0x01;
 
     if (msg_type != 0) {
         ara::log::LogWarn() << "Received non-Sync message on unicast socket from: " << ip;
         return;
     }
 
-    auto master_opt = discovery_manager_.GetBestMaster();
-    bool is_server = (!master_opt.has_value() || master_opt.value().ip == myIP);
+    const auto master_opt = discovery_manager_.GetBestMaster();
+    const bool is_server = (!master_opt.has_value() || master_opt.value().ip == ntp_config_.ip);
 
     if (is_server) {
         if (header.t1 != 0 || header.t2 != 0) {
@@ -172,7 +178,7 @@ void NtpController::udp_socket_callback(const std::string& ip,
         header.t1 = now_ms;
         header.t2 = GetTimestamp();
 
-        auto buf = srp::data::Convert2Vector<srp::mw::tinyNTP::ntpStruct>::Conv(header);
+        const auto buf = srp::data::Convert2Vector<srp::mw::tinyNTP::ntpStruct>::Conv(header);
 
         udp_sock_.Transmit(ip, kRX_Tx_udp_port, buf);
 
@@ -188,10 +194,10 @@ void NtpController::udp_socket_callback(const std::string& ip,
             return;
         }
 
-        int64_t t3 = now_ms;
+        const int64_t t3 = now_ms;
 
-        auto offset = CalculateOffset(header.t0, header.t1, header.t2, t3);
-        auto round_trip_time = CalculateRoundTripDelay(header.t0, header.t1, header.t2, t3);
+        const auto offset = CalculateOffset(header.t0, header.t1, header.t2, t3);
+        const auto round_trip_time = CalculateRoundTripDelay(header.t0, header.t1, header.t2, t3);
 
         this->timestamp_.CorrectStartPoint(offset);
 
@@ -207,19 +213,19 @@ void NtpController::udp_socket_callback(const std::string& ip,
 void NtpController::multicast_socket_callback(const std::string& ip,
                                     const uint16_t& port,
                                     const std::vector<uint8_t>& payload) {
-    auto val = ParseAndValidatePayload(payload, ip);
+    const auto val = ParseAndValidatePayload(payload, ip);
     if (!val.has_value()) return;
-    srp::mw::tinyNTP::ntpStruct header = val.value();
+    const srp::mw::tinyNTP::ntpStruct header = val.value();
 
-    uint8_t msg_type = (header.settings >> 6) & 0x01;
+    const uint8_t msg_type = (header.settings >> 6) & 0x01;
 
     if (msg_type != 1) {
         ara::log::LogWarn() << "Received non-Announce message on multicast socket from: " << ip;
         return;
     }
 
-    uint8_t sender_class = header.settings & 0x07;
-    bool holdover = (header.settings >> 3) & 0x01;
+    const uint8_t sender_class = header.settings & 0x07;
+    const bool holdover = (header.settings >> 3) & 0x01;
 
     ara::log::LogDebug() << "Updating node with ip: " << ip;
     discovery_manager_.UpdateNode(ip, sender_class, holdover);
@@ -233,14 +239,19 @@ void NtpController::thread_loop(std::stop_token token) {
     ara::log::LogInfo() << "Start NTP Sync.";
 
     while (!token.stop_requested()) {
-        auto master_opt = discovery_manager_.GetBestMaster();
+        const auto master_opt = discovery_manager_.GetBestMaster();
 
         SendAnnounce();
 
-        if (!master_opt.has_value() || master_opt.value().ip == myIP) {
+        if (!master_opt.has_value() || master_opt.value().ip == ntp_config_.ip) {
             ara::log::LogDebug() << "Working as a server";
+            if (is_holdover_) {
+                is_holdover_ = false;
+                discovery_manager_.SetLocalNodeHoldover(is_holdover_);
+                ara::log::LogDebug() << "Node time is now treated as accurate.";
+            }
         } else {
-            int64_t current_time = GetTimestamp();
+            const int64_t current_time = GetTimestamp();
             if (current_time - last_sync_ > kHoldoverTimeoutMs) {
                 is_holdover_ = true;
                 discovery_manager_.SetLocalNodeHoldover(is_holdover_);
@@ -250,7 +261,7 @@ void NtpController::thread_loop(std::stop_token token) {
             SendSyncRequest(master_opt.value().ip);
         }
 
-        core::condition::wait_for(std::chrono::milliseconds(t_hb_ms_), token);
+        core::condition::wait_for(std::chrono::milliseconds(ntp_config_.t_hb_ms), token);
     }
 }
 
