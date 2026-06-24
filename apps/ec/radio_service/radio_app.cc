@@ -220,17 +220,17 @@ int RadioApp::Run(const std::stop_token& token) {
 int RadioApp::Initialize(const std::map<ara::core::StringView,
   ara::core::StringView> parms) {
   event_data = EventData::GetInstance();
-  // timer_ctr_.AddOnTimerCallback([this](){
-  //   auto hb = telemetry_provider.GetHeartbeatMsg();
-  //   if (hb.has_value()) {
-  //     radio_controller.Push(hb.value());
-  //   }
-  // }, kHB_send_time_ms);
+  timer_ctr_.AddOnTimerCallback([this](){
+    auto hb = telemetry_provider.GetHeartbeatMsg();
+    if (hb.has_value()) {
+      radio_controller.Push(hb.value());
+    }
+  }, 5000);
 
   timer_ctr_.AddOnTimerCallback([this](){
     // Max Altitude
     radio_controller.Push(telemetry_provider.GetMaxAltitudeMsg());
-  }, kMax_altitude_send_time_ms);
+  }, 5000);
 
   // timer_ctr_.AddOnTimerCallback([this](){
   //   // Tank Sensors
@@ -240,7 +240,7 @@ int RadioApp::Initialize(const std::map<ara::core::StringView,
   timer_ctr_.AddOnTimerCallback([this](){
     // GPS
     radio_controller.Push(telemetry_provider.GetGpsMsg());
-  }, kGps_send_time_ms);
+  }, 2000);
 
   // timer_ctr_.AddOnTimerCallback([this](){
   //   // Computers telemetry
