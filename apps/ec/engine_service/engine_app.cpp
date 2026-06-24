@@ -31,7 +31,7 @@ namespace {
   static constexpr auto kEngine_udp_path_name = "srp/apps/EngineService/EngineService_udp";
   static constexpr auto kLogger_path_name =     "srp/apps/EngineService/FileLoggerApp";
   static constexpr auto kInit_max_intervals =   20;
-  static constexpr auto kPrimerDelay =          1000;
+  static constexpr auto kPrimerDelay =          4000;
   static constexpr auto kPin_off =              0;
   static constexpr auto kPin_on =               1;
   static constexpr auto kHeartBeatPinID =       1;
