@@ -27,6 +27,22 @@
             "mosfet_id" : 11,
             "desc": "J13, DUMP VALVE",
             "ina219_address": 64
+        },
+        {
+            "actuator_id":63,
+            "channel": 2,
+            "on_pos" : 102,
+            "off_pos" : 512,
+            "mosfet_id" : 0,
+            "desc": "ETHANOL MAIN VALVE"
+        },
+        {
+            "actuator_id":64,
+            "channel": 4,
+            "on_pos" : 102,
+            "off_pos" : 512,
+            "mosfet_id" : 0,
+            "desc": "ETHANOL VENT VALVE"
         }
     ]
 }

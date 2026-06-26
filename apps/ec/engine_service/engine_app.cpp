@@ -229,8 +229,8 @@ void EngineApp::OnDisarm() {
       ara::log::LogError() << "cant disarm pin: " << pin.name;
     }
   }
-  servo_handler_->SetVentServoValue(0);
-  servo_handler_->SetDumpValue(0);
+  servo_handler_->SetOxidizerVentValve(0);
+  servo_handler_->SetOxidizerDumpValve(0);
 }
 
 void EngineApp::OnArm() {
@@ -254,7 +254,7 @@ void EngineApp::OnLaunch() {
     ara::log::LogDebug() << "EngineApp::OnLaunch: Waiting "
                          << kPrimerDelay << "ms before servo activation";
     std::this_thread::sleep_for(std::chrono::milliseconds(kPrimerDelay));
-    auto res2 = this->servo_handler_->SetMainServoValue(1);
+    auto res2 = this->servo_handler_->SetOxidizerMainValve(1);
     if (!res2.HasValue()) {
       ara::log::LogError() << "Invalid request to MW:I2CService";
       return;
@@ -282,9 +282,8 @@ void EngineApp::OnApogee() {
     }
   }
   if (servo_handler_ != nullptr) {
-    servo_handler_->SetDumpValue(1);
-    servo_handler_->SetVentServoValue(1);
-    servo_handler_->SetMainServoValue(1);
+    servo_handler_->SetOxidizerDumpValve(1);
+    servo_handler_->SetOxidizerVentValve(1);
   }
 }
 
@@ -301,7 +300,7 @@ void EngineApp::OnAbort() {
     }
   }
   if (servo_handler_ != nullptr) {
-    servo_handler_->SetDumpValue(1);
+    servo_handler_->SetOxidizerDumpValve(1);
   }
 }
 

@@ -27,9 +27,11 @@ namespace service {
 namespace {
   static constexpr auto kEventIntervalMs = std::chrono::milliseconds(1000);
 
-  static constexpr std::uint8_t kMainValveID = 60;
-  static constexpr std::uint8_t kVentValveID = 61;
-  static constexpr std::uint8_t kDumpValveID = 62;
+  static constexpr auto kOxidizerMainValveID = 60;
+  static constexpr auto kOxidizerVentValveID = 61;
+  static constexpr auto kOxidizerDumpValveID = 62;
+  static constexpr auto kEthanolMainValveID  = 63;
+  static constexpr auto kEthanolVentValveID  = 64;
 
   static constexpr auto kDiagMainValveInstance = "/srp/apps/servoService/MainServoStatus";
   static constexpr auto kDiagVentValveInstance = "/srp/apps/servoService/VentServoStatus";
@@ -84,17 +86,24 @@ int ServoService::Run(const std::stop_token& token) {
   std::optional<uint8_t> last_main_state;
   std::optional<uint8_t> last_vent_state;
   std::optional<uint8_t> last_dump_state;
+  std::optional<uint8_t> last_eth_main_state;
+  std::optional<uint8_t> last_eth_vent_state;
+
 
   while (!token.stop_requested()) {
     if (gpio_.SetPinValue(kHeartBeatPinID, 1, 500) != core::ErrorCode::kOk) {
       ara::log::LogWarn() << "ServoService::Run: failed to toggle heartbeat pin";
     }
-    update_servo_status(kMainValveID, service_ipc->ServoStatusEvent, service_udp->ServoStatusEvent,
-                        "main", last_main_state);
-    update_servo_status(kVentValveID, service_ipc->ServoVentStatusEvent, service_udp->ServoVentStatusEvent,
-                        "vent", last_vent_state);
-    update_servo_status(kDumpValveID, service_ipc->ServoDumpStatusEvent, service_udp->ServoDumpStatusEvent,
-                        "dump", last_dump_state);
+    update_servo_status(kOxidizerMainValveID, service_ipc->newOxidizerMainValveEvent, service_udp->newOxidizerMainValveEvent,
+                        "oxi_main", last_main_state);
+    update_servo_status(kOxidizerVentValveID, service_ipc->newOxidizerVentValveEvent, service_udp->newOxidizerVentValveEvent,
+                        "oxi_vent", last_vent_state);
+    update_servo_status(kOxidizerDumpValveID, service_ipc->newOxidizerDumpValveEvent, service_udp->newOxidizerDumpValveEvent,
+                        "oxi_dump", last_dump_state);
+    update_servo_status(kEthanolMainValveID, service_ipc->newEthanolMainValveEvent, service_udp->newEthanolMainValveEvent,
+                        "eth_main", last_eth_main_state);
+    update_servo_status(kEthanolVentValveID, service_ipc->newEthanolVentValveEvent, service_udp->newEthanolVentValveEvent,
+                        "eth_dump", last_eth_vent_state);
 
     core::condition::wait_for(kEventIntervalMs, token);
   }
@@ -127,9 +136,9 @@ int ServoService::Initialize(const std::map<ara::core::StringView, ara::core::St
 
   this->servo_controller->Init(app_path);
 
-  main_servo_service_did_ = std::make_unique<ServoServiceDiD>(diag_main_instance, servo_controller, kMainValveID);
-  vent_servo_service_did_ = std::make_unique<ServoServiceDiD>(diag_venv_instance, servo_controller, kVentValveID);
-  dump_servo_service_did_ = std::make_unique<ServoServiceDiD>(diag_dump_instance, servo_controller, kDumpValveID);
+  main_servo_service_did_ = std::make_unique<ServoServiceDiD>(diag_main_instance, servo_controller, kOxidizerMainValveID);
+  vent_servo_service_did_ = std::make_unique<ServoServiceDiD>(diag_venv_instance, servo_controller, kOxidizerVentValveID);
+  dump_servo_service_did_ = std::make_unique<ServoServiceDiD>(diag_dump_instance, servo_controller, kOxidizerDumpValveID);
   servo_did_ = std::make_unique<ServoSecondDid>(diag_serv_instance, this->servo_controller);
 
   service_ipc = std::make_unique<apps::MyServoService>(
