@@ -21,5 +21,7 @@ adaptive_application(
     etcs = ["config.json"],
     visibility = [
         "//deployment/cpu/ec:__subpackages__",
-        "//deployment/cpu/fc:__subpackages__",],
+        "//deployment/cpu/fc:__subpackages__",
+        "//deployment/cpu/sec_ec:__subpackages__",
+    ],
 )

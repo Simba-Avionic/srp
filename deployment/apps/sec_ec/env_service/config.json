@@ -1,0 +1,23 @@
+{
+  "sensors": [
+    {
+      "sensor_id": 10,
+      "channel": 0,
+      "a": 41.66667,
+      "b": -23.98677
+    },
+    {
+      "sensor_id": 11,
+      "channel": 1,
+      "a": 41.66667,
+      "b": -23.98677
+    },
+    {
+      "sensor_id": 12,
+      "channel": 7,
+      "a": 1,
+      "b": 0
+    }
+  ],
+  "sensors-temp": []
+}
