@@ -18,8 +18,6 @@
 #include "ara/exec/adaptive_application.h"
 
 #include "apps/ec/ServoService/servoController/servo_controller.hpp"
-#include "apps/ec/ServoService/servo_service_did.h"
-#include "apps/ec/ServoService/servo_did.h"
 #include "mw/gpio_server/controller/gpio_controller.hpp"
 #include "apps/ec/ServoService/service.hpp"
 
@@ -28,18 +26,9 @@ namespace service {
 class ServoService final : public ara::exec::AdaptiveApplication {
  private:
   std::shared_ptr<ServoController> servo_controller;
-  std::unique_ptr<ServoServiceDiD> main_servo_service_did_;
-  std::unique_ptr<ServoServiceDiD> vent_servo_service_did_;
-  std::unique_ptr<ServoServiceDiD> dump_servo_service_did_;
-  std::unique_ptr<ServoSecondDid> servo_did_;
   std::unique_ptr<apps::MyServoService> service_ipc;
   std::unique_ptr<apps::MyServoService> service_udp;
   gpio::GPIOController gpio_;
-
-  const ara::core::InstanceSpecifier diag_main_instance;
-  const ara::core::InstanceSpecifier diag_venv_instance;
-  const ara::core::InstanceSpecifier diag_dump_instance;
-  const ara::core::InstanceSpecifier diag_serv_instance;
 
  protected:
   /**

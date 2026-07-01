@@ -30,38 +30,27 @@ namespace {
   static constexpr auto kOxidizerMainValveID = 60;
   static constexpr auto kOxidizerVentValveID = 61;
   static constexpr auto kOxidizerDumpValveID = 62;
-  static constexpr auto kEthanolMainValveID  = 63;
-  static constexpr auto kEthanolVentValveID  = 64;
+  static constexpr auto kPressureFeedSystemMainValveID  = 63;
+  static constexpr auto kPressureFeedSystemVentValveID  = 64;
 
   static constexpr auto kDiagMainValveInstance = "/srp/apps/servoService/MainServoStatus";
   static constexpr auto kDiagVentValveInstance = "/srp/apps/servoService/VentServoStatus";
   static constexpr auto kDiagDumpValveInstance = "/srp/apps/servoService/DumpServoStatus";
-  static constexpr auto kDiagServeInstance = "/srp/apps/servoService/ServoDID";
 
   static constexpr auto kIpcInstanceSpecifier = "srp/apps/servoService/ServoService_ipc";
   static constexpr auto kUdpInstanceSpecifier = "srp/apps/servoService/ServoService_udp";
   static constexpr auto kHeartBeatPinID = 4;
 }  // namespace
 
-ServoService::ServoService():
-    diag_main_instance(kDiagMainValveInstance),
-    diag_venv_instance(kDiagVentValveInstance),
-    diag_dump_instance(kDiagDumpValveInstance),
-    diag_serv_instance{kDiagServeInstance} {
-}
+ServoService::ServoService() {}
 
 int ServoService::Run(const std::stop_token& token) {
   ara::log::LogInfo() << "ServoService.Run: offering services";
-  if (!servo_controller || !main_servo_service_did_ || !vent_servo_service_did_ ||
-      !dump_servo_service_did_ || !servo_did_ || !service_ipc || !service_udp) {
+  if (!servo_controller || !service_ipc || !service_udp) {
     ara::log::LogError() << "ServoService.Run: service components are not initialized";
     return 1;
   }
 
-  main_servo_service_did_->Offer();
-  vent_servo_service_did_->Offer();
-  dump_servo_service_did_->Offer();
-  servo_did_->Offer();
   service_ipc->StartOffer();
   service_udp->StartOffer();
 
@@ -100,9 +89,9 @@ int ServoService::Run(const std::stop_token& token) {
                         "oxi_vent", last_vent_state);
     update_servo_status(kOxidizerDumpValveID, service_ipc->newOxidizerDumpValveEvent, service_udp->newOxidizerDumpValveEvent,
                         "oxi_dump", last_dump_state);
-    update_servo_status(kEthanolMainValveID, service_ipc->newEthanolMainValveEvent, service_udp->newEthanolMainValveEvent,
+    update_servo_status(kPressureFeedSystemMainValveID, service_ipc->newPressureFeedMainEvent, service_udp->newPressureFeedMainEvent,
                         "eth_main", last_eth_main_state);
-    update_servo_status(kEthanolVentValveID, service_ipc->newEthanolVentValveEvent, service_udp->newEthanolVentValveEvent,
+    update_servo_status(kPressureFeedSystemVentValveID, service_ipc->newPressureFeedVentEvent, service_udp->newPressureFeedVentEvent,
                         "eth_dump", last_eth_vent_state);
 
     core::condition::wait_for(kEventIntervalMs, token);
@@ -112,10 +101,6 @@ int ServoService::Run(const std::stop_token& token) {
 
   service_ipc->StopOffer();
   service_udp->StopOffer();
-  servo_did_->StopOffer();
-  dump_servo_service_did_->StopOffer();
-  vent_servo_service_did_->StopOffer();
-  main_servo_service_did_->StopOffer();
 
   ara::log::LogInfo() << "ServoService.Run: stopped";
   return 0;
@@ -135,11 +120,6 @@ int ServoService::Initialize(const std::map<ara::core::StringView, ara::core::St
   ara::log::LogDebug() << "ServoService.Initialize: using app path " << app_path;
 
   this->servo_controller->Init(app_path);
-
-  main_servo_service_did_ = std::make_unique<ServoServiceDiD>(diag_main_instance, servo_controller, kOxidizerMainValveID);
-  vent_servo_service_did_ = std::make_unique<ServoServiceDiD>(diag_venv_instance, servo_controller, kOxidizerVentValveID);
-  dump_servo_service_did_ = std::make_unique<ServoServiceDiD>(diag_dump_instance, servo_controller, kOxidizerDumpValveID);
-  servo_did_ = std::make_unique<ServoSecondDid>(diag_serv_instance, this->servo_controller);
 
   service_ipc = std::make_unique<apps::MyServoService>(
                 ara::core::InstanceSpecifier(kIpcInstanceSpecifier), this->servo_controller);

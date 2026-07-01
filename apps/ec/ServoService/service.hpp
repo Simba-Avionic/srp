@@ -25,8 +25,8 @@ namespace {  // NOLINT
   static constexpr auto kOxidizerMainValveID = 60;
   static constexpr auto kOxidizerVentValveID = 61;
   static constexpr auto kOxidizerDumpValveID = 62;
-  static constexpr auto kEthanolMainValveID  = 63;
-  static constexpr auto kEthanolVentValveID  = 64;
+  static constexpr auto kPressureFeedSystemMainValveID  = 63;
+  static constexpr auto kPressureFeedSystemVentValveID  = 64;
 }
 
 class MyServoService : public ServoServiceSkeleton {
@@ -72,11 +72,11 @@ class MyServoService : public ServoServiceSkeleton {
   ara::core::Result<bool> SetOxidizerDumpValve(const std::uint8_t& in_parm) override {
     return SetServoInternal(kOxidizerDumpValveID, in_parm);
   }
-  ara::core::Result<bool> SetEtanolMainValve(const std::uint8_t& in_parm) override {
-    return SetServoInternal(kEthanolMainValveID, in_parm);
+  ara::core::Result<bool> SetPressureFeedMainValve(const std::uint8_t& in_parm) override {
+    return SetServoInternal(kPressureFeedSystemMainValveID, in_parm);
   }
-  ara::core::Result<bool> SetEthanolVentValve(const std::uint8_t& in_parm) override {
-    return SetServoInternal(kEthanolVentValveID, in_parm);
+  ara::core::Result<bool> SetPressureFeedVentValve(const std::uint8_t& in_parm) override {
+    return SetServoInternal(kPressureFeedSystemVentValveID, in_parm);
   }
 };
 
