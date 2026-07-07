@@ -22,21 +22,41 @@ namespace srp {
 namespace com {
 namespace soc {
 
+namespace {
+  constexpr uint32_t kBufforSize{255 * 2};
+}  // namespace
+
 srp::core::ErrorCode UdpSocket::Init(const SocketConfig& config) {
-  memset(&server_sockaddr, 0, sizeof(server_sockaddr));
   server_sock = socket(AF_INET, SOCK_DGRAM, 0);
-  if (server_sock == -1) {
-    return srp::core::ErrorCode::kInitializeError;
+  if (server_sock < 0) {
+    return srp::core::ErrorCode::kError;
   }
+
+  int reuse = 1;
+
+  if (setsockopt(server_sock, SOL_SOCKET, SO_REUSEADDR, (char *)&reuse,  // NOLINT
+                sizeof(reuse)) < 0) {
+    return srp::core::ErrorCode::kError;
+  }
+
+  struct timeval timeout;
+  timeout.tv_sec = 10;
+  timeout.tv_usec = 0;
+
+  if (setsockopt(server_sock, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof timeout) < 0) {
+    return srp::core::ErrorCode::kError;
+  }
+
+  memset((char *)&server_sockaddr, 0, sizeof(server_sockaddr));  // NOLINT
   server_sockaddr.sin_family = AF_INET;
   server_sockaddr.sin_addr.s_addr = inet_addr(config.GetIp().c_str());
   server_sockaddr.sin_port = htons(config.GetRxPort());
-  this->len = sizeof(server_sockaddr);
-  unlink(config.GetIp().c_str());
-  int rc = bind(server_sock, (struct sockaddr*)&server_sockaddr, len);
-  if (rc == -1) {
-    return srp::core::ErrorCode::kInitializeError;
+
+  if (bind(server_sock, (struct sockaddr *)&server_sockaddr, sizeof(server_sockaddr))) {
+    close(server_sock);
+    return srp::core::ErrorCode::kError;
   }
+
   return srp::core::ErrorCode::kOk;
 }
 
@@ -47,25 +67,21 @@ void UdpSocket::SetRXCallback(RXCallback callback) {
 srp::core::ErrorCode UdpSocket::Transmit(const std::string& ip,
                                            const std::uint16_t port,
                                            std::vector<std::uint8_t> payload) {
-  int client_socket, rc;
-  struct sockaddr_in remote;
-  memset(&remote, 0, sizeof(struct sockaddr_in));
-  client_socket = socket(AF_INET, SOCK_DGRAM, 0);
-  if (client_socket == -1) {
+struct sockaddr_in remote;
+memset(&remote, 0, sizeof(struct sockaddr_in));
+remote.sin_family = AF_INET;
+remote.sin_addr.s_addr = inet_addr(ip.c_str());
+remote.sin_port = htons(port);
+
+std::uint8_t *buffor = new std::uint8_t[payload.size()];
+std::copy(payload.begin(), payload.end(), buffor);
+
+  if (sendto(server_sock, buffor, payload.size(), 0, (struct sockaddr *)&remote,
+           sizeof(remote)) < 0) {
+    delete[] buffor;
     return srp::core::ErrorCode::kError;
   }
-  remote.sin_family = AF_INET;
-  remote.sin_addr.s_addr = inet_addr(ip.c_str());
-  remote.sin_port = htons(port);
-  std::uint8_t* buffor = new std::uint8_t[payload.size()];
-  std::copy(payload.begin(), payload.end(), buffor);
-  rc = sendto(client_socket, buffor, payload.size(), 0,
-              (struct sockaddr*)&remote, sizeof(remote));
   delete[] buffor;
-  close(client_socket);
-  if (rc == -1) {
-    return srp::core::ErrorCode::kError;
-  }
   return srp::core::ErrorCode::kOk;
 }
 
@@ -78,25 +94,24 @@ void UdpSocket::StartRXThread() {
 }
 
 void UdpSocket::Loop(std::stop_token stoken) {
-  struct timeval tv;
-  tv.tv_sec = 2;
-  tv.tv_usec = 0;
-  setsockopt(server_sock, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
-  const std::stop_callback stop_wait{
-      stoken, [this]() { shutdown(this->server_sock, SHUT_RDWR); }};
-  while (true) {
-    std::array<char, 256 * 2> buffor;
-    bytes_rec =
-        recvfrom(server_sock, reinterpret_cast<char*>(&buffor), 256 * 2, 0,
-                 (struct sockaddr*)&peer_sock, (socklen_t*)&len);  // NOLINT
-    if (bytes_rec >= 0) {
+  const std::stop_callback stop_wait{stoken,
+                             [this]() { shutdown(this->server_sock, SHUT_RD); }};
+  while (!stoken.stop_requested()) {
+    struct sockaddr_in si_other;
+    int slen = sizeof(si_other);
+    std::array<char, kBufforSize> buffor;
+    const int32_t bytes_rec =
+        recvfrom(server_sock, buffor.data(), kBufforSize, 0,
+                (struct sockaddr *)&si_other, (socklen_t *)&slen);  // NOLINT
+    if (bytes_rec > 0) {
       if (this->callback_) {
-        this->callback_(
-            "UDP", 0,
-            std::vector<uint8_t>{buffor.begin(), buffor.begin() + bytes_rec});
+        this->callback_(std::string(inet_ntoa(si_other.sin_addr)),
+                              ntohs(si_other.sin_port),
+                              std::vector<uint8_t>{buffor.begin(),
+                                                  buffor.begin() + bytes_rec});
       }
     }
-  }
+}
   close(server_sock);
 }
 }  //  namespace soc
