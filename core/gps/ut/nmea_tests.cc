@@ -53,16 +53,17 @@ TEST_P(NMEAParserTest, ParsesCorrectly) {
     const auto& param = GetParam();
     auto res_opt = srp::core::Nmea::Parse(param.input);
     ASSERT_TRUE(res_opt.has_value());
-    auto res = res_opt.value();
+    const auto* res = std::get_if<srp::core::GPS_DATA_T>(&res_opt.value());
+    ASSERT_NE(res, nullptr);
 
-    EXPECT_DOUBLE_EQ(res.timestamp, param.expected_timestamp);
-    EXPECT_DOUBLE_EQ(res.latitude, param.expected_latitude);
-    EXPECT_EQ(res.latitude_dir, param.expected_lat_dir);
-    EXPECT_DOUBLE_EQ(res.longitude, param.expected_longitude);
-    EXPECT_EQ(res.longitude_dir, param.expected_long_dir);
-    EXPECT_EQ(res.satellite_nr, param.expected_sat_nr);
-    EXPECT_NEAR(res.HDOP, param.expected_HDOP, 0.01);
-    EXPECT_NEAR(res.height, param.expected_height, 0.01);
+    EXPECT_DOUBLE_EQ(res->timestamp, param.expected_timestamp);
+    EXPECT_DOUBLE_EQ(res->latitude, param.expected_latitude);
+    EXPECT_EQ(res->latitude_dir, param.expected_lat_dir);
+    EXPECT_DOUBLE_EQ(res->longitude, param.expected_longitude);
+    EXPECT_EQ(res->longitude_dir, param.expected_long_dir);
+    EXPECT_EQ(res->satellite_nr, param.expected_sat_nr);
+    EXPECT_NEAR(res->HDOP, param.expected_HDOP, 0.01);
+    EXPECT_NEAR(res->height, param.expected_height, 0.01);
 }
 
 INSTANTIATE_TEST_SUITE_P(

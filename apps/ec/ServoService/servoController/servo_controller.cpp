@@ -38,11 +38,12 @@ void ServoController::closingThreadLoop(const std::stop_token& token) {
         if (cfg.value().auto_closing == 0) {
           continue;
         }
-        if (cfg.value().position != kOpenState) {
+        if (cfg.value().position == kCloseState) {
           continue;
         }
         if (cfg.value().open_time_end <= now) {
           servo_ctr_.SetServoPosition(cfg.value(), 0);
+          servo_cfg_mng.SetServoPosition(id, kCloseState);
         } else {
           auto time_until_end = std::chrono::duration_cast<
                   std::chrono::milliseconds>(cfg.value().open_time_end - now);
@@ -67,15 +68,15 @@ void ServoController::pulsingThreadLoop(const std::stop_token& token) {
       if (cfg.value().pulsing_time == 0) {
         continue;
       }
-      if (cfg.value().position == kCloseState) {
-        pulsing_db.erase(id);
-        servo_ctr_.SetServoPosition(cfg.value(), kCloseState);
-        continue;
-      }
       {
         std::lock_guard<std::mutex> lock(pulsing_mtx_);
         auto pulse_cfg = pulsing_db.find(id);
         if (pulse_cfg == pulsing_db.end()) {
+          continue;
+        }
+        if (cfg.value().position == kCloseState) {
+          pulsing_db.erase(id);
+          servo_ctr_.SetServoPosition(cfg.value(), kCloseState);
           continue;
         }
         auto now = Clock::now();
@@ -106,12 +107,19 @@ void ServoController::Init(const std::string& app_path) {
   pulsing_thread = std::jthread([this](const std::stop_token& t) { pulsingThreadLoop(t); });
 
   logger_.LogInfo() << "ServoController.Init: initialization completed";
+  auto servo_ids = servo_cfg_mng.GetServosID();
+  for (const auto& servo : servo_ids) {
+    AutoSetServoPosition(servo, 0, true);
+  }
+  logger_.LogInfo() << "ServoController.Init: default servos position setted";
 }
 
 bool ServoController::AutoSetServoPosition(const uint8_t actuator_id,
-                                                      const uint8_t state) {
+                                                      const uint8_t state, bool force) {
   const auto cfg = servo_cfg_mng.GetServoConfig(actuator_id);
   if (!cfg.has_value()) {
+    logger_.LogWarn() << "ServoController.AutoSetServoPosition: unknown actuator_id "
+                      << actuator_id;
     return false;
   }
   auto& servo = cfg.value();
@@ -122,14 +130,21 @@ bool ServoController::AutoSetServoPosition(const uint8_t actuator_id,
   logger_.LogInfo() << "ServoController.ExecuteServoMovement: actuator "
                     << actuator_id << " moved successfully, state " << state;
 
-  if (cfg.value().position == state) {
-    return true;
+  if (!force) {
+    if (cfg.value().position == state) {
+      return true;
+    }
   }
 
   if (!servo_ctr_.SetServoPosition(servo, state)) {
+    logger_.LogError() << "ServoController.AutoSetServoPosition: failed to move actuator "
+                       << actuator_id << " to state " << state;
     return false;
   }
   servo_cfg_mng.SetServoPosition(actuator_id, state);
+
+  logger_.LogInfo() << "ServoController.AutoSetServoPosition: actuator "
+                    << actuator_id << " moved to state " << state;
 
   if (state == 2) {
     return true;
@@ -138,16 +153,17 @@ bool ServoController::AutoSetServoPosition(const uint8_t actuator_id,
     const auto pulse_deadline = Clock::now() + std::chrono::milliseconds(cfg.value().pulsing_time);
     std::lock_guard<std::mutex> lock(pulsing_mtx_);
     pulsing_db[actuator_id] = Pulsing_t{.pulse_state = 1, .pulse_deadline = pulse_deadline};
+    logger_.LogDebug() << "ServoController.AutoSetServoPosition: enabled pulsing for actuator "
+                       << actuator_id << ", interval_ms " << cfg.value().pulsing_time;
   }
-
-
   return true;
 }
 
 std::optional<uint8_t> ServoController::ReadServoPosition(const uint8_t actuator_id) {
   auto cfg = servo_cfg_mng.GetServoConfig(actuator_id);
   if (!cfg.has_value()) {
-    ara::log::LogWarn() << " cant find actuator with id: " << actuator_id;
+    logger_.LogWarn() << "ServoController.ReadServoPosition: can't find actuator with id "
+                      << actuator_id;
     return std::nullopt;
   }
   return cfg.value().position;
@@ -157,13 +173,26 @@ bool ServoController::ChangeConfigPosition(const uint8_t actuator_id,
                                            const uint16_t new_open_val,
                                            const uint16_t new_close_val) {
   if (!servo_cfg_mng.ChangeServoConfigPosition(actuator_id, new_open_val, new_close_val)) {
+    logger_.LogWarn() << "ServoController.ChangeConfigPosition: failed to update config for actuator "
+                      << actuator_id;
     return false;
   }
   auto cfg = servo_cfg_mng.GetServoConfig(actuator_id);
   if (!cfg.has_value()) {
+    logger_.LogError() << "ServoController.ChangeConfigPosition: config disappeared for actuator "
+                       << actuator_id;
     return false;
   }
-  return servo_ctr_.SetServoPosition(cfg.value(), kCloseState);
+  const auto res = servo_ctr_.SetServoPosition(cfg.value(), kCloseState);
+  if (!res) {
+    logger_.LogError() << "ServoController.ChangeConfigPosition: failed to apply close state for actuator "
+                       << actuator_id;
+    return false;
+  }
+  logger_.LogInfo() << "ServoController.ChangeConfigPosition: updated actuator "
+                    << actuator_id << " open " << new_open_val
+                    << " close " << new_close_val;
+  return true;
 }
 
 

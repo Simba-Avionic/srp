@@ -23,16 +23,28 @@
 #include "core/timestamp/timestamp_driver.hpp"
 #include "srp/apps/FcSysStatService/FcSysStatServiceHandler.h"
 #include "srp/env/EnvAppFc/EnvAppFcHandler.h"
+#include "srp/apps/MainService/MainServiceHandler.h"
+#include "srp/apps/ApogeeDetectService/ApogeeDetectServiceHandler.h"
+#include "srp/apps/GPSService/GPSServiceHandler.h"
+#include "srp/apps/RadioService/RadioServiceHandler.h"
 
 namespace srp {
 namespace logger {
 
 class LoggerService final : public ara::exec::AdaptiveApplication {
  private:
+  std::shared_ptr<apps::GPSServiceHandler> gps_handler_;
+  apps::GPSServiceProxy gps_proxy_;
+  std::shared_ptr<apps::MainServiceHandler> main_handler_;
+  apps::MainServiceProxy main_proxy_;
   env::EnvAppFcProxy env_service_proxy_;
   apps::FcSysStatServiceProxy stat_service_proxy_;
   std::shared_ptr<env::EnvAppFcHandler> env_service_handler_;
   std::shared_ptr<apps::FcSysStatServiceHandler> stat_service_handler_;
+  apps::ApogeeDetectServiceProxy apogee_proxy_;
+  std::shared_ptr<apps::ApogeeDetectServiceHandler> apogee_handler_;
+  apps::RadioServiceProxy radio_proxy_;
+  std::shared_ptr<apps::RadioServiceHandler> radio_handler_;
   Data_t data_;
   std::unique_ptr<FileLoggerDID> logger_did_;
   const ara::core::InstanceSpecifier did_instance_;

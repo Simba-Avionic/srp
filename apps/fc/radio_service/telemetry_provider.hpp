@@ -52,6 +52,8 @@ class TelemetryProvider {
 
   std::optional<RocketState_t> GetReqRocketStateFromGSFlags(const uint8_t flags);
 
+  std::vector<uint8_t> GetDefaultHeartbeat();
+
  private:
   std::shared_ptr<EventData> event_data;
   core::timestamp::TimestampController timestamp_;

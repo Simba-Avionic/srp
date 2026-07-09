@@ -17,12 +17,16 @@
 #include <string>
 #include "ara/core/result.h"
 #include "core/temp/Itemp_driver.hpp"
+#include "ara/log/logging_menager.h"
 
 namespace srp {
 namespace core {
 namespace temp {
 
 class TempDriver : public ITempDriver {
+ private:
+  const ara::log::Logger& logger_;
+
  public:
   // TODO(GH): Add Check that sensor exist.
   TempDriver();

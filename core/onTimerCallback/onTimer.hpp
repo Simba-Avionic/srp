@@ -17,6 +17,7 @@
 #include <functional>
 #include <algorithm>
 #include <vector>
+#include "ara/log/logging_menager.h"
 
 namespace srp {
 namespace core {
@@ -36,6 +37,7 @@ class TimerController {
     std::mutex timer_mtx_;
     std::vector<OnTimerCallback_t> timers;
     std::jthread loop_thread_;
+    const ara::log::Logger& logger_;
 
     void Loop(const std::stop_token& token);
  public:

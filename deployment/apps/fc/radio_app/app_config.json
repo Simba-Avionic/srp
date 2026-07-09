@@ -16,7 +16,7 @@
     "adaptive_application": {
         "RadioApp": {
             "app": {
-                "functional_groups":[
+                "functional_groups": [
                     "Running",
                     "SafetyMode"
                 ],
@@ -29,12 +29,12 @@
                     "ctx": [
                         {
                             "ctx_id": "SOME",
-                            "log_level": "kInfo",
+                            "log_level": "kDebug",
                             "ctx_des": "Logs From someip"
                         },
                         {
                             "ctx_id": "MAVL",
-                            "log_level": "kInfo",
+                            "log_level": "kDebug",
                             "ctx_des": "Logs From mavlink"
                         },
                         {

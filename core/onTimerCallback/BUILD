@@ -8,6 +8,7 @@ cc_library(
     ],
     deps=[
         "//core/common:condition_lib",
+        "@srp_platform//ara/log",
     ],
     visibility=["//visibility:public"],
 )

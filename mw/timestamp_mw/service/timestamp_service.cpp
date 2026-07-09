@@ -17,7 +17,9 @@ namespace srp {
 namespace mw {
 
 int TimestampService::Run(const std::stop_token& token) {
+    ara::log::LogInfo() << "TimestampService::Run started";
     core::condition::wait(token);
+    ara::log::LogInfo() << "TimestampService::Run stopping";
     return 0;
 }
 

@@ -18,6 +18,7 @@
 #include <cstdint>
 #include <iomanip>
 #include <optional>
+#include <variant>
 namespace srp {
 namespace core {
 
@@ -42,10 +43,43 @@ struct GPS_DATA_T {
   }
 };
 
+struct GPS_DATA_RMC_T {
+  double timestamp;
+  double latitude;
+  char latitude_dir;
+  double longitude;
+  char longitude_dir;
+  double speed;  // in km/h
+  double angle;  // in Degrees
+
+  std::string to_string() {
+    std::ostringstream oss;
+    oss << "Timestamp: " << timestamp << ", "
+        << "Latitude: " << latitude << " " << latitude_dir << ", "
+        << "Longitude: " << longitude << " " << longitude_dir << ", "
+        << "Speed in knots: " << speed << ", "
+        << "Angle in degrees: " << angle << ", ";
+    return oss.str();
+  }
+};
+
+struct GPS_DATA_VTG_T {
+  float trueCourseOverGround;  // in Degrees from North
+  float relativeSpeed;  // speed of the rocket in horizontal axis
+
+  std::string to_string(){
+    std::ostringstream oss;
+    oss << "True course over ground: " << trueCourseOverGround << ", "
+        << "Relative speed: " << relativeSpeed;
+    return oss.str();
+  }
+};
+
 class Nmea {
  public:
+  using NmeaType = std::variant<GPS_DATA_T, GPS_DATA_RMC_T, GPS_DATA_VTG_T>;
   static std::vector<std::string> splitString(const std::string& str, const char& delimiter = ',');
-  static std::optional<GPS_DATA_T> Parse(const std::string& gps_data);
+  static std::optional<NmeaType> Parse(const std::string& gps_data);
 };
 
 }  // namespace core

@@ -29,11 +29,19 @@ namespace {
 
 srp::core::ErrorCode TempController::Init(uint16_t service_id, std::unique_ptr<com::soc::StreamIpcSocket> sock) {
     if (!sock) {
+        ara::log::LogError() << "TempController::Init failed: invalid subscription socket";
         return core::ErrorCode::kInitializeError;
     }
     this->sub_sock_ = std::move(sock);
-    this->sock = std::move(std::make_unique<com::soc::IpcSocket>());
+    if (!this->sock) {
+        this->sock = std::make_unique<com::soc::IpcSocket>();
+    }
+    if (!this->sock) {
+        ara::log::LogError() << "TempController::Init failed: cannot allocate IPC socket";
+        return core::ErrorCode::kInitializeError;
+    }
     this->service_id = service_id;
+    ara::log::LogInfo() << "TempController initialized for service_id: " << service_id;
     return core::ErrorCode::kOk;
 }
 
@@ -53,14 +61,22 @@ srp::core::ErrorCode TempController::SetUp(TempRXCallback callback) {
     return res;
 }
 
+void TempController::StartRxThread() {
+    if (!this->sock) {
+        ara::log::LogError() << "StartRxThread failed: socket not initialized";
+        return;
+    }
+    this->sock->StartRXThread();
+}
+
 std::optional<uint8_t> TempController::Register(std::string name) {
     auto sensor_id = Subscribe(name);
-    this->sock->StartRXThread();
     return (sensor_id && !sensor_id->empty()) ? std::make_optional(sensor_id->front()) : std::nullopt;
 }
 
 std::optional<std::vector<uint8_t>> TempController::Subscribe(std::string name) {
     if (name.size() != PHYSICAL_ID_SIZE) {
+        ara::log::LogWarn() << "Subscribe rejected: invalid sensor physical id: " << name;
         return std::vector<uint8_t>{srp::core::ErrorCode::kError};
     }
     srp::mw::temp::TempSubHdr hdr{this->service_id, name[3], name[4],
@@ -92,12 +108,15 @@ std::vector<srp::mw::temp::TempReadHdr> TempController::Conv(const std::vector<u
 }
 
 void TempController::SetTempRXCallback() {
-    srp::com::soc::RXCallbackStream lambdaCallback = [this](
-        const std::string& ip, const std::uint16_t& port,
-            const std::vector<std::uint8_t> data) {
+    srp::com::soc::RXCallback lambdaCallback = [this](
+        const std::string& /*ip*/, const std::uint16_t& /*port*/,
+        const std::vector<std::uint8_t>& data) {
         auto hdr = this->Conv(data);
+        if (!this->callback_) {
+            ara::log::LogWarn() << "Temp RX callback dropped: callback not set";
+            return;
+        }
         this->callback_(hdr);
-        return std::vector<uint8_t>{};
     };
     this->sock->SetRXCallback(lambdaCallback);
 }

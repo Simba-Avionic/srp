@@ -30,6 +30,9 @@ namespace {
     static constexpr auto kRecovery_instance_name = "srp/apps/MainApp/RecoveryService";
     static constexpr auto kEngine_instance_name =   "srp/apps/MainApp/EngineService";
     static constexpr auto kHeartBeatPinID = 1;
+    static constexpr auto kCamPowerPinID = 10;
+    static constexpr auto kCamButtonPinID = 9;
+    static constexpr auto kCam_button_enter_delay_ms = 500;
 }  // namespace
 using RocketState_t = core::rocketState::RocketState_t;
 
@@ -51,6 +54,7 @@ int MainService::Initialize(const std::map<ara::core::StringView, ara::core::Str
     state_ctr->RegisterCallback(RocketState_t::CONNECTION_LOST, [this]() { this->OnDisarm(); });
     state_ctr->RegisterCallback(RocketState_t::ABORT, [this]() { this->OnAbort(); });
     state_ctr->RegisterCallback(RocketState_t::LAUNCH, [this]() { this->OnLaunch(); });
+    state_ctr->RegisterCallback(RocketState_t::FLIGHT, [this]() { this->OnFlight(); });
     state_ctr->RegisterCallback(RocketState_t::APOGEE, [this]() { this->OnApogee(); });
     state_ctr->RegisterCallback(RocketState_t::SECOND_PARACHUTE, [this]() { this->OnSecondParachute(); });
     state_ctr->RegisterOnStateChangeCallback([this](core::rocketState::RocketState_t state) {
@@ -113,29 +117,33 @@ int MainService::Run(const std::stop_token& token) {
     return 0;
 }
 
-void MainService::OnArm() {
-    gpio_.SetPinValue(kArmPinID, kPin_on);
-    // TOFIX() here should be Linecutter ARM pin but it dont exist...
-}
-
 void MainService::OnDisarm() {
     gpio_.SetPinValue(kArmPinID, kPin_off);
     // TOFIX() here should be Linecutter ARM pin but it dont exist...
 }
 
-void MainService::OnAbort() {
-    this->OnDisarm();
+
+void MainService::OnArm() {
+    gpio_.SetPinValue(kArmPinID, kPin_on);
+
+    gpio_.SetPinValue(kCamPowerPinID, kPin_on);
+    std::this_thread::sleep_for(std::chrono::milliseconds(kCam_button_enter_delay_ms));
+    gpio_.SetPinValue(kCamButtonPinID, kPin_on);
+    // TOFIX() here should be Linecutter ARM pin but it dont exist...
 }
 
 void MainService::OnLaunch() {
+}
+
+void MainService::OnFlight() {
     apogee_detection_allowed = true;
 }
 
 void MainService::OnApogee() {
-    // if (!recovery_handler_) {
-    //     return;
-    // }
-    // recovery_handler_->OpenReefedParachute();
+    if (!recovery_handler_) {
+        return;
+    }
+    recovery_handler_->OpenReefedParachute();
     state_ctr->SetState(RocketState_t::FIRST_PARACHUTE);
     if (engine_handler) {
         engine_handler->SetMode(static_cast<uint8_t>(RocketState_t::FIRST_PARACHUTE));
@@ -143,15 +151,20 @@ void MainService::OnApogee() {
 }
 
 void MainService::OnSecondParachute() {
-    // if (!recovery_handler_) {
-    //     return;
-    // }
-    // recovery_handler_->UnreefeParachute();
+    if (!recovery_handler_) {
+        return;
+    }
+    recovery_handler_->UnreefeParachute();
     state_ctr->SetState(RocketState_t::DROP);
     if (engine_handler) {
         engine_handler->SetMode(static_cast<uint8_t>(RocketState_t::DROP));
     }
 }
+
+void MainService::OnAbort() {
+    this->OnDisarm();
+}
+
 
 
 

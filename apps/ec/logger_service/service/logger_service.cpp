@@ -25,7 +25,7 @@ namespace logger {
 namespace {
   static constexpr std::string kloger_filename = "_log.csv";
   static constexpr std::string kloger_filename_prefix = "/home/root/";
-  static constexpr uint16_t kSave_interval = 5;
+  static constexpr uint16_t kSave_interval = 10;
   static constexpr auto kEnv_service_path_name = "srp/apps/FileLoggerApp/EnvApp";
   static constexpr auto kUdp_service_path_name = "srp/apps/FileLoggerApp/logService_udp";
   static constexpr auto kIpc_service_path_name = "srp/apps/FileLoggerApp/logService_ipc";
@@ -37,6 +37,8 @@ namespace {
   static constexpr auto kLogs_on = 1;
   static constexpr auto kLogs_off = 0;
   static constexpr auto kHeartBeatPinID = 2;
+  static constexpr auto gpios_sub = {1, 2, 3, 4, 5, 6, 7, 8, 9,
+                10, 11, 12, 13, 14, 15, 16, 17};
 }  // namespace
 void LoggerService::SaveLoop(const std::stop_token& token,
             std::shared_ptr<core::timestamp::TimestampController> timestamp) {
@@ -85,6 +87,7 @@ void LoggerService::SaveLoop(const std::stop_token& token,
 }
 
 int LoggerService::Run(const std::stop_token& token) {
+  start_func_handler(1);
   while (!token.stop_requested()) {
     if (gpio_.SetPinValue(kHeartBeatPinID, 1, 500) != core::ErrorCode::kOk) {
       ara::log::LogWarn() << "EngineApp::Run: Failed to toggle heartbeat pin";
@@ -93,6 +96,7 @@ int LoggerService::Run(const std::stop_token& token) {
     service_udp->LoggingState.Update(save_state.load());
     core::condition::wait_for(std::chrono::milliseconds(1000), token);
   }
+  start_func_handler(0);
   service_ipc->StopOffer();
   service_udp->StopOffer();
   logger_did_->StopOffer();
@@ -105,6 +109,14 @@ int LoggerService::Initialize(const std::map<ara::core::StringView, ara::core::S
   service_ipc->StartOffer();
   service_udp->StartOffer();
   this->SomeIpInit();
+  gpio_.SetCallback([this](uint8_t pin_id, uint8_t state) {
+    data.SetGpioState(pin_id, state);
+  });
+  for (const auto& id : gpios_sub) {
+    if (gpio_.ManagePinSubscription(id, true) != core::ErrorCode::kOk) {
+      ara::log::LogError() << "Failed to subscribe pin id: " << static_cast<int>(id);
+    }
+  }
   return 0;
 }
 
@@ -112,7 +124,7 @@ LoggerService::~LoggerService() {}
 
 LoggerService::LoggerService():
       someip_logger{ara::log::LoggingMenager::GetInstance()->CreateLogger(
-          "SOME", "", ara::log::LogLevel::kDebug)},
+          "SOME", "", ara::log::LogLevel::kWarn)},
       env_service_proxy{ara::core::InstanceSpecifier{kEnv_service_path_name}},
       stat_service_proxy{ara::core::InstanceSpecifier{kSysStat_service_path_name}},
       primer_service_proxy{ara::core::InstanceSpecifier{kPrimer_service_path_name}},
@@ -142,7 +154,7 @@ LoggerService::LoggerService():
 }
 
 void LoggerService::start_func_handler(const std::uint8_t status) {
-  ara::log::LogWarn() << "LoggerService::start_func_handler: status=" << static_cast<unsigned>(status)
+  ara::log::LogWarn() << "LoggerService::start_func_handler: status=" << status
                       << " save_thread_=" << (this->save_thread_ ? "set" : "null");
   if (status == 1 && !this->save_thread_) {
     this->save_thread_ = std::make_shared<std::jthread>(

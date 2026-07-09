@@ -19,6 +19,7 @@
 #include <utility>
 #include "ara/exec/adaptive_application.h"
 #include "srp/apps/FcSysStatServiceSkeleton.h"
+#include "core/sys/system_stat.hpp"
 
 namespace srp {
 namespace sysService {
@@ -27,6 +28,8 @@ class FcSystemStatService final : public ara::exec::AdaptiveApplication {
  private:
   apps::FcSysStatServiceSkeleton service_ipc;
   apps::FcSysStatServiceSkeleton service_udp;
+
+  core::stat::SystemStats stats_;
 
   std::optional<apps::FcSysStatType> GetSysStats() const;
 
@@ -44,6 +47,7 @@ class FcSystemStatService final : public ara::exec::AdaptiveApplication {
    */
   int Initialize(const std::map<ara::core::StringView, ara::core::StringView>
                       parms) override;
+
  public:
   ~FcSystemStatService() = default;
   FcSystemStatService();

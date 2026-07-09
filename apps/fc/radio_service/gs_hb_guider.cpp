@@ -19,7 +19,7 @@ namespace apps {
 namespace radio {
 namespace {
   static constexpr auto kHbDelayWarning = 1.1;
-  static constexpr auto kDuration_from_last_hb_to_conn_lost_ms = 2 * 60 * 1000;
+  static constexpr auto kDuration_from_last_hb_to_conn_lost_ms = 5 * 60 * 1000;
   static constexpr auto kDuration_from_last_hb_to_abort_ms = 15 * 60 * 1000;
 }
 

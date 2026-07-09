@@ -19,13 +19,13 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           submodules: recursive
 
       - name: Run cpplint
         run: |
-          /bin/bash ./tools/cpplint/cpplint.sh
+          ./tools/cpplint/cpplint.sh
 
   build-and-test:
     name: SRP Build & Test SRP
@@ -36,7 +36,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           submodules: recursive
 

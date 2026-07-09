@@ -18,6 +18,7 @@
 #include "mw/gpio_server/controller/gpio_controller.hpp"
 #include "mw/gpio_server/controller/Igpio_controller.h"
 #include "core/pd-33x/rs485/Irs485.hpp"
+#include "ara/log/logging_menager.h"
 namespace srp {
 namespace core {
 
@@ -26,6 +27,7 @@ class RS485 : public IRS485 {
     std::unique_ptr<uart::IUartDriver> uart_;
     std::unique_ptr<srp::gpio::IGPIOController> gpio_;
     uint8_t pin_id;
+    const ara::log::Logger& logger_;
 
  public:
     bool Init(const RS485_conf_t& config,
@@ -33,7 +35,7 @@ class RS485 : public IRS485 {
          std::unique_ptr<srp::gpio::IGPIOController>&& gpio = std::make_unique<srp::gpio::GPIOController>()) override;
     std::optional<std::vector<uint8_t>> WriteRead(const std::vector<uint8_t>& data, const uint8_t read_size) override;
     ~RS485();
-    RS485() = default;
+    RS485();
 };
 
 }  // namespace core

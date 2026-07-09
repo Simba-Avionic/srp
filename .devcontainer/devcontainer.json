@@ -2,10 +2,8 @@
 // README at: https://github.com/devcontainers/templates/tree/main/src/ubuntu
 {
     "name": "C++ Bazel Podman (Native)",
-    "build": {
-        "dockerfile": "Dockerfile"
-    },
-	"customizations": {
+    "image": "ghcr.io/simba-avionic/simba_avionics_dockers/devcontainer",
+    "customizations": {
         "vscode": {
             "extensions": [
                 "ms-vscode.cpptools-extension-pack",
@@ -17,7 +15,7 @@
                 "ms-python.vscode-pylance",
                 "ms-python.vscode-python-envs"
             ],
-			"settings": {
+            "settings": {
                 "cpplint.path": "/usr/local/bin/cpplint",
                 "C_Cpp.default.cppStandard": "c++23",
                 "C_Cpp.default.cStandard": "c23",
@@ -25,33 +23,29 @@
                 "bsv.bazel.executable": "/usr/local/bin/bazel",
                 "bsv.buildozer.executable": "/usr/local/bin/buildozer",
                 "doxdocgen.generic.authorName": "${localEnv:DEV_AUTHOR_NAME}",
-                "doxdocgen.generic.authorEmail": "${localEnv:DEV_AUTHOR_EMAIL}"
+                "doxdocgen.generic.authorEmail": "${localEnv:DEV_AUTHOR_EMAIL}",
             }
         }
     },
     "runArgs": [
         "--userns=keep-id",
-        "--security-opt", "label=disable"
+        "--security-opt",
+        "label=disable"
     ],
     "mounts": [
         "source=${localEnv:HOME}/.gitconfig,target=/home/vscode/.gitconfig,type=bind,consistency=cached",
         "source=bazel-cache-${localWorkspaceFolderBasename},target=/home/vscode/.cache,type=volume"
     ],
-
-	// Features to add to the dev container. More info: https://containers.dev/features.
-	// "features": {},
-
-	// Use 'forwardPorts' to make a list of ports inside the container available locally.
-	// "forwardPorts": [],
-
-	// Use 'postCreateCommand' to run commands after the container is created.
-	// "postCreateCommand": "",
-
-	// Configure tool-specific properties.
-	// "customizations": {},
-
-	// Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
-	"remoteUser": "vscode",
+    // Features to add to the dev container. More info: https://containers.dev/features.
+    // "features": {},
+    // Use 'forwardPorts' to make a list of ports inside the container available locally.
+    // "forwardPorts": [],
+    // Use 'postCreateCommand' to run commands after the container is created.
+    // "postCreateCommand": "",
+    // Configure tool-specific properties.
+    // "customizations": {},
+    // Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
+    "remoteUser": "vscode",
     "remoteEnv": {
         "DEV_AUTHOR_NAME": "${localEnv:DEV_AUTHOR_NAME}",
         "DEV_AUTHOR_EMAIL": "${localEnv:DEV_AUTHOR_EMAIL}"

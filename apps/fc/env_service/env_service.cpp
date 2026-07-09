@@ -8,6 +8,7 @@
  * @copyright Copyright (c) 2026
  * 
  */
+#include <cstring>
 #include <memory>
 #include <map>
 #include <string>
@@ -27,10 +28,12 @@ namespace {
     static constexpr auto kBME280_delay_ms =           100;
     static constexpr auto kService_instance_path_ipc = "srp/env/EnvAppFc/envServiceFc_ipc";
     static constexpr auto kService_instance_path_udp = "srp/env/EnvAppFc/envServiceFc_udp";
+    static constexpr auto kSomeIPServiceID = 529;
 }  // namespace
 
-EnvServiceFc::EnvServiceFc(): service_ipc(ara::core::InstanceSpecifier{kService_instance_path_ipc}),
-                  service_udp(ara::core::InstanceSpecifier{kService_instance_path_udp}) {
+EnvServiceFc::EnvServiceFc():
+                service_ipc(ara::core::InstanceSpecifier{kService_instance_path_ipc}),
+                service_udp(ara::core::InstanceSpecifier{kService_instance_path_udp}) {
 }
 
 
@@ -39,6 +42,10 @@ core::ErrorCode EnvServiceFc::Init(std::unique_ptr<mw::temp::TempController> tem
       return core::ErrorCode::kInitializeError;
     }
     this->temp_ = std::move(temp);
+    if (config.Init() != core::ErrorCode::kOk) {
+        ara::log::LogError() << "EnvServiceFc::Init: EEPROM ConfigManager init failed";
+        return core::ErrorCode::kInitializeError;
+    }
     return core::ErrorCode::kOk;
 }
 
@@ -47,13 +54,12 @@ core::ErrorCode EnvServiceFc::Init(std::unique_ptr<mw::temp::TempController> tem
 int EnvServiceFc::Initialize(const std::map<ara::core::StringView, ara::core::StringView>
                       parms) {
     ara::log::LogInfo() << "EnvService has been started";
-    // Check if app_path exists in parameters
     auto app_path_it = parms.find("app_path");
     if (app_path_it == parms.end()) {
         ara::log::LogError() << "app_path parameter not found in parms";
         return core::ErrorCode::kInitializeError;
     }
-
+    std::this_thread::sleep_for(std::chrono::seconds(3));
     // Initialize pressure sensor
     bme = std::make_shared<i2c::BME280>();
     auto i2c = std::make_unique<i2c::I2CController>();
@@ -77,9 +83,12 @@ int EnvServiceFc::Initialize(const std::map<ara::core::StringView, ara::core::St
     uint8_t i = 0;
     do {
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
-        res = this->temp_->Initialize(529, std::bind(&EnvServiceFc::TempRxCallback,
+        res = this->temp_->Initialize(kSomeIPServiceID, std::bind(&EnvServiceFc::TempRxCallback,
             this, std::placeholders::_1), std::make_unique<com::soc::StreamIpcSocket>());
-        ara::log::LogInfo() << "Cant connect to temp by id:529, try num: " << i;
+        if (res != core::ErrorCode::kOk) {
+            ara::log::LogWarn() << "TempController init failed for id:" << kSomeIPServiceID
+                                << ", try num: " << i;
+        }
         i++;
     } while (res != core::ErrorCode::kOk && i < 6);
     if (res != core::ErrorCode::kOk) {
@@ -90,14 +99,77 @@ int EnvServiceFc::Initialize(const std::map<ara::core::StringView, ara::core::St
         ara::log::LogError() << "Failed to load temperature configuration";
         return core::ErrorCode::kInitializeError;
     }
-    service_ipc.StartOffer();
-    service_udp.StartOffer();
+    // eeprom::EEPROM_config cfg{};
+    // cfg.pca9685_XO_corelation = 1.0;
+    // strncpy(cfg.board_temp1_id, "000011106551", sizeof(cfg.board_temp1_id));
+    // strncpy(cfg.board_temp2_id, "00001110e419", sizeof(cfg.board_temp2_id));
+    // strncpy(cfg.board_temp3_id, "0000111128f8", sizeof(cfg.board_temp3_id));
+    // if (config.SetConfig(cfg) != core::ErrorCode::kOk) {
+    //     ara::log::LogError() << "cant set eeprom";
+    // } else {
+    //     auto read_back = config.GetConfig();
+    //     if (!read_back.has_value()) {
+    //         ara::log::LogError() << "EEPROM read-back failed after SetConfig";
+    //     } else if (std::memcmp(&read_back.value(), &cfg, sizeof(cfg)) != 0) {
+    //         ara::log::LogError() << "EEPROM read-back mismatch after SetConfig";
+    //     } else {
+    //         ara::log::LogWarn() << "EEPROM SetConfig + GetConfig roundtrip OK";
+    //     }
+    // }
+
+    const std::optional<eeprom::EEPROM_config> eeprom_cfg = config.GetConfig();
+    if (!eeprom_cfg.has_value()) {
+        ara::log::LogError() << "Failed to load EEPROM temperature configuration";
+        return core::ErrorCode::kInitializeError;
+    }
+
+    auto register_sensor = [&](const char* raw_id, std::size_t raw_id_max_len,
+                               const std::string& label) -> core::ErrorCode {
+        const std::string raw_id_str(raw_id, strnlen(raw_id, raw_id_max_len));
+        std::string physical_id = "28-" + raw_id_str;
+        auto sensor_id = this->temp_->Register(physical_id);
+
+        if (!sensor_id.has_value()) {
+            ara::log::LogError() << "Sensor_id is empty for " << label;
+            return core::ErrorCode::kInitializeError;
+        }
+
+        sensorIdsToPaths[sensor_id.value()] = std::make_pair(label, physical_id);
+        return core::ErrorCode::kOk;
+    };
+    if (register_sensor(eeprom_cfg.value().board_temp1_id,
+                        sizeof(eeprom_cfg.value().board_temp1_id), "board_1") !=
+                                            core::ErrorCode::kOk) return core::ErrorCode::kInitializeError;
+    if (register_sensor(eeprom_cfg.value().board_temp2_id,
+                        sizeof(eeprom_cfg.value().board_temp2_id), "board_2") !=
+                                            core::ErrorCode::kOk) return core::ErrorCode::kInitializeError;
+    if (register_sensor(eeprom_cfg.value().board_temp3_id,
+                        sizeof(eeprom_cfg.value().board_temp3_id), "board_3") !=
+                                            core::ErrorCode::kOk) return core::ErrorCode::kInitializeError;
+
+    auto i2c_imu = std::make_unique<i2c::I2CController>();
+    i2c::config_t imu_cfg;
+    imu_cfg.accel_scale = i2c::ACCEL_FULL_SCALE::k16g;
+    imu_cfg.accel_speed = i2c::ACCEL_SPEED_t::k208;
+    imu_cfg.gyro_scale = i2c::GYRO_FULL_SCALE::k2000;
+    imu_cfg.gyro_speed = i2c::GYRO_SPEED_t::k208;
+
+    ara::log::LogInfo() << "EnvApp: starting IMU initialization";
+    if (imu_.Initialize(std::move(i2c_imu), imu_cfg) == core::ErrorCode::kOk) {
+        imu_ready_ = true;
+        ara::log::LogInfo() << "EnvApp: IMU initialization complete";
+    } else {
+        imu_ready_ = false;
+        ara::log::LogWarn() << "EnvApp: IMU initialization failed, continuing without IMU";
+    }
+
     return core::ErrorCode::kOk;
 }
 
 int EnvServiceFc::LoadTempConfig(const std::map<ara::core::StringView, ara::core::StringView>& parms) {
     ara::log::LogDebug() << "Starting function LoadTempConfig";
-    const std::string path = parms.at("app_path") + "etc/config.json";
+    const auto app_path = parms.at("app_path");
+    const std::string path = std::string(app_path.data(), app_path.size()) + "etc/config.json";
     auto parser_opt = core::json::JsonParser::Parser(path);
     ara::log::LogDebug() << path;
     if (!parser_opt.has_value()) {
@@ -135,8 +207,37 @@ int EnvServiceFc::LoadTempConfig(const std::map<ara::core::StringView, ara::core
     return srp::core::ErrorCode::kOk;
 }
 
-void EnvServiceFc::Bme280Loop(const std::stop_token& token) {
-     while (!token.stop_requested()) {
+
+int EnvServiceFc::Run(const std::stop_token& token) {
+    ara::log::LogDebug() << "Leci run";
+
+    service_ipc.StartOffer();
+    service_udp.StartOffer();
+    temp_->StartRxThread();
+
+    if (imu_ready_) {
+        imu_thread = std::jthread([this](const std::stop_token& imu_token) {
+            while (!imu_token.stop_requested()) {
+                core::condition::wait_for(std::chrono::milliseconds(10), imu_token);
+                const auto accel = imu_.ReadAccelData();
+                const auto gyro = imu_.ReadGyroData();
+                if (!accel.has_value() || !gyro.has_value()) {
+                    continue;
+                }
+                srp::env::IMUDataStructure data;
+                data.accel_x = accel.value().x;
+                data.accel_y = accel.value().y;
+                data.accel_z = accel.value().z;
+                data.gyroscope_x = gyro.value().x;
+                data.gyroscope_y = gyro.value().y;
+                data.gyroscope_z = gyro.value().z;
+                service_ipc.newIMUEvent.Update(data);
+                service_udp.newIMUEvent.Update(data);
+            }
+        });
+    }
+
+    while (!token.stop_requested()) {
         const auto start = std::chrono::high_resolution_clock::now();
         const auto pressValue = this->bme->getPressure();
         const auto tempValue = this->bme->getTemperature();
@@ -156,12 +257,6 @@ void EnvServiceFc::Bme280Loop(const std::stop_token& token) {
             core::condition::wait_for(std::chrono::milliseconds(kBME280_delay_ms) - duration, token);  // 1 Hz
         }
     }
-}
-
-int EnvServiceFc::Run(const std::stop_token& token) {
-    ara::log::LogDebug() << "Leci run";
-
-    Bme280Loop(token);
 
     service_ipc.StopOffer();
     service_udp.StopOffer();
@@ -174,18 +269,23 @@ void EnvServiceFc::TempRxCallback(const std::vector<srp::mw::temp::TempReadHdr>&
         udpEv.Update(val);
     };
     for (auto &hdr : data) {
-        const auto& sensorName = sensorIdsToPaths[hdr.actuator_id].first;
+        const auto path_it = sensorIdsToPaths.find(hdr.actuator_id);
+        if (path_it == sensorIdsToPaths.end()) {
+            ara::log::LogWarn() << "Unknown sensor id: " << hdr.actuator_id;
+            continue;
+        }
+        const auto& sensorName = path_it->second.first;
         const int16_t value = static_cast<int16_t>(hdr.value * 10);
 
         ara::log::LogDebug() << "Receive temp id: " << hdr.actuator_id
                              << ", name: " << sensorName
                              << ", temp: " << (static_cast<float>(value) / 10.0f);
 
-        if (sensorName == "board_temp_1") {
+        if (sensorName == "board_1") {
             updateEvents(this->service_ipc.newBoardTempEvent_1, this->service_udp.newBoardTempEvent_1, value);
-        } else if (sensorName == "board_temp_2") {
+        } else if (sensorName == "board_2") {
             updateEvents(this->service_ipc.newBoardTempEvent_2, this->service_udp.newBoardTempEvent_2, value);
-        } else if (sensorName == "board_temp_3") {
+        } else if (sensorName == "board_3") {
             updateEvents(this->service_ipc.newBoardTempEvent_3, this->service_udp.newBoardTempEvent_3, value);
         } else {
             ara::log::LogWarn() << "ID spoza zakresu: " << hdr.actuator_id;

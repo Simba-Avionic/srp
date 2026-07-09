@@ -17,6 +17,7 @@
 #include <unordered_map>
 #include <functional>
 #include <string>
+#include "ara/log/logging_menager.h"
 
 namespace srp {
 namespace core {
@@ -94,6 +95,7 @@ class RocketStateController {
     std::unordered_map<RocketState_t, StateCallback> callbacks_;
     RocketState_t prev_state;
     RocketState_t actual_state;
+    const ara::log::Logger& logger_;
 
     // use for status update
     OnStateChangeCallback on_change_callback_;

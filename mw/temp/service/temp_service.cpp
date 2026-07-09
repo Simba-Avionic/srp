@@ -46,9 +46,11 @@ namespace {
 
 TempService::TempService(): did_instance{"/srp/mw/temp_service/temp_status_did"} {
     temp_driver_ = std::make_unique<core::temp::TempDriver>();
+    ara::log::LogInfo() << "TempService created";
 }
 
 int TempService::Run(const std::stop_token& token) {
+    ara::log::LogInfo() << "TempService::Run started";
     std::vector<std::future<std::optional<srp::mw::temp::TempReadHdr>>> futures;
     futures.reserve(10);
 
@@ -87,8 +89,10 @@ int TempService::Run(const std::stop_token& token) {
         }
         futures.clear();
     }
+    ara::log::LogInfo() << "TempService::Run stopping";
     this->sub_sock_->StopRXThread();
     this->temp_did_->StopOffer();
+    ara::log::LogInfo() << "TempService::Run stopped cleanly";
     return 0;
 }
 
@@ -114,16 +118,18 @@ int TempService::Initialize(const std::map<ara::core::StringView, ara::core::Str
     this->sub_sock_->StartRXThread();
     auto sensors = temp_driver_->GetAllAccessibleSensor();
     if (!sensors.HasValue()) {
-        ara::log::LogWarn() << "Cant get avaliable temp sensors";
+        ara::log::LogWarn() << "Can't get available temp sensors";
+    } else {
+        std::stringstream ss;
+        ss << "sensors: ";
+        for (const auto& name : sensors.Value()) {
+            ss << name << ", ";
+        }
+        ara::log::LogInfo() << ss.str();
     }
-    std::stringstream ss;
-    ss << "sensors: ";
-    for (const auto& name : sensors.Value()) {
-        ss << name << ", ";
-    }
-    ara::log::LogInfo() << ss.str();
     this->temp_did_ = std::make_unique<TempMWDID>(did_instance);
     this->temp_did_->Offer();
+    ara::log::LogInfo() << "TempService initialization complete";
     return srp::core::ErrorCode::kOk;
 }
 
@@ -140,6 +146,7 @@ std::vector<uint8_t> TempService::SubCallback(const std::string& ip, const uint1
     const std::vector<std::uint8_t>& data) {
     auto hdr_opt = srp::data::Convert<srp::mw::temp::TempSubHdr>::Conv(data);
     if (!hdr_opt.has_value()) {
+        ara::log::LogWarn() << "SubCallback rejected: invalid subscription header";
         return std::vector<uint8_t>{};
     }
     auto hdr = hdr_opt.value();
@@ -208,7 +215,7 @@ void TempService::SendTempReading(const TempReadHdr& read) {
 
     std::vector<uint8_t> data = srp::data::Convert2Vector<srp::mw::temp::TempReadHdr>::Conv(read);
     for (const auto& client_id : subs) {
-        std::string ip = kSubscriberPrefix + std::to_string(static_cast<int>(client_id));
+        std::string ip = kSubscriberPrefix + std::to_string(client_id);
         if (this->sock->Transmit(ip, 0, data)) {
             ara::log::LogError() << "Can't send message to: " << ip;
             continue;

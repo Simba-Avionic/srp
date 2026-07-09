@@ -1,7 +1,7 @@
-build:bbb --crosstool_top=//bazel/toolchain/arm-cortex_a8-linux-gnueabihf:gcc_toolchain --cpu=armv7
+build:bbb --crosstool_top=@srp_platform//bazel/toolchain/arm-cortex_a8-linux-gnueabihf:gcc_toolchain --cpu=armv7
 
-build:platform_build --incompatible_enable_cc_toolchain_resolution --crosstool_top=//bazel/toolchain/arm-cortex_a8-linux-gnueabihf:gcc_toolchain 
-build:bbb-platform --config=platform_build --platforms=//bazel/platforms:bbb
+build:platform_build --incompatible_enable_cc_toolchain_resolution --crosstool_top=@srp_platform//bazel/toolchain/arm-cortex_a8-linux-gnueabihf:gcc_toolchain 
+build:bbb-platform --config=platform_build --platforms=@srp_platform//bazel/platforms:bbb
 build:adaptive -c opt --copt=-O3
 
 build:ut --define build_mode=ut

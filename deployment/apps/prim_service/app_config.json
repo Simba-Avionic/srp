@@ -15,9 +15,14 @@
                 "logger": {
                     "app_id": "PRIM",
                     "app_des": "Serwis od spłonki",
-                    "log_level": "kWarn",
+                    "log_level": "kDebug",
                     "log_mode": "kRemote",
                     "ctx": [
+                        {
+                            "ctx_id": "CTRL",
+                            "log_level": "kDebug",
+                            "ctx_des": "Default ctx for primer controller"
+                        },
                         {
                             "ctx_id": "ara",
                             "log_level": "kWarn",

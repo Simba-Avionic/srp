@@ -62,6 +62,8 @@ class II2CController{
    */
   virtual std::optional<std::vector<uint8_t>> WriteRead(const uint8_t address,
                                                         const uint8_t WriteData, const uint8_t ReadSize = 1) = 0;
+  virtual std::optional<std::vector<uint8_t>> WriteReadBuffer(
+      const uint8_t address, const std::vector<uint8_t>& write_data, const uint8_t read_size) = 0;
   virtual ~II2CController() = default;
 };
 }  // namespace i2c

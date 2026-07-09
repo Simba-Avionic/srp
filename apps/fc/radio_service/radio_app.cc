@@ -22,7 +22,7 @@ namespace srp {
 namespace apps {
 namespace {
   static constexpr auto kHB_send_time_ms =        990;
-  static constexpr auto kMax_altitude_send_time_ms = 1000;
+  static constexpr auto kMax_altitude_send_time_ms = 100;
   static constexpr auto kEngine_sensor_send_time_ms = 1000;
   static constexpr auto kGps_send_time_ms = 1000;
   static constexpr auto kComputer_telemetry_send_time_ms = 1000;
@@ -149,12 +149,12 @@ void RadioApp::OnRadioStatusMsg(const mavlink_message_t& msg) {
   mavlink_msg_radio_status_decode(&msg, &radio_status);
   ara::log::LogWarn()
       << "rxErrors: "      << radio_status.rxerrors
-      << " TxFreeBuf: "    << static_cast<uint32_t>(radio_status.txbuf)
+      << " TxFreeBuf: "    << radio_status.txbuf
       << " Fixed: "        << radio_status.fixed
-      << " rssi: "         << static_cast<uint32_t>(radio_status.rssi)
-      << " remote rssi: "  << static_cast<uint32_t>(radio_status.remrssi)
-      << " noise: "        << static_cast<uint32_t>(radio_status.noise)
-      << " remote noise: " << static_cast<uint32_t>(radio_status.remnoise);
+      << " rssi: "         << radio_status.rssi
+      << " remote rssi: "  << radio_status.remrssi
+      << " noise: "        << radio_status.noise
+      << " remote noise: " << radio_status.remnoise;
 
   RadioDataType someip_radio_data {
       .rxerrors = radio_status.rxerrors,
@@ -245,6 +245,10 @@ int RadioApp::Initialize(const std::map<ara::core::StringView,
   timer_ctr_.AddOnTimerCallback([this](){
     // Computers telemetry
     radio_controller.Push(telemetry_provider.GetComputersTelemetryMsg());
+  }, kComputer_telemetry_send_time_ms);
+
+  timer_ctr_.AddOnTimerCallback([this]() {
+    radio_controller.Push(telemetry_provider.GetDefaultHeartbeat());
   }, kComputer_telemetry_send_time_ms);
 
   return core::ErrorCode::kOk;

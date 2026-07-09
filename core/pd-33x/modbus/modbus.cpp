@@ -12,6 +12,11 @@
 namespace srp {
 namespace core {
 
+MODBUS::MODBUS():
+    slave_id(0),
+    logger_(ara::log::LoggingMenager::GetInstance()->CreateLogger(
+        "mdbs", "", ara::log::LogLevel::kWarn)) {}
+
 uint16_t MODBUS::Calculate_CRC16(const std::vector<uint8_t>& data) {
     unsigned int Crc = 0xFFFF;
     unsigned char n, m, x;

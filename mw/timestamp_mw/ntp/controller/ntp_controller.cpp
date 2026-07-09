@@ -107,9 +107,6 @@ uint8_t NtpController::EncodeSettings(const uint8_t device_class, const bool is_
 void NtpController::SendAnnounce() {
     srp::mw::tinyNTP::ntpStruct frame;
 
-    /**
-     * @todo: Implement holdover
-     */
     frame.settings = EncodeSettings(ntp_config_.ntp_class, is_holdover_, 1);
     frame.t0 = 0; frame.t1 = 0; frame.t2 = 0; frame.t3 = 0;
 
