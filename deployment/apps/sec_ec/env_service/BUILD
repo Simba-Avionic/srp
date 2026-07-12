@@ -9,6 +9,7 @@ filegroup(
     visibility = [
         "//apps/sec_ec/env_service:__subpackages__",
         "//deployment/apps/sec_ec/env_service:__subpackages__",
+        "//deployment/apps/logger_service:__subpackages__",
     ],
 )
 

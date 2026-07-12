@@ -6,6 +6,8 @@
         "deployment/system_definition/someip/prim_service/service.json",
         "deployment/system_definition/someip/servo_service/service.json",
         "deployment/system_definition/someip/engine_service/service.json",
+        "deployment/system_definition/someip/sec_ec/env_service/service.json",
+        "deployment/system_definition/someip/sec_ec/servo_service/service.json",
         "deployment/system_definition/diag/jobs/file_logger/file_logger_did.json"
     ],
     "package": "srp.apps",
@@ -93,6 +95,18 @@
                     "name": "EngineService as EngineService",
                     "on": "ipc",
                     "instance": 2
+                },
+                {
+                    "name": "srp.env.SecEnvApp as SecEnvApp",
+                    "on": "udp",
+                    "instance": 1,
+                    "port": "10001"
+                },
+                {
+                    "name": "srp.apps.SecServoService as SecServoService",
+                    "on": "udp",
+                    "instance": 1,
+                    "port": "10001"
                 }
             ]
         }

@@ -29,7 +29,7 @@
             "actuator_id":63,
             "channel": 2,
             "on_pos" : 102,
-            "off_pos" : 512,
+            "off_pos" : 505,
             "mosfet_id" : 10,
             "desc": "Presure Feed System MAIN VALVE"
         },

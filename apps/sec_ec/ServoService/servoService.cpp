@@ -40,6 +40,12 @@ int SecServoService::Run(const std::stop_token& token) {
     ara::log::LogError() << "SecServoService.Run: service components are not initialized";
     return 1;
   }
+  gpio_.SetPinValue(9, 1);
+  gpio_.SetPinValue(5, 1);
+  gpio_.SetPinValue(6, 1);
+  gpio_.SetPinValue(7, 1);
+  gpio_.SetPinValue(14, 1);
+  gpio_.SetPinValue(8, 1);
 
   service_ipc->StartOffer();
   service_udp->StartOffer();

@@ -26,9 +26,9 @@ namespace srp {
 namespace sec_ec {
 
 namespace {
-  static constexpr uint8_t kEthanolPressSensorId = 10;
-  static constexpr uint8_t kChamberPress2SensorId = 11;
-  static constexpr uint8_t kChamberPress3SensorId = 12;
+  static constexpr uint8_t kEthanolPressSensorId = 14;
+  static constexpr uint8_t kChamberPress2SensorId = 13;
+  static constexpr uint8_t kChamberPress3SensorId = 15;
   static constexpr auto kPressureDelayMs = 100;
 }  // namespace
 
@@ -202,11 +202,11 @@ void SecEnvService::GenericPressureLoop(
             std::ostringstream ss;
             ss << std::fixed << std::setprecision(2) << val;
             ara::log::LogInfo() << "SecEnvService: new " << label << ": " << ss.str() << " Bar";
-
+            const auto fixed_val = static_cast<int16_t>(val * 100);
             {
                 std::lock_guard lock(service_mtx_);
-                eventIpc.Update(val);
-                eventUdp.Update(val);
+                eventIpc.Update(fixed_val);
+                eventUdp.Update(fixed_val);
             }
         } else {
             ara::log::LogWarn() << "SecEnvService: no new " << label;

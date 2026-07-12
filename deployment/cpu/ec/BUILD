@@ -22,8 +22,8 @@ cpu_def(
     srp_components = SIMBA_COMPUTER_BASE_APPS + [
         "//deployment/apps/servo_service:servoService",
         "//deployment/apps/engine_app:EngineService",
-        # "//deployment/apps/env_service:EnvApp",
-        # "//deployment/apps/logger_service:FileLoggerApp",
+        "//deployment/apps/env_service:EnvApp",
+        "//deployment/apps/logger_service:FileLoggerApp",
         "//deployment/apps/system_stat_service:SysStatService",
         "//deployment/apps/prim_service:PrimerService",
     ],

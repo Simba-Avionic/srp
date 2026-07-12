@@ -22,6 +22,8 @@ filegroup(
         "//deployment/apps/prim_service:instance",
         "//deployment/apps/servo_service:instance",
         "//deployment/system_definition/someip/engine_service:service_someipy",
+        "//deployment/apps/sec_ec/env_service:instance",
+        "//deployment/apps/sec_ec/servo_service:instance",
         "//deployment/system_definition/diag/jobs/file_logger:file_logger_job",
     ],
     visibility = ["//visibility:public"],

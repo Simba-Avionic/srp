@@ -33,6 +33,8 @@ namespace {
   static constexpr auto kPrimer_service_path_name = "srp/apps/FileLoggerApp/PrimerService";
   static constexpr auto kServo_service_path_name = "srp/apps/FileLoggerApp/ServoService";
   static constexpr auto kEngine_service_path_name = "srp/apps/FileLoggerApp/EngineService";
+  static constexpr auto kSecEnv_service_path_name = "srp/apps/FileLoggerApp/SecEnvApp";
+  static constexpr auto kSecServo_service_path_name = "srp/apps/FileLoggerApp/SecServoService";
   static constexpr auto kFile_did_path_name = "/srp/apps/FileLoggerApp/logger_did";
   static constexpr auto kLogs_on = 1;
   static constexpr auto kLogs_off = 0;
@@ -130,11 +132,15 @@ LoggerService::LoggerService():
       primer_service_proxy{ara::core::InstanceSpecifier{kPrimer_service_path_name}},
       servo_service_proxy{ara::core::InstanceSpecifier{kServo_service_path_name}},
       engine_service_proxy{ara::core::InstanceSpecifier{kEngine_service_path_name}},
+      sec_env_service_proxy{ara::core::InstanceSpecifier{kSecEnv_service_path_name}},
+      sec_servo_service_proxy{ara::core::InstanceSpecifier{kSecServo_service_path_name}},
       env_service_handler{nullptr},
       stat_service_handler{nullptr},
       primer_service_handler{nullptr},
       servo_service_handler{nullptr},
       engine_service_handler{nullptr},
+      sec_env_service_handler{nullptr},
+      sec_servo_service_handler{nullptr},
       did_instance{kFile_did_path_name},
       timestamp_{std::make_shared<core::timestamp::TimestampController>()},
       save_thread_{nullptr} {
@@ -188,60 +194,73 @@ void LoggerService::SomeIpInit() {
         this->data.SetEngineMode(res.Value());
       });
     });
-    engine_service_handler->NewVentValveStatus.Subscribe(1, [this](const uint8_t status) {
-      someip_logger.LogDebug() << "Subscribed to Engine NewVentValveStatus, status="
-                               << status;
-      engine_service_handler->NewVentValveStatus.SetReceiveHandler([this] () {
-        auto res = engine_service_handler->NewVentValveStatus.GetNewSamples();
-        if (!res.HasValue()) {
-          return;
-        }
-        someip_logger.LogDebug() << "Engine NewVentValveStatus sample: "
-                                 << res.Value();
-        this->data.SetNewVentValveStatus(res.Value());
-      });
-    });
   });
   this->servo_service_proxy.StartFindService([this](auto handler) {
     someip_logger.LogDebug() << "Servo service handler discovered";
     this->servo_service_handler = handler;
-    servo_service_handler->ServoStatusEvent.Subscribe(1, [this](const uint8_t status) {
-      someip_logger.LogDebug() << "Subscribed to ServoStatusEvent, status="
+    servo_service_handler->newOxidizerMainValveEvent.Subscribe(1, [this](const uint8_t status) {
+      someip_logger.LogDebug() << "Subscribed to newOxidizerMainValveEvent, status="
                                << status;
-      servo_service_handler->ServoStatusEvent.SetReceiveHandler([this] () {
-        auto res = servo_service_handler->ServoStatusEvent.GetNewSamples();
+      servo_service_handler->newOxidizerMainValveEvent.SetReceiveHandler([this] () {
+        auto res = servo_service_handler->newOxidizerMainValveEvent.GetNewSamples();
         if (!res.HasValue()) {
           return;
         }
-        someip_logger.LogDebug() << "ServoStatusEvent sample: "
+        someip_logger.LogDebug() << "newOxidizerMainValveEvent sample: "
                                  << res.Value();
-        this->data.SetServoStatus(res.Value());
+        this->data.SetOxidizerMainValve(res.Value());
       });
     });
-    servo_service_handler->ServoDumpStatusEvent.Subscribe(1, [this](const uint8_t status) {
-      someip_logger.LogDebug() << "Subscribed to ServoDumpStatusEvent, status="
+    servo_service_handler->newOxidizerVentValveEvent.Subscribe(1, [this](const uint8_t status) {
+      someip_logger.LogDebug() << "Subscribed to newOxidizerVentValveEvent, status="
                                << status;
-      servo_service_handler->ServoDumpStatusEvent.SetReceiveHandler([this] () {
-        auto res = servo_service_handler->ServoDumpStatusEvent.GetNewSamples();
+      servo_service_handler->newOxidizerVentValveEvent.SetReceiveHandler([this] () {
+        auto res = servo_service_handler->newOxidizerVentValveEvent.GetNewSamples();
         if (!res.HasValue()) {
           return;
         }
-        someip_logger.LogDebug() << "ServoDumpStatusEvent sample: "
+        someip_logger.LogDebug() << "newOxidizerVentValveEvent sample: "
                                  << res.Value();
-        this->data.SetServoDumpStatus(res.Value());
+        this->data.SetOxidizerVentValve(res.Value());
       });
     });
-    servo_service_handler->ServoVentStatusEvent.Subscribe(1, [this](const uint8_t status){
-      someip_logger.LogDebug() << "Subscribed to ServoVentStatusEvent, status="
+    servo_service_handler->newOxidizerDumpValveEvent.Subscribe(1, [this](const uint8_t status) {
+      someip_logger.LogDebug() << "Subscribed to newOxidizerDumpValveEvent, status="
                                << status;
-      servo_service_handler->ServoVentStatusEvent.SetReceiveHandler([this] () {
-        auto res = servo_service_handler->ServoVentStatusEvent.GetNewSamples();
+      servo_service_handler->newOxidizerDumpValveEvent.SetReceiveHandler([this] () {
+        auto res = servo_service_handler->newOxidizerDumpValveEvent.GetNewSamples();
         if (!res.HasValue()) {
           return;
         }
-        someip_logger.LogDebug() << "ServoVentStatusEvent sample: "
+        someip_logger.LogDebug() << "newOxidizerDumpValveEvent sample: "
                                  << res.Value();
-        this->data.SetServoVentStatus(res.Value());
+        this->data.SetOxidizerDumpValve(res.Value());
+      });
+    });
+    servo_service_handler->newPressureFeedMainEvent.Subscribe(1, [this](const uint8_t status) {
+      someip_logger.LogDebug() << "Subscribed to newPressureFeedMainEvent, status="
+                               << status;
+      servo_service_handler->newPressureFeedMainEvent.SetReceiveHandler([this] () {
+        auto res = servo_service_handler->newPressureFeedMainEvent.GetNewSamples();
+        if (!res.HasValue()) {
+          return;
+        }
+        someip_logger.LogDebug() << "newPressureFeedMainEvent sample: "
+                                 << res.Value();
+        this->data.SetPressureFeedMainValve(res.Value());
+      });
+    });
+    servo_service_handler->newPressureFeedVentEvent.Subscribe(1, [this](const uint8_t status) {
+      someip_logger.LogDebug() << "Subscribed to newPressureFeedVentEvent, status="
+                               << status;
+      servo_service_handler->newPressureFeedVentEvent.SetReceiveHandler([this] () {
+        auto res = servo_service_handler->newPressureFeedVentEvent.GetNewSamples();
+        if (!res.HasValue()) {
+          return;
+        }
+        someip_logger.LogDebug() << "newPressureFeedVentEvent sample: "
+                                 << res.Value();
+        this->data.SetPressureFeedVentValve(res.Value());
       });
     });
   });
@@ -362,43 +381,155 @@ void LoggerService::SomeIpInit() {
         this->data.SetBoardTemp3(res.Value());
       });
     });
-    env_service_handler->newDPressEvent.Subscribe(1, [this](const uint8_t status) {
-      someip_logger.LogDebug() << "Subscribed to Env newDPressEvent, status="
+    env_service_handler->newOxidizerPressEvent.Subscribe(1, [this](const uint8_t status) {
+      someip_logger.LogDebug() << "Subscribed to Env newOxidizerPressEvent, status="
                                << status;
-      env_service_handler->newDPressEvent.SetReceiveHandler([this] () {
-        auto res = env_service_handler->newDPressEvent.GetNewSamples();
+      env_service_handler->newOxidizerPressEvent.SetReceiveHandler([this] () {
+        auto res = env_service_handler->newOxidizerPressEvent.GetNewSamples();
         if (!res.HasValue()) {
           return;
         }
-        someip_logger.LogDebug() << "Env newDPressEvent sample: "
+        someip_logger.LogDebug() << "Env newOxidizerPressEvent sample: "
                                  << res.Value();
-        this->data.SetTankDPress(res.Value());
+        this->data.SetOxidizerPress(res.Value());
       });
     });
-    env_service_handler->newPressEvent.Subscribe(1, [this](const uint8_t status) {
-      someip_logger.LogDebug() << "Subscribed to Env newPressEvent, status="
+    env_service_handler->newPressureFeedPressEvent.Subscribe(1, [this](const uint8_t status) {
+      someip_logger.LogDebug() << "Subscribed to Env newPressureFeedPressEvent, status="
                                << status;
-      env_service_handler->newPressEvent.SetReceiveHandler([this] () {
-        auto res = env_service_handler->newPressEvent.GetNewSamples();
+      env_service_handler->newPressureFeedPressEvent.SetReceiveHandler([this] () {
+        auto res = env_service_handler->newPressureFeedPressEvent.GetNewSamples();
         if (!res.HasValue()) {
           return;
         }
-        someip_logger.LogDebug() << "Env newPressEvent sample: "
+        someip_logger.LogDebug() << "Env newPressureFeedPressEvent sample: "
                                  << res.Value();
-        this->data.SetTankPress(res.Value());
+        this->data.SetPressureFeedPress(res.Value());
       });
     });
-    env_service_handler->newTensoEvent.Subscribe(1, [this](const uint8_t status) {
-      someip_logger.LogDebug() << "Subscribed to Env newTensoEvent, status="
+    env_service_handler->newChamberPressEvent1.Subscribe(1, [this](const uint8_t status) {
+      someip_logger.LogDebug() << "Subscribed to Env newChamberPressEvent1, status="
                                << status;
-      env_service_handler->newTensoEvent.SetReceiveHandler([this] () {
-        auto res = env_service_handler->newTensoEvent.GetNewSamples();
+      env_service_handler->newChamberPressEvent1.SetReceiveHandler([this] () {
+        auto res = env_service_handler->newChamberPressEvent1.GetNewSamples();
         if (!res.HasValue()) {
           return;
         }
-        someip_logger.LogDebug() << "Env newTensoEvent sample: "
+        someip_logger.LogDebug() << "Env newChamberPressEvent1 sample: "
                                  << res.Value();
-        this->data.SetTenso(res.Value());
+        this->data.SetChamberPress1(res.Value());
+      });
+    });
+  });
+  this->sec_env_service_proxy.StartFindService([this](auto handler) {
+    someip_logger.LogDebug() << "SecEnv service handler discovered";
+    this->sec_env_service_handler = handler;
+    sec_env_service_handler->newEthanolPressEvent.Subscribe(1, [this](const uint8_t status) {
+      someip_logger.LogDebug() << "Subscribed to SecEnv newEthanolPressEvent, status="
+                               << status;
+      sec_env_service_handler->newEthanolPressEvent.SetReceiveHandler([this] () {
+        auto res = sec_env_service_handler->newEthanolPressEvent.GetNewSamples();
+        if (!res.HasValue()) {
+          return;
+        }
+        someip_logger.LogDebug() << "SecEnv newEthanolPressEvent sample: "
+                                 << res.Value();
+        this->data.SetEthanolPress(res.Value());
+      });
+    });
+    sec_env_service_handler->newChamberPressEvent2.Subscribe(1, [this](const uint8_t status) {
+      someip_logger.LogDebug() << "Subscribed to SecEnv newChamberPressEvent2, status="
+                               << status;
+      sec_env_service_handler->newChamberPressEvent2.SetReceiveHandler([this] () {
+        auto res = sec_env_service_handler->newChamberPressEvent2.GetNewSamples();
+        if (!res.HasValue()) {
+          return;
+        }
+        someip_logger.LogDebug() << "SecEnv newChamberPressEvent2 sample: "
+                                 << res.Value();
+        this->data.SetChamberPress2(res.Value());
+      });
+    });
+    sec_env_service_handler->newChamberPressEvent3.Subscribe(1, [this](const uint8_t status) {
+      someip_logger.LogDebug() << "Subscribed to SecEnv newChamberPressEvent3, status="
+                               << status;
+      sec_env_service_handler->newChamberPressEvent3.SetReceiveHandler([this] () {
+        auto res = sec_env_service_handler->newChamberPressEvent3.GetNewSamples();
+        if (!res.HasValue()) {
+          return;
+        }
+        someip_logger.LogDebug() << "SecEnv newChamberPressEvent3 sample: "
+                                 << res.Value();
+        this->data.SetChamberPress3(res.Value());
+      });
+    });
+    sec_env_service_handler->newBoardTempEvent1.Subscribe(1, [this](const uint8_t status) {
+      someip_logger.LogDebug() << "Subscribed to SecEnv newBoardTempEvent1, status="
+                               << status;
+      sec_env_service_handler->newBoardTempEvent1.SetReceiveHandler([this] () {
+        auto res = sec_env_service_handler->newBoardTempEvent1.GetNewSamples();
+        if (!res.HasValue()) {
+          return;
+        }
+        someip_logger.LogDebug() << "SecEnv newBoardTempEvent1 sample: "
+                                 << res.Value();
+        this->data.SetSecBoardTemp1(res.Value());
+      });
+    });
+    sec_env_service_handler->newBoardTempEvent2.Subscribe(1, [this](const uint8_t status) {
+      someip_logger.LogDebug() << "Subscribed to SecEnv newBoardTempEvent2, status="
+                               << status;
+      sec_env_service_handler->newBoardTempEvent2.SetReceiveHandler([this] () {
+        auto res = sec_env_service_handler->newBoardTempEvent2.GetNewSamples();
+        if (!res.HasValue()) {
+          return;
+        }
+        someip_logger.LogDebug() << "SecEnv newBoardTempEvent2 sample: "
+                                 << res.Value();
+        this->data.SetSecBoardTemp2(res.Value());
+      });
+    });
+    sec_env_service_handler->newBoardTempEvent3.Subscribe(1, [this](const uint8_t status) {
+      someip_logger.LogDebug() << "Subscribed to SecEnv newBoardTempEvent3, status="
+                               << status;
+      sec_env_service_handler->newBoardTempEvent3.SetReceiveHandler([this] () {
+        auto res = sec_env_service_handler->newBoardTempEvent3.GetNewSamples();
+        if (!res.HasValue()) {
+          return;
+        }
+        someip_logger.LogDebug() << "SecEnv newBoardTempEvent3 sample: "
+                                 << res.Value();
+        this->data.SetSecBoardTemp3(res.Value());
+      });
+    });
+  });
+  this->sec_servo_service_proxy.StartFindService([this](auto handler) {
+    someip_logger.LogDebug() << "SecServo service handler discovered";
+    this->sec_servo_service_handler = handler;
+    sec_servo_service_handler->newEthanolMainValveEvent.Subscribe(1, [this](const uint8_t status) {
+      someip_logger.LogDebug() << "Subscribed to newEthanolMainValveEvent, status="
+                               << status;
+      sec_servo_service_handler->newEthanolMainValveEvent.SetReceiveHandler([this] () {
+        auto res = sec_servo_service_handler->newEthanolMainValveEvent.GetNewSamples();
+        if (!res.HasValue()) {
+          return;
+        }
+        someip_logger.LogDebug() << "newEthanolMainValveEvent sample: "
+                                 << res.Value();
+        this->data.SetEthanolMainValve(res.Value());
+      });
+    });
+    sec_servo_service_handler->newEthanolVentValveEvent.Subscribe(1, [this](const uint8_t status) {
+      someip_logger.LogDebug() << "Subscribed to newEthanolVentValveEvent, status="
+                               << status;
+      sec_servo_service_handler->newEthanolVentValveEvent.SetReceiveHandler([this] () {
+        auto res = sec_servo_service_handler->newEthanolVentValveEvent.GetNewSamples();
+        if (!res.HasValue()) {
+          return;
+        }
+        someip_logger.LogDebug() << "newEthanolVentValveEvent sample: "
+                                 << res.Value();
+        this->data.SetEthanolVentValve(res.Value());
       });
     });
   });

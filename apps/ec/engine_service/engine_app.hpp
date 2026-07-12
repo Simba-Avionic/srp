@@ -25,6 +25,7 @@
 #include "mw/gpio_server/controller/gpio_controller.hpp"
 #include "srp/apps/MainService/MainServiceHandler.h"
 #include "srp/apps/FileLoggerApp/FileLoggerAppHandler.h"
+#include "srp/apps/SecServoService/SecServoServiceHandler.h"
 
 
 namespace srp {
@@ -47,6 +48,9 @@ class EngineApp final : public ara::exec::AdaptiveApplication {
   PrimerServiceProxy primer_proxy;
   ServoServiceProxy servo_proxy;
   std::shared_ptr<core::rocketState::RocketStateController> state_ctr;
+
+  std::shared_ptr<SecServoServiceHandler> sec_servo_handler_;
+  SecServoServiceProxy sec_servo_proxy;
 
   MainServiceProxy main_proxy;
   std::shared_ptr<MainServiceHandler> main_handler;

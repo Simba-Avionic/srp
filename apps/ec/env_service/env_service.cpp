@@ -25,8 +25,9 @@ namespace srp {
 namespace envService {
 
 namespace {
-    static constexpr uint8_t PRESS_SENSOR_ID =           10;
-    static constexpr uint8_t D_PRESS_SENSOR_ID =         11;
+    static constexpr uint8_t kOxidizer_press_id =           10;
+    static constexpr uint8_t kPFS_press_id =         11;
+    static constexpr uint8_t kCHAMBER1_press_id =         12;
     static constexpr auto kPressureDelayMs =             100;
     static constexpr auto kDifferentialPressureDelayMs = 100;
     static constexpr auto kPressure_sensor_multiplicator = 100;
@@ -223,13 +224,10 @@ void EnvService::GenericPressureLoop(
 
             std::ostringstream ss;
             ss << std::fixed << std::setprecision(2) << val;
-            ara::log::LogInfo() << "Receive new " << label << ": " << ss.str() << " Bar";
+            ara::log::LogWarn() << "Receive new " << label << ": " << ss.str() << " Bar";
 
-            const uint16_t encoded_val =
-                static_cast<uint16_t>(val * kPressure_sensor_multiplicator);
-            if (sensorId == PRESS_SENSOR_ID) {
-                service_udp.SetTankPressure(encoded_val);
-            }
+            const auto encoded_val =
+                static_cast<int16_t>(val * kPressure_sensor_multiplicator);
             {
                 std::lock_guard lock(service_mtx_);
                 eventIpc.Update(encoded_val);
@@ -254,20 +252,27 @@ int EnvService::Run(const std::stop_token& token) {
     service_ipc.StartOffer();
     service_udp.StartOffer();
     temp_->StartRxThread();
-    std::jthread pressure_thread([this, token] {
-        GenericPressureLoop(token, PRESS_SENSOR_ID,
+    std::jthread Oxidizer_pressure_thread([this, token] {
+        GenericPressureLoop(token, kOxidizer_press_id,
                             std::chrono::milliseconds(kPressureDelayMs),
-                            "Tank Pressure",
-                            service_ipc.newPressEvent,
-                            service_udp.newPressEvent);
+                            "Oxidizer Tank Pressure",
+                            service_ipc.newOxidizerPressEvent,
+                            service_udp.newOxidizerPressEvent);
     });
 
-    std::jthread differential_pressure_thread([this, token] {
-        GenericPressureLoop(token, D_PRESS_SENSOR_ID,
-                            std::chrono::milliseconds(kDifferentialPressureDelayMs),
-                            "Tank D Pressure",
-                            service_ipc.newDPressEvent,
-                            service_udp.newDPressEvent);
+    std::jthread PFS_pressure_thread([this, token] {
+        GenericPressureLoop(token, kPFS_press_id,
+                            std::chrono::milliseconds(kPressureDelayMs),
+                            "Pressure Feed Pressure",
+                            service_ipc.newPressureFeedPressEvent,
+                            service_udp.newPressureFeedPressEvent);
+    });
+    std::jthread chamber1_pressure_thread([this, token] {
+        GenericPressureLoop(token, kCHAMBER1_press_id,
+                            std::chrono::milliseconds(kPressureDelayMs),
+                            "Chamber 1 Pressure",
+                            service_ipc.newChamberPressEvent1,
+                            service_udp.newChamberPressEvent1);
     });
     core::condition::wait(token);
 
@@ -294,12 +299,10 @@ void EnvService::TempRxCallback(const std::vector<srp::mw::temp::TempReadHdr>& d
             {"sensor_temp_1", [this](int16_t v) {
                 service_ipc.newTempEvent_1.Update(v);
                 service_udp.newTempEvent_1.Update(v);
-                service_udp.SetUpTankTemp(v);
             }},
             {"sensor_temp_2", [this](int16_t v) {
                 service_ipc.newTempEvent_2.Update(v);
                 service_udp.newTempEvent_2.Update(v);
-                service_udp.SetDownTankTemp(v);
             }},
             {"sensor_temp_3", [this](int16_t v) {
                 service_ipc.newTempEvent_3.Update(v);

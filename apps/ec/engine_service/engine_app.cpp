@@ -26,6 +26,7 @@ namespace apps {
 namespace {
   static constexpr auto kPrimer_path_name =     "srp/apps/EngineService/PrimerService";
   static constexpr auto kServo_path_name =      "srp/apps/EngineService/ServoService";
+  static constexpr auto kSecServo_path_name =    "srp/apps/EngineService/SecServoService";
   static constexpr auto kMain_path_name =       "srp/apps/EngineService/MainService";
   static constexpr auto kEngine_path_name =     "srp/apps/EngineService/EngineService_ipc";
   static constexpr auto kEngine_udp_path_name = "srp/apps/EngineService/EngineService_udp";
@@ -77,7 +78,9 @@ EngineApp::EngineApp():
       service_udp(ara::core::InstanceSpecifier{kEngine_udp_path_name}),
       main_proxy(ara::core::InstanceSpecifier{kMain_path_name}),
       logger_proxy{ara::core::InstanceSpecifier{kLogger_path_name}},
-      primer_handler_{nullptr}, servo_handler_{nullptr}, main_handler{nullptr}, logger_handler_{nullptr} {
+      sec_servo_proxy{ara::core::InstanceSpecifier{kSecServo_path_name}},
+      primer_handler_{nullptr}, servo_handler_{nullptr}, main_handler{nullptr}, logger_handler_{nullptr},
+      sec_servo_handler_{nullptr} {
   ara::log::LogDebug() << "EngineApp constructor: Initializing EngineApp instance";
 }
 
@@ -189,6 +192,10 @@ int EngineApp::Initialize(const std::map<ara::core::StringView, ara::core::Strin
     ara::log::LogDebug() << "EngineApp::Initialize: Main service handler found";
     main_handler = handler;
   });
+  sec_servo_proxy.StartFindService([this](auto handler) {
+    ara::log::LogDebug() << "EngineApp::Initialize: Sec Servo Service handler found";
+    sec_servo_handler_ = handler;
+  });
 
   service_ipc.StartOffer();
   service_udp.StartOffer();
@@ -244,28 +251,15 @@ void EngineApp::OnArm() {
 void EngineApp::OnLaunch() {
   ara::log::LogInfo() << "EngineApp::OnLaunch: Launch initiated - starting async launch sequence";
   std::thread([this]() {
-    auto res = this->primer_handler_->StartPrime();
-    if (!res.HasValue()) {
-      ara::log::LogError() << "Invalid request to MW:GPIOService";
-      return;
-    }
-    ara::log::LogDebug() << "EngineApp::OnLaunch: Primer started successfully";
-
-    ara::log::LogDebug() << "EngineApp::OnLaunch: Waiting "
-                         << kPrimerDelay << "ms before servo activation";
-    std::this_thread::sleep_for(std::chrono::milliseconds(kPrimerDelay));
-    auto res2 = this->servo_handler_->SetOxidizerMainValve(1);
-    if (!res2.HasValue()) {
-      ara::log::LogError() << "Invalid request to MW:I2CService";
-      return;
-    }
-    ara::log::LogDebug() << "EngineApp::OnLaunch: Main servo activated successfully";
-
-    if (main_handler) {
-      main_handler->setMode(static_cast<uint8_t>(RocketState_t::FLIGHT));
-    }
-    state_ctr->SetState(RocketState_t::FLIGHT);
-    ara::log::LogDebug() << "EngineApp::OnLaunch: Async launch sequence complete";
+    // auto res = this->primer_handler_->StartPrime();
+    // if (!res.HasValue()) {
+    //   ara::log::LogError() << "Invalid request to MW:GPIOService";
+    //   return;
+    // }
+    // std::this_thread::sleep_for(std::chrono::milliseconds(700));
+    sec_servo_handler_->SetEtanolMainValve(1);
+    std::this_thread::sleep_for(std::chrono::milliseconds(200));
+    servo_handler_->SetOxidizerMainValve(1);
   }).detach();
 }
 
@@ -290,18 +284,16 @@ void EngineApp::OnApogee() {
 void EngineApp::OnAbort() {
   ara::log::LogWarn() << "EngineApp::OnAbort: ABORT sequence initiated";
 
-  for (const ArmPinConfig_t& pin : arm_pins_id) {
-    bool disable_later = (pin.func == "PFVS");
-    if (gpio_.SetPinValue(pin.pin_id,
-                          disable_later ? kPin_on : kPin_off,
-                          disable_later ? 3500 : 0,
-                          disable_later) != core::ErrorCode::kOk) {
-      ara::log::LogError() << "cant disarm pin: " << pin.name;
-    }
+  if (servo_handler_ == nullptr || sec_servo_handler_ == nullptr) {
+      return;
   }
-  if (servo_handler_ != nullptr) {
-    servo_handler_->SetOxidizerDumpValve(1);
-  }
+  std::thread([this]() {
+    servo_handler_->SetOxidizerMainValve(0);
+    std::this_thread::sleep_for(std::chrono::milliseconds(200));
+    sec_servo_handler_->SetEtanolMainValve(0);
+    std::this_thread::sleep_for(std::chrono::milliseconds(200));
+    servo_handler_->SetPressureFeedMainValve(0);
+  }).detach();
 }
 
 }  // namespace apps
