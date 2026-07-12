@@ -64,14 +64,14 @@ void RadioApp::HBHangleActuators(const uint8_t values) {
   if (eb_state == RocketState_t::ARM || (kStatic_test_mode && eb_state == RocketState_t::DISARM)) {
     // Dump Valve
     update_valve(SIMBA_GS_FLAGS_DUMP_VALVE, SIMBA_ACTUATOR_FLAGS_DUMP_VALVE, "DUMP_VALVE",
-                  [&](uint8_t val) { servo_handler->SetDumpValue(val); });
+                  [&](uint8_t val) { servo_handler->SetOxidizerDumpValve(val); });
 
     // Vent Valve
     uint8_t requested = ((values & SIMBA_GS_FLAGS_VENT_VALVE) != 0);
     if (servo_handler) {
       ara::log::LogInfo() << "Changing VENT_VALVE to " << (requested ? "ON" : "OFF");
       event_data->SetActuatorState(static_cast<SIMBA_ACTUATOR_FLAGS>(SIMBA_ACTUATOR_FLAGS_VENT_VALVE), requested);
-      servo_handler->SetVentServoValue(requested);
+      servo_handler->SetOxidizerVentValve(requested);
     }
   }
 

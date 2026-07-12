@@ -102,15 +102,15 @@ void SomeIPController::SomeIpInit() {
           event_data->SetTemp(2, res.Value());
         });
       });
-      env_service_handler->newPressEvent.Subscribe(1, [this](const uint8_t status) {
+      env_service_handler->newOxidizerPressEvent.Subscribe(1, [this](const uint8_t status) {
         someip_logger.LogDebug() << "Subscribed to Env newPressEvent, status="
                                  << status;
-        env_service_handler->newPressEvent.SetReceiveHandler([this] () {
-          auto res = env_service_handler->newPressEvent.GetNewSamples();
+        env_service_handler->newOxidizerPressEvent.SetReceiveHandler([this] () {
+          auto res = env_service_handler->newOxidizerPressEvent.GetNewSamples();
           if (!res.HasValue()) {
             return;
           }
-          someip_logger.LogDebug() << "Env newPressEvent sample: " << res.Value();
+          someip_logger.LogDebug() << "Env newOxidizerPressEvent sample: " << res.Value();
           event_data->SetPress(res.Value());
         });
       });
@@ -174,39 +174,39 @@ void SomeIPController::SomeIpInit() {
     this->servo_service_proxy.StartFindService([this](auto handler) {
       someip_logger.LogDebug() << "Servo service handler discovered";
       this->servo_service_handler = handler;
-      servo_service_handler->ServoStatusEvent.Subscribe(1, [this](const uint8_t status) {
-        someip_logger.LogDebug() << "Subscribed to ServoStatusEvent, status="
+      servo_service_handler->newOxidizerMainValveEvent.Subscribe(1, [this](const uint8_t status) {
+        someip_logger.LogDebug() << "Subscribed to newOxidizerMainValveEvent, status="
                                  << status;
-        servo_service_handler->ServoStatusEvent.SetReceiveHandler([this] () {
-          auto res = servo_service_handler->ServoStatusEvent.GetNewSamples();
+        servo_service_handler->newOxidizerMainValveEvent.SetReceiveHandler([this] () {
+          auto res = servo_service_handler->newOxidizerMainValveEvent.GetNewSamples();
           if (!res.HasValue()) {
             return;
           }
-          someip_logger.LogDebug() << "ServoStatusEvent sample: " << res.Value();
+          someip_logger.LogDebug() << "newOxidizerMainValveEvent sample: " << res.Value();
           event_data->SetActuatorState(SIMBA_ACTUATOR_FLAGS_MAIN_VALVE, res.Value());
         });
       });
-      servo_service_handler->ServoVentStatusEvent.Subscribe(1, [this](const uint8_t status) {
-        someip_logger.LogDebug() << "Subscribed to ServoVentStatusEvent, status="
+      servo_service_handler->newOxidizerVentValveEvent.Subscribe(1, [this](const uint8_t status) {
+        someip_logger.LogDebug() << "Subscribed to newOxidizerVentValveEvent, status="
                                  << status;
-        servo_service_handler->ServoVentStatusEvent.SetReceiveHandler([this] () {
-          auto res = servo_service_handler->ServoVentStatusEvent.GetNewSamples();
+        servo_service_handler->newOxidizerVentValveEvent.SetReceiveHandler([this] () {
+          auto res = servo_service_handler->newOxidizerVentValveEvent.GetNewSamples();
           if (!res.HasValue()) {
             return;
           }
-          someip_logger.LogDebug() << "ServoVentStatusEvent sample: " << res.Value();
+          someip_logger.LogDebug() << "newOxidizerVentValveEvent sample: " << res.Value();
           event_data->SetActuatorState(SIMBA_ACTUATOR_FLAGS_VENT_VALVE, res.Value());
         });
       });
-      servo_service_handler->ServoDumpStatusEvent.Subscribe(1, [this](const uint8_t status) {
-        someip_logger.LogDebug() << "Subscribed to ServoDumpStatusEvent, status="
+      servo_service_handler->newOxidizerDumpValveEvent.Subscribe(1, [this](const uint8_t status) {
+        someip_logger.LogDebug() << "Subscribed to newOxidizerDumpValveEvent, status="
                                  << status;
-        servo_service_handler->ServoDumpStatusEvent.SetReceiveHandler([this] () {
-          auto res = servo_service_handler->ServoDumpStatusEvent.GetNewSamples();
+        servo_service_handler->newOxidizerDumpValveEvent.SetReceiveHandler([this] () {
+          auto res = servo_service_handler->newOxidizerDumpValveEvent.GetNewSamples();
           if (!res.HasValue()) {
             return;
           }
-          someip_logger.LogDebug() << "ServoDumpStatusEvent sample: " << res.Value();
+          someip_logger.LogDebug() << "newOxidizerDumpValveEvent sample: " << res.Value();
           event_data->SetActuatorState(SIMBA_ACTUATOR_FLAGS_DUMP_VALVE, res.Value());
         });
       });
