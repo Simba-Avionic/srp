@@ -28,7 +28,7 @@ namespace {
       "ETHANOL_PRESS;CHAMBER_PRESS2;CHAMBER_PRESS3;"
       "SEC_BOARD_TEMP1;SEC_BOARD_TEMP2;SEC_BOARD_TEMP3;"
       "ETHANOL_MAIN_VALVE;ETHANOL_VENT_VALVE;GPIO_STATE";
-}
+}  // namespace
 
 std::string Data_t::get_header() {
   return kCsv_header;
