@@ -89,10 +89,10 @@ int ServoService::Run(const std::stop_token& token) {
       service_udp->newOxidizerVentValveEvent, "oxi_vent", last_vent_state);
     update_servo_status(kOxidizerDumpValveID, service_ipc->newOxidizerDumpValveEvent,
       service_udp->newOxidizerDumpValveEvent, "oxi_dump", last_dump_state);
-    update_servo_status(kPressureFeedSystemMainValveID, service_ipc->newPressureFeedMainEvent,
-      service_udp->newPressureFeedMainEvent, "eth_main", last_eth_main_state);
-    update_servo_status(kPressureFeedSystemVentValveID, service_ipc->newPressureFeedVentEvent,
-      service_udp->newPressureFeedVentEvent, "eth_dump", last_eth_vent_state);
+    update_servo_status(kPressureFeedSystemMainValveID, service_ipc->newPressureFeedMainValveEvent,
+      service_udp->newPressureFeedMainValveEvent, "eth_main", last_eth_main_state);
+    update_servo_status(kPressureFeedSystemVentValveID, service_ipc->newPressureFeedVentValveEvent,
+      service_udp->newPressureFeedVentValveEvent, "eth_dump", last_eth_vent_state);
     core::condition::wait_for(kEventIntervalMs, token);
   }
 

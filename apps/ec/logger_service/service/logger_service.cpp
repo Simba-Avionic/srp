@@ -237,28 +237,28 @@ void LoggerService::SomeIpInit() {
         this->data.SetOxidizerDumpValve(res.Value());
       });
     });
-    servo_service_handler->newPressureFeedMainEvent.Subscribe(1, [this](const uint8_t status) {
-      someip_logger.LogDebug() << "Subscribed to newPressureFeedMainEvent, status="
+    servo_service_handler->newPressureFeedMainValveEvent.Subscribe(1, [this](const uint8_t status) {
+      someip_logger.LogDebug() << "Subscribed to newPressureFeedMainValveEvent, status="
                                << status;
-      servo_service_handler->newPressureFeedMainEvent.SetReceiveHandler([this] () {
-        auto res = servo_service_handler->newPressureFeedMainEvent.GetNewSamples();
+      servo_service_handler->newPressureFeedMainValveEvent.SetReceiveHandler([this] () {
+        auto res = servo_service_handler->newPressureFeedMainValveEvent.GetNewSamples();
         if (!res.HasValue()) {
           return;
         }
-        someip_logger.LogDebug() << "newPressureFeedMainEvent sample: "
+        someip_logger.LogDebug() << "newPressureFeedMainValveEvent sample: "
                                  << res.Value();
         this->data.SetPressureFeedMainValve(res.Value());
       });
     });
-    servo_service_handler->newPressureFeedVentEvent.Subscribe(1, [this](const uint8_t status) {
-      someip_logger.LogDebug() << "Subscribed to newPressureFeedVentEvent, status="
+    servo_service_handler->newPressureFeedVentValveEvent.Subscribe(1, [this](const uint8_t status) {
+      someip_logger.LogDebug() << "Subscribed to newPressureFeedVentValveEvent, status="
                                << status;
-      servo_service_handler->newPressureFeedVentEvent.SetReceiveHandler([this] () {
-        auto res = servo_service_handler->newPressureFeedVentEvent.GetNewSamples();
+      servo_service_handler->newPressureFeedVentValveEvent.SetReceiveHandler([this] () {
+        auto res = servo_service_handler->newPressureFeedVentValveEvent.GetNewSamples();
         if (!res.HasValue()) {
           return;
         }
-        someip_logger.LogDebug() << "newPressureFeedVentEvent sample: "
+        someip_logger.LogDebug() << "newPressureFeedVentValveEvent sample: "
                                  << res.Value();
         this->data.SetPressureFeedVentValve(res.Value());
       });
