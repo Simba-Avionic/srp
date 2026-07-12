@@ -28,10 +28,6 @@ ara::core::Result<bool> MyEngineServiceSkeleton::SetMode(const std::uint8_t& in_
     }
     return ara::core::Result<bool>{false};
 }
-ara::core::Result<std::uint8_t> MyEngineServiceSkeleton::GetMode() {
-    return ara::core::Result<uint8_t>{state_ctr_->GetState()};
-}
-
 
 }  // namespace service
 }  // namespace apps

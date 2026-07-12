@@ -2,8 +2,8 @@
  * @file data_type.hpp
  * @author Mateusz Krajewski (matikrajek42@gmail.com)
  * @brief 
- * @version 0.2
- * @date 2026-05-25
+ * @version 0.3
+ * @date 2026-07-04
  * * @copyright Copyright (c) 2024-2026
  * */
 
@@ -24,27 +24,34 @@ class Data_t {
  private:
   using tempType = int16_t;
   using pressType = float;
-  using dPressType = float;
-  using tensoType = float;
+  using valveType = uint8_t;
   using primerStatusType = uint8_t;
-  using servoType = uint8_t;
   using engineType = uint8_t;
 
-  std::atomic<tensoType> tenso{0.0f};
   std::atomic<tempType> temp1{0};
   std::atomic<tempType> temp2{0};
   std::atomic<tempType> temp3{0};
   std::atomic<tempType> board_temp1{0};
   std::atomic<tempType> board_temp2{0};
   std::atomic<tempType> board_temp3{0};
-  std::atomic<pressType> tank_press{0.0f};
-  std::atomic<dPressType> tank_d_press{0.0f};
+  std::atomic<pressType> oxidizer_press{0.0f};
+  std::atomic<pressType> pressure_feed_press{0.0f};
+  std::atomic<pressType> chamber_press1{0.0f};
   std::atomic<primerStatusType> primer_status{0};
-  std::atomic<servoType> servo_status{0};
-  std::atomic<servoType> servo_dump_status{0};
-  std::atomic<servoType> servo_vent_status{0};
+  std::atomic<valveType> oxidizer_main_valve{0};
+  std::atomic<valveType> oxidizer_vent_valve{0};
+  std::atomic<valveType> oxidizer_dump_valve{0};
+  std::atomic<valveType> pressure_feed_main_valve{0};
+  std::atomic<valveType> pressure_feed_vent_valve{0};
   std::atomic<engineType> engine_mode{0};
-  std::atomic<engineType> engine_new_vent_valve_status{0};
+  std::atomic<pressType> ethanol_press{0.0f};
+  std::atomic<pressType> chamber_press2{0.0f};
+  std::atomic<pressType> chamber_press3{0.0f};
+  std::atomic<tempType> sec_board_temp1{0};
+  std::atomic<tempType> sec_board_temp2{0};
+  std::atomic<tempType> sec_board_temp3{0};
+  std::atomic<valveType> ethanol_main_valve{0};
+  std::atomic<valveType> ethanol_vent_valve{0};
   std::atomic<float> sys_cpu_usage{0.0f};
   std::atomic<float> sys_mem_usage{0.0f};
   std::atomic<float> sys_disk_utilization{0.0f};
@@ -69,15 +76,24 @@ class Data_t {
   void SetBoardTemp1(tempType temp);
   void SetBoardTemp2(tempType temp);
   void SetBoardTemp3(tempType temp);
-  void SetTankPress(pressType press);
-  void SetTankDPress(dPressType press);
-  void SetTenso(tensoType tenso);
+  void SetOxidizerPress(pressType press);
+  void SetPressureFeedPress(pressType press);
+  void SetChamberPress1(pressType press);
   void SetPrimerStatus(primerStatusType primer);
-  void SetServoStatus(servoType status);
-  void SetServoDumpStatus(servoType status);
-  void SetServoVentStatus(servoType status);
+  void SetOxidizerMainValve(valveType status);
+  void SetOxidizerVentValve(valveType status);
+  void SetOxidizerDumpValve(valveType status);
+  void SetPressureFeedMainValve(valveType status);
+  void SetPressureFeedVentValve(valveType status);
   void SetEngineMode(engineType mode);
-  void SetNewVentValveStatus(engineType status);
+  void SetEthanolPress(pressType press);
+  void SetChamberPress2(pressType press);
+  void SetChamberPress3(pressType press);
+  void SetSecBoardTemp1(tempType temp);
+  void SetSecBoardTemp2(tempType temp);
+  void SetSecBoardTemp3(tempType temp);
+  void SetEthanolMainValve(valveType status);
+  void SetEthanolVentValve(valveType status);
 };
 
 }  // namespace logger

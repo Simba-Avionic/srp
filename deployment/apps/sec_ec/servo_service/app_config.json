@@ -1,0 +1,63 @@
+{
+    "include": [
+        "deployment/system_definition/someip/sec_ec/servo_service/service.json"
+    ],
+    "package": "srp.apps",
+    "adaptive_application": {
+        "secServoService": {
+            "app": {
+                "functional_groups": [
+                    "Running",
+                    "SafetyMode"
+                ],
+                "parms": "",
+                "logger": {
+                    "app_id": "SSRV",
+                    "app_des": "Secondary EC Servo Service",
+                    "log_level": "kDebug",
+                    "log_mode": "kRemote",
+                    "ctx": [
+                        {
+                            "ctx_id": "ara",
+                            "log_level": "kWarn",
+                            "ctx_des": "Default ctx for ara"
+                        },
+                        {
+                            "ctx_id": "acom",
+                            "log_level": "kWarn",
+                            "ctx_des": "Default ctx for ara::com"
+                        },
+                        {
+                            "ctx_id": "exec",
+                            "log_level": "kWarn",
+                            "ctx_des": "Default ctx for ara::exec"
+                        },
+                        {
+                            "ctx_id": "srdr",
+                            "log_level": "kDebug",
+                            "ctx_des": "Servo Driver Logger"
+                        },
+                        {
+                            "ctx_id": "srct",
+                            "log_level": "kDebug",
+                            "ctx_des": "Servo Controller Logger"
+                        }
+                    ]
+                }
+            },
+            "provide": [
+                {
+                    "name": "SecServoService as SecServoService_ipc",
+                    "on": "ipc",
+                    "instance": 2
+                },
+                {
+                    "name": "SecServoService as SecServoService_udp",
+                    "on": "udp",
+                    "port": "10001",
+                    "instance": 1
+                }
+            ]
+        }
+    }
+}

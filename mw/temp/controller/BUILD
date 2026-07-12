@@ -8,6 +8,7 @@ cc_library(
         "//deployment:__subpackages__",
         "//apps/ec/env_service:__subpackages__",
         "//apps/fc/env_service:__subpackages__",
+        "//apps/sec_ec/env_service:__subpackages__",
         "//mw/temp:__subpackages__",
         ],
     

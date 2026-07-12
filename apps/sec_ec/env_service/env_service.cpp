@@ -1,13 +1,14 @@
 /**
  * @file env_service.cpp
  * @author Mateusz Krajewski (matikrajek42@gmail.com)
- * @brief 
+ * @brief Implementation of secondary EC environment service
  * @version 0.1
- * @date 2024-04-04
- * 
- * @copyright Copyright (c) 2024
- * 
+ * @date 2026-07-01
+ *
+ * @copyright Copyright (c) 2026
  */
+#include "apps/sec_ec/env_service/env_service.hpp"
+
 #include <cstring>
 #include <memory>
 #include <map>
@@ -15,49 +16,44 @@
 #include <utility>
 #include <sstream>
 #include <iomanip>
-#include "apps/ec/env_service/env_service.hpp"
+
 #include "core/common/condition.h"
+#include "core/json/json_parser.h"
 #include "ara/log/log.h"
-#include "srp/env/EnvAppSkeleton.h"
 #include "mw/i2c_service/controller/ads7828/controller.hpp"
 
 namespace srp {
-namespace envService {
+namespace sec_ec {
 
 namespace {
-    static constexpr uint8_t kOxidizer_press_id =           10;
-    static constexpr uint8_t kPFS_press_id =         11;
-    static constexpr uint8_t kCHAMBER1_press_id =         12;
-    static constexpr auto kPressureDelayMs =             100;
-    static constexpr auto kDifferentialPressureDelayMs = 100;
-    static constexpr auto kPressure_sensor_multiplicator = 100;
+  static constexpr uint8_t kEthanolPressSensorId = 14;
+  static constexpr uint8_t kChamberPress2SensorId = 13;
+  static constexpr uint8_t kChamberPress3SensorId = 15;
+  static constexpr auto kPressureDelayMs = 100;
 }  // namespace
 
-
-
-core::ErrorCode EnvService::Init(std::unique_ptr<mw::temp::TempController> temp) {
+core::ErrorCode SecEnvService::Init(std::unique_ptr<mw::temp::TempController> temp) {
     if (this->temp_ || !temp) {
       return core::ErrorCode::kInitializeError;
     }
     this->temp_ = std::move(temp);
     if (config.Init() != core::ErrorCode::kOk) {
-      ara::log::LogError() << "EnvService::Init: EEPROM ConfigManager init failed";
+      ara::log::LogError() << "SecEnvService::Init: EEPROM ConfigManager init failed";
       return core::ErrorCode::kInitializeError;
     }
     return core::ErrorCode::kOk;
 }
 
-EnvService::EnvService(): press_{std::move(std::make_shared<i2c::ADCSensorController>())},
-                service_ipc{ara::core::InstanceSpecifier{"srp/env/EnvApp/envService_ipc"}},
-                service_udp{ara::core::InstanceSpecifier{"srp/env/EnvApp/envService_udp"}} {
-}
+SecEnvService::SecEnvService()
+    : press_{std::make_shared<i2c::ADCSensorController>()},
+      service_ipc{ara::core::InstanceSpecifier{"srp/env/secEnvApp/SecEnvApp_ipc"}},
+      service_udp{ara::core::InstanceSpecifier{"srp/env/secEnvApp/SecEnvApp_udp"}} {}
 
-
-int EnvService::Initialize(const std::map<ara::core::StringView, ara::core::StringView>
-                      parms) {
+int SecEnvService::Initialize(
+    const std::map<ara::core::StringView, ara::core::StringView> parms) {
     auto app_path_it = parms.find("app_path");
     if (app_path_it == parms.end()) {
-        ara::log::LogError() << "app_path parameter not found in parms";
+        ara::log::LogError() << "SecEnvService::Initialize: app_path parameter not found";
         return core::ErrorCode::kInitializeError;
     }
 
@@ -65,67 +61,51 @@ int EnvService::Initialize(const std::map<ara::core::StringView, ara::core::Stri
     auto i2c = std::make_unique<i2c::I2CController>();
     const auto i2c_error_code = i2c->Init(std::make_unique<com::soc::StreamIpcSocket>());
     if (i2c_error_code != core::ErrorCode::kOk) {
-        ara::log::LogError() << "Failed to initialize I2C";
+        ara::log::LogError() << "SecEnvService::Initialize: failed to initialize I2C";
         return core::ErrorCode::kInitializeError;
     }
     auto adc_init_res = adc->Init(std::move(i2c));
     if (adc_init_res != core::ErrorCode::kOk) {
-        ara::log::LogError() << "Failed to initialize ADC";
+        ara::log::LogError() << "SecEnvService::Initialize: failed to initialize ADC";
         return core::ErrorCode::kInitializeError;
     }
 
     std::string app_path_str(app_path_it->second.data(), app_path_it->second.size());
     auto press_init_res = this->press_->Init(app_path_str, std::move(adc));
     if (press_init_res != core::ErrorCode::kOk) {
-        ara::log::LogError() << "Failed to initialize pressure sensor controller";
+        ara::log::LogError() << "SecEnvService::Initialize: failed to initialize pressure controller";
         return core::ErrorCode::kInitializeError;
     }
 
     auto temp_init_res = this->Init(std::make_unique<mw::temp::TempController>());
     if (temp_init_res != core::ErrorCode::kOk) {
-        ara::log::LogError() << "Failed to initialize TempController";
+        ara::log::LogError() << "SecEnvService::Initialize: failed to initialize TempController";
         return core::ErrorCode::kInitializeError;
     }
+
     core::ErrorCode res;
     uint8_t i = 0;
     do {
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
-        res = this->temp_->Initialize(514, std::bind(&EnvService::TempRxCallback,
+        res = this->temp_->Initialize(514, std::bind(&SecEnvService::TempRxCallback,
             this, std::placeholders::_1), std::make_unique<com::soc::StreamIpcSocket>());
         i++;
     } while (res != core::ErrorCode::kOk && i < 6);
     if (res != core::ErrorCode::kOk) {
-        ara::log::LogError() << "TempController failed to initialize after retries";
+        ara::log::LogError() << "SecEnvService::Initialize: TempController init failed after retries";
         return core::ErrorCode::kInitializeError;
     }
+
     if (LoadTempConfig(parms) != core::ErrorCode::kOk) {
-        ara::log::LogError() << "Failed to load temperature configuration";
+        ara::log::LogError() << "SecEnvService::Initialize: failed to load temperature configuration";
         return core::ErrorCode::kInitializeError;
     }
-    // eeprom::EEPROM_config cfg{};
-    // cfg.pca9685_XO_corelation = 1.0429;
-    // strncpy(cfg.board_temp1_id, "000010787a1b", sizeof(cfg.board_temp1_id));
-    // strncpy(cfg.board_temp2_id, "00001078e1cf", sizeof(cfg.board_temp2_id));
-    // strncpy(cfg.board_temp3_id, "000010794c9a", sizeof(cfg.board_temp3_id));
-    // if (config.SetConfig(cfg) != core::ErrorCode::kOk) {
-    //     ara::log::LogError() << "cant set eeprom";
-    // } else {
-    //     auto read_back = config.GetConfig();
-    //     if (!read_back.has_value()) {
-    //         ara::log::LogError() << "EEPROM read-back failed after SetConfig";
-    //     } else if (std::memcmp(&read_back.value(), &cfg, sizeof(cfg)) != 0) {
-    //         ara::log::LogError() << "EEPROM read-back mismatch after SetConfig";
-    //     } else {
-    //         ara::log::LogInfo() << "EEPROM SetConfig + GetConfig roundtrip OK";
-    //     }
-    // }
 
     const std::optional<eeprom::EEPROM_config> eeprom_cfg = config.GetConfig();
     if (!eeprom_cfg.has_value()) {
-        ara::log::LogError() << "Failed to load EEPROM temperature configuration";
+        ara::log::LogError() << "SecEnvService::Initialize: failed to load EEPROM configuration";
         return core::ErrorCode::kInitializeError;
     }
-
 
     auto register_sensor = [&](const char* raw_id, std::size_t raw_id_max_len,
                                const std::string& label) -> core::ErrorCode {
@@ -134,13 +114,14 @@ int EnvService::Initialize(const std::map<ara::core::StringView, ara::core::Stri
         const auto sensor_id = this->temp_->Register(physical_id);
 
         if (!sensor_id.has_value()) {
-            ara::log::LogError() << "Sensor_id is empty for " << label;
+            ara::log::LogError() << "SecEnvService::Initialize: sensor_id is empty for " << label;
             return core::ErrorCode::kInitializeError;
         }
 
         sensorIdsToPaths[sensor_id.value()] = std::make_pair(label, physical_id);
         return core::ErrorCode::kOk;
     };
+
     if (register_sensor(eeprom_cfg.value().board_temp1_id,
                         sizeof(eeprom_cfg.value().board_temp1_id), "board_1") !=
         core::ErrorCode::kOk) {
@@ -160,43 +141,39 @@ int EnvService::Initialize(const std::map<ara::core::StringView, ara::core::Stri
     return core::ErrorCode::kOk;
 }
 
-core::ErrorCode EnvService::LoadTempConfig(const std::map<ara::core::StringView, ara::core::StringView>& parms) {
-    ara::log::LogInfo() << "Starting function LoadTempConfig";
+core::ErrorCode SecEnvService::LoadTempConfig(
+    const std::map<ara::core::StringView, ara::core::StringView>& parms) {
     const auto app_path_it = parms.find("app_path");
     if (app_path_it == parms.end()) {
-        ara::log::LogError() << "app_path parameter not found in parms";
+        ara::log::LogError() << "SecEnvService::LoadTempConfig: app_path parameter not found";
         return core::ErrorCode::kInitializeError;
     }
     const std::string path =
         std::string(app_path_it->second.data(), app_path_it->second.size()) + "etc/config.json";
     auto parser_opt = core::json::JsonParser::Parser(path);
-    ara::log::LogInfo() << path;
     if (!parser_opt.has_value()) {
-        ara::log::LogError() << "Failed to open temp_Service config file";
+        ara::log::LogError() << "SecEnvService::LoadTempConfig: failed to open config file";
         return core::ErrorCode::kInitializeError;
     }
-    ara::log::LogInfo() << "Opened file";
     auto temp_opt = parser_opt.value().GetArray<nlohmann::json>("sensors-temp");
     if (!temp_opt.has_value()) {
-        ara::log::LogError() << "Invalid temp_Service config format";
-        return core::ErrorCode::kInitializeError;
+        return core::ErrorCode::kOk;
     }
-    for (const auto &data : temp_opt.value()) {
-        auto parser_opt = core::json::JsonParser::Parser(data);
-        if (!parser_opt.has_value()) {
+    for (const auto& data : temp_opt.value()) {
+        auto entry_opt = core::json::JsonParser::Parser(data);
+        if (!entry_opt.has_value()) {
             continue;
         }
-        auto parser = parser_opt.value();
+        auto parser = entry_opt.value();
         auto physical_id = parser.GetString("physical_id");
         auto name = parser.GetString("name");
         if (!physical_id.has_value() || !name.has_value()) {
             continue;
         }
 
-        ara::log::LogDebug() << "Sending subscribe request to temp_service";
         std::optional<uint8_t> sensor_id = this->temp_->Register(physical_id.value());
         if (!sensor_id.has_value()) {
-            ara::log::LogError() << "Sensor_id is empty";
+            ara::log::LogError() << "SecEnvService::LoadTempConfig: sensor_id is empty";
             continue;
         }
         sensorIdsToPaths[sensor_id.value()] = std::make_pair(name.value(), physical_id.value());
@@ -204,7 +181,7 @@ core::ErrorCode EnvService::LoadTempConfig(const std::map<ara::core::StringView,
     return core::ErrorCode::kOk;
 }
 
-void EnvService::GenericPressureLoop(
+void SecEnvService::GenericPressureLoop(
             const std::stop_token& token,
             uint8_t sensorId,
             std::chrono::milliseconds delay,
@@ -224,23 +201,19 @@ void EnvService::GenericPressureLoop(
 
             std::ostringstream ss;
             ss << std::fixed << std::setprecision(2) << val;
-            ara::log::LogWarn() << "Receive new " << label << ": " << ss.str() << " Bar";
-
-            const auto encoded_val =
-                static_cast<int16_t>(val * kPressure_sensor_multiplicator);
+            ara::log::LogInfo() << "SecEnvService: new " << label << ": " << ss.str() << " Bar";
+            const auto fixed_val = static_cast<int16_t>(val * 100);
             {
                 std::lock_guard lock(service_mtx_);
-                eventIpc.Update(encoded_val);
-                eventUdp.Update(encoded_val);
+                eventIpc.Update(fixed_val);
+                eventUdp.Update(fixed_val);
             }
         } else {
-            ara::log::LogWarn() << "Don't receive new " << label;
+            ara::log::LogWarn() << "SecEnvService: no new " << label;
         }
 
         auto end = std::chrono::high_resolution_clock::now();
         auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-
-        ara::log::LogDebug() << label << " loop taken: " << duration.count() << "ms";
 
         if (duration < delay) {
             core::condition::wait_for(delay - duration, token);
@@ -248,32 +221,35 @@ void EnvService::GenericPressureLoop(
     }
 }
 
-int EnvService::Run(const std::stop_token& token) {
+int SecEnvService::Run(const std::stop_token& token) {
     service_ipc.StartOffer();
     service_udp.StartOffer();
     temp_->StartRxThread();
-    std::jthread Oxidizer_pressure_thread([this, token] {
-        GenericPressureLoop(token, kOxidizer_press_id,
+
+    std::jthread ethanol_press_thread([this, token] {
+        GenericPressureLoop(token, kEthanolPressSensorId,
                             std::chrono::milliseconds(kPressureDelayMs),
-                            "Oxidizer Tank Pressure",
-                            service_ipc.newOxidizerPressEvent,
-                            service_udp.newOxidizerPressEvent);
+                            "Ethanol Pressure",
+                            service_ipc.newEthanolPressEvent,
+                            service_udp.newEthanolPressEvent);
     });
 
-    std::jthread PFS_pressure_thread([this, token] {
-        GenericPressureLoop(token, kPFS_press_id,
+    std::jthread chamber_press2_thread([this, token] {
+        GenericPressureLoop(token, kChamberPress2SensorId,
                             std::chrono::milliseconds(kPressureDelayMs),
-                            "Pressure Feed Pressure",
-                            service_ipc.newPressureFeedPressEvent,
-                            service_udp.newPressureFeedPressEvent);
+                            "Chamber Pressure 2",
+                            service_ipc.newChamberPressEvent2,
+                            service_udp.newChamberPressEvent2);
     });
-    std::jthread chamber1_pressure_thread([this, token] {
-        GenericPressureLoop(token, kCHAMBER1_press_id,
+
+    std::jthread chamber_press3_thread([this, token] {
+        GenericPressureLoop(token, kChamberPress3SensorId,
                             std::chrono::milliseconds(kPressureDelayMs),
-                            "Chamber 1 Pressure",
-                            service_ipc.newChamberPressEvent1,
-                            service_udp.newChamberPressEvent1);
+                            "Chamber Pressure 3",
+                            service_ipc.newChamberPressEvent3,
+                            service_udp.newChamberPressEvent3);
     });
+
     core::condition::wait(token);
 
     service_ipc.StopOffer();
@@ -281,57 +257,41 @@ int EnvService::Run(const std::stop_token& token) {
     return core::ErrorCode::kOk;
 }
 
-void EnvService::TempRxCallback(const std::vector<srp::mw::temp::TempReadHdr>& data) {
-    for (auto &hdr : data) {
+void SecEnvService::TempRxCallback(const std::vector<srp::mw::temp::TempReadHdr>& data) {
+    for (auto& hdr : data) {
         auto pathIt = sensorIdsToPaths.find(hdr.actuator_id);
         if (pathIt == sensorIdsToPaths.end()) {
-            ara::log::LogWarn() << "Unknown sensor id: " << hdr.actuator_id;
+            ara::log::LogWarn() << "SecEnvService: unknown sensor id: " << hdr.actuator_id;
             continue;
         }
         const auto& sensorName = pathIt->second.first;
         const int16_t value = static_cast<int16_t>(hdr.value * 10);
 
-        ara::log::LogDebug() << "Receive new temp id: " << hdr.actuator_id
-                            << ", name: " << sensorName << ", temp: " << hdr.value;
-
         using UpdateFn = std::function<void(int16_t)>;
         static const std::unordered_map<std::string, UpdateFn> eventMap = {
-            {"sensor_temp_1", [this](int16_t v) {
-                service_ipc.newTempEvent_1.Update(v);
-                service_udp.newTempEvent_1.Update(v);
-            }},
-            {"sensor_temp_2", [this](int16_t v) {
-                service_ipc.newTempEvent_2.Update(v);
-                service_udp.newTempEvent_2.Update(v);
-            }},
-            {"sensor_temp_3", [this](int16_t v) {
-                service_ipc.newTempEvent_3.Update(v);
-                service_udp.newTempEvent_3.Update(v);
-            }},
-            {"board_1",       [this](int16_t v) {
+            {"board_1", [this](int16_t v) {
                 service_ipc.newBoardTempEvent1.Update(v);
                 service_udp.newBoardTempEvent1.Update(v);
             }},
-            {"board_2",       [this](int16_t v) {
+            {"board_2", [this](int16_t v) {
                 service_ipc.newBoardTempEvent2.Update(v);
                 service_udp.newBoardTempEvent2.Update(v);
             }},
-            {"board_3",       [this](int16_t v) {
+            {"board_3", [this](int16_t v) {
                 service_ipc.newBoardTempEvent3.Update(v);
                 service_udp.newBoardTempEvent3.Update(v);
-            }}
+            }},
         };
 
         auto it = eventMap.find(sensorName);
         if (it != eventMap.end()) {
             it->second(value);
         } else {
-            ara::log::LogWarn() << "No mapping for sensor name: " << sensorName
+            ara::log::LogWarn() << "SecEnvService: no mapping for sensor name: " << sensorName
                                 << " (id=" << hdr.actuator_id << ")";
         }
     }
 }
 
-
-}  // namespace envService
+}  // namespace sec_ec
 }  // namespace srp

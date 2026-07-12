@@ -4,6 +4,7 @@
         "deployment/system_definition/someip/servo_service/service.json",
         "deployment/system_definition/someip/prim_service/service.json",
         "deployment/system_definition/someip/logger_service/service.json",
+        "deployment/system_definition/someip/sec_ec/servo_service/service.json",
         "deployment/system_definition/someip/fc/main_service/service.json"
     ],
     "package": "srp.apps",
@@ -75,6 +76,12 @@
                 },
                 {
                     "name": "srp.apps.MainService as MainService",
+                    "on": "udp",
+                    "instance": 1,
+                    "port": "10001"
+                },
+                {
+                    "name": "srp.apps.SecServoService as SecServoService",
                     "on": "udp",
                     "instance": 1,
                     "port": "10001"

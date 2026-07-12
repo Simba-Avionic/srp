@@ -6,8 +6,7 @@
             "on_pos" : 102,
             "off_pos" : 512,
             "mosfet_id" : 15,
-            "desc": "J11, MAIN VALVE, 102 to 0.5ms, 540 prawdopodobnie 2.5ms",
-            "ina219_address": 68
+            "desc": "J11, Oxidizer MAIN VALVE, 102 to 0.5ms, 540 prawdopodobnie 2.5ms"
         },
         {
             "actuator_id":61,
@@ -15,18 +14,33 @@
             "on_pos" : 350,
             "off_pos" : 102,
             "mosfet_id" : 16,
-            "desc": "J12, VENT VALVE, off: 102 - on: 404, calculate open % by changing on pos",
-            "ina219_address": 69,
+            "desc": "J12, Oxidizer VENT VALVE, off: 102 - on: 404, calculate open % by changing on pos",
             "pulsing_time_ms": 250
         },
         {
             "actuator_id":62,
-            "channel": 1,
+            "channel": 4,
             "on_pos" : 180,
             "off_pos" : 512,
+            "mosfet_id" : 17,
+            "desc": "J13, Oxidizer DUMP VALVE"
+        },
+        {
+            "actuator_id":63,
+            "channel": 2,
+            "on_pos" : 102,
+            "off_pos" : 505,
+            "mosfet_id" : 10,
+            "desc": "Presure Feed System MAIN VALVE"
+        },
+        {
+            "actuator_id":64,
+            "channel": 1,
+            "on_pos" : 102,
+            "off_pos" : 512,
             "mosfet_id" : 11,
-            "desc": "J13, DUMP VALVE",
-            "ina219_address": 64
+            "desc": "Presure Feed System VENT VALVE",
+            "pulsing_time_ms": 500
         }
     ]
 }

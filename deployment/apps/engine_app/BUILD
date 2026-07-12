@@ -10,6 +10,7 @@ filegroup(
         "//deployment/apps/prim_service:instance",
         "//deployment/apps/fc/main_app:instance",
         "//deployment/apps/logger_service:instance",
+        "//deployment/apps/sec_ec/servo_service:instance"
     ],
     visibility = [
         "//apps/engine_service:__subpackages__",

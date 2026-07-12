@@ -22,9 +22,11 @@ namespace srp {
 namespace apps {
 
 namespace {  // NOLINT
-  constexpr std::uint8_t kMainValveID = 60;
-  constexpr std::uint8_t kVentValveID = 61;
-  constexpr std::uint8_t kDumpValveID = 62;
+  static constexpr auto kOxidizerMainValveID = 60;
+  static constexpr auto kOxidizerVentValveID = 61;
+  static constexpr auto kOxidizerDumpValveID = 62;
+  static constexpr auto kPressureFeedSystemMainValveID  = 63;
+  static constexpr auto kPressureFeedSystemVentValveID  = 64;
 }
 
 class MyServoService : public ServoServiceSkeleton {
@@ -61,28 +63,20 @@ class MyServoService : public ServoServiceSkeleton {
   }
 
  protected:
-  ara::core::Result<bool> SetMainServoValue(const std::uint8_t& in_parm) override {
-    return SetServoInternal(kMainValveID, in_parm);
+  ara::core::Result<bool> SetOxidizerMainValve(const std::uint8_t& in_parm) override {
+    return SetServoInternal(kOxidizerMainValveID, in_parm);
   }
-
-  ara::core::Result<std::uint8_t> ReadMainServoValue() override {
-    return ReadServoInternal(kMainValveID);
+  ara::core::Result<bool> SetOxidizerVentValve(const std::uint8_t& in_parm) override {
+    return SetServoInternal(kOxidizerVentValveID, in_parm);
   }
-
-  ara::core::Result<bool> SetVentServoValue(const std::uint8_t& in_parm) override {
-    return SetServoInternal(kVentValveID, in_parm);
+  ara::core::Result<bool> SetOxidizerDumpValve(const std::uint8_t& in_parm) override {
+    return SetServoInternal(kOxidizerDumpValveID, in_parm);
   }
-
-  ara::core::Result<std::uint8_t> ReadVentServoValue() override {
-    return ReadServoInternal(kVentValveID);
+  ara::core::Result<bool> SetPressureFeedMainValve(const std::uint8_t& in_parm) override {
+    return SetServoInternal(kPressureFeedSystemMainValveID, in_parm);
   }
-
-  ara::core::Result<bool> SetDumpValue(const std::uint8_t& in_parm) override {
-    return SetServoInternal(kDumpValveID, in_parm);
-  }
-
-  ara::core::Result<std::uint8_t> ReadDumpValue() override {
-    return ReadServoInternal(kDumpValveID);
+  ara::core::Result<bool> SetPressureFeedVentValve(const std::uint8_t& in_parm) override {
+    return SetServoInternal(kPressureFeedSystemVentValveID, in_parm);
   }
 };
 
