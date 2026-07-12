@@ -46,13 +46,13 @@ std::optional<apps::SysStatType> SystemStatService::GetSysStats() const {
     if (!cpu_usage_opt.has_value()) {
         return std::nullopt;
     }
-    stats.cpu_usage = static_cast<float>(cpu_usage_opt.value());
+    stats.cpu_usage = static_cast<uint8_t>(cpu_usage_opt.value());
     auto mem_usage_opt = stats_.get_ram_usage();
     if (!mem_usage_opt.has_value()) {
         return std::nullopt;
     }
-    stats.mem_usage = mem_usage_opt.value();
-    stats.disk_utilization = static_cast<float>(stats_.get_disk_space());
+    stats.mem_usage = static_cast<uint8_t>(mem_usage_opt.value());
+    stats.disk_utilization = static_cast<uint8_t>(stats_.get_disk_space());
     return stats;
 }
 
