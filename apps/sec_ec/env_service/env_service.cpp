@@ -29,7 +29,7 @@ namespace {
   static constexpr uint8_t kEthanolPressSensorId = 14;
   static constexpr uint8_t kChamberPress2SensorId = 13;
   static constexpr uint8_t kChamberPress3SensorId = 15;
-  static constexpr auto kPressureDelayMs = 100;
+  static constexpr auto kPressureDelayMs = 50;
 }  // namespace
 
 core::ErrorCode SecEnvService::Init(std::unique_ptr<mw::temp::TempController> temp) {

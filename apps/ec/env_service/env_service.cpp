@@ -28,8 +28,8 @@ namespace {
     static constexpr uint8_t kOxidizer_press_id =           10;
     static constexpr uint8_t kPFS_press_id =         11;
     static constexpr uint8_t kCHAMBER1_press_id =         12;
-    static constexpr auto kPressureDelayMs =             100;
-    static constexpr auto kDifferentialPressureDelayMs = 100;
+    static constexpr auto kPressureDelayMs =             50;
+    static constexpr auto kDifferentialPressureDelayMs = 50;
     static constexpr auto kPressure_sensor_multiplicator = 100;
 }  // namespace
 

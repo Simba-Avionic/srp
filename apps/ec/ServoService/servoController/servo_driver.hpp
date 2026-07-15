@@ -60,10 +60,9 @@ class ServoDriver {
   bool SetServoPosition(const srp::service::ServoRuntimeConfig& cfg, const uint8_t state) {
     std::unique_lock<std::mutex> lock(operation_mtx);
     if (cfg.mosfet_id != 0) {
-      if (gpio_.SetPinValue(cfg.mosfet_id, kOpenState, kDefault_mosfet_active_time_ms) != core::ErrorCode::kOk) {
+      if (gpio_.SetPinValue(cfg.mosfet_id, kOpenState, 0) != core::ErrorCode::kOk) {
         logger_.LogError() << "ServoController.ExecuteServoMovement: failed to enable MOSFET " <<
                               cfg.mosfet_id;
-        return false;
       }
     }
 
@@ -75,7 +74,6 @@ class ServoDriver {
 
     if (driver_.SetChannelPosition(cfg.channel, target_position) != core::ErrorCode::kOk) {
         logger_.LogWarn() << "ServoController.ExecuteServoMovement: failed to set PWM ";
-        return false;
     }
     return true;
   }

@@ -2,10 +2,10 @@
     "servos": [
         {
             "actuator_id": 63,
-            "channel": 3,
-            "on_pos" : 102,
-            "off_pos" : 512,
-            "mosfet_id" : 15,
+            "channel": 1,
+            "on_pos" : 400,
+            "off_pos" : 102,
+            "mosfet_id" : 11,
             "desc": "ETHANOL MAIN VALVE"
         },
         {

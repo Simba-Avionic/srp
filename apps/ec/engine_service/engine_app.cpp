@@ -251,15 +251,17 @@ void EngineApp::OnArm() {
 void EngineApp::OnLaunch() {
   ara::log::LogInfo() << "EngineApp::OnLaunch: Launch initiated - starting async launch sequence";
   std::thread([this]() {
-    // auto res = this->primer_handler_->StartPrime();
+    auto res = this->primer_handler_->StartPrime();
     // if (!res.HasValue()) {
     //   ara::log::LogError() << "Invalid request to MW:GPIOService";
     //   return;
     // }
-    // std::this_thread::sleep_for(std::chrono::milliseconds(700));
-    sec_servo_handler_->SetEtanolMainValve(1);
-    std::this_thread::sleep_for(std::chrono::milliseconds(200));
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    servo_handler_->SetPressureFeedVentValve(1);
+    std::this_thread::sleep_for(std::chrono::milliseconds(450));
     servo_handler_->SetOxidizerMainValve(1);
+    std::this_thread::sleep_for(std::chrono::milliseconds(7000));
+    state_ctr->SetState(RocketState_t::ABORT);
   }).detach();
 }
 
@@ -290,9 +292,13 @@ void EngineApp::OnAbort() {
   std::thread([this]() {
     servo_handler_->SetOxidizerMainValve(0);
     std::this_thread::sleep_for(std::chrono::milliseconds(200));
-    sec_servo_handler_->SetEtanolMainValve(0);
+    servo_handler_->SetPressureFeedVentValve(0);
     std::this_thread::sleep_for(std::chrono::milliseconds(200));
     servo_handler_->SetPressureFeedMainValve(0);
+    std::this_thread::sleep_for(std::chrono::milliseconds(5000));
+    servo_handler_->SetOxidizerMainValve(1);
+    std::this_thread::sleep_for(std::chrono::milliseconds(200));
+    servo_handler_->SetPressureFeedVentValve(1);
   }).detach();
 }
 

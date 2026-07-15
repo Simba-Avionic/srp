@@ -11,7 +11,7 @@
         {
             "actuator_id":61,
             "channel": 0,
-            "on_pos" : 350,
+            "on_pos" : 400,
             "off_pos" : 102,
             "mosfet_id" : 16,
             "desc": "J12, Oxidizer VENT VALVE, off: 102 - on: 404, calculate open % by changing on pos",
@@ -20,8 +20,8 @@
         {
             "actuator_id":62,
             "channel": 4,
-            "on_pos" : 180,
-            "off_pos" : 512,
+            "on_pos" : 400,
+            "off_pos" : 102,
             "mosfet_id" : 17,
             "desc": "J13, Oxidizer DUMP VALVE"
         },
@@ -36,11 +36,10 @@
         {
             "actuator_id":64,
             "channel": 1,
-            "on_pos" : 102,
-            "off_pos" : 512,
+            "on_pos" : 440,
+            "off_pos" : 102,
             "mosfet_id" : 11,
-            "desc": "Presure Feed System VENT VALVE",
-            "pulsing_time_ms": 500
+            "desc": "Presure Feed System VENT VALVE"
         }
     ]
 }

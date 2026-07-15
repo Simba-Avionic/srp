@@ -126,7 +126,7 @@ bool PrimerController::EnablePrimer(const bool auto_disable) {
         prim_logger.LogError() << "Failed to enable primer";
         return false;
     }
-    primerState = PrimerState_t::kFIRED;
+    // primerState = PrimerState_t::kFIRED;
     prim_logger.LogInfo() << "Primer fired (active_time_ms=" << kIgniter_active_time << ")";
     return true;
 }
