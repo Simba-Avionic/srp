@@ -4,7 +4,8 @@
         "actuator_id":62,
         "channel": 0,
         "on_pos" : 3000,
-        "off_pos" : 3
+        "off_pos" : 3,
+        "todo": "Set correct on_pos and off_pos values from 0-180 degrees range"
         }
     ],
     "parachute": {

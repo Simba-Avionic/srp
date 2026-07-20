@@ -3,16 +3,16 @@
         {
             "actuator_id": 63,
             "channel": 1,
-            "on_pos" : 400,
-            "off_pos" : 102,
+            "on_pos" : 131,
+            "off_pos" : 0,
             "mosfet_id" : 11,
             "desc": "ETHANOL MAIN VALVE"
         },
         {
             "actuator_id": 64,
             "channel": 0,
-            "on_pos" : 102,
-            "off_pos" : 512,
+            "on_pos" : 0,
+            "off_pos" : 180,
             "mosfet_id" : 16,
             "desc": "ETHANOL VENT VALVE"
         }
