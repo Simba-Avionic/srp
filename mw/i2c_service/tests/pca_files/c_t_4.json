@@ -5,6 +5,7 @@
             "channel": 1,
             "on_pos": 1500,
             "off_pos": 2000,
+            "todo": "Set correct on_pos and off_pos values from 0-180 degrees range",
             "on_losening_pos":1000,
             "off_losening_pos":2500
         }

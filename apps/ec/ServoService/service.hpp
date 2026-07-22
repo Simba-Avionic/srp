@@ -45,7 +45,7 @@ class MyServoService : public ServoServiceSkeleton {
     }
     return true;
   }
-  ara::core::Result<std::uint8_t> ReadServoInternal(std::uint8_t servo_id) {
+  ara::core::Result<std::uint16_t> ReadServoInternal(std::uint8_t servo_id) {
     if (!servo_) {
         return ara::com::MakeErrorCode(ara::com::ComErrc::kUnsetFailure, "Servo controller is not initialized");
     }

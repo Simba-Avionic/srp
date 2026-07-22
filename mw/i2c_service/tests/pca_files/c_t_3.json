@@ -5,6 +5,7 @@
             "channel": 3,
             "on_pos": 1500,
             "off_pos": 2000,
+            "todo": "Set correct on_pos and off_pos values from 0-180 degrees range",
             "mosfet_id":2
         }
     ]
