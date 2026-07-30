@@ -1,0 +1,65 @@
+{
+    "include": [
+        "deployment/system_definition/someip/fuel_service/service.json"
+    ],
+    "package": "srp.apps",
+    "adaptive_application": {
+        "FuelApp": {
+            "app": {
+                "functional_groups":[
+                    "Running",
+                    "SafetyMode"
+                ],
+                "parms": "",
+                "logger": {
+                    "app_id": "FUEL",
+                    "app_des": "Auto Refueling Service",
+                    "log_level": "kDebug",
+                    "log_mode": "kRemote",
+                    "ctx": [
+                        {
+                            "ctx_id": "SOME",
+                            "log_level": "kDebug",
+                            "ctx_des": "Logs From someip"
+                        },
+                        {
+                            "ctx_id": "ara",
+                            "log_level": "kDebug",
+                            "ctx_des": "Default ctx for ara"
+                        },
+                        {
+                            "ctx_id": "acom",
+                            "log_level": "kDebug",
+                            "ctx_des": "Default ctx for ara::com"
+                        },
+                        {
+                            "ctx_id": "adiag",
+                            "log_level": "kDebug",
+                            "ctx_des": "Default ctx for ara::diag"
+                        },
+                        {
+                            "ctx_id": "exec",
+                            "log_level": "kDebug",
+                            "ctx_des": "Default ctx for ara::exec"
+                        }
+                    ]
+                }
+            },
+            "provide": [
+                {
+                    "name": "FuelApp as FuelService_udp",
+                    "on": "udp",
+                    "port": "10001",
+                    "instance": 1
+                },
+                {
+                    "name": "FuelApp as FuelService_ipc",
+                    "on": "ipc",
+                    "instance": 2
+                }
+            ],
+            "require": []
+        }
+    }
+}
+
