@@ -30,7 +30,8 @@ enum direction_t{
 
 class IGpioDriver{
  public:
-    virtual core::ErrorCode initializePin(const uint16_t& pinNumber, const direction_t& direction) = 0;
+    virtual core::ErrorCode initializePin(const uint16_t& pinNumber, const direction_t& direction,
+                                          bool use_lock = true) = 0;
 
     /**
      * @brief Set the output Pin Value
@@ -38,7 +39,8 @@ class IGpioDriver{
      * @param pinNumber 
      * @param value 
      */
-    virtual core::ErrorCode setValue(const uint16_t &pinNumber , const uint8_t& value) = 0;
+    virtual core::ErrorCode setValue(const uint16_t &pinNumber , const uint8_t& value,
+                                     bool use_lock = true) = 0;
 
     /**
      * @brief Set the Pin direction (Pin direction must be set to output)
@@ -47,7 +49,8 @@ class IGpioDriver{
      * @param direction 
      */
     virtual core::ErrorCode setDirection(const uint16_t &pinNumber,
-                                const direction_t& direction) = 0;
+                                const direction_t& direction,
+                                bool use_lock = true) = 0;
 
     /**
      * @brief read Pin Value
@@ -55,16 +58,16 @@ class IGpioDriver{
      * @param pinNumber 
      * @return uint8_t 
      */
-    virtual uint8_t getValue(const uint16_t &pinNumber) = 0;
+    virtual uint8_t getValue(const uint16_t &pinNumber, bool use_lock = true) = 0;
     /**
      * @brief read Pin direction value
      * 
      * @param pinNumber 
      * @return direction_t 
      */
-    virtual direction_t getDirection(const uint16_t &pinNumber) = 0;
+    virtual direction_t getDirection(const uint16_t &pinNumber, bool use_lock = true) = 0;
     static std::string getEndpointPath(const uint16_t& pinNumber, const std::string& endpoint);
-    virtual core::ErrorCode  unregisterPin(const uint16_t& pinNumber) = 0;
+    virtual core::ErrorCode  unregisterPin(const uint16_t& pinNumber, bool use_lock = true) = 0;
 };
 }  // namespace gpio
 }  // namespace core

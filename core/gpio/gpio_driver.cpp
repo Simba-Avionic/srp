@@ -10,6 +10,7 @@
  */
 
 #include <fstream>
+#include <mutex>  // NOLINT
 #include <utility>
 #include "gpio_driver.hpp"
 #include "ara/log/log.h"
@@ -27,7 +28,15 @@ GpioDriver::GpioDriver(std::unique_ptr<IFileHandler> file): file_(std::move(file
 
 GpioDriver::~GpioDriver() {}
 
-core::ErrorCode GpioDriver::unregisterPin(const uint16_t& pinNumber) {
+std::unique_lock<std::mutex> GpioDriver::maybeLock(bool use_lock) {
+    if (use_lock) {
+        return std::unique_lock<std::mutex>(file_mutex_);
+    }
+    return std::unique_lock<std::mutex>(file_mutex_, std::defer_lock);
+}
+
+core::ErrorCode GpioDriver::unregisterPin(const uint16_t& pinNumber, bool use_lock) {
+    auto lock = maybeLock(use_lock);
     if (!file_->open(kGpioPath + "/unexport", FileMode::WRITE)) {
         return core::ErrorCode::kConnectionError;
     }
@@ -38,7 +47,9 @@ core::ErrorCode GpioDriver::unregisterPin(const uint16_t& pinNumber) {
     return core::ErrorCode::kOk;
 }
 
-core::ErrorCode GpioDriver::initializePin(const uint16_t& pinNumber, const direction_t& direction) {
+core::ErrorCode GpioDriver::initializePin(const uint16_t& pinNumber, const direction_t& direction,
+                                          bool use_lock) {
+    auto lock = maybeLock(use_lock);
     if (!file_->open(kGpioPath + "/export", FileMode::WRITE)) {
         // gpio_logger_.LogError() <<("Cant export pin");
         return core::ErrorCode::kError;
@@ -47,7 +58,7 @@ core::ErrorCode GpioDriver::initializePin(const uint16_t& pinNumber, const direc
         return core::ErrorCode::kError;
     }
     file_->close();
-    if (this->setDirection(pinNumber, direction) != core::ErrorCode::kOk) {
+    if (this->setDirection(pinNumber, direction, false) != core::ErrorCode::kOk) {
         // gpio_logger_.LogError() <<("cant set direction");
         return core::ErrorCode::kError;
     }
@@ -59,18 +70,20 @@ std::string GpioDriver::getEndpointPath(const uint16_t& pinNumber, const std::st
     return kGpioPath + "/gpio" + std::to_string(pinNumber) + "/" + endpoint;
 }
 
-core::ErrorCode GpioDriver::setValue(const uint16_t& pinNumber , const uint8_t& value) {
+core::ErrorCode GpioDriver::setValue(const uint16_t& pinNumber , const uint8_t& value,
+                                     bool use_lock) {
+    auto lock = maybeLock(use_lock);
     if (!file_->open(this->getEndpointPath(pinNumber, "value"), FileMode::WRITE)) {
         return core::ErrorCode::kError;
     }
-    if (!file_->write(std::to_string(value))) {
-        return core::ErrorCode::kError;
-    }
+    bool result = file_->write(std::to_string(value), false);
     file_->close();
-    return core::ErrorCode::kOk;
+    return result ? core::ErrorCode::kOk : core::ErrorCode::kError;
 }
 
-core::ErrorCode GpioDriver::setDirection(const uint16_t& pinNumber , const direction_t& direction) {
+core::ErrorCode GpioDriver::setDirection(const uint16_t& pinNumber , const direction_t& direction,
+                                         bool use_lock) {
+    auto lock = maybeLock(use_lock);
     if (!file_->open(this->getEndpointPath(pinNumber, "direction"), FileMode::WRITE)) {
         return core::ErrorCode::kError;
     }
@@ -81,7 +94,8 @@ core::ErrorCode GpioDriver::setDirection(const uint16_t& pinNumber , const direc
     return ErrorCode::kOk;
 }
 
-uint8_t GpioDriver::getValue(const uint16_t& pinNumber) {
+uint8_t GpioDriver::getValue(const uint16_t& pinNumber, bool use_lock) {
+    auto lock = maybeLock(use_lock);
     if (!file_->open(this->getEndpointPath(pinNumber, "value"), FileMode::READ)) {
         return core::ErrorCode::kError;
     }
@@ -93,7 +107,8 @@ uint8_t GpioDriver::getValue(const uint16_t& pinNumber) {
     return atoi(val.value().c_str());
 }
 
-direction_t GpioDriver::getDirection(const uint16_t& pinNumber) {
+direction_t GpioDriver::getDirection(const uint16_t& pinNumber, bool use_lock) {
+    auto lock = maybeLock(use_lock);
     if (!file_->open(this->getEndpointPath(pinNumber, "direction"), FileMode::READ)) {
         return direction_t::ERROR;
     }

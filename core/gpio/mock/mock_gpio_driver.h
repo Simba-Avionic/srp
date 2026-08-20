@@ -21,13 +21,13 @@
 class MockGPIO : public srp::core::gpio::IGpioDriver {
  public:
   MOCK_METHOD((srp::core::ErrorCode), initializePin,
-                      (const uint16_t&, const srp::core::gpio::direction_t&), (override));
-  MOCK_METHOD((uint8_t), getValue, (const uint16_t&), (override));
-  MOCK_METHOD((srp::core::gpio::direction_t), getDirection, (const uint16_t&), (override));
-  MOCK_METHOD((srp::core::ErrorCode), setValue, (const uint16_t&, const uint8_t&), (override));
+                      (const uint16_t&, const srp::core::gpio::direction_t&, bool), (override));
+  MOCK_METHOD((uint8_t), getValue, (const uint16_t&, bool), (override));
+  MOCK_METHOD((srp::core::gpio::direction_t), getDirection, (const uint16_t&, bool), (override));
+  MOCK_METHOD((srp::core::ErrorCode), setValue, (const uint16_t&, const uint8_t&, bool), (override));
   MOCK_METHOD((srp::core::ErrorCode), setDirection,
-                          (const uint16_t&, const srp::core::gpio::direction_t&), (override));
-  MOCK_METHOD((srp::core::ErrorCode), unregisterPin, (const uint16_t& pinNumber), (override));
+                          (const uint16_t&, const srp::core::gpio::direction_t&, bool), (override));
+  MOCK_METHOD((srp::core::ErrorCode), unregisterPin, (const uint16_t& pinNumber, bool), (override));
   virtual ~MockGPIO() = default;
 };
 

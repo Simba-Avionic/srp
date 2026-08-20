@@ -14,7 +14,7 @@ Eksportuje pin, ustawia kierunek IN/OUT, czyta i zapisuje wartość. Wariant `si
 - `unregisterPin` — `unexport`.
 - Ścieżki: `/sys/class/gpio/export`, `unexport`, `gpioN/value`, `gpioN/direction`.
 
-Dostęp do plików jest chroniony `recursive_mutex`. Warstwa aplikacyjna (serwomechanizmy, primer, recovery) **nie** woła tego sterownika bezpośrednio — idzie przez `mw/gpio_server`.
+Dostęp do plików jest chroniony `std::mutex`. Parametr `use_lock` (domyślnie `true`) pozwala pominąć lock, gdy wywołujący już go trzyma
 
 ## Architektura
 
@@ -42,13 +42,13 @@ flowchart TB
 enum direction_t { IN, OUT, ERROR };
 
 class IGpioDriver {
-  virtual ErrorCode initializePin(uint16_t pin, direction_t dir) = 0;
-  virtual ErrorCode setValue(uint16_t pin, uint8_t value) = 0;
-  virtual ErrorCode setDirection(uint16_t pin, direction_t dir) = 0;
-  virtual uint8_t getValue(uint16_t pin) = 0;
-  virtual direction_t getDirection(uint16_t pin) = 0;
+  virtual ErrorCode initializePin(uint16_t pin, direction_t dir, bool use_lock = true) = 0;
+  virtual ErrorCode setValue(uint16_t pin, uint8_t value, bool use_lock = true) = 0;
+  virtual ErrorCode setDirection(uint16_t pin, direction_t dir, bool use_lock = true) = 0;
+  virtual uint8_t getValue(uint16_t pin, bool use_lock = true) = 0;
+  virtual direction_t getDirection(uint16_t pin, bool use_lock = true) = 0;
   static std::string getEndpointPath(uint16_t pin, const std::string& endpoint);
-  virtual ErrorCode unregisterPin(uint16_t pin) = 0;
+  virtual ErrorCode unregisterPin(uint16_t pin, bool use_lock = true) = 0;
 };
 
 class GpioDriver : public IGpioDriver {
