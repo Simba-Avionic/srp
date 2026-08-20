@@ -200,35 +200,57 @@ GPIOMWService::~GPIOMWService() {
 std::chrono::milliseconds GPIOMWService::CheckPinsExpired() {
     auto allowed_sleep = std::chrono::milliseconds(1000);
     auto now = std::chrono::high_resolution_clock::now();
-    std::lock_guard<std::mutex> lock(pin_expire_mutex);
+    std::vector<uint8_t> pins_to_disable;
+    {
+        std::lock_guard<std::mutex> lock(pin_expire_mutex);
+        for (auto it = pin_expire.begin(); it != pin_expire.end(); ) {
+            if (it->second.infinite_active) {
+                ++it;
+                continue;
+            }
+            if (now < it->second.disable_tp) {
+                auto can_sleep_for = std::chrono::duration_cast<
+                            std::chrono::milliseconds>(it->second.disable_tp - now);
+                allowed_sleep = std::min(allowed_sleep, can_sleep_for);
+                ++it;
+                continue;
+            }
 
-    for (auto it = pin_expire.begin(); it != pin_expire.end(); ) {
-        if (it->second.infinite_active) {
-            ++it;
-            continue;
+            const uint8_t pin_id = it->first;
+            if (config.find(pin_id) == config.end()) {
+                ++it;
+                continue;
+            }
+            pins_to_disable.push_back(pin_id);
+            it = pin_expire.erase(it);
         }
-        if (now < it->second.disable_tp) {
-            auto can_sleep_for = std::chrono::duration_cast<
-                        std::chrono::milliseconds>(it->second.disable_tp - now);
-            allowed_sleep = std::min(allowed_sleep, can_sleep_for);
-            ++it;
-            continue;
-        }
+    }
 
-        const uint8_t pin_id = it->first;
+    for (const uint8_t pin_id : pins_to_disable) {
+        {
+            std::lock_guard<std::mutex> lock(pin_expire_mutex);
+            if (pin_expire.find(pin_id) != pin_expire.end()) {
+                continue;
+            }
+        }
         auto pin_config = config.find(pin_id);
         if (pin_config == config.end()) {
-            ++it;
             continue;
         }
-
         const auto disable_res = gpio_driver_->setValue(pin_config->second.pinNum, 0);
         if (disable_res != core::ErrorCode::kOk) {
             ara::log::LogWarn() << "Auto-disable failed for pin ID: " << pin_id;
         } else {
             ara::log::LogInfo() << "Auto-disabled pin ID: " << pin_id;
         }
-        it = pin_expire.erase(it);
+        bool reactivated = false;
+        {
+            std::lock_guard<std::mutex> lock(pin_expire_mutex);
+            reactivated = pin_expire.find(pin_id) != pin_expire.end();
+        }
+        if (reactivated) {
+            gpio_driver_->setValue(pin_config->second.pinNum, 1);
+        }
     }
     return allowed_sleep;
 }
@@ -258,7 +280,10 @@ int GPIOMWService::Initialize(const std::map<ara::core::StringView,
     ara::log::LogInfo() << "GPIOMWService::Initialize started";
     this->Init(std::make_unique<com::soc::StreamIpcSocket>(),
             std::make_shared<core::gpio::GpioDriver>(std::make_unique<core::FileHandler>()));
-    this->sock_->Init({SOCKET_PATH, 0, 0});
+    if (this->sock_->Init({SOCKET_PATH, 0, 0}) != core::ErrorCode::kOk) {
+        ara::log::LogError() << "Initialize failed: cannot bind GPIO IPC socket";
+        return core::ErrorCode::kInitializeError;
+    }
     this->sock_->SetRXCallback(std::bind(&GPIOMWService::RxCallback, this, std::placeholders::_1,
             std::placeholders::_2, std::placeholders::_3));
     const std::string path = parms.at("app_path") + "etc/config.json";
