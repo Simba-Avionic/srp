@@ -21,6 +21,12 @@
 namespace srp {
 namespace com {
 namespace soc {
+
+namespace {
+  constexpr int kListenBacklog = 16;
+  constexpr int kTransmitTimeout = 2;
+}
+
 bool StreamIpcSocket::SocketExist(const std::string path) {
   struct stat buffer;
   return (stat(path.c_str(), &buffer) == 0);
@@ -41,6 +47,16 @@ srp::core::ErrorCode StreamIpcSocket::Init(const SocketConfig& config) {
          ("/run/" + config.GetIp()).c_str());  // NOLINT
   len = sizeof(server_sockaddr);
   unlink(("/run/" + config.GetIp()).c_str());
+  if (bind(server_sock, (struct sockaddr*)&server_sockaddr, len) == -1) {
+    close(server_sock);
+    server_sock = -1;
+    return srp::core::ErrorCode::kInitializeError;
+  }
+  if (listen(server_sock, kListenBacklog) == -1) {
+    close(server_sock);
+    server_sock = -1;
+    return srp::core::ErrorCode::kInitializeError;
+  }
   return srp::core::ErrorCode::kOk;
 }
 
@@ -88,37 +104,30 @@ void StreamIpcSocket::StartRXThread() {
 }
 
 void StreamIpcSocket::Loop(std::stop_token stoken) {
-  sockaddr_un client_addr;
-  int client_socket;
-  rc = bind(server_sock, (struct sockaddr*)&server_sockaddr, len);
-  const std::stop_callback stop_wait{
-      stoken, [this]() { shutdown(this->server_sock, SHUT_RDWR); }};
-  if (rc == -1) {
+  if (server_sock < 0) {
     return;
   }
-  listen(server_sock, 1);
+  const std::stop_callback stop_wait{
+      stoken, [this]() { shutdown(this->server_sock, SHUT_RDWR); }};
 
-    std::vector<uint8_t> rx_buffer;
-    rx_buffer.reserve(1024);
-
-    while (!stoken.stop_requested()) {
-        int client_socket = accept(server_sock, nullptr, nullptr);
-        if (client_socket < 0) {
-            if (errno == EINTR) continue;
-            break;
-        }
-
-        std::array<uint8_t, 4096> stack_buffer;
-        ssize_t received = read(client_socket, stack_buffer.data(), stack_buffer.size());
-
-        if (received > 0 && this->callback_) {
-            auto response = this->callback_("IPC", 0, {stack_buffer.begin(), stack_buffer.begin() + received});
-            if (!response.empty()) {
-                write(client_socket, response.data(), response.size());
-            }
-        }
-        close(client_socket);
+  while (!stoken.stop_requested()) {
+    int client_socket = accept(server_sock, nullptr, nullptr);
+    if (client_socket < 0) {
+      if (errno == EINTR) continue;
+      break;
     }
+
+    std::array<uint8_t, 4096> stack_buffer;
+    ssize_t received = read(client_socket, stack_buffer.data(), stack_buffer.size());
+
+    if (received > 0 && this->callback_) {
+      auto response = this->callback_("IPC", 0, {stack_buffer.begin(), stack_buffer.begin() + received});
+      if (!response.empty()) {
+        write(client_socket, response.data(), response.size());
+      }
+    }
+    close(client_socket);
+  }
 }
 void StreamIpcSocket::StopRXThread() {
   this->rx_thred->request_stop();
