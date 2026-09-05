@@ -72,8 +72,9 @@ struct Config {
 class RefuelController final {
  private:
     std::atomic<RefuelingState_t> state{RefuelingState_t::INIT};
-    std::mutex state_mtx_;
+
     std::jthread refueling_thread;
+    std::mutex cv_mtx_;
     std::condition_variable cv;
     std::atomic<bool> running{false};
 
@@ -81,6 +82,7 @@ class RefuelController final {
     uint16_t target_refueling_value;
     uint16_t start_test_pressure;
 
+    int16_t initial_rocket_mass{0};
     std::atomic<uint16_t> tank_pressure{0};
     std::atomic<uint16_t> gs_pressure{0};
     std::atomic<int16_t> rocket_mass{0};
@@ -97,6 +99,7 @@ class RefuelController final {
     void handleIdle();
     void handlePressureTest();
     void handleRefuelling();
+    void handleTankingComplete();
  protected:
     void changeState(RefuelingState_t state);
  public:
@@ -104,8 +107,10 @@ class RefuelController final {
             SetValvePosCallback vent_v_set_pos, SetValvePosCallback dump_v_set_pos,
             CheckValvePosCallback vent_v_check_pos);
 
-    void StartRefuelingToMass(uint16_t val);
-    void StartRefuelingToPressure(uint16_t val);
+    void StartRefueling(RefuelingType_t type, uint16_t val);
+    void RequestAbort();
+
+    RefuelingState_t GetState() const { return state.load(); }
 
     void OnTankPressureReceived(uint16_t val);
     void OnGSPressureReceived(uint16_t val);
