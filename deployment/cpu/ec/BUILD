@@ -14,6 +14,7 @@ cpu_def(
     etcs = [
         "diag_config.json",
         "logger_config.json",
+        "ntp_config.json",
     ],
     platform_etcs = [
         "//deployment/cpu/ec:sm_config",
