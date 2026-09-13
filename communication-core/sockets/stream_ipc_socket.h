@@ -29,7 +29,7 @@ namespace com {
 namespace soc {
 class StreamIpcSocket : public ISocketStream {
  private:
-  int server_sock, len, rc;
+  int server_sock = -1, len = 0, rc = 0;
   int bytes_rec = 0;
   struct sockaddr_un server_sockaddr, peer_sock;
 

@@ -38,7 +38,10 @@ GPIOController::~GPIOController() {
 void GPIOController::ListenToCallbacks() {
     ara::log::LogDebug() << "controller ID: " << id << " started listening to callbacks";
     std::string path = CALLBACK_PATH_PREFIX + std::to_string(id);
-    this->sock_->Init({path, 0, 0});
+    if (this->sock_->Init({path, 0, 0}) != core::ErrorCode::kOk) {
+        ara::log::LogError() << "controller ID: " << id << " failed to bind callback socket";
+        return;
+    }
     this->sock_->SetRXCallback(std::bind(&GPIOController::HandleCallback, this, std::placeholders::_1,
                                          std::placeholders::_2, std::placeholders::_3));
     this->sock_->StartRXThread();

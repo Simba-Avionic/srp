@@ -27,12 +27,13 @@ gpio_logger_{ara::log::LoggingMenager::GetInstance()->CreateLogger("GPIO", "", a
 
 GpioDriver::~GpioDriver() {}
 
-core::ErrorCode  GpioDriver::unregisterPin(const uint16_t& pinNumber) {
+core::ErrorCode  GpioDriver::unregisterPin(const uint16_t& pinNumber, bool /*use_lock*/) {
     ara::log::LogInfo() << "Unregister PIN with ID:" << pinNumber;
     return core::ErrorCode::kOk;
 }
 
-core::ErrorCode GpioDriver::initializePin(const uint16_t& pinNumber, const direction_t& direction) {
+core::ErrorCode GpioDriver::initializePin(const uint16_t& pinNumber, const direction_t& direction,
+                                          bool /*use_lock*/) {
     ara::log::LogInfo() << "Initialize PIN with ID:" << pinNumber
     << "direction:" << ((direction == direction_t::IN) ? "IN" : "OUT");
     return core::ErrorCode::kOk;
@@ -43,26 +44,28 @@ std::string GpioDriver::getEndpointPath(const uint16_t& pinNumber, const std::st
     return kGpioPath + "/gpio" + std::to_string(pinNumber) + "/" + endpoint;
 }
 
-core::ErrorCode GpioDriver::setValue(const uint16_t& pinNumber , const uint8_t& value) {
+core::ErrorCode GpioDriver::setValue(const uint16_t& pinNumber , const uint8_t& value,
+                                     bool /*use_lock*/) {
     ara::log::LogInfo() << "SET VALUE PIN with ID:" << pinNumber
     << "value:" << value;
     return core::ErrorCode::kOk;
 }
 
-core::ErrorCode GpioDriver::setDirection(const uint16_t& pinNumber , const direction_t& direction) {
+core::ErrorCode GpioDriver::setDirection(const uint16_t& pinNumber , const direction_t& direction,
+                                         bool /*use_lock*/) {
     ara::log::LogInfo() << "SET DIRECTION PIN with ID:" << pinNumber
     << "direction:" << ((direction == direction_t::IN) ? "IN" : "OUT");
     return ErrorCode::kOk;
 }
 
-uint8_t GpioDriver::getValue(const uint16_t& pinNumber) {
+uint8_t GpioDriver::getValue(const uint16_t& pinNumber, bool /*use_lock*/) {
     const uint8_t value = 1;
     ara::log::LogInfo() << "GET VALUE PIN with ID:" << pinNumber
     << "VALUE:" << value;
     return value;
 }
 
-direction_t GpioDriver::getDirection(const uint16_t& pinNumber) {
+direction_t GpioDriver::getDirection(const uint16_t& pinNumber, bool /*use_lock*/) {
     const direction_t direction = direction_t::IN;
     ara::log::LogInfo() << "GET VALUE PIN with ID:" << pinNumber
     << "VALUE:" << ((direction == direction_t::IN) ? "IN" : "OUT");

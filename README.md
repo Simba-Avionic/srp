@@ -1,5 +1,10 @@
 # srp
 
+Dokumentacja modułów (nazwa, TL;DR, funkcje, diagramy, API):
+- [core](core/README.md) — sterowniki
+- [mw](mw/README.md) — middleware GPIO / I2C / temp / czas
+- [apps](apps/README.md) — aplikacje EC / FC / SEC_EC
+
 Konfigi do budowania:
 - BBB
     ```

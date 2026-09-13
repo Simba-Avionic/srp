@@ -15,6 +15,7 @@
 #include <unordered_map>
 #include <string>
 #include <memory>
+#include <mutex>  // NOLINT
 #include <vector>
 #include "ara/log/logging_menager.h"
 #include "Igpio_driver.hpp"
@@ -28,12 +29,16 @@ class GpioDriver: public IGpioDriver{
  protected:
   std::unique_ptr<IFileHandler> file_;
   ara::log::Logger gpio_logger_;
+  std::mutex file_mutex_;
+
+  std::unique_lock<std::mutex> maybeLock(bool use_lock);
 
  public:
   explicit GpioDriver(std::unique_ptr<IFileHandler> file);
   ~GpioDriver();
 
-  core::ErrorCode initializePin(const uint16_t& pinNumber, const direction_t& direction) override;
+  core::ErrorCode initializePin(const uint16_t& pinNumber, const direction_t& direction,
+                                bool use_lock = true) override;
   /**
    * @brief Set the pin Value 
    * 
@@ -41,7 +46,8 @@ class GpioDriver: public IGpioDriver{
    * @param value 
    * @return core::ErrorCode 
    */
-  core::ErrorCode setValue(const uint16_t& pinNumber , const uint8_t& value) override;
+  core::ErrorCode setValue(const uint16_t& pinNumber , const uint8_t& value,
+                           bool use_lock = true) override;
   /**
    * @brief Set the pin Direction
    * 
@@ -50,7 +56,8 @@ class GpioDriver: public IGpioDriver{
    * @return core::ErrorCode 
    */
   core::ErrorCode setDirection(const uint16_t& pinNumber,
-               const direction_t& direction) override;
+               const direction_t& direction,
+               bool use_lock = true) override;
 
   /**
    * @brief Get Pin Value
@@ -58,14 +65,14 @@ class GpioDriver: public IGpioDriver{
    * @param pinNumber 
    * @return uint8_t 
    */
-  uint8_t getValue(const uint16_t& pinNumber) override;
+  uint8_t getValue(const uint16_t& pinNumber, bool use_lock = true) override;
   /**
    * @brief Get the pin Direction
    * 
    * @param pinNumber 
    * @return direction_t 
    */
-  direction_t getDirection(const uint16_t& pinNumber) override;
+  direction_t getDirection(const uint16_t& pinNumber, bool use_lock = true) override;
   /**
    * @brief Get the Active Pin Low
    * 
@@ -74,7 +81,7 @@ class GpioDriver: public IGpioDriver{
    * @return false 
    */
   static std::string getEndpointPath(const uint16_t& pinNumber, const std::string& endpoint);
-  core::ErrorCode  unregisterPin(const uint16_t& pinNumber);
+  core::ErrorCode  unregisterPin(const uint16_t& pinNumber, bool use_lock = true) override;
 };
 }  // namespace gpio
 }  // namespace core

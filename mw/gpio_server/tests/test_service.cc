@@ -46,7 +46,7 @@ TEST(GPIO_SERVICE, TEST_INIT_PINS) {
     auto mock_socket = std::make_unique<MockStreamSocket>();
     auto mock_gpio_driver = std::make_unique<MockGPIO>();
 
-    EXPECT_CALL(*mock_gpio_driver, initializePin(::testing::_, ::testing::_))
+    EXPECT_CALL(*mock_gpio_driver, initializePin(::testing::_, ::testing::_, ::testing::_))
         .WillOnce(::testing::Return(srp::core::ErrorCode::kOk));
 
     std::unordered_map<uint8_t, srp::mw::GpioConf> conf{

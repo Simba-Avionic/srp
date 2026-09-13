@@ -21,6 +21,7 @@ namespace core {
 class FileHandler: public IFileHandler {
  private:
     std::fstream file_;
+    std::string current_path_;
     const ara::log::Logger& logger_;
  public:
     ~FileHandler() override;

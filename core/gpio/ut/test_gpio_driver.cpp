@@ -90,7 +90,7 @@ TEST_F(GpioDriverTest, InitializePinSuccess) {
 
 TEST_F(GpioDriverTest, SetValueSuccess) {
     EXPECT_CALL(*mockFile, open(_, srp::core::FileMode::WRITE)).WillOnce(Return(true));
-    EXPECT_CALL(*mockFile, write("1", true)).WillOnce(Return(true));
+    EXPECT_CALL(*mockFile, write("1", false)).WillOnce(Return(true));
     EXPECT_CALL(*mockFile, close());
     srp::core::gpio::GpioDriver gpioDriver(std::move(mockFile));
     EXPECT_EQ(gpioDriver.setValue(12, 1), srp::core::ErrorCode::kOk);
