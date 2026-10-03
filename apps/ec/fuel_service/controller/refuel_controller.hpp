@@ -13,18 +13,17 @@
 
 #include <mutex>  // NOLINT
 #include <thread>  // NOLINT
-#include <chrono>
+#include <chrono>  // NOLINT
 #include <functional>
 #include <cstdint>
 #include <string>
 #include <atomic>
-#include <condition_variable>
+#include <condition_variable>  // NOLINT
 
 namespace srp {
 namespace apps {
 
 using SetValvePosCallback = std::function<void(const uint8_t pos)>;
-using CheckValvePosCallback = std::function<uint8_t()>;
 
 enum RefuelingState_t: uint8_t {
     ABORT = 64,
@@ -86,12 +85,11 @@ class RefuelController final {
     std::atomic<uint16_t> tank_pressure{0};
     std::atomic<uint16_t> gs_pressure{0};
     std::atomic<int16_t> rocket_mass{0};
-    
+
     Config config;
     SetValvePosCallback set_gs_main_valve_position;
     SetValvePosCallback set_vent_valve_position;
     SetValvePosCallback set_dump_valve_position;
-    CheckValvePosCallback check_vent_valve_position;
 
     void RefuelingLoop(std::stop_token token);
     void Abort();
@@ -100,12 +98,13 @@ class RefuelController final {
     void handlePressureTest();
     void handleRefuelling();
     void handleTankingComplete();
+
  protected:
     void changeState(RefuelingState_t state);
+
  public:
     bool Initialize(Config config, SetValvePosCallback main_v_set_pos,
-            SetValvePosCallback vent_v_set_pos, SetValvePosCallback dump_v_set_pos,
-            CheckValvePosCallback vent_v_check_pos);
+            SetValvePosCallback vent_v_set_pos, SetValvePosCallback dump_v_set_pos);
 
     void StartRefueling(RefuelingType_t type, uint16_t val);
     void RequestAbort();
