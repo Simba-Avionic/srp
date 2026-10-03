@@ -17,6 +17,9 @@ filegroup(
     srcs = [
         "app_config.json",
         "//deployment/system_definition/someip/fuel_service:service_someipy",
+        "//deployment/system_definition/someip/radio_service:service_someipy",
+        "//deployment/system_definition/someip/servo_service:service_someipy",
+        "//deployment/system_definition/someip/env_service:service_someipy",
     ],
     visibility = [
         "//apps/fuel_service:__pkg__",

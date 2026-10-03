@@ -1,10 +1,13 @@
 {
     "include": [
-        "deployment/system_definition/someip/fuel_service/service.json"
+        "deployment/system_definition/someip/fuel_service/service.json",
+        "deployment/system_definition/someip/servo_service/service.json",
+        "deployment/system_definition/someip/env_service/service.json",
+        "deployment/system_definition/someip/radio_service/service.json"
     ],
     "package": "srp.apps",
     "adaptive_application": {
-        "FuelApp": {
+        "FuelService": {
             "app": {
                 "functional_groups":[
                     "Running",
@@ -47,19 +50,34 @@
             },
             "provide": [
                 {
-                    "name": "FuelApp as FuelService_udp",
+                    "name": "FuelService as FuelService_udp",
                     "on": "udp",
                     "port": "10001",
                     "instance": 1
                 },
                 {
-                    "name": "FuelApp as FuelService_ipc",
+                    "name": "FuelService as FuelService_ipc",
                     "on": "ipc",
                     "instance": 2
                 }
             ],
-            "require": []
+            "require": [
+                {
+                    "name": "srp.env.EnvApp as EnvApp",
+                    "on": "ipc",
+                    "instance": 2
+                },
+                {
+                    "name": "srp.apps.ServoService as ServoService",
+                    "on": "ipc",
+                    "instance": 2
+                },
+                {
+                    "name": "srp.apps.FcRadioService as FcRadioService",
+                    "on": "ipc",
+                    "instance": 2
+                }
+            ]
         }
     }
 }
-
