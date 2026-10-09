@@ -27,7 +27,8 @@ namespace {
     constexpr auto kEnvInstance = "srp/apps/FuelService/EnvApp";
     constexpr auto kRadioInstance = "srp/apps/FuelService/FcRadioServiceHandler.h";
 
-    constexpr auto kMainLoopDelayMs = 1000;
+    constexpr auto kBroadcastInterval = 1000;
+    constexpr auto kCheckInterval = 100;
 
     constexpr auto kOxidizer_Tank_ID = 0;
     constexpr auto kPFS_Tank_ID = 1;
@@ -193,9 +194,38 @@ void FuelApp::BindControllerValves(uint8_t tank_id, std::shared_ptr<RefuelContro
 int FuelApp::Run(const std::stop_token& token) {
     ara::log::LogInfo() << "FuelApp: Running Main Loop";
 
+    std::unordered_map<uint8_t, RefuelingState_t> last_states;
+    auto last_broadcast = std::chrono::steady_clock::now();
+
+    auto checkInterval = std::chrono::milliseconds(kCheckInterval);
+    auto broadcastInterval = std::chrono::milliseconds(kBroadcastInterval);
+
     while (!token.stop_requested()) {
-        core::condition::wait_for(std::chrono::milliseconds(kMainLoopDelayMs), token);
-        // @todo: Implement state event broadcasting
+        core::condition::wait_for(checkInterval, token);
+
+        auto now = std::chrono::steady_clock::now();
+
+        bool time_to_broadcast = (now - last_broadcast) >= broadcastInterval;
+        bool state_changed = false;
+
+        for (const auto& [tank_id, ctrl] : controllers_) {
+            auto currentState = ctrl->GetState();
+
+            if (last_states.find(tank_id) == last_states.end() || last_states[tank_id] != currentState) {
+                state_changed = true;
+                last_states[tank_id] = currentState;
+            }
+        }
+
+        if (time_to_broadcast || state_changed) {
+            for (const auto& [tank_id, state] : last_states) {
+                uint8_t payload = (tank_id << 4) | (static_cast<uint8_t>(state) & 0x0F);
+
+                service_ipc_->refuelingStateEvent.Update(payload);
+                service_udp_->refuelingStateEvent.Update(payload);
+            }
+            last_broadcast = now;
+        }
     }
 
     ara::log::LogInfo() << "FuelApp: Run complete, closing";

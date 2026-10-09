@@ -26,7 +26,7 @@ namespace apps {
 using SetValvePosCallback = std::function<void(const uint8_t pos)>;
 
 enum RefuelingState_t: uint8_t {
-    ABORT = 64,
+    ABORT = 15,
     INIT = 0,
     IDLE = 1,
     PRESSURE_TEST = 2,

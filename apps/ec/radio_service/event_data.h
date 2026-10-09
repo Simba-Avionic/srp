@@ -67,6 +67,8 @@ class EventData {
     ThreadSafe<computer_telemetry_t> eb_telemetry;
     ThreadSafe<computer_telemetry_t> mb_telemetry;
 
+    ThreadSafe<std::array<uint8_t, 2>> refuel_states_;
+
  public:
   static std::shared_ptr<EventData> GetInstance();
 
@@ -95,6 +97,9 @@ class EventData {
 
   int32_t GetMaxAltitude();
   void SetMaxAltitude(const int32_t alt);
+
+  void SetRefuelState(uint8_t tank_id, uint8_t state);
+  uint8_t GetRefuelState(uint8_t tank_id);
 };
 
 }  // namespace apps

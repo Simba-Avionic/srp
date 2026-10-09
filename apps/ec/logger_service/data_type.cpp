@@ -27,7 +27,8 @@ namespace {
       "ENGINE_MODE;"
       "ETHANOL_PRESS;CHAMBER_PRESS2;CHAMBER_PRESS3;"
       "SEC_BOARD_TEMP1;SEC_BOARD_TEMP2;SEC_BOARD_TEMP3;"
-      "ETHANOL_MAIN_VALVE;ETHANOL_VENT_VALVE;GPIO_STATE";
+      "ETHANOL_MAIN_VALVE;ETHANOL_VENT_VALVE;GPIO_STATE;"
+      "REFUEL_STATE_OXI;REFUEL_STATE_PFS";
 }  // namespace
 
 std::string Data_t::get_header() {
@@ -69,6 +70,9 @@ std::vector<uint8_t> Data_t::get_bytes(const int64_t& timestamp) {
 
   const uint32_t gpio_ = gpio_states.load(std::memory_order_relaxed);
 
+  const refuelType refuel_state_oxi_local = refuel_state_oxi_.load(std::memory_order_relaxed);
+  const refuelType refuel_state_pfs_local = refuel_state_pfs_.load(std::memory_order_relaxed);
+
   constexpr std::size_t kTotalSize =
       sizeof(timestamp) +
       sizeof(temp1_local) +
@@ -98,7 +102,9 @@ std::vector<uint8_t> Data_t::get_bytes(const int64_t& timestamp) {
       sizeof(sec_board_temp3_local) +
       sizeof(ethanol_main_valve_local) +
       sizeof(ethanol_vent_valve_local) +
-      sizeof(gpio_);
+      sizeof(gpio_) +
+      sizeof(refuel_state_oxi_local) +
+      sizeof(refuel_state_pfs_local);
 
   std::vector<uint8_t> bytes;
   bytes.resize(kTotalSize);
@@ -140,6 +146,8 @@ std::vector<uint8_t> Data_t::get_bytes(const int64_t& timestamp) {
   append_bytes(offset, ethanol_main_valve_local);
   append_bytes(offset, ethanol_vent_valve_local);
   append_bytes(offset, gpio_);
+  append_bytes(offset, refuel_state_oxi_local);
+  append_bytes(offset, refuel_state_pfs_local);
 
   return bytes;
 }
@@ -184,6 +192,9 @@ std::string Data_t::to_string(const std::string& timestamp) {
 
   const uint32_t gpio_ = gpio_states.load(std::memory_order_relaxed);
 
+  const refuelType refuel_state_oxi_local = refuel_state_oxi_.load(std::memory_order_relaxed);
+  const refuelType refuel_state_pfs_local = refuel_state_pfs_.load(std::memory_order_relaxed);
+
   std::stringstream res;
   res << std::fixed << std::setprecision(4);
   res << timestamp << ";";
@@ -215,6 +226,8 @@ std::string Data_t::to_string(const std::string& timestamp) {
   res << ethanol_main_local << ";";
   res << ethanol_vent_local << ";";
   res << gpio_;
+  res << refuel_state_oxi_local;
+  res << refuel_state_pfs_local;
   return res.str();
 }
 
@@ -331,6 +344,11 @@ void Data_t::SetEthanolMainValve(valveType status) {
 
 void Data_t::SetEthanolVentValve(valveType status) {
   this->ethanol_vent_valve.store(status, std::memory_order_relaxed);
+}
+
+void Data_t::SetRefuelState(refuelType tank_id, refuelType state) {
+    if (tank_id == 0) refuel_state_oxi_.store(state, std::memory_order_relaxed);
+    else if (tank_id == 1) refuel_state_pfs_.store(state, std::memory_order_relaxed);
 }
 
 }  // namespace logger
