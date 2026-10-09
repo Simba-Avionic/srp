@@ -26,6 +26,8 @@ cpu_def(
         "//deployment/apps/logger_service:FileLoggerApp",
         "//deployment/apps/system_stat_service:SysStatService",
         "//deployment/apps/prim_service:PrimerService",
+        "//deployment/apps/fuel_service:FuelApp",
+        "//deployment/apps/radio_app:RadioApp"
     ],
 )
 

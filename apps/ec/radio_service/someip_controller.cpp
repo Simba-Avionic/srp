@@ -27,6 +27,7 @@ namespace {
   static constexpr auto kMain_service_path_name =     "srp/apps/RadioApp/MainService";
   static constexpr auto kEngine_service_path_name =   "srp/apps/RadioApp/EngineService";
   static constexpr auto kEnv_fc_service_path_name =   "srp/apps/RadioApp/EnvAppFc";
+  static constexpr auto kFuel_service_path_name =     "srp/apps/RadioApp/FuelService";
 }  // namespace
 
 SomeIPController::SomeIPController():
@@ -47,7 +48,9 @@ SomeIPController::SomeIPController():
     engine_service_handler{nullptr},
     engine_service_proxy{ara::core::InstanceSpecifier{kEngine_service_path_name}},
     recovery_service_handler{nullptr},
-    recovery_service_proxy{ara::core::InstanceSpecifier{kRecovery_service_path_name}} {
+    recovery_service_proxy{ara::core::InstanceSpecifier{kRecovery_service_path_name}},
+    fuel_service_handler{nullptr},
+    fuel_service_proxy{ara::core::InstanceSpecifier{kFuel_service_path_name}} {
     SomeIpInit();
 }
 std::shared_ptr<MainServiceHandler> SomeIPController::GetMainServiceHandler() {
@@ -351,6 +354,22 @@ void SomeIPController::SomeIpInit() {
         this->event_data->SetPrimerState(res.Value());
       });
     });
+    this->fuel_service_proxy.StartFindService([this](auto handler) {
+      someip_logger.LogDebug() << "Fuel service handler discovered";
+      this->fuel_service_handler = handler;
+
+      this->fuel_service_handler->refuelingStateEvent.SetReceiveHandler([this] () {
+          auto res = fuel_service_handler->refuelingStateEvent.GetNewSamples();
+          if (res.HasValue()) {
+              someip_logger.LogDebug() << "Refuel state sample: "
+                                 << res.Value();
+
+              uint8_t tank_id = res.Value() >> 4;
+              uint8_t state = res.Value() & 0x0F;
+              this->event_data->SetRefuelState(tank_id, state);
+          }
+      });
+    });
     // TODO(matikrajek42@gmail.com) Write MB Temp After GrKo write Env App for FC
 }
 
@@ -363,6 +382,7 @@ SomeIPController::~SomeIPController() {
   main_service_proxy.StopFindService();
   engine_service_proxy.StopFindService();
   env_fc_service_proxy.StopFindService();
+  fuel_service_proxy.StopFindService();
 }
 
 }  // namespace radio

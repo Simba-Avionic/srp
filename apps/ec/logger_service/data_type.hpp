@@ -27,6 +27,7 @@ class Data_t {
   using valveType = uint8_t;
   using primerStatusType = uint8_t;
   using engineType = uint8_t;
+  using refuelType = uint8_t;
 
   std::atomic<tempType> temp1{0};
   std::atomic<tempType> temp2{0};
@@ -56,6 +57,9 @@ class Data_t {
   std::atomic<float> sys_mem_usage{0.0f};
   std::atomic<float> sys_disk_utilization{0.0f};
   std::atomic<uint32_t> gpio_states{0};
+  std::atomic<refuelType> refuel_state_oxi_{0};
+  std::atomic<refuelType> refuel_state_pfs_{0};
+
 
  public:
   Data_t() = default;
@@ -94,6 +98,7 @@ class Data_t {
   void SetSecBoardTemp3(tempType temp);
   void SetEthanolMainValve(valveType status);
   void SetEthanolVentValve(valveType status);
+  void SetRefuelState(refuelType tank_id, refuelType state);
 };
 
 }  // namespace logger

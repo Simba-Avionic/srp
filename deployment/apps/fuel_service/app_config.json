@@ -1,0 +1,83 @@
+{
+    "include": [
+        "deployment/system_definition/someip/fuel_service/service.json",
+        "deployment/system_definition/someip/servo_service/service.json",
+        "deployment/system_definition/someip/env_service/service.json",
+        "deployment/system_definition/someip/radio_service/service.json"
+    ],
+    "package": "srp.apps",
+    "adaptive_application": {
+        "FuelService": {
+            "app": {
+                "functional_groups":[
+                    "Running",
+                    "SafetyMode"
+                ],
+                "parms": "",
+                "logger": {
+                    "app_id": "FUEL",
+                    "app_des": "Auto Refueling Service",
+                    "log_level": "kDebug",
+                    "log_mode": "kRemote",
+                    "ctx": [
+                        {
+                            "ctx_id": "SOME",
+                            "log_level": "kDebug",
+                            "ctx_des": "Logs From someip"
+                        },
+                        {
+                            "ctx_id": "ara",
+                            "log_level": "kDebug",
+                            "ctx_des": "Default ctx for ara"
+                        },
+                        {
+                            "ctx_id": "acom",
+                            "log_level": "kDebug",
+                            "ctx_des": "Default ctx for ara::com"
+                        },
+                        {
+                            "ctx_id": "adiag",
+                            "log_level": "kDebug",
+                            "ctx_des": "Default ctx for ara::diag"
+                        },
+                        {
+                            "ctx_id": "exec",
+                            "log_level": "kDebug",
+                            "ctx_des": "Default ctx for ara::exec"
+                        }
+                    ]
+                }
+            },
+            "provide": [
+                {
+                    "name": "FuelService as FuelService_udp",
+                    "on": "udp",
+                    "port": "10001",
+                    "instance": 1
+                },
+                {
+                    "name": "FuelService as FuelService_ipc",
+                    "on": "ipc",
+                    "instance": 2
+                }
+            ],
+            "require": [
+                {
+                    "name": "srp.env.EnvApp as EnvApp",
+                    "on": "ipc",
+                    "instance": 2
+                },
+                {
+                    "name": "srp.apps.ServoService as ServoService",
+                    "on": "ipc",
+                    "instance": 2
+                },
+                {
+                    "name": "srp.apps.FcRadioService as FcRadioService",
+                    "on": "ipc",
+                    "instance": 2
+                }
+            ]
+        }
+    }
+}

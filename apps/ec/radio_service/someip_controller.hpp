@@ -26,6 +26,7 @@
 #include "srp/apps/MainService/MainServiceHandler.h"
 #include "srp/apps/EngineService/EngineServiceHandler.h"
 #include "srp/apps/RecoveryService/RecoveryServiceHandler.h"
+#include "srp/apps/FuelService/FuelServiceHandler.h"
 
 namespace srp {
 namespace apps {
@@ -56,6 +57,8 @@ class SomeIPController {
   EngineServiceProxy engine_service_proxy;
   std::shared_ptr<RecoveryServiceHandler> recovery_service_handler;
   RecoveryServiceProxy recovery_service_proxy;
+  std::shared_ptr<FuelServiceHandler> fuel_service_handler;
+  FuelServiceProxy fuel_service_proxy;
   void SomeIpInit();
 
  public:

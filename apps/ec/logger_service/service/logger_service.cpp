@@ -36,6 +36,7 @@ namespace {
   static constexpr auto kSecEnv_service_path_name = "srp/apps/FileLoggerApp/SecEnvApp";
   static constexpr auto kSecServo_service_path_name = "srp/apps/FileLoggerApp/SecServoService";
   static constexpr auto kFile_did_path_name = "/srp/apps/FileLoggerApp/logger_did";
+  static constexpr auto kFuel_service_path_name = "/srp/apps/FileLoggerApp/FuelService";
   static constexpr auto kLogs_on = 1;
   static constexpr auto kLogs_off = 0;
   static constexpr auto kHeartBeatPinID = 2;
@@ -133,6 +134,7 @@ LoggerService::LoggerService():
       engine_service_proxy{ara::core::InstanceSpecifier{kEngine_service_path_name}},
       sec_env_service_proxy{ara::core::InstanceSpecifier{kSecEnv_service_path_name}},
       sec_servo_service_proxy{ara::core::InstanceSpecifier{kSecServo_service_path_name}},
+      fuel_service_proxy(ara::core::InstanceSpecifier{kFuel_service_path_name}),
       env_service_handler{nullptr},
       stat_service_handler{nullptr},
       primer_service_handler{nullptr},
@@ -140,6 +142,7 @@ LoggerService::LoggerService():
       engine_service_handler{nullptr},
       sec_env_service_handler{nullptr},
       sec_servo_service_handler{nullptr},
+      fuel_service_handler{nullptr},
       did_instance{kFile_did_path_name},
       timestamp_{std::make_shared<core::timestamp::TimestampController>()},
       save_thread_{nullptr} {
@@ -532,6 +535,25 @@ void LoggerService::SomeIpInit() {
       });
     });
   });
+  this->fuel_service_proxy.StartFindService([this](auto handler) {
+        someip_logger.LogDebug() << "Fuel service handler discovered";
+        this->fuel_service_handler = handler;
+
+        fuel_service_handler->refuelingStateEvent.Subscribe(1, [this](const uint8_t status) {
+            someip_logger.LogDebug() << "Subscribed to refuelingStateEvent, status="
+                               << status;
+
+            fuel_service_handler->refuelingStateEvent.SetReceiveHandler([this] () {
+                auto res = fuel_service_handler->refuelingStateEvent.GetNewSamples();
+                if (res.HasValue()) {
+                    uint8_t payload = res.Value();
+                    uint8_t tank_id = payload >> 4;
+                    uint8_t state = payload & 0x0F;
+                    this->data.SetRefuelState(tank_id, state);
+                }
+            });
+        });
+    });
 }
 
 }  // namespace logger
