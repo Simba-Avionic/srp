@@ -159,12 +159,16 @@ void FuelApp::BindControllerValves(uint8_t tank_id, std::shared_ptr<RefuelContro
     const auto& cfg = configs_[tank_id];
 
     SetValvePosCallback main_cb = [this, cfg](uint8_t pos) {
-        if (radio_handler_) {
-            if (cfg.tank_id == kOxidizer_Tank_ID) radio_handler_->SetGSEOxidizerFillValve(pos);
-            else if (cfg.tank_id == kPFS_Tank_ID) radio_handler_->SetGSEPFSFillValve(pos);
-        } else {
-            ara::log::LogWarn() << "FuelApp: Main GS Valve command ignored - RadioService not connected.";
-        }
+        // ID: 1 = Oxidizer, 2 = PFS
+        uint8_t valve_id = (cfg.tank_id == kOxidizer_Tank_ID) ? 1 : 2;
+
+        uint8_t payload = (valve_id << 4) | (pos & 0x0F);
+
+        service_ipc_->gsValveCmdEvent.Update(payload);
+        service_udp_->gsValveCmdEvent.Update(payload);
+
+        ara::log::LogInfo() << "GS valve command send for valve with id: "
+            << static_cast<int>(valve_id) << " on position: " << static_cast<int>(pos);
     };
 
     SetValvePosCallback vent_cb = nullptr;

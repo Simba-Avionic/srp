@@ -139,6 +139,14 @@ std::vector<uint8_t> TelemetryProvider::GetRefuelingStatusMsg() {
     });
 }
 
+std::vector<uint8_t> TelemetryProvider::GetGSValveCmdMsg(uint8_t valve_id, uint8_t position) {
+    return Pack([&](mavlink_message_t* m) {
+        mavlink_msg_simba_gs_valve_cmd_pack(
+            kSystemId, kComponentId, m,
+            valve_id, position);
+    });
+}
+
 }  // namespace radio
 }  // namespace apps
 }  // namespace srp

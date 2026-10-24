@@ -174,19 +174,47 @@ void RadioApp::OnRefuelingCMD(const mavlink_message_t& msg) {
   mavlink_simba_refueling_cmd_t cmd;
   mavlink_msg_simba_refueling_cmd_decode(&msg, &cmd);
 
+  auto fuel_handler = someip_controller.GetFuelServiceHandler();
+  if (!fuel_handler) {
+      ara::log::LogError() << "Fuel service handler not ready!";
+      return;
+  }
+
   if (cmd.command == 1) {  // START
       ara::log::LogInfo() << "Received START REFUELLING command for tank: " << static_cast<int>(cmd.tank_id);
 
       RefuelRequestType request;
       request.tank_id = cmd.tank_id;
       request.target_value = cmd.target_value;
-
-      someip_controller.GetFuelServiceHandler().StartRefueling(request);
+      fuel_handler->StartRefueling(request);
   } else if (cmd.command == 0) {  // ABORT
       ara::log::LogWarn() << "Received ABORT REFUELLING command for tank: " << static_cast<int>(cmd.tank_id);
-      someip_controller.GetFuelServiceHandler().Abort(cmd.tank_id);
+      fuel_handler->Abort(cmd.tank_id);
   }
-  break;
+}
+
+void RadioApp::OnRocketMass(const mavlink_message_t& msg) {
+  mavlink_simba_rocket_mass_t mass_msg;
+  mavlink_msg_simba_rocket_mass_decode(&msg, &mass_msg);
+
+  service_ipc.GSERocketMassEvent.Update(mass_msg.mass);
+  service_udp.GSERocketMassEvent.Update(mass_msg.mass);
+}
+
+void RadioApp::OnGSOxidizerTankPressure(const mavlink_message_t& msg) {
+  mavlink_simba_gs_oxidizer_tank_pressure_t press_msg;
+  mavlink_msg_simba_gs_oxidizer_tank_pressure_decode(&msg, &press_msg);
+
+  service_ipc.GSEOxidizerTankPressEvent.Update(press_msg.pressure);
+  service_udp.GSEOxidizerTankPressEvent.Update(press_msg.pressure);
+}
+
+void RadioApp::OnGSPFSTankPressure(const mavlink_message_t& msg) {
+  mavlink_simba_gs_pfs_tank_pressure_t press_msg;
+  mavlink_msg_simba_gs_pfs_tank_pressure_decode(&msg, &press_msg);
+
+  service_ipc.GSEPressureFeedSystemTankPressEvent.Update(press_msg.pressure);
+  service_udp.GSEPressureFeedSystemTankPressEvent.Update(press_msg.pressure);
 }
 
 void RadioApp::RxMsgCallback(const mavlink_message_t& msg) {
@@ -204,6 +232,15 @@ void RadioApp::RxMsgCallback(const mavlink_message_t& msg) {
       OnRefuelingCMD(msg);
       break;
     }
+    case MAVLINK_MSG_ID_SIMBA_ROCKET_MASS:
+      OnRocketMass(msg);
+      break;
+    case MAVLINK_MSG_ID_SIMBA_GS_OXIDIZER_TANK_PRESSURE:
+      OnGSOxidizerTankPressure(msg);
+      break;
+    case MAVLINK_MSG_ID_SIMBA_GS_PFS_TANK_PRESSURE:
+      OnGSPFSTankPressure(msg);
+      break;
     default:
       ara::log::LogInfo() << "Received unknown msg with ID: " <<
           msg.msgid << ", with size: " << msg.len;
@@ -273,6 +310,17 @@ int RadioApp::Initialize(const std::map<ara::core::StringView,
   timer_ctr_.AddOnTimerCallback([this](){
     radio_controller.Push(telemetry_provider.GetRefuelingStatusMsg());
   }, 1000);
+
+  someip_controller.SetRefuelStateChangedCallback([this]() {
+      auto msg = telemetry_provider.GetRefuelingStatusMsg();
+      radio_controller.Push(msg);
+  });
+
+  someip_controller.SetValveCmdCallback([this](uint8_t valve_id, uint8_t pos) {
+      auto msg = telemetry_provider.GetGSValveCmdMsg(valve_id, pos);
+      radio_controller.Push(msg);
+      ara::log::LogInfo() << "Valve command send to ground segment for valve with id: " << static_cast<int>(valve_id);
+  });
 
   return core::ErrorCode::kOk;
 }

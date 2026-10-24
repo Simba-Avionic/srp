@@ -61,6 +61,9 @@ class SomeIPController {
   FuelServiceProxy fuel_service_proxy;
   void SomeIpInit();
 
+  std::function<void(uint8_t, uint8_t)> on_valve_cmd_cb_;
+  std::function<void()> on_refuel_state_changed_cb_;
+
  public:
   SomeIPController();
   ~SomeIPController();
@@ -68,6 +71,9 @@ class SomeIPController {
   std::shared_ptr<EngineServiceHandler> GetEngineServiceHandler();
   std::shared_ptr<ServoServiceHandler> GetServoServiceHandler();
   std::shared_ptr<FuelServiceHandler> GetFuelServiceHandler();
+
+  void SetValveCmdCallback(std::function<void(uint8_t, uint8_t)> cb) { on_valve_cmd_cb_ = cb; }
+  void SetRefuelStateChangedCallback(std::function<void()> cb) { on_refuel_state_changed_cb_ = cb; }
 };
 
 }  // namespace radio

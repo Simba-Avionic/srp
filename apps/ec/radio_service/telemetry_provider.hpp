@@ -49,9 +49,11 @@ class TelemetryProvider {
   std::vector<uint8_t> GetTankSensorsMsg();
   std::vector<uint8_t> GetGpsMsg();
   std::vector<uint8_t> GetComputersTelemetryMsg();
-  std::vector<uint8_t> TelemetryProvider::GetRefuelingStatusMsg();
+  std::vector<uint8_t> GetRefuelingStatusMsg();
 
   std::optional<RocketState_t> GetReqRocketStateFromGSFlags(const uint8_t flags);
+
+  std::vector<uint8_t> GetGSValveCmdMsg(uint8_t valve_id, uint8_t position);
 
  private:
   std::shared_ptr<EventData> event_data;

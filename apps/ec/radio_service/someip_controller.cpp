@@ -370,7 +370,24 @@ void SomeIPController::SomeIpInit() {
 
               uint8_t tank_id = res.Value() >> 4;
               uint8_t state = res.Value() & 0x0F;
-              this->event_data->SetRefuelState(tank_id, state);
+
+              if (this->event_data->GetRefuelState(tank_id) != state) {
+                  this->event_data->SetRefuelState(tank_id, state);
+
+                  if (on_refuel_state_changed_cb_) {
+                      on_refuel_state_changed_cb_();
+                  }
+              }
+          }
+      });
+      this->fuel_service_handler->gsValveCmdEvent.SetReceiveHandler([this] () {
+          auto res = fuel_service_handler->gsValveCmdEvent.GetNewSamples();
+          if (res.HasValue() && on_valve_cmd_cb_) {
+              uint8_t valve_id = res.Value() >> 4;
+              uint8_t pos = res.Value() & 0x0F;
+              if (on_valve_cmd_cb_) {
+                  on_valve_cmd_cb_(valve_id, pos);
+              }
           }
       });
     });
