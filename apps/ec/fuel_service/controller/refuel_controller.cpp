@@ -53,6 +53,15 @@ template <typename T, size_t N> class MovingAveragePredictor {
         return count >= 2;
     }
 
+    double getAverage() const {
+        if (count == 0) return 0.0;
+        double sum = 0.0;
+        for (size_t i = 0; i < count; ++i) {
+            sum += buffer[i];
+        }
+        return sum / count;
+    }
+
     double getChangeSpeed() const {
         if (!isReady()) return 0.0;
         size_t oldest_idx = (count < N) ? 0 : head;
@@ -110,6 +119,11 @@ template <typename T, size_t N> class MovingAveragePredictor {
         set_vent_valve_position = vent_v_set_pos;
         set_dump_valve_position = dump_v_set_pos;
 
+        timeouts.flow_check_interval_ms = kFlow_check_interval_ms;
+        timeouts.pressure_stabilization_time_ms = kPressure_stabilization_time_ms;
+        timeouts.pressure_test_time_s = kPressure_test_time_s;
+        timeouts.valve_delay_ms = kValve_delay_ms;
+
         ara::log::LogInfo() << "Refueling Controller initialized for tank: " << config.tank_name;
 
         changeState(RefuelingState_t::IDLE);
@@ -125,6 +139,21 @@ template <typename T, size_t N> class MovingAveragePredictor {
     }
 
     void RefuelController::StartRefueling(RefuelingType_t type, uint16_t val) {
+        if (state.load() != RefuelingState_t::IDLE) {
+            ara::log::LogError()
+                << "Cannot start refueling: Controller is not idle. App reset required to call StartRefueling again.";
+            return;
+        }
+
+        const auto current_press = gs_pressure.load();
+        if (current_press < config.min_gs_pressure || current_press > config.max_gs_pressure) {
+            ara::log::LogError() << "GS pressure value: " << current_press << " is out of range ("
+                << config.min_gs_pressure << " - " << config.max_gs_pressure <<
+                "). Aborting refueling sequence of tank: " << config.tank_name << ".";
+            Abort();
+            return;
+        }
+
         {
             std::lock_guard<std::mutex> lock(cv_mtx_);
             target_refueling_value = val;
@@ -147,23 +176,8 @@ template <typename T, size_t N> class MovingAveragePredictor {
         std::unique_lock<std::mutex> lock(cv_mtx_);
 
         cv.wait_for(lock, std::chrono::seconds(10), [this] {
-            const auto p = gs_pressure.load();
-            bool press_invalid = (p < config.min_gs_pressure || p > config.max_gs_pressure);
-            bool state_changed = (state != RefuelingState_t::IDLE);
-
-            return press_invalid || state_changed;
+            return state != RefuelingState_t::IDLE;
         });
-
-        const auto current_press = gs_pressure.load();
-        if (current_press < config.min_gs_pressure || current_press > config.max_gs_pressure) {
-            ara::log::LogError() << "GS pressure value: " << current_press << " is out of range ("
-                << config.min_gs_pressure << " - " << config.max_gs_pressure <<
-                "). Aborting refueling sequence of tank: " << config.tank_name << ".";
-
-            lock.unlock();
-            Abort();
-            return;
-        }
 
         if (state == RefuelingState_t::IDLE) {
             ara::log::LogInfo() << "Waiting to start tanking sequence. Tank: " << config.tank_name;
@@ -172,21 +186,38 @@ template <typename T, size_t N> class MovingAveragePredictor {
 
     void RefuelController::handlePressureTest() {
         ara::log::LogInfo() << "Starting pressure test for tank: " << config.tank_name;
+
+        MovingAveragePredictor<double, 10> pressure_filter;
+        auto start_time = std::chrono::steady_clock::now();
+        bool target_reached = false;
+
         set_gs_main_valve_position(kGS_valve_position_open50);
 
-        std::unique_lock<std::mutex> lock(cv_mtx_);
+        while (state.load() == RefuelingState_t::PRESSURE_TEST) {
+            pressure_filter.addSample(static_cast<double>(tank_pressure.load()));
 
-        bool target_reached = cv.wait_for(lock, std::chrono::seconds(config.max_tanking_time_s), [this] {
-            return tank_pressure.load() >= config.test_pressure || state != RefuelingState_t::PRESSURE_TEST;
-        });
+            if (pressure_filter.isReady() && pressure_filter.getAverage() >= config.test_pressure) {
+                target_reached = true;
+                break;
+            }
 
-        if (state != RefuelingState_t::PRESSURE_TEST) {
-            return;
+            if (std::chrono::steady_clock::now() - start_time > std::chrono::seconds(config.max_tanking_time_s)) {
+                break;
+            }
+
+            std::unique_lock<std::mutex> lock(cv_mtx_);
+            if (cv.wait_for(lock, std::chrono::milliseconds(timeouts.flow_check_interval_ms), [this] {
+                return state != RefuelingState_t::PRESSURE_TEST;
+            })) {
+                break;
+            }
         }
 
-        if (!target_reached || tank_pressure.load() < config.test_pressure) {
-            ara::log::LogError() << "Failed to reach test pressure within timeout!";
-            lock.unlock();
+        if (state != RefuelingState_t::PRESSURE_TEST) return;
+
+        if (!target_reached) {
+            ara::log::LogError() << "Failed to reach test pressure within timeout! Pressure: "
+                << pressure_filter.getAverage();
             Abort();
             return;
         }
@@ -195,37 +226,55 @@ template <typename T, size_t N> class MovingAveragePredictor {
 
         ara::log::LogInfo() << "Target pressure reached during pressure test for tank: " << config.tank_name;
 
-        bool aborted = cv.wait_for(lock, std::chrono::milliseconds(kPressure_stabilization_time_ms), [this] {
-            return state != RefuelingState_t::PRESSURE_TEST;
-        });
+        auto stabilization_start = std::chrono::steady_clock::now();
+        while (state.load() == RefuelingState_t::PRESSURE_TEST) {
+            pressure_filter.addSample(static_cast<double>(tank_pressure.load()));
 
-        if (state != RefuelingState_t::PRESSURE_TEST) {
-            return;
+            if (std::chrono::steady_clock::now() - stabilization_start >
+                    std::chrono::milliseconds(timeouts.pressure_stabilization_time_ms)) {
+                break;
+            }
+
+            std::unique_lock<std::mutex> lock(cv_mtx_);
+            if (cv.wait_for(lock, std::chrono::milliseconds(timeouts.flow_check_interval_ms), [this] {
+                return state != RefuelingState_t::PRESSURE_TEST;
+            })) {
+                break;
+            }
         }
 
-        start_test_pressure = tank_pressure.load();
+        if (state != RefuelingState_t::PRESSURE_TEST) return;
 
-        bool leaked_or_state_change = cv.wait_for(lock, std::chrono::seconds(kPressure_test_time_s), [this] {
-            return tank_pressure.load() < start_test_pressure * ((100.0 - config.test_max_drop_percent) / 100.0) ||
-                state != RefuelingState_t::PRESSURE_TEST;
-        });
+        double start_test_pressure = pressure_filter.getAverage();
+        double drop_limit = start_test_pressure * ((100.0 - config.test_max_drop_percent) / 100.0);
 
-        if (state != RefuelingState_t::PRESSURE_TEST) {
-            return;
+        auto test_start = std::chrono::steady_clock::now();
+
+        while (state.load() == RefuelingState_t::PRESSURE_TEST) {
+            pressure_filter.addSample(static_cast<double>(tank_pressure.load()));
+
+            if (std::chrono::steady_clock::now() - test_start > std::chrono::seconds(timeouts.pressure_test_time_s)) {
+                break;
+            }
+
+            if (pressure_filter.getAverage() < drop_limit) {
+                ara::log::LogError() << "Pressure drop detected! Avg: " << pressure_filter.getAverage()
+                                     << " < Limit: " << drop_limit << ". Aborting.";
+                Abort();
+                return;
+            }
+
+            std::unique_lock<std::mutex> lock(cv_mtx_);
+            if (cv.wait_for(lock, std::chrono::milliseconds(timeouts.flow_check_interval_ms), [this] {
+                return state != RefuelingState_t::PRESSURE_TEST;
+            })) {
+                break;
+            }
         }
-
-        const double drop_limit = start_test_pressure * ((100.0 - config.test_max_drop_percent) / 100.0);
-        if (tank_pressure.load() < drop_limit) {
-            ara::log::LogError() << "Pressure drop detected during pressure test! Aborting.";
-            lock.unlock();
-            Abort();
-            return;
-        }
+        if (state != RefuelingState_t::PRESSURE_TEST) return;
 
         ara::log::LogInfo() << "Pressure test passed for tank: " << config.tank_name
             << ". Starting main refueling process.";
-
-        lock.unlock();
         changeState(RefuelingState_t::REFUELING);
     }
 
@@ -241,7 +290,7 @@ template <typename T, size_t N> class MovingAveragePredictor {
         while (state == RefuelingState_t::REFUELING) {
             {
                 std::unique_lock<std::mutex> lock(cv_mtx_);
-                if (cv.wait_for(lock, std::chrono::milliseconds(kFlow_check_interval_ms), [this] {
+                if (cv.wait_for(lock, std::chrono::milliseconds(timeouts.flow_check_interval_ms), [this] {
                     return state != RefuelingState_t::REFUELING;
                 })) {
                     break;
@@ -259,7 +308,7 @@ template <typename T, size_t N> class MovingAveragePredictor {
                 set_vent_valve_position(kServo_valve_position_closed);
 
                 std::unique_lock<std::mutex> lock(cv_mtx_);
-                if (cv.wait_for(lock, std::chrono::milliseconds(kValve_delay_ms), [this] {
+                if (cv.wait_for(lock, std::chrono::milliseconds(timeouts.valve_delay_ms), [this] {
                     return state != RefuelingState_t::REFUELING;
                 })) {
                     break;
@@ -313,7 +362,7 @@ template <typename T, size_t N> class MovingAveragePredictor {
 
                         {
                             std::unique_lock<std::mutex> lock(cv_mtx_);
-                            if (cv.wait_for(lock, std::chrono::milliseconds(kValve_delay_ms), [this] {
+                            if (cv.wait_for(lock, std::chrono::milliseconds(timeouts.valve_delay_ms), [this] {
                                 return state != RefuelingState_t::REFUELING;
                             })) {
                                 break;
@@ -346,8 +395,12 @@ template <typename T, size_t N> class MovingAveragePredictor {
         set_gs_main_valve_position(kGS_valve_position_closed);
         ara::log::LogInfo() << "Tanking complete for tank: " << config.tank_name;
 
+        MovingAveragePredictor<double, 10> pressure_filter;
+
         while (state.load() == RefuelingState_t::TANKING_COMPLETE) {
-            if (tank_pressure.load() > config.max_safe_pressure) {
+            pressure_filter.addSample(static_cast<double>(tank_pressure.load()));
+
+            if (pressure_filter.isReady() && pressure_filter.getAverage() > config.max_safe_pressure) {
                 ara::log::LogWarn() << "Tank overpressure detected. Venting...";
 
                 if (set_vent_valve_position) {
@@ -355,21 +408,24 @@ template <typename T, size_t N> class MovingAveragePredictor {
 
                     {
                         std::unique_lock<std::mutex> lock(cv_mtx_);
-                        if (cv.wait_for(lock, std::chrono::milliseconds(1500),
+                        if (cv.wait_for(lock, std::chrono::milliseconds(timeouts.valve_delay_ms),
                             [this] { return state != RefuelingState_t::TANKING_COMPLETE; })
                         ) {
+                            set_vent_valve_position(kServo_valve_position_closed);
                             break;
                         }
                     }
 
                     set_vent_valve_position(kServo_valve_position_closed);
+
+                    pressure_filter.reset();
                 } else {
                     ara::log::LogWarn() << "Overpressure detected, but NO vent valve available!";
                 }
             }
             {
                 std::unique_lock<std::mutex> lock(cv_mtx_);
-                if (cv.wait_for(lock, std::chrono::milliseconds(1000),
+                if (cv.wait_for(lock, std::chrono::milliseconds(timeouts.flow_check_interval_ms),
                     [this] { return state != RefuelingState_t::TANKING_COMPLETE; })
                 ) {
                     break;
@@ -432,6 +488,11 @@ template <typename T, size_t N> class MovingAveragePredictor {
                     break;
             }
         }
+    }
+
+    RefuelController::~RefuelController() {
+        running = false;
+        changeState(RefuelingState_t::ABORT);
     }
 
 }  // namespace apps

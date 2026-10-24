@@ -68,6 +68,13 @@ struct Config {
     uint16_t max_tanking_time_s;
 };
 
+struct TimeoutConfig {
+    uint16_t pressure_test_time_s;
+    uint16_t pressure_stabilization_time_ms;
+    uint16_t flow_check_interval_ms;
+    uint16_t valve_delay_ms;
+};
+
 class RefuelController final {
  private:
     std::atomic<RefuelingState_t> state{RefuelingState_t::INIT};
@@ -103,6 +110,8 @@ class RefuelController final {
     void changeState(RefuelingState_t state);
 
  public:
+    TimeoutConfig timeouts;
+
     bool Initialize(Config config, SetValvePosCallback main_v_set_pos,
             SetValvePosCallback vent_v_set_pos, SetValvePosCallback dump_v_set_pos);
 
@@ -114,6 +123,8 @@ class RefuelController final {
     void OnTankPressureReceived(uint16_t val);
     void OnGSPressureReceived(uint16_t val);
     void OnRocketMassReceived(int16_t val);
+
+    ~RefuelController();
 };
 
 }  // namespace apps
