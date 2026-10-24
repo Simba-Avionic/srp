@@ -1,3 +1,14 @@
+cc_library(
+    name = "fuel_config_reader",
+    hdrs = ["fuel_config_reader.hpp"],
+    visibility = ["//visibility:public"],
+    deps = [
+        "//core/json:simba_json",
+        "//apps/ec/fuel_service/controller:refuel_controller",
+        "@srp_platform//ara/log",
+    ],
+)
+
 cc_binary(
     name = "fuel_service",
     srcs = [
@@ -5,8 +16,7 @@ cc_binary(
         "fuel_app.cpp",
         "fuel_app.hpp",
         "service.cpp",
-        "service.hpp",
-        "fuel_config_reader.hpp"
+        "service.hpp"
     ],
     visibility = [
         "//deployment/apps:__subpackages__"
@@ -18,5 +28,6 @@ cc_binary(
         "//deployment/apps/fuel_service:someip_lib",
         "//apps/ec/fuel_service/controller:refuel_controller",
         "//core/json:simba_json",
+        ":fuel_config_reader",
     ],
 )
