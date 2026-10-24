@@ -61,6 +61,7 @@ class RadioApp : public ara::exec::AdaptiveApplication {
   void OnGSHEARTBEAT(const mavlink_message_t& msg);
   void RxMsgCallback(const mavlink_message_t& msg);
   void OnRadioStatusMsg(const mavlink_message_t& msg);
+  void OnRefuelingCMD(const mavlink_message_t& msg);
 
  public:
   int Run(const std::stop_token& token) override;

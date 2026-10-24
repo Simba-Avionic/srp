@@ -64,6 +64,10 @@ std::shared_ptr<ServoServiceHandler> SomeIPController::GetServoServiceHandler() 
     return servo_service_handler;
 }
 
+std::shared_ptr<FuelServiceHandler> SomeIPController::GetFuelServiceHandler() {
+    return fuel_service_handler;
+}
+
 void SomeIPController::SomeIpInit() {
     someip_logger.LogDebug() << "SomeIpInit started";
     this->env_service_proxy.StartFindService([this](auto handler) {

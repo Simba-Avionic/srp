@@ -67,6 +67,7 @@ class SomeIPController {
   std::shared_ptr<MainServiceHandler> GetMainServiceHandler();
   std::shared_ptr<EngineServiceHandler> GetEngineServiceHandler();
   std::shared_ptr<ServoServiceHandler> GetServoServiceHandler();
+  std::shared_ptr<FuelServiceHandler> GetFuelServiceHandler();
 };
 
 }  // namespace radio

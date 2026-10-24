@@ -49,6 +49,7 @@ class TelemetryProvider {
   std::vector<uint8_t> GetTankSensorsMsg();
   std::vector<uint8_t> GetGpsMsg();
   std::vector<uint8_t> GetComputersTelemetryMsg();
+  std::vector<uint8_t> TelemetryProvider::GetRefuelingStatusMsg();
 
   std::optional<RocketState_t> GetReqRocketStateFromGSFlags(const uint8_t flags);
 

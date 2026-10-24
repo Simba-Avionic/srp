@@ -170,6 +170,25 @@ void RadioApp::OnRadioStatusMsg(const mavlink_message_t& msg) {
   service_udp.RadioStatusEvent.Update(someip_radio_data);
 }
 
+void RadioApp::OnRefuelingCMD(const mavlink_message_t& msg) {
+  mavlink_simba_refueling_cmd_t cmd;
+  mavlink_msg_simba_refueling_cmd_decode(&msg, &cmd);
+
+  if (cmd.command == 1) {  // START
+      ara::log::LogInfo() << "Received START REFUELLING command for tank: " << static_cast<int>(cmd.tank_id);
+
+      RefuelRequestType request;
+      request.tank_id = cmd.tank_id;
+      request.target_value = cmd.target_value;
+
+      someip_controller.GetFuelServiceHandler().StartRefueling(request);
+  } else if (cmd.command == 0) {  // ABORT
+      ara::log::LogWarn() << "Received ABORT REFUELLING command for tank: " << static_cast<int>(cmd.tank_id);
+      someip_controller.GetFuelServiceHandler().Abort(cmd.tank_id);
+  }
+  break;
+}
+
 void RadioApp::RxMsgCallback(const mavlink_message_t& msg) {
   switch (msg.msgid) {
     case MAVLINK_MSG_ID_SIMBA_ACTUATOR_CMD:
@@ -181,6 +200,10 @@ void RadioApp::RxMsgCallback(const mavlink_message_t& msg) {
     case MAVLINK_MSG_ID_RADIO_STATUS:
       OnRadioStatusMsg(msg);
       break;
+    case MAVLINK_MSG_ID_SIMBA_REFUELING_CMD: {
+      OnRefuelingCMD(msg);
+      break;
+    }
     default:
       ara::log::LogInfo() << "Received unknown msg with ID: " <<
           msg.msgid << ", with size: " << msg.len;
@@ -246,6 +269,10 @@ int RadioApp::Initialize(const std::map<ara::core::StringView,
   //   // Computers telemetry
   //   radio_controller.Push(telemetry_provider.GetComputersTelemetryMsg());
   // }, kComputer_telemetry_send_time_ms);
+
+  timer_ctr_.AddOnTimerCallback([this](){
+    radio_controller.Push(telemetry_provider.GetRefuelingStatusMsg());
+  }, 1000);
 
   return core::ErrorCode::kOk;
 }
