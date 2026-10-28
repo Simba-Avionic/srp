@@ -1,0 +1,36 @@
+{
+    "tanks": [
+        {
+            "tank_id": 0,
+            "tank_name": "Oxidizer",
+            "refueling_type": "MASS",
+            "min_gs_pressure": 4000,
+            "max_gs_pressure": 6000,
+            "test_pressure": 400,
+            "test_max_drop_percent": 10,
+            "max_safe_pressure": 6500,
+            "max_tanking_time_s": 60,
+            "valves": {
+                "gs_main": 1,
+                "rocket_vent": 61,
+                "rocket_dump": 62
+            }
+        },
+        {
+            "tank_id": 1,
+            "tank_name": "PFS",
+            "refueling_type": "PRESSURE",
+            "min_gs_pressure": 2000,
+            "max_gs_pressure": 3000,
+            "test_pressure": 200,
+            "test_max_drop_percent": 5,
+            "max_safe_pressure": 3500,
+            "max_tanking_time_s": 30,
+            "valves": {
+                "gs_main": 2,
+                "rocket_vent": null,
+                "rocket_dump": 64
+            }
+        }
+    ]
+}

@@ -181,5 +181,14 @@ std::shared_ptr<EventData> EventData::GetInstance() {
     });
   }
 
+  void EventData::SetRefuelState(uint8_t tank_id, uint8_t state) {
+    if (tank_id >= 2) return;
+    refuel_states_.update([&](auto& arr) { arr[tank_id] = state; });
+  }
+  uint8_t EventData::GetRefuelState(uint8_t tank_id) {
+      if (tank_id >= 2) return 0;
+      return refuel_states_.get()[tank_id];
+  }
+
 }  // namespace apps
 }  // namespace srp

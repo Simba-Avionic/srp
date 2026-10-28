@@ -26,6 +26,7 @@
 #include "srp/apps/MainService/MainServiceHandler.h"
 #include "srp/apps/EngineService/EngineServiceHandler.h"
 #include "srp/apps/RecoveryService/RecoveryServiceHandler.h"
+#include "srp/apps/FuelService/FuelServiceHandler.h"
 
 namespace srp {
 namespace apps {
@@ -56,7 +57,12 @@ class SomeIPController {
   EngineServiceProxy engine_service_proxy;
   std::shared_ptr<RecoveryServiceHandler> recovery_service_handler;
   RecoveryServiceProxy recovery_service_proxy;
+  std::shared_ptr<FuelServiceHandler> fuel_service_handler;
+  FuelServiceProxy fuel_service_proxy;
   void SomeIpInit();
+
+  std::function<void(uint8_t, uint8_t)> on_valve_cmd_cb_;
+  std::function<void()> on_refuel_state_changed_cb_;
 
  public:
   SomeIPController();
@@ -64,6 +70,10 @@ class SomeIPController {
   std::shared_ptr<MainServiceHandler> GetMainServiceHandler();
   std::shared_ptr<EngineServiceHandler> GetEngineServiceHandler();
   std::shared_ptr<ServoServiceHandler> GetServoServiceHandler();
+  std::shared_ptr<FuelServiceHandler> GetFuelServiceHandler();
+
+  void SetValveCmdCallback(std::function<void(uint8_t, uint8_t)> cb) { on_valve_cmd_cb_ = cb; }
+  void SetRefuelStateChangedCallback(std::function<void()> cb) { on_refuel_state_changed_cb_ = cb; }
 };
 
 }  // namespace radio
