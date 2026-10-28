@@ -348,47 +348,50 @@ void SomeIPController::SomeIpInit() {
     this->primer_service_proxy.StartFindService([this](auto handler) {
       someip_logger.LogDebug() << "Primer service handler discovered";
       this->primer_service_handler = handler;
-      primer_service_handler->primeStatusEvent.SetReceiveHandler([this] () {
-        const auto res = primer_service_handler->primeStatusEvent.GetNewSamples();
-        if (!res.HasValue()) {
-          return;
-        }
-        someip_logger.LogDebug() << "Primer state sample: "
-                                 << res.Value();
-        this->event_data->SetPrimerState(res.Value());
+
+      primer_service_handler->primeStatusEvent.Subscribe(1, [this](const uint8_t status) {
+          primer_service_handler->primeStatusEvent.SetReceiveHandler([this] () {
+            const auto res = primer_service_handler->primeStatusEvent.GetNewSamples();
+            if (!res.HasValue()) {
+              return;
+            }
+            someip_logger.LogDebug() << "Primer state sample: " << res.Value();
+            this->event_data->SetPrimerState(res.Value());
+          });
       });
     });
     this->fuel_service_proxy.StartFindService([this](auto handler) {
       someip_logger.LogDebug() << "Fuel service handler discovered";
       this->fuel_service_handler = handler;
 
-      this->fuel_service_handler->refuelingStateEvent.SetReceiveHandler([this] () {
-          auto res = fuel_service_handler->refuelingStateEvent.GetNewSamples();
-          if (res.HasValue()) {
-              someip_logger.LogDebug() << "Refuel state sample: "
-                                 << res.Value();
-
-              uint8_t tank_id = res.Value() >> 4;
-              uint8_t state = res.Value() & 0x0F;
-
-              if (this->event_data->GetRefuelState(tank_id) != state) {
-                  this->event_data->SetRefuelState(tank_id, state);
-
-                  if (on_refuel_state_changed_cb_) {
-                      on_refuel_state_changed_cb_();
+      this->fuel_service_handler->refuelingStateEvent.Subscribe(1, [this](const uint8_t status) {
+          this->fuel_service_handler->refuelingStateEvent.SetReceiveHandler([this] () {
+              auto res = fuel_service_handler->refuelingStateEvent.GetNewSamples();
+              if (res.HasValue()) {
+                  someip_logger.LogDebug() << "Refuel state sample: " << res.Value();
+                  uint8_t tank_id = res.Value() >> 4;
+                  uint8_t state = res.Value() & 0x0F;
+                  if (this->event_data->GetRefuelState(tank_id) != state) {
+                      this->event_data->SetRefuelState(tank_id, state);
+                      if (on_refuel_state_changed_cb_) {
+                          on_refuel_state_changed_cb_();
+                      }
                   }
               }
-          }
+          });
       });
-      this->fuel_service_handler->gsValveCmdEvent.SetReceiveHandler([this] () {
-          auto res = fuel_service_handler->gsValveCmdEvent.GetNewSamples();
-          if (res.HasValue() && on_valve_cmd_cb_) {
-              uint8_t valve_id = res.Value() >> 4;
-              uint8_t pos = res.Value() & 0x0F;
-              if (on_valve_cmd_cb_) {
-                  on_valve_cmd_cb_(valve_id, pos);
+
+      this->fuel_service_handler->gsValveCmdEvent.Subscribe(1, [this](const uint8_t status) {
+          this->fuel_service_handler->gsValveCmdEvent.SetReceiveHandler([this] () {
+              auto res = fuel_service_handler->gsValveCmdEvent.GetNewSamples();
+              if (res.HasValue() && on_valve_cmd_cb_) {
+                  uint8_t valve_id = res.Value() >> 4;
+                  uint8_t pos = res.Value() & 0x0F;
+                  if (on_valve_cmd_cb_) {
+                      on_valve_cmd_cb_(valve_id, pos);
+                  }
               }
-          }
+          });
       });
     });
     // TODO(matikrajek42@gmail.com) Write MB Temp After GrKo write Env App for FC

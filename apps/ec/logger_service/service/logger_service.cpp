@@ -36,7 +36,7 @@ namespace {
   static constexpr auto kSecEnv_service_path_name = "srp/apps/FileLoggerApp/SecEnvApp";
   static constexpr auto kSecServo_service_path_name = "srp/apps/FileLoggerApp/SecServoService";
   static constexpr auto kFile_did_path_name = "/srp/apps/FileLoggerApp/logger_did";
-  static constexpr auto kFuel_service_path_name = "/srp/apps/FileLoggerApp/FuelService";
+  static constexpr auto kFuel_service_path_name = "srp/apps/FileLoggerApp/FuelService";
   static constexpr auto kLogs_on = 1;
   static constexpr auto kLogs_off = 0;
   static constexpr auto kHeartBeatPinID = 2;

@@ -131,7 +131,7 @@
                     "instance": 2
                 },
                 {
-                    "name": "FuelService as FuelService",
+                    "name": "srp.apps.FuelService as FuelService",
                     "on": "ipc",
                     "instance": 2   
                 }

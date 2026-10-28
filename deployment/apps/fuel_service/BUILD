@@ -28,8 +28,9 @@ filegroup(
 )
 
 adaptive_application(
-    name = "FuelApp",
+    name = "FuelService",
     bin = "//apps/ec/fuel_service",
     model_src = ["//deployment/apps/fuel_service:instance"],
+    etcs = ["config.json"],
     visibility = ["//deployment/cpu/ec:__subpackages__"],
 )

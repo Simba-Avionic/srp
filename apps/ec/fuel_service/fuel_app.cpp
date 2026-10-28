@@ -25,7 +25,7 @@ namespace {
 
     constexpr auto kServoInstance = "srp/apps/FuelService/ServoService";
     constexpr auto kEnvInstance = "srp/apps/FuelService/EnvApp";
-    constexpr auto kRadioInstance = "srp/apps/FuelService/FcRadioServiceHandler.h";
+    constexpr auto kRadioInstance = "srp/apps/FuelService/FcRadioService";
 
     constexpr auto kBroadcastInterval = 1000;
     constexpr auto kCheckInterval = 100;
@@ -233,6 +233,11 @@ int FuelApp::Run(const std::stop_token& token) {
     }
 
     ara::log::LogInfo() << "FuelApp: Run complete, closing";
+
+    service_ipc_->StopOffer();
+    service_udp_->StopOffer();
+    controllers_.clear();
+
     return 0;
 }
 

@@ -192,8 +192,8 @@ std::string Data_t::to_string(const std::string& timestamp) {
 
   const uint32_t gpio_ = gpio_states.load(std::memory_order_relaxed);
 
-  const refuelType refuel_state_oxi_local = refuel_state_oxi_.load(std::memory_order_relaxed);
-  const refuelType refuel_state_pfs_local = refuel_state_pfs_.load(std::memory_order_relaxed);
+  const auto refuel_state_oxi_local = static_cast<int>(refuel_state_oxi_.load(std::memory_order_relaxed));
+  const auto refuel_state_pfs_local = static_cast<int>(refuel_state_pfs_.load(std::memory_order_relaxed));
 
   std::stringstream res;
   res << std::fixed << std::setprecision(4);
@@ -225,8 +225,8 @@ std::string Data_t::to_string(const std::string& timestamp) {
   res << sec_board_temp3_local << ";";
   res << ethanol_main_local << ";";
   res << ethanol_vent_local << ";";
-  res << gpio_;
-  res << refuel_state_oxi_local;
+  res << gpio_ << ";";
+  res << refuel_state_oxi_local << ";";
   res << refuel_state_pfs_local;
   return res.str();
 }
