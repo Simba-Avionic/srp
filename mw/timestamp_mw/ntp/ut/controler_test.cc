@@ -36,3 +36,12 @@ TEST_F(NtpControllerTest, CalculateRoundTripDelayTest) {
     int64_t expected_delay = 1500;  // (3000 - 1000) - (2000 - 1500) = 1500
     EXPECT_EQ(ntpController.CalculateRoundTripDelay(T0, T1, T2, T3), expected_delay);
 }
+
+TEST_F(NtpControllerTest, EncodeSettingsTest) {
+    uint8_t device_class = 3;
+    bool is_holdover = true;
+    uint8_t msg_type = 1;
+
+    uint8_t expected_encode = 0b01001011;
+    EXPECT_EQ(ntpController.EncodeSettings(device_class, is_holdover, msg_type), expected_encode);
+}
