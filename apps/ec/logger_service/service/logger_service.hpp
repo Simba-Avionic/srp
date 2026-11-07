@@ -34,6 +34,7 @@
 #include "srp/env/SecEnvApp/SecEnvAppHandler.h"
 #include "srp/apps/SecServoService/SecServoServiceHandler.h"
 #include "mw/gpio_server/controller/gpio_controller.hpp"
+#include "srp/apps/FuelService/FuelServiceHandler.h"
 
 namespace srp {
 namespace logger {
@@ -49,6 +50,7 @@ class LoggerService final : public ara::exec::AdaptiveApplication {
   apps::EngineServiceProxy engine_service_proxy;
   env::SecEnvAppProxy sec_env_service_proxy;
   apps::SecServoServiceProxy sec_servo_service_proxy;
+  apps::FuelServiceProxy fuel_service_proxy;
   std::shared_ptr<env::EnvAppHandler> env_service_handler;
   std::shared_ptr<apps::SysStatServiceHandler> stat_service_handler;
   std::shared_ptr<apps::PrimerServiceHandler> primer_service_handler;
@@ -56,6 +58,7 @@ class LoggerService final : public ara::exec::AdaptiveApplication {
   std::shared_ptr<apps::EngineServiceHandler> engine_service_handler;
   std::shared_ptr<env::SecEnvAppHandler> sec_env_service_handler;
   std::shared_ptr<apps::SecServoServiceHandler> sec_servo_service_handler;
+  std::shared_ptr<apps::FuelServiceHandler> fuel_service_handler;
   Data_t data;
   std::unique_ptr<FileLoggerDID> logger_did_;
   const ara::core::InstanceSpecifier did_instance;

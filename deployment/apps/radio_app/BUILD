@@ -16,6 +16,7 @@ filegroup(
         "//deployment/apps/fc/env_service:instance",
         "//deployment/apps/system_stat_service:instance",
         "//deployment/apps/fc/system_stat_service:instance",
+        "//deployment/system_definition/someip/fuel_service:service_someipy",
 
     ],
     visibility = [

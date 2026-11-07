@@ -128,6 +128,25 @@ std::vector<uint8_t> TelemetryProvider::GetComputersTelemetryMsg() {
     });
 }
 
+std::vector<uint8_t> TelemetryProvider::GetRefuelingStatusMsg() {
+    return Pack([&](mavlink_message_t* m) {
+        mavlink_msg_simba_refueling_status_pack(
+            kSystemId, kComponentId, m,
+            event_data->GetRefuelState(0),
+            event_data->GetRefuelState(1),
+            event_data->GetRefuelState(2),
+            event_data->GetRefuelState(3));
+    });
+}
+
+std::vector<uint8_t> TelemetryProvider::GetGSValveCmdMsg(uint8_t valve_id, uint8_t position) {
+    return Pack([&](mavlink_message_t* m) {
+        mavlink_msg_simba_gs_valve_cmd_pack(
+            kSystemId, kComponentId, m,
+            valve_id, position);
+    });
+}
+
 }  // namespace radio
 }  // namespace apps
 }  // namespace srp
