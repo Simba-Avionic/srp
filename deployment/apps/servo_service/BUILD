@@ -42,3 +42,5 @@ adaptive_application(
     visibility = ["//deployment/cpu/ec:__subpackages__"],
 )
 
+
+exports_files(["config.json"])
