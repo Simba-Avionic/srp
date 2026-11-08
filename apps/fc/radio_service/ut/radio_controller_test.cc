@@ -48,7 +48,8 @@ TEST(RadioControllerTest, OpensWithMavlinkPresetAndDeliversReceivedFrame) {
       }));
   // pierwszy WaitForData: dane sa, kolejne: brak (z krotkim snem, zeby nie kreciec petli)
   bool delivered = false;
-  ON_CALL(*uart, WaitForData(_, _)).WillByDefault(Invoke([&delivered](std::chrono::milliseconds, const std::stop_token&) {
+  ON_CALL(*uart, WaitForData(_, _))
+      .WillByDefault(Invoke([&delivered](std::chrono::milliseconds, const std::stop_token&) {
     if (!delivered) {
       delivered = true;
       return true;

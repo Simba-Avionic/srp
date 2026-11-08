@@ -12,11 +12,11 @@
 #include <fcntl.h>
 #include <poll.h>
 #include <sys/eventfd.h>
-#include <chrono>  // NOLINT
-#include <stop_token>  // NOLINT
 #include <unistd.h>
 #include <termios.h>
 #include <errno.h>
+#include <chrono>  // NOLINT
+#include <stop_token>  // NOLINT
 #include <string>
 #include <vector>
 #include <cstring>

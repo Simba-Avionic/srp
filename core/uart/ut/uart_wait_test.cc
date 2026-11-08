@@ -2,6 +2,8 @@
  * @file uart_wait_test.cc
  * @brief IUartDriver::WaitForData(timeout, stop_token): semantyka jak core::condition::wait_for.
  *        Prawdziwy driver na pty (a-d) oraz model sim (e), ktory jest testowany bezposrednio (UartSim).
+ *
+ * @copyright Copyright (c) 2026
  */
 #include <gtest/gtest.h>
 #include <fcntl.h>

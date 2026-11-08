@@ -107,7 +107,8 @@ class UartSim {
       return false;
     }
     const int64_t end = SteadyMs() + timeout.count();
-    std::condition_variable_any cv;  // wake-up przez stop_callback; kolejke RX wstrzykuje ctl (plik) - sprawdzana co 20 ms
+    // wake-up przez stop_callback; kolejke RX wstrzykuje ctl (plik) - sprawdzana co 20 ms
+    std::condition_variable_any cv;
     while (true) {
       std::unique_lock<std::mutex> l(m_);
       bool fault = false;
