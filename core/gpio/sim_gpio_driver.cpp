@@ -3,7 +3,7 @@
  * @brief Sim GPIO ze stanem pin->wartosc, dziennikiem i usterkami (core/sim/sim_ctl.hpp).
  *
  * setValue zapisuje (state/gpio/<pin>, events.jsonl), getValue czyta (domyslnie 0).
- * Polecenia ctl gpio: patrz docs/audit/sim_drivers.md.
+ * Polecenia ctl gpio: patrz core/sim/README.md.
  *
  * @copyright Copyright (c) 2025
  */
@@ -42,15 +42,15 @@ bool Sync(uint16_t pin, Op op, int64_t* delay_ms) {
       return;
     }
     try {
-      const uint16_t p = static_cast<uint16_t>(std::stoi(c.tok[1], nullptr, 0));
+      const uint16_t p = static_cast<uint16_t>(sim::ParseNum(c.tok[1]));
       const std::string& what = c.tok[2];
       if (what == "value" && c.tok.size() >= 4) {
         if (!c.applied) {
           c.applied = true;
-          g_pins[p].value = static_cast<uint8_t>(std::stoi(c.tok[3]));
+          g_pins[p].value = static_cast<uint8_t>(sim::ParseNum(c.tok[3]));
           sim::WriteState("gpio/" + std::to_string(p), std::to_string(g_pins[p].value));
           sim::Event("gpio", "\"op\":\"stimulus\",\"pin\":" + std::to_string(p) +
-                                 ",\"val\":" + c.tok[3]);
+                                 ",\"val\":" + std::to_string(g_pins[p].value));
         }
       } else if (p == pin && what == "fault" && c.tok.size() >= 4) {
         const std::string& k = c.tok[3];
@@ -60,7 +60,7 @@ bool Sync(uint16_t pin, Op op, int64_t* delay_ms) {
           sim::Event("gpio", "\"op\":\"fault\",\"pin\":" + std::to_string(p) + ",\"kind\":\"" + k + "\"");
         }
       } else if (p == pin && what == "delay" && c.tok.size() >= 4) {
-        *delay_ms = std::stoll(c.tok[3]);
+        *delay_ms = sim::ParseNum(c.tok[3]);
       }
     } catch (...) {
       ara::log::LogWarn() << "sim gpio: bad ctl line: " << c.text;
@@ -84,7 +84,9 @@ core::ErrorCode GpioDriver::initializePin(const uint16_t& pinNumber, const direc
                                           bool /*use_lock*/) {
     std::lock_guard<std::mutex> l(g_m);
     int64_t d;
-    Sync(pinNumber, Op::kSet, &d);
+    if (Sync(pinNumber, Op::kSet, &d)) {  // like the real driver: a failed export/direction write is an error
+        return core::ErrorCode::kError;
+    }
     g_pins[pinNumber].dir = direction;
     sim::Event("gpio", "\"op\":\"init\",\"pin\":" + std::to_string(pinNumber) +
                            ",\"dir\":\"" + ((direction == direction_t::IN) ? "in" : "out") + "\"");
@@ -141,7 +143,8 @@ uint8_t GpioDriver::getValue(const uint16_t& pinNumber, bool /*use_lock*/) {
         std::this_thread::sleep_for(std::chrono::milliseconds(delay));
     }
     if (fault) {
-        return 0xFF;  // interfejs nie ma kodu bledu; 0xFF = blad odczytu w sim
+        // jak realny gpio_driver.cpp: kod bledu rzutowany na uint8_t (= 2), nieodroznialny od wartosci
+        return static_cast<uint8_t>(core::ErrorCode::kError);
     }
     std::lock_guard<std::mutex> l(g_m);
     return g_pins[pinNumber].value;
