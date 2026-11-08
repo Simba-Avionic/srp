@@ -88,3 +88,17 @@ Przykład (heartbeat MAVLink v1 w kolejce RX radia): `uart /dev/ttyS1 rx fe 09 0
 ## BUILD
 
 - `//core/sim:sim_ctl` (zawiera też `sim_uart.hpp`)
+
+## Zapis `ctl` i sprzątanie
+
+- `ctl` czytany jest ponownie przy zmianie (mtime, rozmiar, inode). Polecenia dopasowywane są **po treści linii**: wstawienie lub usunięcie linii nie resetuje stanu pozostałych (`applied`, `count`, `after`).
+- Ostatnia linia bez `\n` jest ignorowana do czasu dopisania końca linii; pusty plik po niepustym nie kasuje stanu przez 1 s. Mimo to zapisuj atomowo: `cat > ctl.tmp && mv ctl.tmp ctl`, dopisuj przez `>>`. Usunięcie pliku (`rm ctl`) czyści stan natychmiast.
+- Nieparzysta liczba cyfr hex albo znak spoza hex w `uart … rx`/`i2c …` powoduje pominięcie linii (z ostrzeżeniem), nic nie jest po cichu obcinane.
+- `events.jsonl` i `state/uart/*.tx` rosną bez limitu, a `reset` ich nie czyści: przed testem usuń je (`rm -f $SRP_SIM_DIR/events.jsonl`).
+
+## Różnice względem prawdziwych driverów
+
+- GPIO: usterka `fault … set` jest zużywana przez `initializePin`, `setValue` i `setDirection` (wszystkie zapisują w sysfs); `initializePin` i `setDirection` zwracają wtedy `kError`. Usterka odczytu zwraca `static_cast<uint8_t>(ErrorCode::kError)` (= 2), tak jak realny `getValue`.
+- I2C: usterka w `Write(vector)` i `PageWrite` daje `kInitializeError`, w `Write(uint8)` — `kConnectionError` (jak `core/i2c/i2c_driver.cpp`). `Read(0)` zwraca pusty wektor.
+- UART: sim honoruje `timeout` z `Open` (deterministyczne czasy w testach); realny driver ignoruje ten parametr i ma `VTIME=10` na sztywno — rozbieżność do oceny przez testera.
+- Temp: czas konwersji (`conv_ms`) jest stały (250 ms), niezależny od rozdzielczości.

@@ -3,7 +3,7 @@
  * @brief Sim czujnikow 1-Wire (DS18B20) sterowany tabela id->wartosc/blad (core/sim/sim_ctl.hpp).
  *
  * Jak prawdziwy driver (core/temp/temp_driver.cpp) zwraca wartosc czujnika bez
- * walidacji (m.in. 85.0 / -127.0). Polecenia ctl temp: docs/audit/sim_drivers.md.
+ * walidacji (m.in. 85.0 / -127.0). Polecenia ctl temp: core/sim/README.md.
  *
  * @copyright Copyright (c) 2025
  */
@@ -33,7 +33,7 @@ struct Sensor {
     Mode mode{Mode::kValue};
     double value{25.0};
     uint8_t resolution{9};
-    uint16_t conv_ms{250};
+    uint16_t conv_ms{250};  // stala sim (realny DS18B20: 94 ms @9 bit ... 750 ms @12 bit), nie zalezy od resolution
 };
 
 std::mutex g_m;
