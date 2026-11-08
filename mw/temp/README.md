@@ -52,7 +52,7 @@ void StartRxThread();
 // TempRXCallback = void(const std::vector<TempReadHdr>&)
 ```
 
-Aplikacje env używają `service_id` 514 (także SEC_EC).
+Env EC i SEC_EC używają `service_id` 514, env FC — 529.
 
 ## Diagnostyka
 
