@@ -8,11 +8,11 @@ SOME/IP `ServoService` (id **515**) otwiera/zamyka 5 zaworów. Pozycje publikuje
 
 ## Opis funkcjonalności
 
-- `ServoController` mapuje stan `0=close`, `1=open`, `2` (tryb specjalny/puls) na impulsy PCA9685.
-- Kalibracja open/close z JSON + korekty z EEPROM.
-- Wątki: auto-close i pulsing.
+- `ServoController` mapuje stan `0=close` (`off_pos`), `1=open` (`on_pos`) na impulsy PCA9685. Stan `2` ustawia `off_pos` (jak `0`), ale pomija auto-close i pulsowanie; wartości >2 są odrzucane.
+- Kalibracja: `on_pos`/`off_pos` z JSON to kąty 0–180° → ticki PCA 102–512 (0,5–2,5 ms), mnożone przez `pca9685_XO_corelation` z EEPROM.
+- Wątki: auto-close (`auto_closing_time`, ms) i pulsing (`pulsing_time_ms`, ms; w deploymencie tylko vent utleniacza, 250 ms).
 - Heartbeat GPIO pin **4**.
-- MOSFET-y zasilania serw steruje engine przy ARM/DISARM.
+- Zasilanie serw: piny `arm_pins` włącza engine przy ARM/DISARM; dodatkowo przed każdym ruchem `ServoDriver` ustawia pin `mosfet_id` z config.json (bez wyłączania).
 
 ### Zawory
 
@@ -24,7 +24,7 @@ SOME/IP `ServoService` (id **515**) otwiera/zamyka 5 zaworów. Pozycje publikuje
 | 63 | PFS main | `SetPressureFeedMainValve` (7) | `newPressureFeedMainValveEvent` (32772) |
 | 64 | PFS vent | `SetPressureFeedVentValve` (9) | `newPressureFeedVentValveEvent` (32773) |
 
-Wejście metody: `uint8` (0/1/2) → `bool`. Event: aktualna pozycja `uint8`.
+Wejście metody: `uint8` (0/1/2) → `bool`. Event: ostatnio zadany stan `uint8` (z pamięci kontrolera, nie odczyt z PCA9685).
 
 ## Architektura
 
@@ -66,13 +66,15 @@ sequenceDiagram
 | DID | sub_service | Rola |
 |-----|-------------|------|
 | MainServoStatus | 10 | status main |
-| Vent | 11 | status vent |
-| Dump | 18 | status dump |
-| ServoDid | 21 | zapis kalibracji `[id][open_hi][open_lo][close_hi][close_lo]` |
+| VentServoStatus | 11 | status vent |
+| DumpServoStatus | 18 | status dump |
+| ServoDid | 21 | zapis kalibracji `[id][open_hi][open_lo][close_hi][close_lo]` (kąty jak `on_pos`/`off_pos`) |
+
+Uwaga: klasy handlerów (`servo_service_did.h`, `servo_did.h`) nie są tworzone w `ServoService::Initialize`, więc DID-y są zadeklarowane w modelu, ale w tej aplikacji nie mają implementacji.
 
 ## Konfiguracja
 
-`deployment/apps/servo_service/config.json`, `app_config.json`.
+`deployment/apps/servo_service/config.json` (w runtime `etc/config.json`): tablica `servos` z polami `actuator_id`, `channel`, `on_pos`, `off_pos`, opcjonalnie `mosfet_id`, `auto_closing_time`, `pulsing_time_ms`; model w `app_config.json`.
 
 ## Zależności
 

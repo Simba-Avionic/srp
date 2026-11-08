@@ -34,15 +34,15 @@ flowchart LR
 
 | Event | ID | Payload |
 |-------|---:|---------|
-| newTempEvent_1/2/3 | 32769–32771 | int16 |
+| newTempEvent_1/2/3 | 32769–32771 | int16 (°C × 10) |
 | newOxidizerPressEvent | 32772 | int16 (bar × 100) |
-| newPressureFeedPressEvent | 32773 | int16 |
-| newChamberPressEvent1 | 32774 | int16 |
-| newBoardTempEvent1/2/3 | 32775–32777 | int16 |
+| newPressureFeedPressEvent | 32773 | int16 (bar × 100) |
+| newChamberPressEvent1 | 32774 | int16 (bar × 100) |
+| newBoardTempEvent1/2/3 | 32775–32777 | int16 (°C × 10) |
 
 ## Konfiguracja
 
-`deployment/apps/env_service/config.json` (mapowanie ADC `a`/`b` per sensor).
+`deployment/apps/env_service/config.json` (w runtime `etc/config.json`): `sensors` — `sensor_id`, `channel` ADS7828, `a`/`b` (wartość [bar] = `a`·U[V] + `b`); `sensors-temp` — `physical_id` 1-Wire i `name` (`sensor_temp_1/2/3`) przypisujące czujnik do eventu.
 
 ## Zależności
 

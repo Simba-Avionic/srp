@@ -8,11 +8,11 @@ Aplikacje wołają `GPIOController` (IPC `SRP.GPIO`). Serwis mapuje logiczne `pi
 
 ## Opis funkcjonalności
 
-- **SET** — zapis 0/1. `time_period > 0` → automatyczny powrót do 0 po ms; `time_period == 0` → zostaje; `force_time_period` kasuje tryb „zostań HIGH”.
+- **SET** — zapis 0/1 (tylko piny z `direction: out`, inaczej błąd). `time_period > 0` → automatyczny powrót do 0 po ms; `time_period == 0` → zostaje; `force_time_period` kasuje tryb „zostań HIGH”.
 - **GET** — odczyt aktualnej wartości.
-- **SUBSCRIBE / UNSUBSCRIBE** — polling co 100 ms, callback na `SRP.GPIO.<controller_id>`.
+- **SUBSCRIBE / UNSUBSCRIBE** — polling co 100 ms, callback na `SRP.GPIO.<controller_id>`; w SUBSCRIBE pole `value` = `controller_id` (0 → serwis nadaje nowe ID i zwraca je w odpowiedzi).
 - Wątek wygaszania pinów: sen do najbliższego deadline (min. 5 ms).
-- Heartbeat pinów w aplikacjach (engine pin 1, servo pin 4) idzie tędy.
+- Heartbeat pinów w aplikacjach (engine pin 1, radio i logger pin 2, primer pin 3, servo pin 4) idzie tędy.
 
 ## Architektura
 

@@ -20,7 +20,8 @@ Serwis nie zna chipów — tylko surowe akcje pod mutexem:
 ```mermaid
 flowchart TB
   subgraph Aplikacje
-    Env[env_service]
+    Env[env_service EC]
+    EnvFc[env_service FC]
     Servo[ServoService]
     Primer[primer_service]
   end
@@ -32,7 +33,8 @@ flowchart TB
     EE[24LC32AT]
     INA[INA219]
   end
-  Env --> BME & IMU & ADC & EE
+  Env --> ADC & EE
+  EnvFc --> BME & IMU
   Servo --> PCA & EE
   Primer --> ADC
   BME & IMU & PCA & ADC & EE & INA --> IC[I2CController]

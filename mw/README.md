@@ -1,6 +1,6 @@
 # Middleware (mw)
 
-Warstwa Adaptive Applications między sterownikami `core` a aplikacjami `apps`. **Nie wystawia SOME/IP** — komunikacja to Unix IPC (GPIO / I2C / temp) albo TCP (timestamp / tinyNTP).
+Warstwa Adaptive Applications między sterownikami `core` a aplikacjami `apps`. **Nie wystawia SOME/IP** — komunikacja to Unix IPC (GPIO / I2C / temp) albo UDP + multicast (timestamp / tinyNTP).
 
 ## TL;DR
 
@@ -17,7 +17,7 @@ flowchart TB
     G[gpio_server<br/>SRP.GPIO]
     I[i2c_service<br/>SRP.I2C]
     T[temp<br/>SRP.TEMP.*]
-    TS[timestamp_mw<br/>TCP 9998/9999]
+    TS[timestamp_mw<br/>UDP 9998 + multicast 9999]
   end
   subgraph Core
     CG[gpio]
@@ -39,6 +39,6 @@ flowchart TB
 | [gpio_server](gpio_server/README.md) | `SRP.GPIO` | Cyfrowe piny, timer auto-off, subskrypcje |
 | [i2c_service](i2c_service/README.md) | `SRP.I2C` | Wyłączny dostęp do magistrali + kontrolery chipów |
 | [temp](temp/README.md) | `SRP.TEMP.SERVICE` | 1-Wire, periodyczny push do subskrybentów |
-| [timestamp_mw](timestamp_mw/README.md) | TCP 192.168.10.102:9999 | tinyNTP, korekta SHM |
+| [timestamp_mw](timestamp_mw/README.md) | UDP 9998 + multicast 231.255.42.99:9999 | tinyNTP, korekta SHM |
 
 Diagnoza UDS: GPIO DID 12, temp DID 13. I2C ma zdefiniowane DID, ale nie są podpięte do serwisu.
