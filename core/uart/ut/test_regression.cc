@@ -18,6 +18,7 @@
  */
 TEST(Regression, F34_UartReadLargerThanDefaultBufferIsSafe) {
   auto child = [] {
+        alarm(20);
         int master = -1, slave = -1;
         char name[128];
         if (openpty(&master, &slave, name, nullptr, nullptr) != 0) _exit(3);
@@ -33,4 +34,3 @@ TEST(Regression, F34_UartReadLargerThanDefaultBufferIsSafe) {
       ::testing::ExitedWithCode(0), "")
       << "F-34 regression: UartDriver::Read(1000) crashed or returned too much (uart_driver.cpp)";
 }
-

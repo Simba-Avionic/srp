@@ -10,7 +10,6 @@ cc_test(
     ],
 )
 
-
 # cc_test(
 #     name = "pca9685_test",
 #     srcs = [
@@ -70,7 +69,6 @@ cc_test(
         "//mw/i2c_service/controller:i2c_controller",
     ],
 )
-
 
 cc_test(
     name = "pca9685_audit_bugs_test",

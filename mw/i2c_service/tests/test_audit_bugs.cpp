@@ -26,12 +26,16 @@ class W : public srp::i2c::PCA9685 {
  */
 TEST(AuditBugs, F22_Pca9685ChannelOutOfRangeIsNotRejected) {
   for (uint8_t ch : {16, 17, 200}) {
-    W w;
-    auto mock = std::make_unique<srp::mock::MockI2CController>();
-    EXPECT_CALL(*mock, Write(_, _)).WillRepeatedly(Return(srp::core::ErrorCode::kOk));
-    ASSERT_EQ(w.setI2C(std::move(mock)), srp::core::ErrorCode::kOk);
-    EXPECT_NE(w.SetChannelPosition(ch, 300), srp::core::ErrorCode::kOk)
-        << "F-22: channel " << int(ch) << " accepted, LED_*_LOOKUP[16] read out of bounds (controller.cpp:86-96)";
+    auto child = [ch] {
+      W w;
+      auto mock = std::make_unique<srp::mock::MockI2CController>();
+      EXPECT_CALL(*mock, Write(_, _)).WillRepeatedly(Return(srp::core::ErrorCode::kOk));
+      if (w.setI2C(std::move(mock)) != srp::core::ErrorCode::kOk) _exit(3);
+      _exit(w.SetChannelPosition(ch, 300) != srp::core::ErrorCode::kOk ? 0 : 1);
+    };
+    EXPECT_EXIT(child(), ::testing::ExitedWithCode(0), "")
+        << "F-22: channel " << int(ch)
+        << " accepted or crashed, LED_*_LOOKUP[16] read out of bounds (controller.cpp:86-96)";
   }
 }
 

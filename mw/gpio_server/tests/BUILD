@@ -41,7 +41,6 @@ cc_test(
         ],
 )
 
-
 cc_test(
     name = "gpio_server_audit_bugs_test",
     srcs = ["test_audit_bugs.cc"],
