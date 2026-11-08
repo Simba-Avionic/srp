@@ -1,6 +1,5 @@
----
 name: QEMU tests
-# Opt-in: dodanie labela `qemu-tests` do PR = jeden bieg; ponowny bieg: zdjac i dodac label albo workflow_dispatch.
+# Opt-in: label `qemu-tests` na PR = job functional, label `qemu-bugs` = job bugs (informacyjny); jeden bieg na label; ponowny bieg: zdjac i dodac label albo workflow_dispatch.
 on:
   pull_request:
     types: [labeled]
@@ -20,6 +19,7 @@ on:
 permissions:
   contents: read
 
+# Cala logika jest w tools/qemu_test/qemu_test.sh (build, image, run, report, cleanup) - tu tylko wywolania podkomend.
 jobs:
   qemu-functional:
     name: QEMU functional
@@ -29,7 +29,7 @@ jobs:
       (github.event_name == 'workflow_dispatch' && inputs.suite != 'bugs') ||
       (github.event_name == 'pull_request' && github.event.label.name == 'qemu-tests')
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 70
     # Per job: a skipped job never joins the group, so an unrelated label cannot cancel a running suite.
     concurrency:
       group: qemu-tests-functional-${{ github.event.pull_request.number || github.ref }}
@@ -47,18 +47,21 @@ jobs:
           disk-cache: qemu-tests
           repository-cache: true
 
-      - name: Run functional QEMU tests
-        run: tools/qemu_test/qemu_test.sh functional
+      - name: Build EC sim package and QEMU image
+        timeout-minutes: 20
+        run: tools/qemu_test/qemu_test.sh build
 
-      - name: Job summary
+      - name: Build test container image
+        timeout-minutes: 10
+        run: tools/qemu_test/qemu_test.sh image
+
+      - name: Run functional tests
+        timeout-minutes: 30
+        run: tools/qemu_test/qemu_test.sh run functional --no-build
+
+      - name: Summary
         if: always()
-        run: |
-          {
-            echo "## QEMU functional"
-            if [ -f qemu_test_results/functional.q.txt ]; then
-              echo '```'; tail -n 40 qemu_test_results/functional.q.txt; echo '```'
-            fi
-          } >> "$GITHUB_STEP_SUMMARY"
+        run: tools/qemu_test/qemu_test.sh report >> "$GITHUB_STEP_SUMMARY"
 
       - name: Upload results
         if: always()
@@ -69,12 +72,18 @@ jobs:
           retention-days: 7
           if-no-files-found: warn
 
+      - name: Cleanup
+        if: always()
+        run: tools/qemu_test/qemu_test.sh cleanup
+
   qemu-bugs:
     name: QEMU bugs (informational)
-    if: github.event_name == 'workflow_dispatch' && (inputs.suite == 'bugs' || inputs.suite == 'all')
+    if: >-
+      (github.event_name == 'workflow_dispatch' && (inputs.suite == 'bugs' || inputs.suite == 'all')) ||
+      (github.event_name == 'pull_request' && github.event.label.name == 'qemu-bugs')
     runs-on: ubuntu-latest
     continue-on-error: true
-    timeout-minutes: 45
+    timeout-minutes: 80
     concurrency:
       group: qemu-tests-bugs-${{ github.event.pull_request.number || github.ref }}
       cancel-in-progress: true
@@ -91,17 +100,21 @@ jobs:
           disk-cache: qemu-tests
           repository-cache: true
 
-      - name: Run bugs QEMU tests (red expected)
-        run: tools/qemu_test/qemu_test.sh bugs
+      - name: Build EC sim package and QEMU image
+        timeout-minutes: 20
+        run: tools/qemu_test/qemu_test.sh build
 
-      - name: Job summary (F-xx table)
+      - name: Build test container image
+        timeout-minutes: 10
+        run: tools/qemu_test/qemu_test.sh image
+
+      - name: Run bugs tests (red expected)
+        timeout-minutes: 40
+        run: tools/qemu_test/qemu_test.sh run bugs --no-build
+
+      - name: Summary (F-xx table)
         if: always()
-        run: |
-          {
-            echo "## QEMU bugs (informational, red = bug reproduced)"
-            # mapping.md is produced by qemu_test.sh (tools/qemu_test/make_mapping.py <repo>)
-            if [ -f qemu_test_results/mapping.md ]; then cat qemu_test_results/mapping.md; fi
-          } >> "$GITHUB_STEP_SUMMARY"
+        run: tools/qemu_test/qemu_test.sh report >> "$GITHUB_STEP_SUMMARY"
 
       - name: Upload results
         if: always()
@@ -111,3 +124,7 @@ jobs:
           path: qemu_test_results/
           retention-days: 7
           if-no-files-found: warn
+
+      - name: Cleanup
+        if: always()
+        run: tools/qemu_test/qemu_test.sh cleanup
