@@ -7,6 +7,7 @@
  */
 #include <gtest/gtest.h>
 #include <stdlib.h>
+#include <filesystem>  // NOLINT
 #include <fstream>
 #include <string>
 #include <vector>
@@ -24,6 +25,11 @@ class SimCtlTest : public ::testing::Test {
     dir_ = tmpl;
     setenv("SRP_SIM_DIR", tmpl, 1);
     Apply();  // no ctl file yet: clears the state left by the previous test
+  }
+
+  void TearDown() override {
+    std::error_code ec;
+    std::filesystem::remove_all(dir_, ec);
   }
 
   void Write(const std::string& body, bool append = false) {
@@ -84,6 +90,16 @@ TEST_F(SimCtlTest, RemovedFileClearsTheState) {
   EXPECT_EQ(Apply(), 0);
   Write("uart p rx 05\n");
   EXPECT_EQ(Apply(), 1);  // rm + write = deliberately applied again
+}
+
+TEST_F(SimCtlTest, EventRecreatesDirectoryRemovedFromOutside) {
+  srp::core::sim::Event("test", "\"op\":\"first\"");
+  std::filesystem::remove_all(dir_);
+  srp::core::sim::Event("test", "\"op\":\"second\"");
+  std::ifstream f(dir_ + "/events.jsonl");
+  std::string line;
+  ASSERT_TRUE(static_cast<bool>(std::getline(f, line)));
+  EXPECT_NE(line.find("second"), std::string::npos);
 }
 
 TEST(SimParseTest, UnHexRejectsOddLengthAndNonHex) {

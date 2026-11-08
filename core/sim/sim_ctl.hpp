@@ -82,6 +82,10 @@ inline void Event(const std::string& src, const std::string& fields) {
   std::string line = "{\"t\":" + std::to_string(WallMs()) + ",\"src\":\"" + src + "\"" +
                      (fields.empty() ? "" : "," + fields) + "}\n";
   int fd = ::open((Dir() + "/events.jsonl").c_str(), O_WRONLY | O_CREAT | O_APPEND, 0666);
+  if (fd < 0) {  // the directory may have been removed from outside (rm -rf $SRP_SIM_DIR): recreate and retry
+    MkDirsAlways(Dir());
+    fd = ::open((Dir() + "/events.jsonl").c_str(), O_WRONLY | O_CREAT | O_APPEND, 0666);
+  }
   if (fd >= 0) {
     ssize_t r = ::write(fd, line.data(), line.size());
     (void)r;
@@ -94,10 +98,13 @@ inline void WriteState(const std::string& rel, const std::string& content) {
   const std::string full = Dir() + "/state/" + rel;
   MkDirs(full.substr(0, full.rfind('/')));
   const std::string tmp = full + "." + std::to_string(::getpid()) + ".tmp";
-  {
-    std::ofstream f(tmp, std::ios::trunc);
-    f << content;
+  std::ofstream f(tmp, std::ios::trunc);
+  if (!f.is_open()) {  // directory removed from outside: recreate and retry
+    MkDirsAlways(full.substr(0, full.rfind('/')));
+    f.open(tmp, std::ios::trunc);
   }
+  f << content;
+  f.close();
   std::rename(tmp.c_str(), full.c_str());
 }
 
