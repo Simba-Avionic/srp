@@ -158,10 +158,10 @@ TEST(UartConfigTest, CustomFormat7E2) {
 TEST(UartConfigTest, MockAcceptsConfigOpenAndWaitForData) {
   MockUartDriver mock;
   EXPECT_CALL(mock, Open(::testing::_, ::testing::An<const UartConfig&>())).WillOnce(::testing::Return(true));
-  EXPECT_CALL(mock, WaitForData(250)).WillOnce(::testing::Return(true));
+  EXPECT_CALL(mock, WaitForData(std::chrono::milliseconds(250), ::testing::_)).WillOnce(::testing::Return(true));
   srp::core::uart::IUartDriver& drv = mock;
   EXPECT_TRUE(drv.Open("/dev/ttyS1", UartConfig::Mavlink(57600)));
-  EXPECT_TRUE(drv.WaitForData(250));
+  EXPECT_TRUE(drv.WaitForData(std::chrono::milliseconds(250), std::stop_token{}));
 }
 
 namespace {

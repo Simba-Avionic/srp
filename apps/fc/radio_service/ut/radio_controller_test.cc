@@ -8,6 +8,8 @@
 #include <gtest/gtest.h>
 
 #include <chrono>  // NOLINT
+#include <condition_variable>  // NOLINT
+#include <mutex>  // NOLINT
 #include <future>  // NOLINT
 #include <memory>
 #include <stop_token>  // NOLINT
@@ -46,7 +48,7 @@ TEST(RadioControllerTest, OpensWithMavlinkPresetAndDeliversReceivedFrame) {
       }));
   // pierwszy WaitForData: dane sa, kolejne: brak (z krotkim snem, zeby nie kreciec petli)
   bool delivered = false;
-  ON_CALL(*uart, WaitForData(_)).WillByDefault(Invoke([&delivered](int) {
+  ON_CALL(*uart, WaitForData(_, _)).WillByDefault(Invoke([&delivered](std::chrono::milliseconds, const std::stop_token&) {
     if (!delivered) {
       delivered = true;
       return true;
@@ -77,7 +79,7 @@ TEST(RadioControllerTest, TransmitsQueuedPackageThroughDriver) {
   auto mock = std::make_unique<NiceMock<MockUartDriver>>();
   auto* uart = mock.get();
   ON_CALL(*uart, Open(_, An<const UartConfig&>())).WillByDefault(Return(true));
-  ON_CALL(*uart, WaitForData(_)).WillByDefault(Invoke([](int) {
+  ON_CALL(*uart, WaitForData(_, _)).WillByDefault(Invoke([](std::chrono::milliseconds, const std::stop_token&) {
     std::this_thread::sleep_for(std::chrono::milliseconds(20));
     return false;
   }));
@@ -95,4 +97,29 @@ TEST(RadioControllerTest, TransmitsQueuedPackageThroughDriver) {
     ASSERT_EQ(fut.wait_for(std::chrono::seconds(3)), std::future_status::ready);
     EXPECT_EQ(fut.get(), kHeartbeat);
   }
+}
+
+// Zatrzymanie watku RX przerywa WaitForData od razu (mock czeka pelne 250 ms, chyba ze stop_token zadany)
+TEST(RadioControllerTest, StopInterruptsWaitForDataImmediately) {
+  auto mock = std::make_unique<NiceMock<MockUartDriver>>();
+  auto* uart = mock.get();
+  ON_CALL(*uart, Open(_, An<const UartConfig&>())).WillByDefault(Return(true));
+  ON_CALL(*uart, WaitForData(_, _)).WillByDefault(Invoke([](std::chrono::milliseconds d, const std::stop_token& st) {
+    std::mutex m;
+    std::condition_variable_any cv;
+    std::unique_lock<std::mutex> l(m);
+    cv.wait_for(l, st, d, [] { return false; });
+    return false;
+  }));
+  std::stop_source stop;
+  std::chrono::steady_clock::time_point t_stop;
+  {
+    srp::apps::radio::MavRadioController controller(std::move(mock));
+    controller.Init([](const mavlink_message_t&) {}, stop.get_token());
+    std::this_thread::sleep_for(std::chrono::milliseconds(120));  // watek RX siedzi w WaitForData
+    t_stop = std::chrono::steady_clock::now();
+    stop.request_stop();
+  }  // destruktor czeka na join watkow
+  const auto dt = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - t_stop);
+  EXPECT_LT(dt.count(), 100);
 }
