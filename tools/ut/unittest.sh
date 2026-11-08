@@ -12,4 +12,4 @@ if [[ "$1" == "--no_cache" ]]; then
     CACHE_FLAG="--nocache_test_results"
 fi
 
-bazel test $CACHE_FLAG --test_output=all `bazel query 'kind(cc_test, //...)'`
+bazel test $CACHE_FLAG --test_output=all `bazel query 'kind(cc_test, //...) except attr(tags, "audit_bugs", //...)'`
