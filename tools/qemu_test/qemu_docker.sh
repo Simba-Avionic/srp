@@ -51,6 +51,7 @@ exec docker run --rm --name "srp-qemu-test-$NAME" --label srp-qemu-test=1 \
   -v "$DISK":/img/disk.ext4:ro -v "$KERN":/img/zImage:ro \
   -v "$PKG":/pkg/pkg.tar:ro -v "$FLASH":/pkg/flash_script.sh:ro \
   -v "$REPO/tests/audit":/repo/tests/audit:ro -v "$REPO/tools/qemu_test":/repo/tools/qemu_test:ro \
+  -v "$REPO/deployment/apps/servo_service/config.json":/repo/deployment/apps/servo_service/config.json:ro \
   $SIMMOUNT \
   -v "$OUT":/results \
   "$IMAGE" /repo/tools/qemu_test/docker/entry.sh "$@"

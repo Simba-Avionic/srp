@@ -1,5 +1,6 @@
 # pylint: disable=line-too-long,missing-function-docstring,consider-using-f-string,broad-exception-caught,subprocess-run-check,unspecified-encoding,import-outside-toplevel,import-error,redefined-outer-name,unused-variable,too-many-locals
 """Functional scenarios (QEMU, sim build): correct behaviour of the EC apps, must be GREEN on the current code."""
+import json
 import os
 import time
 
@@ -88,11 +89,24 @@ def test_fn06_servo_move_via_someip():
         "FN-06 PCA channel 4 OFF ticks = %s, expected 102 (closed)" % L.pca_off_ticks(4)
 
 
+SERVO_CONFIG = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "deployment", "apps",
+                            "servo_service", "config.json")
+
+
+def _pulsing_channels():
+    """PCA channels of the actuators with pulsing_time_ms in the servo config: their PWM is switched off (0 ticks)
+    between pulses, so 0 is a valid OFF value there (and only there)."""
+    with open(SERVO_CONFIG) as f:
+        return sorted({s["channel"] for s in json.load(f)["servos"] if s.get("pulsing_time_ms")})
+
+
 def test_fn07_servo_positions_in_range():
+    pulsing = _pulsing_channels()
     for ch in range(5):
         t = L.pca_off_ticks(ch)
-        assert t is not None and 102 <= t <= 512, "FN-07 channel %d OFF ticks %s outside 102..512 (PCA mirror: %s)" % (
-            ch, t, L.pca_raw())
+        ok = t is not None and (102 <= t <= 512 or (ch in pulsing and t == 0))
+        assert ok, ("FN-07 channel %d OFF ticks %s outside 102..512 (0 is allowed only on pulsing channels %s, "
+                    "pulsing_time_ms in servo config.json) (PCA mirror: %s)" % (ch, t, pulsing, L.pca_raw()))
 
 
 def test_fn08_logger_writes_file():
