@@ -8,7 +8,7 @@ Właściciel maszyny stanów na EC. SOME/IP `EngineService` (id **518**) przyjmu
 
 ## Opis funkcjonalności
 
-Po starcie czeka 5 s, ładuje `arm_pins` z JSON, znajduje Primer/Servo/SecServo/Main/Logger, przechodzi w `DISARM`.
+Po starcie czeka 5 s, ładuje `arm_pins` z JSON, wyszukuje Primer/Servo/SecServo/Main/Logger, czeka do 20 s na Primer i Servo (bez nich kończy się błędem) i przechodzi w `DISARM`; SecServo/Main/Logger nie są czekane.
 
 Publikuje `CurrentMode` co 1 s i na zmianie stanu. Heartbeat GPIO pin **1**.
 
@@ -20,7 +20,7 @@ Publikuje `CurrentMode` co 1 s i na zmianie stanu. Heartbeat GPIO pin **1**.
 | **DISARM / CONNECTION_LOST** | piny LOW; zamknięcie vent + dump |
 | **LAUNCH** | wątek: `StartPrime` → 1 s → PFS vent open → 450 ms → oxi main open → 7 s → **ABORT** |
 | **APOGEE** | dump + vent open; VS/PFVS/MS zostają HIGH 3.5 s (force), reszta OFF |
-| **ABORT** | close main → close PFS vent → close PFS main → 5 s → reopen main + PFS vent (zrzut) |
+| **ABORT** | close main → 200 ms → close PFS vent → 200 ms → close PFS main → 5 s → reopen main → 200 ms → PFS vent (zrzut); wykonywany tylko gdy znaleziono Servo i SecServo |
 
 Wymaganie ARM: muszą istnieć handlery Primer i Servo.
 
@@ -32,7 +32,7 @@ flowchart TB
   Eng --> FSM[RocketStateController]
   FSM -->|LAUNCH| Primer[PrimerService.StartPrime]
   FSM -->|zawory| Servo[ServoService]
-  FSM -->|etanol| SecServo[SecServoService]
+  FSM -.->|tylko warunek ABORT| SecServo[SecServoService]
   FSM -->|ARM GPIO| GPIO[gpio_server]
   Eng -->|CurrentMode 1 Hz| SOMEIP[SOME/IP 518]
 ```
