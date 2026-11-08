@@ -30,6 +30,7 @@ cc_library(
         "//mw:__subpackages__",
     ],
     deps = [
+        "//core/sim:sim_ctl",
         ":gpio_interface",
         "//core/common:common_types",
         "@srp_platform//ara/log",
