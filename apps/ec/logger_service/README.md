@@ -4,11 +4,12 @@ Pokładowy rejestrator CSV lotu na Engine Computer.
 
 ## TL;DR
 
-`FileLoggerApp` (id **517**): `Start`/`Stop` oraz event `LoggingState`. Po starcie zapisuje co **10 ms** do `/home/root/<timestamp>_log.csv` dane z Env, SysStat, Primer, Servo, Engine, **SecEnv**, **SecServo** i GPIO 1–17.
+`FileLoggerApp` (id **517**): `Start`/`Stop` oraz event `LoggingState`. Zapis rusza dopiero po `Start` (lub DID 16 = 1) i kończy się po `Stop` (DID 16 = 0) albo zamknięciu aplikacji; wtedy co **10 ms** dopisuje wiersz do `/home/root/<czas systemowy>_log.csv` z danymi Env, SysStat, Primer, Servo, Engine, **SecEnv**, **SecServo**, stanem tankowania (Fuel) i GPIO 1–17.
 
 ## Opis funkcjonalności
 
 - Subskrypcja eventów SOME/IP (IPC/UDP) i pinów GPIO.
+- `LoggingState` (0/1) publikowany co 1 s. Heartbeat GPIO pin **2**.
 - Znacznik czasu z `TimestampController` (SHM).
 - DID 16: zapis 0/1 = stop/start.
 - FC ma osobny logger (`FcFileLoggerApp`) z IMU/BME/GPS — ten plik loguje napęd i zawory.
@@ -24,6 +25,7 @@ flowchart TB
   Engine --> L
   SecEnv --> L
   SecServo --> L
+  Fuel[Fuel refuelingState] --> L
   GPIO[piny 1–17] --> L
   L -->|10 ms| CSV[CSVDriver]
   CSV --> File[("/home/root/*_log.csv")]
