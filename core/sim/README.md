@@ -67,7 +67,7 @@ Jak prawdziwy driver: 85.0 / -127.0 są zwracane bez walidacji.
 
 ## UART
 
-`Open` działa na dowolnej ścieżce (np. `/dev/ttyS1`, którego na gościu QEMU nie ma), chyba że ustawiono usterkę. Dane do odczytu to kolejka FIFO per port, wstrzykiwana z `ctl`. `Read` zachowuje się jak prawdziwy driver (`VMIN=0`, `VTIME`): oddaje to, co jest w kolejce (maks. `size`, dla `size == 0` 256 B w `core/uart`, 512 B w `MavUartDriver`), a gdy kolejka jest pusta, śpi do timeoutu z `Open` (dziesiąte części sekundy, domyślnie 1 s) i zwraca `nullopt`. `WaitForData` (tylko `MavUartDriver`) czeka tak samo i zwraca `false` po timeoucie. Każdy `Write` trafia do `events.jsonl` (`"src":"uart","op":"write","port":...,"hex":...`) i do `state/uart/<port>.tx`.
+`Open` działa na dowolnej ścieżce (np. `/dev/ttyS1`, którego na gościu QEMU nie ma), chyba że ustawiono usterkę. Dane do odczytu to kolejka FIFO per port, wstrzykiwana z `ctl`. `Read` zachowuje się jak prawdziwy driver (`VMIN=0`, `VTIME`): oddaje to, co jest w kolejce (maks. `size`, dla `size == 0` tyle, ile ustawia `default_read_size` z `UartConfig`: 256 B dla `Legacy`, 512 B dla `Mavlink`), a gdy kolejka jest pusta, śpi do timeoutu (`vtime` z `UartConfig`, dziesiąte części sekundy, domyślnie 1 s) i zwraca `nullopt`. `WaitForData` czeka tak samo i zwraca `false` po timeoucie. Konfiguracja portu (prędkość, `raw`, `vmin`, `vtime`) trafia do `events.jsonl` (`"op":"config"`). Każdy `Write` trafia do `events.jsonl` (`"src":"uart","op":"write","port":...,"hex":...`) i do `state/uart/<port>.tx`.
 
 ```
 uart <port> rx <hex...>                   # bajty do odczytu (kolejka FIFO), np. ramka MAVLink / NMEA
