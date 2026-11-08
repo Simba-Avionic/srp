@@ -29,6 +29,20 @@ bazel test --test_tag_filters=audit_bugs //...          # wszystkie mają paść
 
 `tools/ut/unittest.sh` (a więc CI) **pomija** testy z tagiem `audit_bugs`.
 
+## Etapy
+
+`qemu_test.sh functional|bugs|all` wykonuje po kolei wszystkie etapy poniżej (zachowanie bez zmian); każdy można uruchomić osobno — tak robi CI, żeby w logu było widać, co padło i ile trwało.
+
+| Komenda | Co robi | Typowy czas |
+|---|---|---|
+| `qemu_test.sh build` | bazel build pakietu EC (sim) + obrazu QEMU, staging artefaktów do katalogu tymczasowego | 1–4 min (cache) |
+| `qemu_test.sh image [--no_cache]` | obraz Dockera testów (pomijany, jeśli już istnieje) | < 1 min |
+| `qemu_test.sh run <functional\|bugs\|all> [--no-build]` | kontener z gościem QEMU, flash, pytest (+ UT `audit_bugs` dla `bugs`), JUnit do `qemu_test_results/`; bez `--no-build` najpierw `build` + `image`; kod wyjścia = wynik `functional` | 12–20 min |
+| `qemu_test.sh report` | podsumowanie Markdown na stdout (tail wyników, tabela F-xx z `make_mapping.py` dla `bugs`) — w CI `>> $GITHUB_STEP_SUMMARY` | < 1 s |
+| `qemu_test.sh cleanup` | zatrzymuje kontenery i usuwa staging | < 1 s |
+
+Etap sprawdza, czy poprzedni zostawił artefakty (np. `run` bez `build` kończy się komunikatem „run build first”). Kontenery sprzątane są w `trap` także po błędzie. Identyfikator biegu: `QEMU_TEST_RUN_ID` (osobne etapy domyślnie `ci`; wersja jednokomendowa używa PID, więc kilka biegów naraz się nie zderza).
+
 ## Zawartość
 
 - `test_functional.py`, `test_bugs.py` — testy pytest (`audit_lib.py`: ssh do gościa, sterowanie driverami sim przez `$SRP_SIM_DIR/ctl`, UDS/DoIP, wywołania SOME/IP).
@@ -43,17 +57,17 @@ bazel test --test_tag_filters=audit_bugs //...          # wszystkie mają paść
 
 ## CI
 
-Workflow: `.github/workflows/qemu_tests.yml`. Woła wyłącznie `tools/qemu_test/qemu_test.sh [functional|bugs]`.
+Workflow: `.github/workflows/qemu_tests.yml`. Każdy job ma osobne kroki (Build EC sim package and QEMU image → Build test container image → Run tests → Summary → Upload results → Cleanup, z `timeout-minutes` per krok) i woła wyłącznie podkomendy `tools/qemu_test/qemu_test.sh` (patrz „Etapy”).
 
 ### Jak uruchomić
 
-- **Label `qemu-tests` na PR** (do `master`): jeden bieg `qemu-functional`. Ponowny bieg: zdjąć i dodać label.
+- **Label `qemu-tests` na PR** (do `master`): jeden bieg `qemu-functional`. **Label `qemu-bugs`**: jeden bieg `qemu-bugs` (informacyjny). Ponowny bieg: zdjąć i dodać label.
 - **Ręcznie:** Actions → „QEMU tests” → Run workflow, `suite` = `functional` (domyślnie) | `bugs` | `all`.
 - Nowy push do PR/brancha anuluje trwający bieg (concurrency per PR/ref). Brak biegu przy zwykłych commitach — to celowe (job ~20–45 min).
 
 ### Co jest informacyjne
 
-- `qemu-bugs` (tylko dispatch `bugs|all`): `continue-on-error`, testy repro są **czerwone z założenia**; tabela F-xx w podsumowaniu joba.
+- `qemu-bugs` (label `qemu-bugs` albo dispatch `bugs|all`): `continue-on-error`, testy repro są **czerwone z założenia**; tabela F-xx w podsumowaniu joba.
 - `qemu-functional`: powinien być zielony; artefakty (JUnit, logi) 7 dni.
 
 ### Required check (admin)
