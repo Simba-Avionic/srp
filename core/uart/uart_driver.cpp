@@ -57,6 +57,11 @@ bool UartDriver::Open(const std::string& portName, const uint32_t& baudrate, con
  * @brief Open UART port with an explicit configuration (see uart_config.hpp for the presets)
  */
 bool UartDriver::Open(const std::string& portName, const UartConfig& config) {
+    if (config.baudrate == B0) {  // B0 = hang up; also what GetBaudrateConstant() returns for an unsupported speed
+        logger_.LogError() << "UartDriver::Open: unsupported baudrate (B0) for " << portName;
+        return false;
+    }
+    Close();
     serial_port = open(portName.c_str(), O_RDWR | O_NOCTTY);
     if (serial_port == -1) {
         return false;
@@ -64,11 +69,13 @@ bool UartDriver::Open(const std::string& portName, const UartConfig& config) {
     config_ = config;
     struct termios tty;
     if (tcgetattr(serial_port, &tty) != 0) {
+        Close();
         return false;
     }
     config.ApplyTo(&tty);
     const int rc = tcsetattr(serial_port, TCSANOW, &tty);
     if (config.fail_on_apply_error && rc != 0) {
+        Close();
         return false;
     }
     return true;
@@ -93,7 +100,15 @@ std::optional<std::vector<uint8_t>> UartDriver::Read(const uint16_t size) {
     return std::nullopt;
 }
 void UartDriver::Close() {
+    if (serial_port < 0) {
+        return;  // not open or already closed
+    }
     close(serial_port);
+    serial_port = -1;
+}
+
+UartDriver::~UartDriver() {
+    Close();
 }
 
 }  // namespace uart

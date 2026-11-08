@@ -1,12 +1,12 @@
 /**
  * @file uart_driver.hpp
  * @author Mateusz Krajewski (matikrajek42@gmail.com)
- * @brief
+ * @brief 
  * @version 0.1
- * @date 2024-12-19
- *
+ * @date 2024-11-11
+ * 
  * @copyright Copyright (c) 2024
- *
+ * 
  */
 #ifndef CORE_UART_UART_DRIVER_HPP_
 #define CORE_UART_UART_DRIVER_HPP_
@@ -33,6 +33,7 @@ class UartDriver: public IUartDriver {
 
  public:
   UartDriver();
+  ~UartDriver() override;
   bool Open(const std::string& portName, const uint32_t& baudrate = B9600, const uint8_t timeout = 10) override;
   bool Open(const std::string& portName, const UartConfig& config) override;
   bool WaitForData(int timeout_ms) override;

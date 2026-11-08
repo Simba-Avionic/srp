@@ -35,6 +35,11 @@ bool UartDriver::Open(const std::string& portName, const uint32_t& baudrate, con
 }
 
 bool UartDriver::Open(const std::string& portName, const UartConfig& config) {
+    if (config.baudrate == B0) {
+        logger_.LogError() << "UartDriver::Open: unsupported baudrate (B0) for " << portName;
+        return false;
+    }
+    Close();
     serial_port = sim::UartSim::Get().Open(portName, config.vtime);
     if (serial_port == -1) {
         return false;
@@ -59,7 +64,15 @@ std::optional<std::vector<uint8_t>> UartDriver::Read(const uint16_t size) {
 }
 
 void UartDriver::Close() {
+    if (serial_port < 0) {
+        return;
+    }
     sim::UartSim::Get().Close(serial_port);
+    serial_port = -1;
+}
+
+UartDriver::~UartDriver() {
+    Close();
 }
 
 }  // namespace uart

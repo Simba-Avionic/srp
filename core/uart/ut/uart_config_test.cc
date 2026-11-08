@@ -6,6 +6,7 @@
  * @copyright Copyright (c) 2025
  */
 #include <gtest/gtest.h>
+#include <fcntl.h>
 #include <pty.h>
 #include <termios.h>
 #include <unistd.h>
@@ -15,6 +16,7 @@
 
 #include "core/uart/mock_uart_driver.hpp"
 #include "core/uart/uart_config.hpp"
+#include "core/uart/uart_driver.hpp"
 
 using srp::core::uart::GetBaudrateConstant;
 using srp::core::uart::UartConfig;
@@ -160,4 +162,57 @@ TEST(UartConfigTest, MockAcceptsConfigOpenAndWaitForData) {
   srp::core::uart::IUartDriver& drv = mock;
   EXPECT_TRUE(drv.Open("/dev/ttyS1", UartConfig::Mavlink(57600)));
   EXPECT_TRUE(drv.WaitForData(250));
+}
+
+namespace {
+bool OpenPty(int* master, int* slave, char* name) {
+  return openpty(master, slave, name, nullptr, nullptr) == 0;
+}
+}  // namespace
+
+TEST(UartDriverTest, OpenRejectsUnsupportedBaudrate) {
+  int master = -1, slave = -1;
+  char name[128];
+  ASSERT_TRUE(OpenPty(&master, &slave, name));
+  srp::core::uart::UartDriver drv;
+  auto cfg = UartConfig::Mavlink(12345);  // not in GetBaudrateConstant() -> B0 (hang up)
+  ASSERT_EQ(cfg.baudrate, static_cast<speed_t>(B0));
+  EXPECT_FALSE(drv.Open(name, cfg));
+  EXPECT_TRUE(drv.Open(name, UartConfig::Mavlink(57600)));  // the same port opens with a valid speed
+  close(master);
+  close(slave);
+}
+
+TEST(UartDriverTest, DoubleCloseDoesNotCloseForeignDescriptor) {
+  int master = -1, slave = -1;
+  char name[128];
+  ASSERT_TRUE(OpenPty(&master, &slave, name));
+  srp::core::uart::UartDriver drv;
+  ASSERT_TRUE(drv.Open(name, UartConfig::Mavlink(57600)));
+  drv.Close();
+  const int foreign = open("/dev/null", O_RDONLY);  // most likely reuses the number just released
+  ASSERT_GE(foreign, 0);
+  drv.Close();  // second Close must be ignored
+  EXPECT_NE(fcntl(foreign, F_GETFD), -1);
+  close(foreign);
+  close(master);
+  close(slave);
+}
+
+TEST(UartDriverTest, DestructorAfterCloseDoesNotCloseForeignDescriptor) {
+  int master = -1, slave = -1;
+  char name[128];
+  ASSERT_TRUE(OpenPty(&master, &slave, name));
+  int foreign = -1;
+  {
+    srp::core::uart::UartDriver drv;
+    ASSERT_TRUE(drv.Open(name, UartConfig::Mavlink(57600)));
+    drv.Close();
+    foreign = open("/dev/null", O_RDONLY);
+    ASSERT_GE(foreign, 0);
+  }  // destructor runs Close() again
+  EXPECT_NE(fcntl(foreign, F_GETFD), -1);
+  close(foreign);
+  close(master);
+  close(slave);
 }
