@@ -4,18 +4,18 @@ Most GS ↔ rakieta po MAVLink (UART). Źródła EC; na platformie **w pakiecie 
 
 ## TL;DR
 
-`FcRadioService` (id **545**) na UART `/dev/ttyS1` @ 57600. RX: heartbeat GS (stan + aktuatory, **4 identyczne ramki**), RADIO_STATUS. TX: HB i max alt co 5 s, GPS co 2 s (tank/computer telem wyłączone). Timeout: 2 min → CONNECTION_LOST, 15 min → ABORT.
+`FcRadioService` (id **545**) na UART `/dev/ttyS1` @ 57600. RX: heartbeat GS (stan + aktuatory, **4 identyczne ramki**), RADIO_STATUS, komendy tankowania (→ FuelService), masa rakiety i ciśnienia zbiorników GSE (→ eventy). TX: HB i max alt co 5 s, GPS co 2 s, status tankowania co 1 s i przy zmianie (tank/computer telem wyłączone). Timeout: 2 min → CONNECTION_LOST, 15 min → ABORT.
 
 ## Opis funkcjonalności
 
 - `MavRadioController` — odczyt/zapis MAVLink.
-- `SomeIPController` — proxy Engine, Main, Servo.
+- `SomeIPController` — proxy Engine, Main, Servo, Fuel, Primer, Env, EnvFc, GPS, Recovery.
 - `TelemetryProvider` — składanie ramek TX.
 - `GSHeartbeatGuard` — watchdog łączności.
 - Przy ARM heartbeat GS może sterować vent/dump.
 - Heartbeat GPIO pin **2**.
 
-**Uwaga:** `deployment/cpu/ec` obecnie nie pakuje tej aplikacji. Używaj dokumentacji FC radio jako wariantu produkcyjnego na locie.
+**Uwaga:** `deployment/cpu/ec/BUILD` pakuje tę aplikację jako `//deployment/apps/radio_app:RadioApp`. Pełniejszy wariant na locie to FC radio.
 
 ## Architektura
 
@@ -36,8 +36,11 @@ flowchart LR
 | Event | ID | Payload |
 |-------|---:|---------|
 | RadioStatusEvent | 32769 | `RadioDataType` |
+| GSEOxidizerTankPressEvent | 32770 | uint16 |
+| GSERocketMassEvent | 32771 | int16 |
+| GSEPressureFeedSystemTankPressEvent | 32772 | uint16 |
 
-Brak metod SOME/IP — komendy idą MAVLink → proxy innych usług.
+Model deklaruje metody `SetGSEOxidizerFillValve` (1) i `SetGSEPFSFillValve` (2) (`uint8` → `bool`), ale `RadioApp` ich nie implementuje; komendy idą MAVLink → proxy innych usług.
 
 ## Timeouty GS
 
