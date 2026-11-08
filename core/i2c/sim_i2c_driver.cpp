@@ -123,16 +123,40 @@ class Bus {
  private:
   Bus() { Reset(); }
 
+  static Device DefaultEeprom() {
+    Device e;
+    e.kind = Kind::kEeprom;
+    e.mem.assign(4096, 0xFF);
+    WriteCfg(&e, 1.0f, {"0b2554dfd2cc", "0b25550c2889", "0b2554e84c21"});
+    return e;
+  }
+
+  /// `i2c reset`: only the state a test injects (ADC voltages, EEPROM config) goes back to the defaults. Registers
+  /// written by the applications (PCA9685 0x70, LSM6DSOX 0x6A, BME280 0x76) stay, like on real hardware.
+  void ResetInjected() {
+    for (auto& v : volts_) {
+      v = 0.0;
+    }
+    devs_[0x50] = DefaultEeprom();
+    Dump(0x50);
+  }
+
+  /// `i2c reset-all`: the whole model back to power-on state; the state files of all devices with memory are rewritten.
+  void ResetAll() {
+    Reset();
+    for (const auto& d : devs_) {
+      if (!d.second.mem.empty()) {
+        Dump(d.first);
+      }
+    }
+  }
+
   void Reset() {
     devs_.clear();
     for (auto& v : volts_) {
       v = 0.0;
     }
-    Device e;
-    e.kind = Kind::kEeprom;
-    e.mem.assign(4096, 0xFF);
-    WriteCfg(&e, 1.0f, {"0b2554dfd2cc", "0b25550c2889", "0b2554e84c21"});
-    devs_[0x50] = e;
+    devs_[0x50] = DefaultEeprom();
     Device a;
     a.kind = Kind::kAds;
     devs_[0x48] = a;
@@ -189,7 +213,9 @@ class Bus {
         }
         c.applied = true;
         if (op == "reset") {
-          Reset();
+          ResetInjected();
+        } else if (op == "reset-all") {
+          ResetAll();
         } else if (op == "adc" && c.tok.size() >= 4) {
           volts_[ParseInt(c.tok[2]) & 7] = std::stod(c.tok[3]);
         } else if (op == "mem" && c.tok.size() >= 5) {

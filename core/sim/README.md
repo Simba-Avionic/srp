@@ -46,7 +46,8 @@ i2c adc <kanał 0-7> <wolty>                 # ADS7828, 12 bit, Vref 3.3 V; poza
 i2c mem <addr> <offset> <hex...>            # zapis pamięci urządzenia (rejestry, bajty EEPROM)
 i2c eeprom-cfg <xo|nan> <id1> <id2> <id3>   # EEPROM_config: pca9685_XO_corelation + 3 id czujników temp
 i2c fault <addr> nack|timeout [count N]     # nack: błąd od razu; timeout: 1.5 s, potem błąd
-i2c reset                                   # domyślna zawartość urządzeń i napięcia
+i2c reset                                   # tylko stan wstrzykiwany: napięcia ADC = 0, EEPROM 0x50 = domyślna konfiguracja
+i2c reset-all                               # cały model (także rejestry PCA/LSM/BME) do stanu początkowego
 ```
 
 Domyślnie EEPROM ma poprawny `EEPROM_config` (bez niego `servo_driver` kończy proces), napięcia ADC = 0 V.
@@ -99,6 +100,7 @@ Przykład (heartbeat MAVLink v1 w kolejce RX radia): `uart /dev/ttyS1 rx fe 09 0
 ## Różnice względem prawdziwych driverów
 
 - GPIO: usterka `fault … set` jest zużywana przez `initializePin`, `setValue` i `setDirection` (wszystkie zapisują w sysfs); `initializePin` i `setDirection` zwracają wtedy `kError`. Usterka odczytu zwraca `static_cast<uint8_t>(ErrorCode::kError)` (= 2), tak jak realny `getValue`.
+- I2C: `i2c reset` przywraca tylko stan wstrzykiwany z testu (napięcia ADC = 0, EEPROM 0x50 = domyślna konfiguracja) i nie kasuje rejestrów zapisanych przez aplikacje (PCA9685 0x70, LSM6DSOX 0x6A, BME280 0x76), jak prawdziwy układ; `i2c reset-all` przywraca cały model i przepisuje pliki stanu.
 - I2C: usterka w `Write(vector)` i `PageWrite` daje `kInitializeError`, w `Write(uint8)` — `kConnectionError` (jak `core/i2c/i2c_driver.cpp`). `Read(0)` zwraca pusty wektor.
 - UART: sim honoruje `timeout` z `Open` (deterministyczne czasy w testach); realny driver ignoruje ten parametr i ma `VTIME=10` na sztywno — rozbieżność do oceny przez testera.
 - Temp: czas konwersji (`conv_ms`) jest stały (250 ms), niezależny od rozdzielczości.
