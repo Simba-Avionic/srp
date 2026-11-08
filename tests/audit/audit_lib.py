@@ -35,14 +35,15 @@ def sim_ctl(*lines):
     time.sleep(1.2)
     if lines:
         body = "\n".join(lines) + "\n"
-        subprocess.run(SSH + ["cat > %s/ctl" % SIM], input=body, text=True, capture_output=True, timeout=30)
+        subprocess.run(SSH + ["cat > %s/ctl.tmp && mv %s/ctl.tmp %s/ctl" % (SIM, SIM, SIM)], input=body, text=True, capture_output=True, timeout=30)
     time.sleep(0.8)
 
 
 def sim_reset():
     ssh(": > %s/events.jsonl" % SIM)
+    # the reset lines stay in ctl until the next sim_ctl (a process that does no I2C/temp op in a short
+    # window would otherwise never apply them)
     sim_ctl("i2c reset", "temp reset")
-    ssh("rm -f %s/ctl" % SIM)
     time.sleep(1.2)
 
 

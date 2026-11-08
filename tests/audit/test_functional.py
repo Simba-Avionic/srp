@@ -8,8 +8,7 @@ import audit_lib as L
 
 pytestmark = pytest.mark.functional
 
-EXPECTED = ("em state_manager diag_demon logger someip_demon timestamp_servi i2cMWService gpio_service "
-            "temp_service servoService EngineService EnvApp FileLoggerApp SysStatService PrimerService").split()
+EXPECTED = L.EXPECTED
 CONSOLE_LOG = os.path.join(os.environ.get("QEMU_TEST_WORK", "/tmp/qemu_test"), "logs", "qemu.log")
 
 
