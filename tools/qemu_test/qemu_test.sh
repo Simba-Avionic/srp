@@ -42,14 +42,28 @@ BZFLAGS="${QEMU_TEST_BAZEL_FLAGS:-}"
 CACHE_FLAG=""
 [ "$NO_CACHE" = 1 ] && CACHE_FLAG="--nocache_test_results"
 
+# unique run names: parallel runs (several clones / CI jobs) must not share container names or result dirs
+RUN_ID="$$"
 cleanup() {
-  docker ps -q --filter label=srp-qemu-test=1 | xargs -r docker stop > /dev/null 2>&1
+  for n in "functional-$RUN_ID" "bugs-$RUN_ID"; do docker stop "srp-qemu-test-$n" > /dev/null 2>&1; done
+  rm -rf "$OUT/stage-$RUN_ID"
 }
 trap cleanup EXIT
 
 echo "== build: EC package (sim) + QEMU image =="
 bazel build $BZFLAGS --config=bbb-platform --define build_mode=sim \
   //deployment/cpu/ec:pkg //deployment/tools/ecu:flash_ec @srp_platform//tools/qemu || exit 1
+# sim and sprzet builds share one bazel-bin dir (the --define does not change it), so another bazel command could
+# overwrite pkg.tar between the build and the guest start: stage the artifacts right after the build
+BIN="$(bazel info $BZFLAGS --config=bbb-platform --define build_mode=sim bazel-bin 2> /dev/null)"
+STAGE="$OUT/stage-$$"
+QIMG="external/srp_platform/tools/qemu/qemu.runfiles/srp/external/qemu_image"
+rm -rf "$STAGE"
+mkdir -p "$STAGE/deployment/cpu/ec" "$STAGE/deployment/tools/ecu" "$STAGE/$(dirname "$QIMG")"
+cp -L "$BIN/deployment/cpu/ec/pkg.tar" "$STAGE/deployment/cpu/ec/pkg.tar" || exit 1
+cp -L "$BIN/deployment/tools/ecu/flash_script.sh" "$STAGE/deployment/tools/ecu/flash_script.sh" || exit 1
+ln -s "$(readlink -f "$BIN/$QIMG")" "$STAGE/$QIMG" || exit 1   # the QEMU image does not depend on the sim define
+export QEMU_TEST_BAZEL_BIN="$STAGE"
 if [ "$NO_CACHE" = 1 ] || ! docker image inspect "${QEMU_TEST_IMAGE:-srp-qemu-test:latest}" > /dev/null 2>&1; then
   echo "== build: docker image =="
   "$RUNNER" build || exit 1
@@ -62,22 +76,22 @@ BUGS_SUMMARY=""
 if [ "$MODE" = functional ] || [ "$MODE" = all ]; then
   echo "== functional: QEMU guest in docker =="
   START=$SECONDS
-  "$RUNNER" run functional functional > "$OUT/functional.q.txt" 2>&1
+  "$RUNNER" run "functional-$RUN_ID" functional > "$OUT/functional.q.txt" 2>&1
   FUNC_RC=$?
-  cp -f "$OUT/functional/functional.xml" "$OUT/functional.q.xml" 2> /dev/null
+  cp -f "$OUT/functional-$RUN_ID/functional.xml" "$OUT/functional.q.xml" 2> /dev/null
   tail -n 15 "$OUT/functional.q.txt"
   FUNC_SUMMARY="functional: rc=$FUNC_RC in $((SECONDS - START)) s ($(grep -E ' passed| failed' "$OUT/functional.q.txt" | tail -n 1))"
 fi
 
 if [ "$MODE" = bugs ] || [ "$MODE" = all ]; then
   echo "== bugs: unit tests with tag audit_bugs (expected RED) =="
-  UT_TARGETS="$(bazel query 'attr(tags, "audit_bugs", kind(cc_test, //...))' 2> /dev/null) //mw/i2c_service/tests:adcsensor_test"
+  UT_TARGETS="$(bazel query 'attr(tags, "audit_bugs", kind(cc_test, //...))' 2> /dev/null)"
   # shellcheck disable=SC2086
   bazel test $BZFLAGS $CACHE_FLAG --keep_going --test_output=errors $UT_TARGETS > "$OUT/bugs.ut.log" 2>&1
   grep -E '^//.*(PASSED|FAILED)|Executed' "$OUT/bugs.ut.log"
   echo "== bugs: QEMU guest in docker (expected RED) =="
-  "$RUNNER" run bugs bugs > "$OUT/bugs.q.txt" 2>&1
-  cp -f "$OUT/bugs/bugs.xml" "$OUT/bugs.q.xml" 2> /dev/null
+  "$RUNNER" run "bugs-$RUN_ID" bugs > "$OUT/bugs.q.txt" 2>&1
+  cp -f "$OUT/bugs-$RUN_ID/bugs.xml" "$OUT/bugs.q.xml" 2> /dev/null
   python3 "$REPO/tools/qemu_test/make_mapping.py" "$REPO" > "$OUT/mapping.md"
   BUGS_SUMMARY="bugs (informational): $(grep -c 'RED (potwierdzone)' "$OUT/mapping.md") reproduced, $(grep -c 'PASS (nieoczekiwane' "$OUT/mapping.md") unexpectedly green (fixed?), $(grep -c 'FALSE ALARM' "$OUT/mapping.md") harness problems; see qemu_test_results/mapping.md"
 fi

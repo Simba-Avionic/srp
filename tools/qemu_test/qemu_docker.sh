@@ -26,17 +26,20 @@ case "$cmd" in
 esac
 
 NAME="${1:?name required}"; shift
+[[ "$NAME" =~ ^[A-Za-z0-9_-]+$ ]] || { echo "invalid run name: $NAME" >&2; exit 2; }
 [ $# -ge 1 ] || set -- functional
 RUNNING=$(docker ps -q --filter label=srp-qemu-test=1 | wc -l)
 if [ "$RUNNING" -ge "$MAX" ]; then echo "refusing: $RUNNING containers already running (max $MAX)" >&2; exit 3; fi
 docker image inspect "$IMAGE" >/dev/null 2>&1 || { echo "image $IMAGE missing: run '$0 build'" >&2; exit 4; }
 
 ART="${QEMU_TEST_ARTIFACTS_REPO:-$REPO}"
-QRUN="$ART/bazel-bin/external/srp_platform/tools/qemu/qemu.runfiles/srp/external/qemu_image"
+# bazel-bin points to the output dir of the LAST bazel configuration; qemu_test.sh passes the sim one explicitly
+BIN="${QEMU_TEST_BAZEL_BIN:-$ART/bazel-bin}"
+QRUN="$BIN/external/srp_platform/tools/qemu/qemu.runfiles/srp/external/qemu_image"
 DISK="$(readlink -f "$(ls "$QRUN"/*.ext4 | head -1)")"
 KERN="$(readlink -f "$(ls "$QRUN"/zImage* | head -1)")"
-PKG="$(readlink -f "$ART/bazel-bin/deployment/cpu/ec/pkg.tar")"
-FLASH="$(readlink -f "$ART/bazel-bin/deployment/tools/ecu/flash_script.sh")"
+PKG="$(readlink -f "$BIN/deployment/cpu/ec/pkg.tar")"
+FLASH="$(readlink -f "$BIN/deployment/tools/ecu/flash_script.sh")"
 for p in "$DISK" "$KERN" "$PKG" "$FLASH"; do [ -e "$p" ] || { echo "missing build artefact: $p" >&2; exit 5; }; done
 OUT="$REPO/qemu_test_results/$NAME"
 mkdir -p "$REPO/qemu_test_results"
