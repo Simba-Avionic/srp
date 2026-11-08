@@ -1,6 +1,6 @@
 # sim
 
-Wspólny kanał sterowania driverami symulacyjnymi (`--define build_mode=sim`): `core/gpio`, `core/i2c`, `core/temp`.
+Wspólny kanał sterowania driverami symulacyjnymi (`--define build_mode=sim`): `core/gpio`, `core/i2c`, `core/temp`, `core/uart`.
 
 ## TL;DR
 
@@ -13,13 +13,14 @@ Katalog `$SRP_SIM_DIR` (domyślnie `/tmp/srpsim`) na urządzeniu/gościu QEMU.
 | Ścieżka | Kierunek | Opis |
 |---|---|---|
 | `ctl` | test → driver | polecenia, 1 na linię, `#` = komentarz; plik jest czytany ponownie przy każdej zmianie |
-| `events.jsonl` | driver → test | dziennik (JSON lines): `{"t":<ms epoch>,"src":"gpio\|i2c\|temp",...}` |
+| `events.jsonl` | driver → test | dziennik (JSON lines): `{"t":<ms epoch>,"src":"gpio\|i2c\|temp\|uart",...}` |
 | `state/gpio/<pin>` | driver → test | aktualna wartość pinu (`0`/`1`) |
 | `state/i2c/0x<addr>.hex` | driver → test | zrzut pamięci urządzenia (hex) po każdym zapisie wielobajtowym |
+| `state/uart/<port>.tx` | driver → test | bajty zapisane do portu, hex, 1 linia na `Write` (`<port>` bez `/`, `/` → `_`, np. `dev_ttyS1.tx`) |
 
 Reguły `ctl`:
 
-- Settery (`value`, `adc`, `mem`, `eeprom-cfg`, wartości czujników, `list`, `reset`) działają raz, gdy linia pojawi się pierwszy raz. Zmiana wartości = nowa linia.
+- Settery (`value`, `adc`, `mem`, `eeprom-cfg`, wartości czujników, `list`, `rx`, `rx-file`, `reset`) działają raz, gdy linia pojawi się pierwszy raz. Zmiana wartości = nowa linia.
 - Usterki (`fault`) działają, dopóki linia jest w pliku; `count N` ogranicza liczbę zadziałań.
 - Prefiks `after <ms>` opóźnia linię o podaną liczbę ms.
 - Deterministycznie: brak losowości, jedyny czas to `after`.
@@ -63,6 +64,20 @@ temp reset                  # domyślna lista
 
 Jak prawdziwy driver: 85.0 / -127.0 są zwracane bez walidacji.
 
+## UART
+
+`Open` działa na dowolnej ścieżce (np. `/dev/ttyS1`, którego na gościu QEMU nie ma), chyba że ustawiono usterkę. Dane do odczytu to kolejka FIFO per port, wstrzykiwana z `ctl`. `Read` zachowuje się jak prawdziwy driver (`VMIN=0`, `VTIME`): oddaje to, co jest w kolejce (maks. `size`, dla `size == 0` 256 B w `core/uart`, 512 B w `MavUartDriver`), a gdy kolejka jest pusta, śpi do timeoutu z `Open` (dziesiąte części sekundy, domyślnie 1 s) i zwraca `nullopt`. `WaitForData` (tylko `MavUartDriver`) czeka tak samo i zwraca `false` po timeoucie. Każdy `Write` trafia do `events.jsonl` (`"src":"uart","op":"write","port":...,"hex":...`) i do `state/uart/<port>.tx`.
+
+```
+uart <port> rx <hex...>                   # bajty do odczytu (kolejka FIFO), np. ramka MAVLink / NMEA
+uart <port> rx-file <ścieżka>             # zawartość pliku (na gościu) do odczytu, np. strumień MAVLink
+uart <port> fault open|read|write [count N]   # Open -> false; Read -> nullopt; Write -> kConnectionError
+uart <port> timeout                       # Read/WaitForData ignorują kolejkę i kończą się timeoutem (nullopt/false)
+uart reset                                # czyści kolejki RX wszystkich portów
+```
+
+Przykład (heartbeat MAVLink v1 w kolejce RX radia): `uart /dev/ttyS1 rx fe 09 00 ff be 00 00 00 00 00 06 08 00 04 03 49 21`.
+
 ## QEMU
 
 1. `bazel run @srp_platform//tools/qemu -- --console` (sieć `tap0` wg `@srp_platform//tools/qemu`).
@@ -72,4 +87,4 @@ Jak prawdziwy driver: 85.0 / -127.0 są zwracane bez walidacji.
 
 ## BUILD
 
-- `//core/sim:sim_ctl`
+- `//core/sim:sim_ctl` (zawiera też `sim_uart.hpp`)
