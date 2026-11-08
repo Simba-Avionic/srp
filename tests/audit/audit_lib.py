@@ -87,21 +87,44 @@ def gpio_sets(pin_id, since_ms=0):
     return [e for e in events("gpio", since_ms) if e.get("op") == "set" and e.get("pin") == n]
 
 
-def pca_off_ticks(channel):
-    h = ssh("cat %s/state/i2c/0x70.hex" % SIM).strip()
-    b = bytes.fromhex(h) if h else b""
-    if len(b) < 0x0A + 4 * channel:
-        return None
-    return b[0x08 + 4 * channel] | (b[0x09 + 4 * channel] << 8)
+def pca_raw():
+    """Raw hex of the PCA9685 register mirror (for failure messages)."""
+    return ssh("cat %s/state/i2c/0x70.hex" % SIM).strip()
 
 
-def processes():
-    out = ssh("ps")
+def pca_off_ticks(channel, tries=3):
+    """OFF ticks of a PCA9685 channel from the sim mirror; the read is retried when the sample is incomplete
+    (ssh hiccup on a loaded guest)."""
+    for i in range(tries):
+        try:
+            h = pca_raw()
+        except Exception:
+            h = ""
+        b = bytes.fromhex(h) if h else b""
+        if len(b) >= 0x0A + 4 * channel:
+            return b[0x08 + 4 * channel] | (b[0x09 + 4 * channel] << 8)
+        time.sleep(0.5)
+    return None
+
+
+def processes(tries=3):
+    """{comm: [pid, ...]} from `ps` on the guest. An incomplete sample (ssh failure, truncated output - a booted
+    guest has well over 10 processes) is retried, the last sample is returned if all tries are incomplete."""
     res = {}
-    for line in out.splitlines()[1:]:
-        p = line.split()
-        if len(p) >= 4:
-            res.setdefault(p[3], []).append(p[0])
+    for i in range(tries):
+        try:
+            out = ssh("ps")
+        except Exception:
+            out = ""
+        lines = out.splitlines()
+        res = {}
+        for line in lines[1:]:
+            p = line.split()
+            if len(p) >= 4:
+                res.setdefault(p[3], []).append(p[0])
+        if lines and "PID" in lines[0] and len(lines) >= 10:
+            return res
+        time.sleep(1)
     return res
 
 

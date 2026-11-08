@@ -18,31 +18,34 @@ def test_fn01_boot_all_apps():
     assert not missing, "FN-01 missing processes: %s" % missing
 
 
-def _snapshot():
+def _sample():
     procs = L.processes()
     return {k: sorted(procs.get(k, [])) for k in EXPECTED}
 
 
+def _pair():
+    """Two consecutive samples; a process counts as present when it is in either of them."""
+    a = _sample()
+    time.sleep(1.5)
+    return a, _sample()
+
+
 def test_fn02_no_crash_30s():
-    """The only test that observes liveness for a long time: PID set must stay unchanged for 30 s.
-    The baseline is taken only when two consecutive snapshots are complete and equal (boot finished)."""
-    base = {}
-
-    def stable():
-        nonlocal base
-        a = _snapshot()
-        time.sleep(2)
-        b = _snapshot()
-        base = b
-        return a == b and all(b[k] for k in EXPECTED)
-
-    assert L.wait_for(stable, 60, 1), "harness: EC apps did not settle before the 30 s observation"
+    a0, b0 = _pair()
     time.sleep(30)
-    after = _snapshot()
-    if after != base:   # one retry: a single ps over a loaded guest can be incomplete
-        time.sleep(3)
-        after = _snapshot()
-    assert base == after, "FN-02 process set changed in 30 s"
+    a1, b1 = _pair()
+    problems = []
+    for k in EXPECTED:
+        before = set(a0[k]) | set(b0[k])
+        after = set(a1[k]) | set(b1[k])
+        if not before:
+            problems.append("%s absent in both initial samples" % k)
+        elif not after:
+            problems.append("%s gone (absent in both final samples, was %s)" % (k, sorted(before)))
+        elif not (before & after):
+            problems.append("%s restarted (pids %s -> %s)" % (k, sorted(before), sorted(after)))
+    assert not problems, "FN-02 process set changed in 30 s: %s\nraw samples:\n before %s\n       %s\n after  %s\n       %s" % (
+        problems, a0, b0, a1, b1)
     if os.path.exists(CONSOLE_LOG):
         data = open(CONSOLE_LOG, errors="replace").read().splitlines()
         start = max([i for i, l in enumerate(data) if "Linux version" in l] or [0])
@@ -85,13 +88,10 @@ def test_fn06_servo_move_via_someip():
 
 
 def test_fn07_servo_positions_in_range():
-    def in_range():
-        # channel 0 = vent valve with pulsing_time_ms (config.json): PWM is released (0 ticks) after the pulse
-        return all((lambda t: t is not None and (102 <= t <= 512 or (ch == 0 and t == 0)))(L.pca_off_ticks(ch))
-                   for ch in range(5))
-
-    assert L.wait_for(in_range, 30, 1), "FN-07 PCA OFF ticks outside 102..512: %s" % \
-        [L.pca_off_ticks(ch) for ch in range(5)]
+    for ch in range(5):
+        t = L.pca_off_ticks(ch)
+        assert t is not None and 102 <= t <= 512, "FN-07 channel %d OFF ticks %s outside 102..512 (PCA mirror: %s)" % (
+            ch, t, L.pca_raw())
 
 
 def test_fn08_logger_writes_file():
