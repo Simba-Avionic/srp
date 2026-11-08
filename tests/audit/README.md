@@ -40,3 +40,24 @@ bazel test --test_tag_filters=audit_bugs //...          # wszystkie mają paść
 - Gość startuje z `-accel tcg,thread=multi`; obraz dysku jest tylko do odczytu (`snapshot=on`), zmiany znikają po wyłączeniu.
 - `bugs` w pytest restartują gościa po teście (wątki sekwencji LAUNCH, `std::terminate` w EnvApp), dlatego trwają dłużej niż `functional`.
 - Tylko jeden test (`fn02`) obserwuje żywotność aplikacji przez dłuższy czas; pozostałe czekają na warunek.
+
+## CI
+
+Workflow: `.github/workflows/qemu_tests.yml`. Woła wyłącznie `tools/qemu_test/qemu_test.sh [functional|bugs]`.
+
+### Jak uruchomić
+
+- **Label `qemu-tests` na PR** (do `master`): jeden bieg `qemu-functional`. Ponowny bieg: zdjąć i dodać label.
+- **Ręcznie:** Actions → „QEMU tests” → Run workflow, `suite` = `functional` (domyślnie) | `bugs` | `all`.
+- Nowy push do PR/brancha anuluje trwający bieg (concurrency per PR/ref). Brak biegu przy zwykłych commitach — to celowe (job ~20–45 min).
+
+### Co jest informacyjne
+
+- `qemu-bugs` (tylko dispatch `bugs|all`): `continue-on-error`, testy repro są **czerwone z założenia**; tabela F-xx w podsumowaniu joba.
+- `qemu-functional`: powinien być zielony; artefakty (JUnit, logi) 7 dni.
+
+### Required check (admin)
+
+Check `QEMU functional` istnieje tylko po dodaniu labela, więc ustawienie go jako *required* zablokuje każdy PR bez labela (check „oczekuje” w nieskończoność). Opcje:
+1. Zostawić opt-in (rekomendowane na start) — sprawdza reviewer przed merge.
+2. Gdy przejdziemy na pełne triggery (`on: pull_request` bez `labeled`, ewentualnie `merge_group`), dodać w Settings → Rules → Rulesets (target `master`) „Require status checks” z `QEMU functional`.
