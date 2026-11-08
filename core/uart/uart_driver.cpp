@@ -11,6 +11,9 @@
 
 #include <fcntl.h>
 #include <poll.h>
+#include <sys/eventfd.h>
+#include <chrono>  // NOLINT
+#include <stop_token>  // NOLINT
 #include <unistd.h>
 #include <termios.h>
 #include <errno.h>
@@ -81,12 +84,49 @@ bool UartDriver::Open(const std::string& portName, const UartConfig& config) {
     return true;
 }
 
-bool UartDriver::WaitForData(int timeout_ms) {
-    struct pollfd fds[1];
-    fds[0].fd = serial_port;
-    fds[0].events = POLLIN;
-    const int ret = poll(fds, 1, timeout_ms);
-    return ret > 0 && (fds[0].revents & POLLIN);
+bool UartDriver::WaitForData(std::chrono::milliseconds timeout, const std::stop_token& stoken) {
+    if (stoken.stop_requested()) {
+        return false;
+    }
+    // eventfd budzony przez stop_callback (per wywolanie, zamykany przed wyjsciem - bez wycieku fd)
+    const int efd = eventfd(0, EFD_CLOEXEC);
+    if (efd < 0) {
+        return false;
+    }
+    bool has_data = false;
+    {
+        const std::stop_callback wake{stoken, [efd]() {
+            const uint64_t one = 1;
+            const ssize_t unused = write(efd, &one, sizeof(one));
+            static_cast<void>(unused);
+        }};
+        const auto deadline = std::chrono::steady_clock::now() + timeout;
+        while (true) {
+            const auto left = std::chrono::duration_cast<std::chrono::milliseconds>(
+                deadline - std::chrono::steady_clock::now()).count();
+            if (left < 0) {
+                break;
+            }
+            struct pollfd fds[2];
+            fds[0].fd = serial_port;
+            fds[0].events = POLLIN;
+            fds[0].revents = 0;
+            fds[1].fd = efd;
+            fds[1].events = POLLIN;
+            fds[1].revents = 0;
+            const int ret = poll(fds, 2, static_cast<int>(left));
+            if (ret < 0 && errno == EINTR) {
+                continue;
+            }
+            if (ret <= 0 || (fds[1].revents & POLLIN)) {
+                break;  // blad, timeout albo stop
+            }
+            has_data = (fds[0].revents & POLLIN) != 0;
+            break;
+        }
+    }
+    close(efd);
+    return has_data && !stoken.stop_requested();
 }
 
 std::optional<std::vector<uint8_t>> UartDriver::Read(const uint16_t size) {

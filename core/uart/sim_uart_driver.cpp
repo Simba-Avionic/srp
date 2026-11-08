@@ -55,8 +55,8 @@ bool UartDriver::Open(const std::string& portName, const UartConfig& config) {
     return true;
 }
 
-bool UartDriver::WaitForData(int timeout_ms) {
-    return sim::UartSim::Get().WaitForData(serial_port, timeout_ms);
+bool UartDriver::WaitForData(std::chrono::milliseconds timeout, const std::stop_token& stoken) {
+    return sim::UartSim::Get().WaitForData(serial_port, timeout, stoken);
 }
 
 std::optional<std::vector<uint8_t>> UartDriver::Read(const uint16_t size) {

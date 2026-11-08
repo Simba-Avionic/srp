@@ -28,7 +28,7 @@ void MavRadioController::RxThreadLoop(const std::stop_token& t) {
   mavlink_message_t msg;
   mavlink_status_t status;
   while (!t.stop_requested()) {
-    if (!uart_->WaitForData(250)) {
+    if (!uart_->WaitForData(std::chrono::milliseconds(250), t)) {
       continue;
     }
     auto bytes_opt = uart_->Read(0);
