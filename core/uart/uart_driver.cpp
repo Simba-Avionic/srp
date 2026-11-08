@@ -1,15 +1,16 @@
 /**
  * @file uart_driver.cpp
  * @author Mateusz Krajewski (matikrajek42@gmail.com)
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2024-12-19
- * 
+ *
  * @copyright Copyright (c) 2024
- * 
+ *
  */
 
 #include <fcntl.h>
+#include <poll.h>
 #include <unistd.h>
 #include <termios.h>
 #include <errno.h>
@@ -33,61 +34,60 @@ core::ErrorCode UartDriver::Write(const std::vector<uint8_t>& data) {
     if (n < 0) {
         return core::ErrorCode::kConnectionError;
     }
-    if (n != data.size()) {
+    if (static_cast<size_t>(n) != data.size()) {
         return core::ErrorCode::kError;
     }
     return core::ErrorCode::kOk;
 }
 
 /**
- * @brief Open UART port
- * 
- * @param portName 
- * @param baudrate 
- * @param timeout  // value in deciseconds
- * @return true 
- * @return false 
+ * @brief Open UART port with the legacy (canonical) configuration
+ *
+ * @param portName
+ * @param baudrate termios constant (B9600, B115200, ...)
+ * @param timeout  ignored as before (VTIME is fixed by UartConfig::Legacy())
+ * @return true
+ * @return false
  */
-bool UartDriver::Open(const std::string& portName, const uint32_t& baudrate, const uint8_t timeout) {
+bool UartDriver::Open(const std::string& portName, const uint32_t& baudrate, const uint8_t /*timeout*/) {
+    return Open(portName, UartConfig::Legacy(baudrate));
+}
+
+/**
+ * @brief Open UART port with an explicit configuration (see uart_config.hpp for the presets)
+ */
+bool UartDriver::Open(const std::string& portName, const UartConfig& config) {
     serial_port = open(portName.c_str(), O_RDWR | O_NOCTTY);
     if (serial_port == -1) {
         return false;
     }
+    config_ = config;
     struct termios tty;
     if (tcgetattr(serial_port, &tty) != 0) {
         return false;
     }
-    cfsetospeed(&tty, baudrate);
-    cfsetispeed(&tty, baudrate);
-    tty.c_cflag &= ~PARENB;  // Brak parzystości
-    tty.c_cflag &= ~CSTOPB;  // Jeden bit stopu
-    tty.c_cflag &= ~CSIZE;
-    tty.c_cflag |= CS8;  // 8 bitów danych
-    tty.c_cflag &= ~CRTSCTS;  // Brak kontroli sprzętowej
-    tty.c_cflag |= CREAD | CLOCAL;
-
-    // TODO(matikrjek42@gmail.com) test that with this work better
-    // tty.c_lflag &= ~ISIG; // Disable interpretation of INTR, QUIT and SUSP
-    // tty.c_lflag &= ~ECHO; // Disable echo
-    // tty.c_lflag &= ~ECHOE; // Disable erasure
-    // tty.c_lflag &= ~ECHONL; // Disable new-line echo
-    // tty.c_iflag &= ~(IXON | IXOFF | IXANY); // Turn off s/w flow ctrl
-// tty.c_iflag &= ~(IGNBRK|BRKINT|PARMRK|ISTRIP|INLCR|IGNCR|ICRNL);// Disable any special handling of received bytes
-    // tty.c_oflag &= ~OPOST; // Prevent special interpretation of output bytes (e.g. newline chars)
-    // tty.c_oflag &= ~ONLCR; // Prevent conversion of newline to carriage return/line feed
-
-
-    tty.c_cc[VTIME] = 10;    // Wait for up to 1s (10 deciseconds), returning as soon as any data is received.
-    tty.c_cc[VMIN] = 0;
-    tcsetattr(serial_port, TCSANOW, &tty);
+    config.ApplyTo(&tty);
+    const int rc = tcsetattr(serial_port, TCSANOW, &tty);
+    if (config.fail_on_apply_error && rc != 0) {
+        return false;
+    }
     return true;
 }
+
+bool UartDriver::WaitForData(int timeout_ms) {
+    struct pollfd fds[1];
+    fds[0].fd = serial_port;
+    fds[0].events = POLLIN;
+    const int ret = poll(fds, 1, timeout_ms);
+    return ret > 0 && (fds[0].revents & POLLIN);
+}
+
 std::optional<std::vector<uint8_t>> UartDriver::Read(const uint16_t size) {
-    uint8_t read_buf[256];
-    int n = read(serial_port, read_buf, ((size == 0) ? sizeof(read_buf) : size));
+    const size_t bytes_to_read = (size == 0) ? config_.default_read_size : size;
+    std::vector<uint8_t> res(bytes_to_read);
+    const ssize_t n = read(serial_port, res.data(), res.size());
     if (n > 0) {
-        std::vector<uint8_t> res(n);
-        std::memcpy(res.data(), read_buf, n);
+        res.resize(n);
         return res;
     }
     return std::nullopt;
