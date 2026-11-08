@@ -7,7 +7,7 @@
  *   ctl            - polecenia (1 na linie), czytane ponownie przy zmianie pliku
  *   events.jsonl   - dziennik zdarzen (JSON lines, dopisywany)
  *   state/...      - aktualny stan (gpio/<pin>, i2c/<addr>.hex)
- * Skladnia polecen i opis: docs/audit/sim_drivers.md
+ * Skladnia polecen i opis: core/sim/README.md
  * Deterministycznie: brak losowosci; czas tylko z "after <ms>" liczony od
  * momentu pierwszego zobaczenia linii przez dany proces.
  */
@@ -19,15 +19,18 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include <cctype>
 #include <chrono>  // NOLINT
 #include <cstdint>
 #include <cstdio>
 #include <cstdlib>
 #include <fstream>
+#include <iterator>
 #include <functional>
 #include <mutex>  // NOLINT
 #include <optional>
 #include <sstream>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -50,7 +53,7 @@ inline int64_t WallMs() {
       std::chrono::system_clock::now().time_since_epoch()).count();
 }
 
-inline void MkDirs(const std::string& path) {
+inline void MkDirsAlways(const std::string& path) {
   std::string cur;
   for (size_t i = 0; i <= path.size(); ++i) {
     if (i == path.size() || path[i] == '/') {
@@ -61,6 +64,15 @@ inline void MkDirs(const std::string& path) {
     if (i < path.size()) {
       cur += path[i];
     }
+  }
+}
+
+/// mkdir -p, ale bez ponawiania dla tej samej sciezki w tym watku (Event/WriteState wolane bardzo czesto).
+inline void MkDirs(const std::string& path) {
+  thread_local std::string last;
+  if (last != path) {
+    MkDirsAlways(path);
+    last = path;
   }
 }
 
@@ -81,7 +93,7 @@ inline void Event(const std::string& src, const std::string& fields) {
 inline void WriteState(const std::string& rel, const std::string& content) {
   const std::string full = Dir() + "/state/" + rel;
   MkDirs(full.substr(0, full.rfind('/')));
-  const std::string tmp = full + ".tmp";
+  const std::string tmp = full + "." + std::to_string(::getpid()) + ".tmp";
   {
     std::ofstream f(tmp, std::ios::trunc);
     f << content;
@@ -99,7 +111,18 @@ inline std::string Hex(const std::vector<uint8_t>& v) {
   return s;
 }
 
-/// Hex ("0a0b", "0x0a 0b") -> bajty.
+/// Calosc tokenu jako liczba (base 10 albo 0 = auto); smieci na koncu ("12abc") -> std::invalid_argument.
+inline int64_t ParseNum(const std::string& s, int base = 10) {
+  size_t pos = 0;
+  const int64_t v = std::stoll(s, &pos, base);
+  if (pos != s.size()) {
+    throw std::invalid_argument("trailing characters in number: " + s);
+  }
+  return v;
+}
+
+/// Hex ("0a0b", "0x0a 0b") -> bajty. Nieparzysta liczba cyfr albo znak spoza hex -> std::invalid_argument
+/// (linia ctl jest wtedy pomijana, nic nie jest cicho obcinane).
 inline std::vector<uint8_t> UnHex(const std::vector<std::string>& toks, size_t from) {
   std::string s;
   for (size_t i = from; i < toks.size(); ++i) {
@@ -109,8 +132,14 @@ inline std::vector<uint8_t> UnHex(const std::vector<std::string>& toks, size_t f
     }
     s += t;
   }
+  if (s.size() % 2 != 0) {
+    throw std::invalid_argument("odd number of hex digits");
+  }
   std::vector<uint8_t> out;
-  for (size_t i = 0; i + 1 < s.size(); i += 2) {
+  for (size_t i = 0; i < s.size(); i += 2) {
+    if (!std::isxdigit(static_cast<unsigned char>(s[i])) || !std::isxdigit(static_cast<unsigned char>(s[i + 1]))) {
+      throw std::invalid_argument("non-hex character");
+    }
     out.push_back(static_cast<uint8_t>(std::stoi(s.substr(i, 2), nullptr, 16)));
   }
   return out;
@@ -170,25 +199,45 @@ class Ctl {
   void Refresh() {
     struct stat st;
     const std::string path = Dir() + "/ctl";
+    const int64_t now = SteadyMs();
     if (::stat(path.c_str(), &st) != 0) {
       if (have_) {
         cmds_.clear();
         have_ = false;
       }
+      key_valid_ = false;
+      empty_since_ = 0;
       return;
     }
-    if (have_ && st.st_mtim.tv_sec == sec_ && st.st_mtim.tv_nsec == nsec_ && st.st_size == size_) {
+    if (key_valid_ && st.st_mtim.tv_sec == sec_ && st.st_mtim.tv_nsec == nsec_ && st.st_size == size_ &&
+        st.st_ino == ino_) {
       return;
     }
-    have_ = true;
-    sec_ = st.st_mtim.tv_sec;
-    nsec_ = st.st_mtim.tv_nsec;
-    size_ = st.st_size;
-    std::ifstream f(path);
+    // `cat > ctl` (truncate + write) shows an empty file for a moment: keep the state for 1 s, otherwise every
+    // line would be seen as new afterwards (replayed rx / value).
+    if (st.st_size == 0 && have_ && !cmds_.empty()) {
+      if (empty_since_ == 0) {
+        empty_since_ = now;
+      }
+      if (now - empty_since_ < 1000) {
+        return;
+      }
+    } else {
+      empty_since_ = 0;
+    }
+    std::ifstream f(path, std::ios::binary);
+    std::string content((std::istreambuf_iterator<char>(f)), std::istreambuf_iterator<char>());
+    // the last line without '\n' may be half-written: ignore it and read the file again on the next Visit
+    const bool partial = !content.empty() && content.back() != '\n';
+    if (partial) {
+      const size_t nl = content.rfind('\n');
+      content.erase(nl == std::string::npos ? 0 : nl + 1);
+    }
+    std::istringstream in(content);
     std::string line;
     std::vector<Cmd> fresh;
-    const int64_t now = SteadyMs();
-    while (std::getline(f, line)) {
+    std::vector<bool> used(cmds_.size(), false);
+    while (std::getline(in, line)) {
       std::istringstream is(line);
       std::vector<std::string> t;
       std::string w;
@@ -213,23 +262,40 @@ class Ctl {
       } catch (...) {
         continue;
       }
-      const size_t i = fresh.size();
-      if (i < cmds_.size() && cmds_[i].text == c.text) {
-        fresh.push_back(cmds_[i]);  // bez zmian - zachowaj stan (applied/left/seen)
-      } else {
+      // match by content (first unused old command with the same text), not by position: inserting or removing a
+      // line above must not reset applied/left/seen of the following ones
+      bool matched = false;
+      for (size_t j = 0; j < cmds_.size(); ++j) {
+        if (!used[j] && cmds_[j].text == c.text) {
+          used[j] = true;
+          fresh.push_back(cmds_[j]);
+          matched = true;
+          break;
+        }
+      }
+      if (!matched) {
         c.seen_ms = now;
         fresh.push_back(c);
       }
     }
     cmds_ = fresh;
+    have_ = true;
+    key_valid_ = !partial;
+    sec_ = st.st_mtim.tv_sec;
+    nsec_ = st.st_mtim.tv_nsec;
+    size_ = st.st_size;
+    ino_ = st.st_ino;
   }
 
   std::mutex m_;
   std::vector<Cmd> cmds_;
   bool have_{false};
+  bool key_valid_{false};
+  int64_t empty_since_{0};
   time_t sec_{0};
   long nsec_{0};  // NOLINT
   off_t size_{0};
+  ino_t ino_{0};
 };
 
 }  // namespace sim
