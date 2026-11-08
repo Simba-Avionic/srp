@@ -1,3 +1,4 @@
+# pylint: disable=line-too-long,missing-function-docstring,consider-using-f-string,broad-exception-caught,subprocess-run-check,unspecified-encoding,import-outside-toplevel,import-error,redefined-outer-name,unused-variable,too-many-locals
 """Helpers for the QEMU audit tests: ssh to the guest, sim control channel, UDS over DoIP, logger CSV."""
 import json
 import os

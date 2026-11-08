@@ -1,3 +1,4 @@
+# pylint: disable=line-too-long,missing-function-docstring,consider-using-f-string,broad-exception-caught,subprocess-run-check,unspecified-encoding,import-outside-toplevel,import-error,redefined-outer-name,unused-variable,too-many-locals
 """Functional scenarios (QEMU, sim build): correct behaviour of the EC apps, must be GREEN on the current code."""
 import os
 import time

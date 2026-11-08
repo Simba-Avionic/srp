@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# pylint: disable=line-too-long,missing-function-docstring,consider-using-f-string,broad-exception-caught,subprocess-run-check,unspecified-encoding,import-outside-toplevel,import-error,redefined-outer-name,unused-variable,too-many-locals
 """Builds qemu_test_results/mapping.md: F-xx -> test (file::name) -> result.
 Reads gtest XML from <repo>/bazel-testlogs (targets with tag audit_bugs) and the pytest JUnit
 qemu_test_results/bugs.q.xml. A FAIL counts as CONFIRMED only when its message names the F-id and is not a

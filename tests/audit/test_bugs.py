@@ -1,3 +1,4 @@
+# pylint: disable=line-too-long,missing-function-docstring,consider-using-f-string,broad-exception-caught,subprocess-run-check,unspecified-encoding,import-outside-toplevel,import-error,redefined-outer-name,unused-variable,too-many-locals
 """Audit findings on QEMU (sim build). Each test asserts the CORRECT behaviour -> RED on the current code.
 The failure message names the F-xx id. Harness problems must fail with 'harness:' (never counted as confirmation)."""
 import time
