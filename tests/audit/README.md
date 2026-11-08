@@ -41,7 +41,7 @@ bazel test --test_tag_filters=audit_bugs //...          # wszystkie mają paść
 | `qemu_test.sh report` | podsumowanie Markdown na stdout (tail wyników, tabela F-xx z `make_mapping.py` dla `bugs`) — w CI `>> $GITHUB_STEP_SUMMARY` | < 1 s |
 | `qemu_test.sh cleanup` | zatrzymuje kontenery i usuwa staging | < 1 s |
 
-Etap sprawdza, czy poprzedni zostawił artefakty (np. `run` bez `build` kończy się komunikatem „run build first”). Kontenery sprzątane są w `trap` także po błędzie. Identyfikator biegu: `QEMU_TEST_RUN_ID` (osobne etapy domyślnie `ci`; wersja jednokomendowa używa PID, więc kilka biegów naraz się nie zderza).
+Etap sprawdza, czy poprzedni zostawił artefakty (np. `run` bez `build` kończy się komunikatem „run build first”). Kontenery sprzątane są w `trap` także po błędzie. Identyfikator biegu: `QEMU_TEST_RUN_ID` (osobne etapy domyślnie `ci`; wersja jednokomendowa używa PID, więc kilka biegów naraz się nie zderza). Lokalnie równoległe biegi: forma jednokomendowa albo różne `QEMU_TEST_RUN_ID` — inaczej osobne etapy dzielą kontener i staging `ci`. `build` kasuje stare `*.status`.
 
 ## Zawartość
 

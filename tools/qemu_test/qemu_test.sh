@@ -108,6 +108,7 @@ do_build() {
   bin="$(bazel info $BZFLAGS --config=bbb-platform --define build_mode=sim bazel-bin 2> /dev/null)" ||
     die "bazel info bazel-bin failed"
   rm -rf "$STAGE"
+  rm -f "$OUT"/*.status   # a stale result from an earlier run must not appear in report
   mkdir -p "$STAGE/deployment/cpu/ec" "$STAGE/deployment/tools/ecu" "$STAGE/$(dirname "$QIMG")"
   cp -L "$bin/deployment/cpu/ec/pkg.tar" "$STAGE/deployment/cpu/ec/pkg.tar" || die "missing pkg.tar"
   cp -L "$bin/deployment/tools/ecu/flash_script.sh" "$STAGE/deployment/tools/ecu/flash_script.sh" ||
