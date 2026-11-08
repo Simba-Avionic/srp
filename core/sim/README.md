@@ -68,9 +68,9 @@ Jak prawdziwy driver: 85.0 / -127.0 są zwracane bez walidacji.
 1. `bazel run @srp_platform//tools/qemu -- --console` (sieć `tap0` wg `@srp_platform//tools/qemu`).
 2. Gość na świeżym obrazie ma IP `192.168.10.101`, a `flash_ec` celuje w `192.168.10.51` (to IP ustawia też konfiguracja EC po flashu) — przed pierwszym flashem dodaj na gościu alias: `ip addr add 192.168.10.51/24 dev eth0`.
 3. `bazel run //deployment/tools/ecu:flash_ec --config=bbb-platform --define build_mode=sim`.
-4. Po reboocie gościa: `deployment/bazel/flash_sim.sh root@192.168.10.51` czeka, aż gość znowu odpowie na ssh.
+4. Po reboocie gościa: `deployment/tools/ecu/flash_sim.sh root@192.168.10.51` czeka, aż gość znowu odpowie na ssh.
 
-Uwaga: `flash_ecu` w `srp_platform` (release-2503, `tools/common/flash_ecu.bzl`) nie przekazuje parametru `tool` do reguły, więc `select(//:sim → //deployment/bazel:docker_flash_sh)` w `deployment/tools/ecu/BUILD` nie ma dziś efektu — krok 4 trzeba wywołać ręcznie, dopóki platforma tego nie obsłuży.
+Uwaga: `flash_ecu` w `srp_platform` (release-2503, `tools/common/flash_ecu.bzl`) nie przekazuje parametru `tool` do reguły, więc `select(//:sim → :flash_sim)` w `deployment/tools/ecu/BUILD` nie ma dziś efektu — krok 4 trzeba wywołać ręcznie, dopóki platforma tego nie obsłuży.
 
 ## BUILD
 
