@@ -5,7 +5,7 @@
  * Urzadzenia: 0x50 EEPROM 24LC32 (4 KiB, adres 16-bit), 0x48 ADS7828, 0x70 PCA9685,
  * 0x6A LSM6DSOX, 0x76 BME280. Semantyka Write(vector) jak w prawdziwym driverze
  * (core/i2c/i2c_driver.cpp): pary {reg,wartosc}, dlugosc nieparzysta/pusta = blad.
- * Polecenia ctl i2c: patrz docs/audit/sim_drivers.md.
+ * Polecenia ctl i2c: patrz core/sim/README.md.
  *
  * @copyright Copyright (c) 2025
  */
@@ -39,7 +39,7 @@ struct Device {
   uint8_t ads_sel{0};
 };
 
-int ParseInt(const std::string& s) { return std::stoi(s, nullptr, 0); }
+int ParseInt(const std::string& s) { return static_cast<int>(sim::ParseNum(s, 0)); }
 
 class Bus {
  public:
@@ -94,8 +94,11 @@ class Bus {
   std::optional<std::vector<uint8_t>> Read(uint8_t addr, size_t size) {
     std::lock_guard<std::mutex> l(m_);
     auto it = devs_.find(addr);
-    if (it == devs_.end() || size == 0) {
+    if (it == devs_.end()) {
       return std::nullopt;
+    }
+    if (size == 0) {
+      return std::vector<uint8_t>{};  // like read(fd, buf, 0) == 0 on a real device
     }
     Device& d = it->second;
     std::vector<uint8_t> out;
@@ -217,11 +220,11 @@ class Bus {
   double volts_[8]{};
 };
 
-core::ErrorCode FaultToError(Fault f) {
+core::ErrorCode FaultToError(Fault f, core::ErrorCode code = core::ErrorCode::kConnectionError) {
   if (f == Fault::kTimeout) {
     std::this_thread::sleep_for(std::chrono::milliseconds(1500));
   }
-  return core::ErrorCode::kConnectionError;
+  return code;
 }
 
 }  // namespace
@@ -249,7 +252,7 @@ core::ErrorCode I2CDriver::Write(const std::vector<uint8_t>& RegData) {
   }
   Fault f = Bus::Get().Check(current_address_);
   if (f != Fault::kNone) {
-    return FaultToError(f);
+    return FaultToError(f, core::ErrorCode::kInitializeError);  // as i2c_driver.cpp:55-56
   }
   for (std::size_t i = 0; i < RegData.size(); i += 2) {
     if (!Bus::Get().Txn(current_address_, {RegData[i], RegData[i + 1]})) {
@@ -280,7 +283,7 @@ std::optional<std::vector<uint8_t>> I2CDriver::Read(const uint8_t size) {
 core::ErrorCode I2CDriver::PageWrite(std::vector<uint8_t> data) {
   Fault f = Bus::Get().Check(current_address_);
   if (f != Fault::kNone) {
-    return FaultToError(f);
+    return FaultToError(f, core::ErrorCode::kInitializeError);  // as i2c_driver.cpp:76
   }
   return Bus::Get().Txn(current_address_, data) ? core::ErrorCode::kOk
                                                  : core::ErrorCode::kInitializeError;
