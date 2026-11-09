@@ -261,7 +261,15 @@ void EngineApp::OnLaunch() {
     std::this_thread::sleep_for(std::chrono::milliseconds(450));
     servo_handler_->SetOxidizerMainValve(1);
     std::this_thread::sleep_for(std::chrono::milliseconds(7000));
-    state_ctr->SetState(RocketState_t::ABORT);
+    // end of the launch sequence: LAUNCH -> FLIGHT; the valves stay open in FLIGHT (closing them is a future state);
+    // ABORT is rejected from LAUNCH (F-02)
+    if (!state_ctr->SetState(RocketState_t::FLIGHT)) {
+      // e.g. an external SetMode(FLIGHT) during the first 1.45 s already moved the state: the valves opened later
+      // by this thread would stay open
+      ara::log::LogError() << "EngineApp::OnLaunch: FLIGHT rejected at the end of the launch sequence, "
+                              "closing valves directly";
+      this->CloseValves();
+    }
   }).detach();
 }
 
@@ -283,6 +291,14 @@ void EngineApp::OnApogee() {
   }
 }
 
+void EngineApp::CloseValves() {
+  servo_handler_->SetOxidizerMainValve(0);
+  std::this_thread::sleep_for(std::chrono::milliseconds(200));
+  servo_handler_->SetPressureFeedVentValve(0);
+  std::this_thread::sleep_for(std::chrono::milliseconds(200));
+  servo_handler_->SetPressureFeedMainValve(0);
+}
+
 void EngineApp::OnAbort() {
   ara::log::LogWarn() << "EngineApp::OnAbort: ABORT sequence initiated";
 
@@ -290,11 +306,7 @@ void EngineApp::OnAbort() {
       return;
   }
   std::thread([this]() {
-    servo_handler_->SetOxidizerMainValve(0);
-    std::this_thread::sleep_for(std::chrono::milliseconds(200));
-    servo_handler_->SetPressureFeedVentValve(0);
-    std::this_thread::sleep_for(std::chrono::milliseconds(200));
-    servo_handler_->SetPressureFeedMainValve(0);
+    this->CloseValves();
     std::this_thread::sleep_for(std::chrono::milliseconds(5000));
     servo_handler_->SetOxidizerMainValve(1);
     std::this_thread::sleep_for(std::chrono::milliseconds(200));
