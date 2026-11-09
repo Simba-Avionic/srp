@@ -164,10 +164,6 @@ int EngineApp::Initialize(const std::map<ara::core::StringView, ara::core::Strin
     ara::log::LogDebug() << "EngineApp::RegisterCallback: DISARM callback triggered";
     this->OnDisarm();
   });
-  state_ctr->RegisterCallback(RocketState_t::FLIGHT, [this]() {
-    ara::log::LogDebug() << "EngineApp::RegisterCallback: FLIGHT callback triggered";
-    this->OnFlight();
-  });
   state_ctr->RegisterCallback(RocketState_t::APOGEE, [this]() {
     ara::log::LogDebug() << "EngineApp::RegisterCallback: APOGEE callback triggered";
     this->OnApogee();
@@ -265,9 +261,11 @@ void EngineApp::OnLaunch() {
     std::this_thread::sleep_for(std::chrono::milliseconds(450));
     servo_handler_->SetOxidizerMainValve(1);
     std::this_thread::sleep_for(std::chrono::milliseconds(7000));
-    // end of the launch sequence: LAUNCH -> FLIGHT (OnFlight closes the valves); ABORT is rejected from LAUNCH (F-02)
+    // end of the launch sequence: LAUNCH -> FLIGHT; the valves stay open in FLIGHT (closing them is a future state);
+    // ABORT is rejected from LAUNCH (F-02)
     if (!state_ctr->SetState(RocketState_t::FLIGHT)) {
-      // e.g. an external SetMode(FLIGHT) during the first 1.45 s already moved the state: OnFlight ran too early
+      // e.g. an external SetMode(FLIGHT) during the first 1.45 s already moved the state: the valves opened later
+      // by this thread would stay open
       ara::log::LogError() << "EngineApp::OnLaunch: FLIGHT rejected at the end of the launch sequence, "
                               "closing valves directly";
       this->CloseValves();
@@ -299,16 +297,6 @@ void EngineApp::CloseValves() {
   servo_handler_->SetPressureFeedVentValve(0);
   std::this_thread::sleep_for(std::chrono::milliseconds(200));
   servo_handler_->SetPressureFeedMainValve(0);
-}
-
-void EngineApp::OnFlight() {
-  ara::log::LogInfo() << "EngineApp::OnFlight: end of the launch sequence - closing valves";
-  // does not depend on sec_servo_handler_ (F-03)
-  if (servo_handler_ == nullptr) {
-    ara::log::LogError() << "EngineApp::OnFlight: servo handler is nullptr, valves not closed";
-    return;
-  }
-  std::thread([this]() { this->CloseValves(); }).detach();
 }
 
 void EngineApp::OnAbort() {

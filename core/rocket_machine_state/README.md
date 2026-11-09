@@ -55,7 +55,7 @@ stateDiagram-v2
   ABORT --> DISARM
 ```
 
-Od `LAUNCH` (i w `FLIGHT`) przejście do `ABORT` jest odrzucane: start jest niewrażliwy na ABORT (decyzja usera, F-02); `SetState(ABORT)` zwraca `false`, `OnAbort` się nie wykonuje, odrzucenie jest logowane. `LAUNCH` przechodzi tylko do `FLIGHT` (koniec sekwencji startu, EngineApp zamyka wtedy zawory); `FLIGHT → ARM` jest tylko do testów statycznych (hamownia).
+Od `LAUNCH` (i w `FLIGHT`) przejście do `ABORT` jest odrzucane: start jest niewrażliwy na ABORT (decyzja usera, F-02); `SetState(ABORT)` zwraca `false`, `OnAbort` się nie wykonuje, odrzucenie jest logowane. `LAUNCH` przechodzi tylko do `FLIGHT` (koniec sekwencji startu; zawory pozostają w FLIGHT otwarte — zamykanie zaworów będzie osobnym stanem, do dopisania); `FLIGHT → ARM` jest tylko do testów statycznych (hamownia).
 
 ## API
 
