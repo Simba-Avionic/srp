@@ -206,7 +206,8 @@ int EngineApp::Initialize(const std::map<ara::core::StringView, ara::core::Strin
     ara::log::LogWarn() << "Retry setting servo handler or primer_handler i: " << i-1;
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
   }
-  if (i >= kInit_max_intervals) {
+  // check the handlers, not the counter: handlers found exactly in the last iteration are fine
+  if (servo_handler_ == nullptr || primer_handler_ == nullptr) {
     ara::log::LogFatal() << "Cant initialize servo handler or primer handler, closing app";
     return 1;
   }
