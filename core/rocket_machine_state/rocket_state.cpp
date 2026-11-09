@@ -34,7 +34,6 @@ namespace {
         {RocketState_t::DROP,                     {RocketState_t::TOUCHDOWN}},
         {RocketState_t::CONNECTION_LOST,          {RocketState_t::DISARM, RocketState_t::ABORT}}
     };
-    static std::shared_ptr<RocketStateController> instance = nullptr;
 }  // namespace
 
 void RocketStateController::RegisterCallback(RocketState_t state, StateCallback cb) {
@@ -43,9 +42,7 @@ void RocketStateController::RegisterCallback(RocketState_t state, StateCallback 
 }
 
 std::shared_ptr<RocketStateController> RocketStateController::GetInstance() {
-    if (instance == nullptr) {
-        instance = std::make_shared<RocketStateController>();
-    }
+    static std::shared_ptr<RocketStateController> instance = std::make_shared<RocketStateController>();
     return instance;
 }
 
