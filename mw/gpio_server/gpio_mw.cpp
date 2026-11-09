@@ -177,7 +177,7 @@ void GPIOMWService::PollSubscribedPinsLoop(const std::stop_token& token) {
     ara::log::LogInfo() << "Starting subscribed pins polling loop";
     {
         std::lock_guard<std::mutex> lock(subscription_mutex_);
-        for (auto pair : subscribed_pins_states) {
+        for (auto& pair : subscribed_pins_states) {
             // subscribed pins are checked for existence before being added to the set
             pair.second = this->gpio_driver_->getValue(config[pair.first].pinNum);
         }
@@ -222,9 +222,8 @@ void GPIOMWService::PollSubscribedPinsLoop(const std::stop_token& token) {
     }
 }
 
-GPIOMWService::~GPIOMWService() {
-    this->sock_->~ISocketStream();
-}
+// sock_ (unique_ptr) destroys the socket itself; destroying it by hand here made it die twice
+GPIOMWService::~GPIOMWService() {}
 
 std::chrono::milliseconds GPIOMWService::CheckPinsExpired() {
     auto allowed_sleep = std::chrono::milliseconds(1000);
