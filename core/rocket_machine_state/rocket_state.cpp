@@ -26,7 +26,8 @@ namespace {
         {RocketState_t::ARM,                      {RocketState_t::LAUNCH, RocketState_t::ABORT,
                                                     RocketState_t::DISARM, RocketState_t::CONNECTION_LOST}},
         {RocketState_t::ABORT,                    {RocketState_t::DISARM}},
-        {RocketState_t::LAUNCH,                   {RocketState_t::FLIGHT}},
+        // LAUNCH->DISARM: cancelled launch (primer did not fire) or DISARM from GS during the sequence (F-01)
+        {RocketState_t::LAUNCH,                   {RocketState_t::FLIGHT, RocketState_t::DISARM}},
         // FLIGHT->ARM tylko debug na testach statycznych (hamownia); ABORT z LAUNCH/FLIGHT jest odrzucany (F-02)
         {RocketState_t::FLIGHT,                   {RocketState_t::APOGEE, RocketState_t::ARM}},
         {RocketState_t::APOGEE,                   {RocketState_t::FIRST_PARACHUTE}},

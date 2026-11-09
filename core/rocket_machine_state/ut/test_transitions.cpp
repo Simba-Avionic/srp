@@ -54,7 +54,7 @@ TEST(RocketStateTransitions, AbortStillAllowedBeforeLaunch) {
   EXPECT_TRUE(c.SetState(RocketState_t::DISARM));
 }
 
-TEST(RocketStateTransitions, LaunchAllowsOnlyFlight) {
+TEST(RocketStateTransitions, LaunchAllowsFlightAndDisarmOnly) {
   RocketStateController c;
   int aborts = 0;
   MakeController(&c, &aborts);
@@ -62,7 +62,6 @@ TEST(RocketStateTransitions, LaunchAllowsOnlyFlight) {
   ASSERT_TRUE(c.SetState(RocketState_t::ARM));
   ASSERT_TRUE(c.SetState(RocketState_t::LAUNCH));
   EXPECT_FALSE(c.SetState(RocketState_t::ARM));
-  EXPECT_FALSE(c.SetState(RocketState_t::DISARM));
   EXPECT_EQ(c.GetState(), RocketState_t::LAUNCH);
   EXPECT_TRUE(c.SetState(RocketState_t::FLIGHT));
 }
