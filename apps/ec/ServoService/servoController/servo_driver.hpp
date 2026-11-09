@@ -11,6 +11,7 @@
 #ifndef APPS_EC_SERVOSERVICE_SERVOCONTROLLER_SERVO_DRIVER_HPP_
 #define APPS_EC_SERVOSERVICE_SERVOCONTROLLER_SERVO_DRIVER_HPP_
 
+#include <cmath>
 #include <cstdint>
 #include <optional>
 #include <unordered_map>
@@ -38,6 +39,9 @@ namespace {  // NOLINT
   static constexpr auto kServoCycleUs = 20000;  // 50Hz
   static constexpr auto kPcaResolution = 4096;
   static constexpr auto kDefault_mosfet_active_time_ms = 2000;
+  // F-23: the PCA9685 oscillator correction read from the EEPROM is trusted only inside this range
+  static constexpr float kMin_xo_correlation = 0.7f;
+  static constexpr float kMax_xo_correlation = 1.3f;
   static constexpr uint8_t kOpenState = 1U;
   static constexpr uint8_t kCloseState = 0U;
 }  // namespace
@@ -51,6 +55,18 @@ class ServoDriver {
   eeprom::EEPROM_config config;
 
  public:
+  /**
+   * @brief Valid pca9685_XO_corelation is 0.7 - 1.3 (and not NaN); anything else is replaced by 1.0 (F-23)
+   */
+  static float SanitizeXoCorrelation(const float value) {
+    if (std::isnan(value) || value < kMin_xo_correlation || value > kMax_xo_correlation) {
+      ara::log::LogError() << "ServoDriver: pca9685_XO_corelation " << value << " out of range ("
+                           << kMin_xo_correlation << " - " << kMax_xo_correlation << "), using 1.0";
+      return 1.0f;
+    }
+    return value;
+  }
+
   void Init() {
     driver_.Init();
     auto cfg_mng = eeprom::ConfigManager();
@@ -58,6 +74,7 @@ class ServoDriver {
     auto cfg = cfg_mng.GetConfig();
     if (cfg.has_value()) {
       config = cfg.value();
+      config.pca9685_XO_corelation = SanitizeXoCorrelation(config.pca9685_XO_corelation);
     } else {
       ara::log::LogFatal() << "Cant get Eeprom corelation data";
       exit(1);
