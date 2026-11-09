@@ -57,12 +57,19 @@ std::vector<uint8_t> GPIOMWService::RxCallback(const std::string& ip, const std:
     std::optional<srp::mw::gpio::GpioHdr> hdr = srp::data::Convert<srp::mw::gpio::GpioHdr>::Conv(data);
     if (!hdr.has_value()) {
         ara::log::LogWarn() << "RxCallback: failed to parse GPIO header";
-        return {0};
+        // F-08: 0 == kOk, the client would read a garbled frame as success
+        return {core::ErrorCode::kError};
     }
     auto it = this->config.find(hdr.value().pin_id);
     if (it == this->config.end()) {
         ara::log::LogWarn() << "Unknown pin with ID: " << hdr.value().pin_id;
-        return {0};
+        // F-08: SET/GET answers are error codes (0 == kOk), so an unknown pin must not answer 0 there.
+        // SUBSCRIBE/UNSUBSCRIBE keep their own convention: 0 == failure (any other byte is a controller ID / success).
+        if (hdr.value().action == srp::gpio::ACTION::SUBSCRIBE ||
+            hdr.value().action == srp::gpio::ACTION::UNSUBSCRIBE) {
+            return {0};
+        }
+        return {core::ErrorCode::kNotDefine};
     }
     auto action = hdr.value().action;
     switch (action) {
