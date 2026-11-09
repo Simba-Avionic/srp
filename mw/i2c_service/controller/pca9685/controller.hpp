@@ -25,6 +25,10 @@ namespace srp {
 namespace i2c {
 
 class PCA9685 {
+ public:
+  /// number of PWM outputs of the chip; channels >= kChannel_count are rejected
+  static constexpr uint8_t kChannel_count = 16;
+
  private:
   std::unique_ptr<II2CController> i2c_;
   const ara::log::Logger& pac_logger_;
