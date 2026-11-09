@@ -3,6 +3,7 @@ cc_library(
     name = "Iuart_driver",
     hdrs = [
         "Iuart_driver.hpp",
+        "uart_config.hpp",
         "uart_driver.hpp",
     ],
     deps = [
@@ -18,8 +19,14 @@ cc_library(
         "@srp_platform//ara/log",
         "@srp_platform//ara/com:com_error_domain",
         "//core/uart:Iuart_driver",
-    ],
-    srcs = ["uart_driver.cpp"],
+    ] + select({
+        "//:sim": ["//core/sim:sim_ctl"],
+        "//conditions:default": [],
+    }),
+    srcs = select({
+        "//:sim": ["sim_uart_driver.cpp"],
+        "//conditions:default": ["uart_driver.cpp"],
+    }),
     visibility = ["//visibility:public"],
 )
 

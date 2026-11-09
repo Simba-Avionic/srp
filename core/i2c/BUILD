@@ -29,6 +29,7 @@ cc_library(
     name = "SIMi2cdriver",
     srcs = ["sim_i2c_driver.cpp"],
     deps = [
+        "//core/sim:sim_ctl",
         "//core/i2c:i2cdriver_base",
     ],
     visibility = ["//core:__subpackages__",
