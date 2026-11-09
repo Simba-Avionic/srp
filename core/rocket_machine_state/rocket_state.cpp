@@ -88,29 +88,42 @@ void RocketStateController::RegisterRequirementsCallback(ChangeRequestCallback c
 }
 
 bool RocketStateController::SetState(const RocketState_t state) {
-    std::lock_guard<std::mutex> lock_(mtx_);
-    if (state == actual_state) {
-        logger_.LogInfo() << "Requested change to same state: " << core::rocketState::to_string(state);
-        return false;
-    }
-    if (!TransitionAllowed(this->actual_state, state)) {
-        logger_.LogWarn() << "Transition from: " << core::rocketState::to_string(actual_state) <<
-                            " To state: " << core::rocketState::to_string(state) << " rejected";
-        return false;
-    }
-    if (!requirements_callback_(state)) {
-        logger_.LogWarn() << "Requirements were not met to change state";
-        return false;
+    StateCallback state_cb;
+    OnStateChangeCallback change_cb;
+    {
+        std::lock_guard<std::mutex> lock_(mtx_);
+        if (state == actual_state) {
+            logger_.LogInfo() << "Requested change to same state: " << core::rocketState::to_string(state);
+            return false;
+        }
+        if (!TransitionAllowed(this->actual_state, state)) {
+            logger_.LogWarn() << "Transition from: " << core::rocketState::to_string(actual_state) <<
+                                " To state: " << core::rocketState::to_string(state) << " rejected";
+            return false;
+        }
+        if (!requirements_callback_(state)) {
+            logger_.LogWarn() << "Requirements were not met to change state";
+            return false;
+        }
+
+        this->prev_state = actual_state;
+        this->actual_state = state;
+
+        // F-04: the callbacks (blocking IPC in the apps) run after the lock is released, on copies, so GetState()
+        // and SetState() (e.g. ABORT) from other threads, or from inside a callback, are not blocked/deadlocked.
+        const auto it = callbacks_.find(state);
+        if (it != callbacks_.end()) {
+            state_cb = it->second;
+        }
+        change_cb = on_change_callback_;
     }
 
-    this->prev_state = actual_state;
-    this->actual_state = state;
-
-    if (callbacks_.count(state)) {
-        callbacks_[state]();
+    if (state_cb) {
+        state_cb();
     }
-
-    on_change_callback_(actual_state);
+    // the publication always carries the state current at this moment: with two concurrent SetState calls the
+    // older one may finish last, and a stale value would be the last one published
+    change_cb(GetState());
     return true;
 }
 
