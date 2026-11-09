@@ -1,6 +1,6 @@
 /**
  * @file sim_uart.hpp
- * @brief Wspolny model portu szeregowego dla driverow sim (core/uart i MavUartDriver EC).
+ * @brief Wspolny model portu szeregowego dla driverow sim (core/uart, takze radio).
  *
  * Open dziala na dowolnej sciezce (np. /dev/ttyS1, ktorego na gosciu QEMU nie ma). Bajty do odczytu
  * wstrzykuje test przez ctl (kolejka FIFO per port), kazdy Write trafia do events.jsonl i do

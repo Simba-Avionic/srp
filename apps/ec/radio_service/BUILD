@@ -52,7 +52,7 @@ cc_library(
         "@srp_platform//ara/log",
         ":event_data",
         "@srp_mavlink//:simba_mavlink",
-        ":uart_driver",
+        "//core/uart:uart_driver",
         "//core/common:wait_queue",
     ],
 )
@@ -83,21 +83,5 @@ cc_library(
         "@srp_mavlink//:simba_mavlink",
         "//core/rocket_machine_state:rocket_state_base",
     ],
-    visibility = ["//visibility:public"],
-)
-
-cc_library(
-    name = "uart_driver",
-    hdrs = ["mavlink_uart_driver.hpp"],
-    srcs = select({
-        "//:sim": ["sim_mavlink_uart_driver.cpp"],
-        "//conditions:default": ["mavlink_uart_driver.cpp"],
-    }),
-    deps = [
-        "//core/common:common_types",
-    ] + select({
-        "//:sim": ["//core/sim:sim_ctl"],
-        "//conditions:default": [],
-    }),
     visibility = ["//visibility:public"],
 )

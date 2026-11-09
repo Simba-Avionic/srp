@@ -3,6 +3,7 @@ cc_library(
     name = "Iuart_driver",
     hdrs = [
         "Iuart_driver.hpp",
+        "uart_config.hpp",
         "uart_driver.hpp",
     ],
     deps = [
