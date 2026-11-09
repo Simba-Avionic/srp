@@ -58,8 +58,8 @@ PrimerController::PrimerController():
             prim_logger{ara::log::LoggingMenager::GetInstance()->CreateLogger(
           "CTRL", "", ara::log::LogLevel::kWarn)} {
     prim_logger.LogInfo() << "PrimerController initialized";
-    config_.active_time_ms = kIgniter_active_time;
-    config_.pins.push_back(kIgniter_pin_id);
+    // defaults until Initialize() reads config.json (an empty pin list would "fire" without lighting anything)
+    config_ = PrimerConfig{{kIgniter_pin_id}, kIgniter_active_time};
 }
 
 void PrimerController::VerifyPrimerConection() {
@@ -95,7 +95,7 @@ void PrimerController::VerifyPrimerConection() {
 }
 
 PrimerConfig PrimerController::ParseConfig(const std::optional<core::json::JsonParser>& parser) {
-    PrimerConfig cfg;
+    PrimerConfig cfg{{kIgniter_pin_id}, kIgniter_active_time};
     if (!parser.has_value()) {
         ara::log::LogWarn() << "PrimerController: config not available, using defaults (pin 13, 2500 ms)";
         return cfg;
@@ -170,6 +170,10 @@ bool PrimerController::EnablePrimer(const bool auto_disable) {
     if (kRequire_primer_veryfication && primerState != PrimerState_t::kCONNECTED) {
         prim_logger.LogWarn() << "EnablePrimer rejected: primer verification enabled and state is "
                               << PrimerStateToString(primerState.load());
+        return false;
+    }
+    if (config_.pins.empty()) {
+        prim_logger.LogError() << "EnablePrimer rejected: no primer pin configured";
         return false;
     }
     for (const auto pin : config_.pins) {
