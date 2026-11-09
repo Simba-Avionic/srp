@@ -10,7 +10,7 @@ Otwiera UART, czyta i zapisuje bajty. Używany przez radio (MAVLink, tryb raw), 
 
 - `Open(port, baudrate, timeout)` — dawny interfejs, deleguje do `Open(port, UartConfig::Legacy(baudrate))`. Parametr `timeout` jest nadal ignorowany (VTIME z presetu).
 - `Open(port, UartConfig)` — pełna konfiguracja: prędkość (stała `B…`; liczbę zamienia `GetBaudrateConstant`), bity danych, parzystość, bity stopu, `CRTSCTS`, tryb `raw`/kanoniczny, `VMIN`/`VTIME`, domyślny rozmiar `Read(0)`.
-- `WaitForData(timeout_ms)` — `poll(POLLIN)`; true, gdy są dane do odczytu.
+- `WaitForData(timeout, stop_token)` — semantyka jak `core::condition::wait_for`: czeka do `timeout` na dane (`poll(POLLIN)` + `eventfd` budzony przez `std::stop_callback`, bez pętli aktywnej). `true` — są dane; `false` — timeout albo `stop_requested()`: po `request_stop()` (także z innego wątku) wraca od razu (w testach < 50 ms zamiast pełnego timeoutu), a gdy stop był zażądany przed wywołaniem — bez czekania. Stary `WaitForData(int)` usunięty (wołali go tylko `RxThreadLoop` radia EC i FC, które przekazują swój `stop_token`). Sim ma tę samą semantykę (`condition_variable_any` + `stop_callback`).
 - `Read(size)` — `size == 0` oznacza odczyt do `default_read_size` z konfiguracji (256 B w `Legacy`, 512 B w `Mavlink`).
 - `Write` — surowe bajty. `Close`.
 
@@ -49,7 +49,8 @@ class IUartDriver {
   virtual bool Open(const std::string& portName,
                     uint32_t baudrate = B9600, uint8_t timeout = 10) = 0;   // Legacy
   virtual bool Open(const std::string& portName, const UartConfig& config) = 0;
-  virtual bool WaitForData(int timeout_ms) = 0;
+  virtual bool WaitForData(std::chrono::milliseconds timeout,
+                           const std::stop_token& stoken) = 0;
   virtual std::optional<std::vector<uint8_t>> Read(uint16_t size = 0) = 0;
   virtual void Close() = 0;
   virtual ErrorCode Write(const std::vector<uint8_t>& data) = 0;

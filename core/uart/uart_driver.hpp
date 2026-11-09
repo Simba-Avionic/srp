@@ -34,9 +34,11 @@ class UartDriver: public IUartDriver {
  public:
   UartDriver();
   ~UartDriver() override;
+  UartDriver(const UartDriver&) = delete;  // owns the port descriptor, closed in the destructor
+  UartDriver& operator=(const UartDriver&) = delete;
   bool Open(const std::string& portName, const uint32_t& baudrate = B9600, const uint8_t timeout = 10) override;
   bool Open(const std::string& portName, const UartConfig& config) override;
-  bool WaitForData(int timeout_ms) override;
+  bool WaitForData(std::chrono::milliseconds timeout, const std::stop_token& stoken) override;
   std::optional<std::vector<uint8_t>> Read(const uint16_t size = 0) override;
   core::ErrorCode Write(const std::vector<uint8_t>& data) override;
   void Close() override;

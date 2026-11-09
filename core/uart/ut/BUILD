@@ -19,3 +19,14 @@ cc_test(
         "//core/uart:uart_driver",
     ],
 )
+
+cc_test(
+    name = "uart_wait_test",
+    srcs = ["uart_wait_test.cc"],
+    linkopts = ["-lutil"],
+    deps = [
+        "@com_google_googletest//:gtest_main",
+        "//core/uart:uart_driver",
+        "//core/sim:sim_ctl",
+    ],
+)

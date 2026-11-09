@@ -12,6 +12,8 @@
 #define CORE_SIM_SIM_UART_HPP_
 
 #include <chrono>  // NOLINT
+#include <condition_variable>  // NOLINT
+#include <stop_token>  // NOLINT
 #include <cstdint>
 #include <deque>
 #include <fstream>
@@ -96,28 +98,34 @@ class UartSim {
     }
   }
 
-  /// Jak poll(POLLIN): true gdy w ciagu timeout_ms pojawia sie dane do odczytu.
-  bool WaitForData(int handle, int timeout_ms) {
+  /// Jak poll(POLLIN) + stop_token (semantyka core::condition::wait_for): true gdy w ciagu `timeout` pojawia sie dane;
+  /// false po timeoucie albo od razu, gdy stoken.stop_requested() (rowniez zazadany przed wywolaniem).
+  bool WaitForData(int handle, std::chrono::milliseconds timeout, const std::stop_token& stoken) {
     std::string port;
     int64_t unused = 0;
-    if (!PortOf(handle, &port, &unused)) {
+    if (stoken.stop_requested() || !PortOf(handle, &port, &unused)) {
       return false;
     }
-    const int64_t end = SteadyMs() + timeout_ms;
+    const int64_t end = SteadyMs() + timeout.count();
+    // wake-up przez stop_callback; kolejke RX wstrzykuje ctl (plik) - sprawdzana co 20 ms
+    std::condition_variable_any cv;
     while (true) {
-      {
-        std::lock_guard<std::mutex> l(m_);
-        bool fault = false;
-        bool tmo = false;
-        Sync(port, Op::kPoll, &fault, &tmo);
-        if (!tmo && !ports_[port].rx.empty()) {
-          return true;
-        }
+      std::unique_lock<std::mutex> l(m_);
+      bool fault = false;
+      bool tmo = false;
+      Sync(port, Op::kPoll, &fault, &tmo);
+      if (!tmo && !ports_[port].rx.empty()) {
+        return true;
       }
-      if (SteadyMs() >= end) {
+      const int64_t left = end - SteadyMs();
+      if (left <= 0) {
         return false;
       }
-      std::this_thread::sleep_for(std::chrono::milliseconds(20));
+      const auto slice = std::chrono::milliseconds(left < 20 ? left : 20);
+      cv.wait_for(l, stoken, slice, [] { return false; });
+      if (stoken.stop_requested()) {
+        return false;
+      }
     }
   }
 
