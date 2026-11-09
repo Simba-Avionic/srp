@@ -66,7 +66,7 @@ flowchart TB
 
 ## Wzorce
 
-- **Symulacja:** GPIO, I2C i temp mają wariant `sim_*` / `SIM_*` z tym samym API (logowanie zamiast HW).
+- **Symulacja:** GPIO, I2C, temp i UART mają wariant `sim_*` / `SIM_*` z tym samym API (logowanie zamiast HW).
 - **Błędy:** `srp::core::ErrorCode`, `std::optional<T>` albo `ara::core::Result<T>`.
 - **Logowanie:** `ara::log` z krótkim kontekstem (`gpio`, `i2c-`, `uart`, `temp`, …).
 

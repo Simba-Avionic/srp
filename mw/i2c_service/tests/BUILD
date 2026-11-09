@@ -10,7 +10,6 @@ cc_test(
     ],
 )
 
-
 # cc_test(
 #     name = "pca9685_test",
 #     srcs = [
@@ -77,7 +76,17 @@ cc_test(
         "test_pca9685_block_write.cpp",
         ],
     visibility = ["//visibility:public"],
-    deps=[
+    deps = [
+        "@com_google_googletest//:gtest_main",
+        "//mw/i2c_service/controller/pca9685:pca9685_controller",
+        "//mw/i2c_service/controller/mock:mock_i2c_controller",
+    ],
+)
+cc_test(
+    name = "pca9685_audit_bugs_test",
+    srcs = ["test_audit_bugs.cpp"],
+    tags = ["audit_bugs"],
+    deps = [
         "@com_google_googletest//:gtest_main",
         "//mw/i2c_service/controller/pca9685:pca9685_controller",
         "//mw/i2c_service/controller/mock:mock_i2c_controller",
