@@ -70,3 +70,12 @@ cc_test(
         "//mw/i2c_service/controller:i2c_controller",
     ],
 )
+
+cc_test(
+    name = "bme280_humidity_calib_test",
+    srcs = ["test_bme280_humidity_calib.cc"],
+    deps = [
+        "@com_google_googletest//:gtest_main",
+        "//mw/i2c_service/controller/bme280:bme280_controller",
+    ],
+)
