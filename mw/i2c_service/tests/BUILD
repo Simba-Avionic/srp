@@ -70,3 +70,16 @@ cc_test(
         "//mw/i2c_service/controller:i2c_controller",
     ],
 )
+
+cc_test(
+    name = "pca9685_short_read_test",
+    srcs = [
+        "test_pca9685_short_read.cpp",
+        ],
+    visibility = ["//visibility:public"],
+    deps=[
+        "@com_google_googletest//:gtest_main",
+        "//mw/i2c_service/controller/pca9685:pca9685_controller",
+        "//mw/i2c_service/controller/mock:mock_i2c_controller",
+    ],
+)
