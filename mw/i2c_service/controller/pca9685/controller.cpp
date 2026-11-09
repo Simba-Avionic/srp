@@ -91,6 +91,10 @@ std::vector<uint8_t> PCA9685::GenerateData(const uint8_t &channel, const uint16_
 
 
 core::ErrorCode PCA9685::SetChannelPosition(uint8_t channel, uint16_t pos) {
+  if (channel >= kChannel_count) {
+    pac_logger_.LogWarn() << "PCA9685.SetChannelPosition: channel out of range: " << channel;
+    return core::ErrorCode::kBadVariableSize;
+  }
   pac_logger_.LogDebug() << "PCA9685.SetChannelPosition: channel " <<
                              channel << " pos " << pos;
   return this->i2c_->Write(PCA9685_ADDRESS, GenerateData(channel, pos));
@@ -105,6 +109,10 @@ uint16_t PCA9685::ComposePosition(const std::vector<uint8_t>& val) const {
 
 
 std::optional<uint16_t> PCA9685::ReadChannelPosition(const uint8_t &channel) {
+    if (channel >= kChannel_count) {
+        pac_logger_.LogWarn() << "PCA9685.ReadChannelPosition: channel out of range: " << channel;
+        return std::nullopt;
+    }
     auto val_opt = i2c_->Read(PCA9685_ADDRESS, LED_ON_L_LOOKUP[channel], 4);
     if (!val_opt.has_value()) {
         pac_logger_.LogWarn() << "PCA9685.ReadChannelPosition: failed to read channel " <<
