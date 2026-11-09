@@ -77,7 +77,7 @@ std::optional<uint8_t> TempController::Register(std::string name) {
 std::optional<std::vector<uint8_t>> TempController::Subscribe(std::string name) {
     if (name.size() != PHYSICAL_ID_SIZE) {
         ara::log::LogWarn() << "Subscribe rejected: invalid sensor physical id: " << name;
-        return std::vector<uint8_t>{srp::core::ErrorCode::kError};
+        return std::nullopt;
     }
     srp::mw::temp::TempSubHdr hdr{this->service_id, name[3], name[4],
                                 name[5], name[6], name[7], name[8],
