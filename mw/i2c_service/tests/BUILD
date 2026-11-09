@@ -70,3 +70,13 @@ cc_test(
         "//mw/i2c_service/controller:i2c_controller",
     ],
 )
+
+cc_test(
+    name = "adcsensor_calibration_test",
+    srcs = ["test_adcsensor_calibration.cc"],
+    deps = [
+        "@com_google_googletest//:gtest_main",
+        "//mw/i2c_service/controller/adcsensor:adc_sensor_controller",
+        "//mw/i2c_service/controller/mock:mock_ads7828",
+    ],
+)

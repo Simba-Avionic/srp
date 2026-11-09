@@ -30,7 +30,7 @@ a = (RES_MAX - RES_MIN) * 1000 / ((A_MAX - A_MIN) * R)
 b = RES_MIN - (A_MIN / 1000) * R * a
 ```
 
-Wpis bez kompletu pól jest pomijany bez logu; przy powtórzonym `sensor_id` zostaje pierwszy wpis (`insert`). Para `a`+`b` ma pierwszeństwo przed modelem. Plik `example_config.json` używa klucza `actuator_id`, a parser czyta `sensor_id`.
+Wpis bez kompletu pól jest pomijany bez logu; przy powtórzonym `sensor_id` zostaje pierwszy wpis (`insert`). Para `a`+`b` ma pierwszeństwo przed modelem. `MakeCalibration` zwraca `nullopt`, gdy odczyt napięcia wynosi 0 lub nie jest liczbą skończoną (wcześniej dzielenie przez 0).
 
 ```mermaid
 flowchart LR

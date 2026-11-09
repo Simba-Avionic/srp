@@ -8,6 +8,7 @@
  * @copyright Copyright (c) 2024
  * 
  */
+#include <cmath>
 #include <vector>
 #include <string>
 #include <thread>  // NOLINT
@@ -42,7 +43,9 @@ core::ErrorCode ADCSensorController::Init(const std::string path,
   if (!obj_r.has_value()) {
     return core::ErrorCode::kNotDefine;
   }
-  this->db_ = this->ReadConfig(obj_r.value());
+  auto new_db = this->ReadConfig(obj_r.value());
+  std::lock_guard<std::mutex> lock(db_mtx_);
+  this->db_ = std::move(new_db);
   for (const auto sensor : this->db_) {
     std::ostringstream ss;
     ss << "register sensor id: " << static_cast<int>(sensor.first) << " on ADC channel: " <<
@@ -63,6 +66,7 @@ core::ErrorCode ADCSensorController::setPtr(std::unique_ptr<IADS7828> adc_) {
 }
 
 void ADCSensorController::setConfig(const std::unordered_map<uint8_t, SensorConfig>& db_) {
+    std::lock_guard<std::mutex> lock(db_mtx_);
     this->db_ = db_;
 }
 
@@ -114,15 +118,21 @@ std::optional<float> ADCSensorController::GetValue(const uint8_t sensor_id) cons
     if (!this->adc_) {
         return std::nullopt;
     }
-    auto sensor = this->db_.find(sensor_id);
-    if (sensor == db_.end()) {
-        return std::nullopt;
+    SensorConfig cfg;
+    {
+        std::lock_guard<std::mutex> lock(db_mtx_);
+        auto sensor = this->db_.find(sensor_id);
+        if (sensor == db_.end()) {
+            return std::nullopt;
+        }
+        cfg = sensor->second;
     }
-    auto res = this->adc_->GetAdcVoltage(sensor->second.channel);
+    // odczyt ADC (I2C, moze trwac do timeoutu) poza blokada
+    auto res = this->adc_->GetAdcVoltage(cfg.channel);
     if (!res.has_value()) {
         return std::nullopt;
     }
-    float value = sensor->second.a * res.value() + sensor->second.b;
+    float value = cfg.a * res.value() + cfg.b;
     return value;
 }
 
@@ -130,17 +140,29 @@ std::optional<SensorConfig> ADCSensorController::MakeCalibration(const uint8_t s
     if (!this->adc_) {
         return std::nullopt;
     }
+    SensorConfig cfg;
+    {
+        std::lock_guard<std::mutex> lock(db_mtx_);
+        auto sensor = this->db_.find(sensor_id);
+        if (sensor == db_.end()) {
+            return std::nullopt;
+        }
+        cfg = sensor->second;
+    }
+    auto res = this->adc_->GetAdcVoltage(cfg.channel);
+    if (!res.has_value()) {
+        return std::nullopt;
+    }
+    if (!std::isfinite(res.value()) || res.value() == 0.0f) {
+        return std::nullopt;  // dzielenie przez 0 dalo by a = inf/NaN
+    }
+    cfg.a = (1.0f - cfg.b) / res.value();
+    std::lock_guard<std::mutex> lock(db_mtx_);
     auto sensor = this->db_.find(sensor_id);
     if (sensor == db_.end()) {
         return std::nullopt;
     }
-    auto res = this->adc_->GetAdcVoltage(sensor->second.channel);
-    if (!res.has_value()) {
-        return std::nullopt;
-    }
-
-    sensor->second.a = (1.0f - sensor->second.b) / res.value();
-
+    sensor->second.a = cfg.a;
     return sensor->second;
 }
 
