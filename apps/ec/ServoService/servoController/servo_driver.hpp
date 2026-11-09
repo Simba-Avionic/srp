@@ -85,12 +85,17 @@ class ServoDriver {
     const uint16_t baseTicks = std::min(kMax_ticks, std::max(kMin_ticks, calculatedTicks));
     return baseTicks;
   }
+  /**
+   * @brief Move the servo; false when the MOSFET could not be enabled or the PWM write failed (F-18)
+   */
   bool SetServoPosition(const srp::service::ServoRuntimeConfig& cfg, const uint8_t state) {
     std::unique_lock<std::mutex> lock(operation_mtx);
+    bool success = true;
     if (cfg.mosfet_id != 0) {
       if (gpio_.SetPinValue(cfg.mosfet_id, kOpenState, 0) != core::ErrorCode::kOk) {
         logger_.LogError() << "ServoController.ExecuteServoMovement: failed to enable MOSFET " <<
                               cfg.mosfet_id;
+        success = false;
       }
     }
 
@@ -101,9 +106,10 @@ class ServoDriver {
                        << "to PWM " << target_position;
 
     if (driver_.SetChannelPosition(cfg.channel, target_position) != core::ErrorCode::kOk) {
-        logger_.LogWarn() << "ServoController.ExecuteServoMovement: failed to set PWM ";
+        logger_.LogError() << "ServoController.ExecuteServoMovement: failed to set PWM, channel " << cfg.channel;
+        success = false;
     }
-    return true;
+    return success;
   }
 
   std::optional<uint16_t> ReadServoPosition(const uint8_t channel) {
