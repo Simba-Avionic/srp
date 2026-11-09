@@ -40,3 +40,17 @@ cc_test(
         "//mw/gpio_server/tests/test_data:gpio_test_data",
         ],
 )
+
+cc_test(
+    name = "gpio_did_write_test",
+    srcs = [
+        "test_did_write.cpp",
+        ],
+    copts = ["-D_GLIBCXX_ASSERTIONS"],  # payload[0] on an empty vector aborts instead of silent UB
+    visibility = ["//visibility:public"],
+    deps=[
+        "@com_google_googletest//:gtest_main",
+        "//mw/gpio_server:gpio_service_lib",
+        "//core/gpio/mock:mock_gpio",
+    ],
+)
