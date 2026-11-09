@@ -23,6 +23,7 @@
 #include "mw/i2c_service/controller/pca9685/controller.hpp"
 #include "mw/i2c_service/controller/ina219/controller.hpp"
 #include "ara/log/log.h"
+#include "apps/ec/ServoService/servoController/servo_state.hpp"
 #include "ara/log/logging_menager.h"
 #include "mw/i2c_service/controller/24lc32at/eeprom_config/cfg_manager.hpp"
 
@@ -42,8 +43,7 @@ namespace {  // NOLINT
   // F-23: the PCA9685 oscillator correction read from the EEPROM is trusted only inside this range
   static constexpr float kMin_xo_correlation = 0.7f;
   static constexpr float kMax_xo_correlation = 1.3f;
-  static constexpr uint8_t kOpenState = 1U;
-  static constexpr uint8_t kCloseState = 0U;
+  static constexpr uint8_t kMosfetOn = 1U;
 }  // namespace
 
 class ServoDriver {
@@ -109,14 +109,15 @@ class ServoDriver {
     std::unique_lock<std::mutex> lock(operation_mtx);
     bool success = true;
     if (cfg.mosfet_id != 0) {
-      if (gpio_.SetPinValue(cfg.mosfet_id, kOpenState, 0) != core::ErrorCode::kOk) {
+      if (gpio_.SetPinValue(cfg.mosfet_id, kMosfetOn, 0) != core::ErrorCode::kOk) {
         logger_.LogError() << "ServoController.ExecuteServoMovement: failed to enable MOSFET " <<
                               cfg.mosfet_id;
         success = false;
       }
     }
 
-    const uint16_t target_angle = ((state == kOpenState) ? cfg.on_pos : cfg.off_pos);
+    const bool open = (state == ToRaw(ServoState::kOpen) || state == ToRaw(ServoState::kOpenPermanent));
+    const uint16_t target_angle = open ? cfg.on_pos : cfg.off_pos;
     const uint16_t target_position = AngleToServoTicks(target_angle) * config.pca9685_XO_corelation;
 
     logger_.LogDebug() << "ServoController.ExecuteServoMovement: setting actuator "
