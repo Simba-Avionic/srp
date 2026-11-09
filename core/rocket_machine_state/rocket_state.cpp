@@ -21,12 +21,12 @@ namespace rocketState {
 
 namespace {
     static const std::unordered_map<RocketState_t, std::vector<RocketState_t>> allowed_transitions = {
-        {RocketState_t::INIT,                     {RocketState_t::DISARM}},
+        {RocketState_t::INIT,                     {RocketState_t::DISARM, RocketState_t::ABORT}},
         {RocketState_t::DISARM,                   {RocketState_t::ARM, RocketState_t::CONNECTION_LOST}},
         {RocketState_t::ARM,                      {RocketState_t::LAUNCH, RocketState_t::ABORT,
                                                     RocketState_t::DISARM, RocketState_t::CONNECTION_LOST}},
         {RocketState_t::ABORT,                    {RocketState_t::DISARM}},
-        {RocketState_t::LAUNCH,                   {RocketState_t::FLIGHT, RocketState_t::ABORT, RocketState_t::ARM}},
+        {RocketState_t::LAUNCH,                   {RocketState_t::FLIGHT, RocketState_t::ARM}},
         {RocketState_t::FLIGHT,                   {RocketState_t::APOGEE, RocketState_t::ABORT}},
         {RocketState_t::APOGEE,                   {RocketState_t::FIRST_PARACHUTE}},
         {RocketState_t::FIRST_PARACHUTE,          {RocketState_t::SECOND_PARACHUTE}},
