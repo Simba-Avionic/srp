@@ -25,6 +25,7 @@ namespace {
 
 void GSHeartbeatGuard::OnNewHbCallback() {
   auto now = std::chrono::high_resolution_clock::now();
+  timepoint previous_hb_time;
   {
     std::lock_guard lock(hb_guard_mtx_);
     if (!first_hb_received_) {
@@ -32,9 +33,12 @@ void GSHeartbeatGuard::OnNewHbCallback() {
       last_hb_time_ = now;
       return;
     }
+    previous_hb_time = last_hb_time_;
     last_hb_time_ = now;
   }
-  auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(now - last_hb_time_).count();
+  // odstep od POPRZEDNIEGO heartbeatu (wczesniej liczony po nadpisaniu last_hb_time_ => zawsze 0)
+  auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(now - previous_hb_time).count();
+  last_interval_ms_.store(duration);
   if (duration > (1000 * kHbDelayWarning)) {
     ara::log::LogWarn() << "GS Heartbeat received with duration: " << duration;
   } else {
