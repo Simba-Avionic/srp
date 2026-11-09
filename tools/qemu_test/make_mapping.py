@@ -15,6 +15,7 @@ res = os.path.join(repo, "qemu_test_results")
 
 # F-xx without a test: reason
 NO_TEST = {
+    "F-07": "zamierzone (decyzja usera 2026-11-09), testy usuniete", "F-13": "zamierzone (decyzja usera 2026-11-09), testy usuniete", "F-16": "zamierzone (decyzja usera 2026-11-09), testy usuniete", "F-24": "zamierzone (decyzja usera 2026-11-09), testy usuniete",
     "F-10": "wyscig callbacks/subscribed_pins_states: deterministyczny test wymaga TSAN (brak tsan w toolchainie)",
     "F-11": "niska waga, pominiete",
     "F-17": "brak specyfikacji jednostki w naglowku CSV",

@@ -43,6 +43,10 @@ bazel test --test_tag_filters=audit_bugs //...          # wszystkie mają paść
 
 Etap sprawdza, czy poprzedni zostawił artefakty (np. `run` bez `build` kończy się komunikatem „run build first”). Kontenery sprzątane są w `trap` także po błędzie. Identyfikator biegu: `QEMU_TEST_RUN_ID` (osobne etapy domyślnie `ci`; wersja jednokomendowa używa PID, więc kilka biegów naraz się nie zderza). Lokalnie równoległe biegi: forma jednokomendowa albo różne `QEMU_TEST_RUN_ID` — inaczej osobne etapy dzielą kontener i staging `ci`. `build` kasuje stare `*.status`.
 
+## Zachowania zamierzone (nie błędy)
+
+Decyzja usera 2026-11-09: **F-07, F-13, F-24** (DID-y diagnostyczne działają w każdym stanie) i **F-16** (ciśnienie nigdy > 250 bar, `int16`×100 wystarcza) są celowe. Ich testy usunięto z grupy `bugs`; w `mapping.md` figurują jako „zamierzone”.
+
 ## Zawartość
 
 - `test_functional.py`, `test_bugs.py` — testy pytest (`audit_lib.py`: ssh do gościa, sterowanie driverami sim przez `$SRP_SIM_DIR/ctl`, UDS/DoIP, wywołania SOME/IP).

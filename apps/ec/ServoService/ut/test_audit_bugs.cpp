@@ -98,16 +98,3 @@ TEST(AuditBugs, F19_ShippedConfigHasAngleAbove180) {
                               << " > 180 deg (config.json:32, silently clamped by servo_driver.hpp)";
   }
 }
-
-/**
- * F-24 (srednia) servo_config_reader.hpp:~99-112 (ChangeServoConfigPosition), servo_controller.cpp:172-196.
- * DID-driven config change accepts any value, with no range check.
- * Expected: new open/close position 500 deg rejected (false). Actual: true, stored.
- */
-TEST(AuditBugs, F24_ChangeConfigPositionAcceptsOutOfRange) {
-  srp::service::ConfigReader r;
-  r.LoadServoConfig("deployment/apps/servo_service/config.json");
-  ASSERT_TRUE(r.GetServoConfig(61).has_value()) << "harness: config not loaded";
-  EXPECT_FALSE(r.ChangeServoConfigPosition(61, 500, 500))
-      << "F-24: ChangeServoConfigPosition accepted 500 deg (servo_config_reader.hpp, no range check)";
-}

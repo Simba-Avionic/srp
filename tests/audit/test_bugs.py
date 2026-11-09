@@ -38,39 +38,6 @@ def test_f06_primer_never_reaches_fired():
     assert v == 4, "F-06: PRIMER_STATUS=%s after ignition request, expected FIRED(4) (primer_controller.cpp:129)" % v
 
 
-def test_f07_primer_did_fires_in_disarm():
-    """F-07 primer_did.hpp:47. UDS write to the primer DID in DISARM (default mode) must be refused and pin 13 stay 0.
-    Actual: gpio id 13 (igniter) is set to 1 for 2.5 s."""
-    _primer_connected()
-    t0 = L.now_ms()
-    r = L.uds("2E0017")
-    time.sleep(1.5)
-    fired = [e for e in L.gpio_sets(13, t0) if e.get("val") == 1]
-    time.sleep(3)   # let the 2.5 s pulse end before the next test
-    assert not fired, ("F-07: igniter pin 13 set to 1 in DISARM after UDS 2E0017 (reply %s, primer_did.hpp:47)"
-                       % r.hex())
-
-
-def test_f13_gpio_did_pin_stays_on():
-    """F-13 gpio_mw_did.h:66-70. DID write bypasses pin_expire: igniter pin 13 stays 1 forever.
-    Expected: refused or auto-off within 5 s. Actual: still 1."""
-    r = L.uds("2E000C" + "0D01")
-    time.sleep(6)
-    state = L.gpio_state(13)
-    L.uds("2E000C" + "0D00")
-    assert r[0] == 0x7F or state == 0, "F-13: pin 13 still %s 6 s after DID write (reply %s)" % (state, r.hex())
-
-
-def test_f16_pressure_feed_int16_wraparound():
-    """F-16 env_service.cpp:230. Full-scale ADC (3.3 V) on the PFS channel must not turn into a negative pressure.
-    Expected value > 0 (saturate); actual -204.50 bar (int16 wrap)."""
-    L.sim_ctl("i2c adc 1 3.3")
-    L.logger_start()
-    v = L.csv_value("PRESSURE_FEED_PRESS", lambda x: abs(x) > 1000, 30)
-    assert v is not None, "harness: PRESSURE_FEED_PRESS never updated"
-    assert v > 0, "F-16: PRESSURE_FEED_PRESS=%.2f bar at 3.3 V (int16 wrap, env_service.cpp:230)" % (v / 100.0)
-
-
 def _arm_with_closed_main():
     assert not L.main_valve_open(), "harness: main valve not closed before the test (PCA ch3=%s)" % L.pca_off_ticks(3)
     assert L.set_mode(2), "harness: ARM refused"
