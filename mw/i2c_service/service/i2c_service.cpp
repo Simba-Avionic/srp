@@ -39,7 +39,9 @@ core::ErrorCode I2CService::Init(std::shared_ptr<core::i2c::II2CDriver> i2c,
 
 std::optional<std::vector<uint8_t>> I2CService::ReadWrite(
                   const std::vector<uint8_t> &payload, std::shared_ptr<i2c::Header> headerPtr) {
-  if (payload.size()%2 != 0) {
+  // payload: register, number of bytes to read - exactly two bytes (an empty payload used to pass %2 and was read
+  // out of bounds)
+  if (payload.size() != 2) {
     i2c_logger_.LogWarn() << "Read request rejected: invalid payload size " << payload.size();
     return std::nullopt;
   }

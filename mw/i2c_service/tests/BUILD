@@ -70,3 +70,17 @@ cc_test(
         "//mw/i2c_service/controller:i2c_controller",
     ],
 )
+
+cc_test(
+    name = "i2c_service_readwrite_test",
+    copts = ["-D_GLIBCXX_ASSERTIONS"],  # payload[0] on an empty vector aborts instead of silent UB
+    srcs = [
+        "test_service_readwrite.cpp",
+        ],
+    visibility = ["//visibility:public"],
+    deps=[
+        "@com_google_googletest//:gtest_main",
+        "//mw/i2c_service/service:i2c_lib",
+        "//communication-core/sockets/mock:mock_socket",
+    ],
+)
