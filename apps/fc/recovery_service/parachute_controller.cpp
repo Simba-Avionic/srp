@@ -21,14 +21,8 @@ namespace srp {
 namespace apps {
 namespace recovery {
 
-namespace {
-  std::shared_ptr<ParachuteController> instance = nullptr;
-}
-
 std::shared_ptr<ParachuteController> ParachuteController::GetInstance() {
-  if (instance == nullptr) {
-    instance = std::make_shared<ParachuteController>();
-  }
+  static std::shared_ptr<ParachuteController> instance = std::make_shared<ParachuteController>();
   return instance;
 }
 
