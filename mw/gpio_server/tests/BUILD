@@ -110,3 +110,18 @@ cc_test(
         "//mw/gpio_server/data:gpio_hdr",
     ],
 )
+
+cc_test(
+    name = "gpio_set_expire_test",
+    srcs = [
+        "test_set_expire.cpp",
+        ],
+    visibility = ["//visibility:public"],
+    deps=[
+        "@com_google_googletest//:gtest_main",
+        "//mw/gpio_server:gpio_service_lib",
+        "//core/gpio/mock:mock_gpio",
+        "//communication-core/sockets/mock:mock_socket",
+        "//mw/gpio_server/data:gpio_hdr",
+    ],
+)
