@@ -54,6 +54,7 @@ cc_library(
         "@srp_mavlink//:simba_mavlink",
         ":uart_driver",
         "//core/common:wait_queue",
+        "//core/common:condition_lib",
     ],
 )
 

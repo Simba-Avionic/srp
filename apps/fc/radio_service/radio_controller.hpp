@@ -14,6 +14,7 @@
 #include <vector>
 #include <cstdint>
 #include <functional>
+#include <atomic>
 #include <thread>  // NOLINT
 #include "core/common/error_code.h"
 #include "core/common/wait_queue.h"
@@ -33,12 +34,17 @@ class MavRadioController {
   core::uart::MavUartDriver uart_;
   core::WaitQueue<std::vector<uint8_t>, 20> UartTxQueue;
   RadioMsgCallback callback;
+  std::atomic<uint32_t> dropped_frames_{0};
+  std::atomic<bool> uart_opened_{false};
   std::jthread uart_transmit_thread;
   std::jthread uart_receive_thread;
   void RxThreadLoop(const std::stop_token& t);
   void TxThreadLoop(const std::stop_token& t);
+  /// Otwiera UART z ponawianiem (co 1 s, LogWarn: pierwsze 10 prob, potem co 30.), po sukcesie RX.
+  void OpenAndRxThreadLoop(const std::stop_token& t);
  public:
-  void Push(const std::vector<uint8_t>& data);
+  /// Nie blokuje. Zwraca false, gdy ramka odrzucona (UART nieotwarty) lub kolejka pelna (najstarsza wypadla).
+  bool Push(const std::vector<uint8_t>& data);
   void TxLoop();
   void Init(RadioMsgCallback callback, const std::stop_token& t);
   MavRadioController();
