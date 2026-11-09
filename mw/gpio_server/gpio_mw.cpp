@@ -112,6 +112,7 @@ std::vector<uint8_t> GPIOMWService::RxCallback(const std::string& ip, const std:
         }
 
         case srp::gpio::ACTION::SUBSCRIBE: {
+            std::lock_guard<std::mutex> lock(subscription_mutex_);
             auto controller_id = hdr.value().value;
             auto pin_id = hdr.value().pin_id;
             ara::log::LogDebug() << "subscription request from controller ID: " << controller_id
@@ -133,6 +134,7 @@ std::vector<uint8_t> GPIOMWService::RxCallback(const std::string& ip, const std:
         }
 
         case srp::gpio::ACTION::UNSUBSCRIBE: {
+            std::lock_guard<std::mutex> lock(subscription_mutex_);
             auto controller_id = hdr.value().value;
             auto pin_id = hdr.value().pin_id;
             if (subscribed_pins_states.find(pin_id) == subscribed_pins_states.end() ||
@@ -166,21 +168,41 @@ std::vector<uint8_t> GPIOMWService::RxCallback(const std::string& ip, const std:
 
 void GPIOMWService::PollSubscribedPinsLoop(const std::stop_token& token) {
     ara::log::LogInfo() << "Starting subscribed pins polling loop";
-    for (auto pair : subscribed_pins_states) {
-        // subscribed pins are checked for existence before being added to the set
-        pair.second = this->gpio_driver_->getValue(config[pair.first].pinNum);
+    {
+        std::lock_guard<std::mutex> lock(subscription_mutex_);
+        for (auto pair : subscribed_pins_states) {
+            // subscribed pins are checked for existence before being added to the set
+            pair.second = this->gpio_driver_->getValue(config[pair.first].pinNum);
+        }
     }
+    struct Notification {
+        PinId pin_id;
+        uint8_t state;
+        std::vector<CallbackId> controllers;
+    };
     while (!token.stop_requested()) {
-        for (auto& pair : subscribed_pins_states) {
-            auto state = this->gpio_driver_->getValue(config[pair.first].pinNum);
-            if (state == pair.second) {
-                continue;
+        std::vector<Notification> to_notify;
+        {
+            // the RX thread (RxCallback) changes the subscriptions: look for the changes under the lock, but
+            // transmit the callbacks outside of it (a slow receiver must not block (un)subscribing)
+            std::lock_guard<std::mutex> lock(subscription_mutex_);
+            for (auto& pair : subscribed_pins_states) {
+                auto state = this->gpio_driver_->getValue(config[pair.first].pinNum);
+                if (state == pair.second) {
+                    continue;
+                }
+                ara::log::LogDebug() << "subscribed pin ID: " << pair.first
+                                     << " changed state to: " << state;
+                pair.second = state;
+                auto it = callbacks.find(pair.first);
+                if (it != callbacks.end()) {
+                    to_notify.push_back({pair.first, state, it->second});
+                }
             }
-            ara::log::LogDebug() << "subscribed pin ID: " << pair.first
-                                 << " changed state to: " << state;
-            pair.second = state;
-            for (auto controller_id : callbacks[pair.first]) {
-                srp::mw::gpio::GpioHdr hdr{srp::gpio::ACTION::CALLBACK, pair.first, state};
+        }
+        for (const auto& notification : to_notify) {
+            for (auto controller_id : notification.controllers) {
+                srp::mw::gpio::GpioHdr hdr{srp::gpio::ACTION::CALLBACK, notification.pin_id, notification.state};
                 auto buf = srp::data::Convert2Vector<srp::mw::gpio::GpioHdr>::Conv(hdr);
                 std::string callback_path = CALLBACK_PATH_PREFIX + std::to_string(controller_id);
                 auto res = this->sock_->Transmit(callback_path, 0, buf);

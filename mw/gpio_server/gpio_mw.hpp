@@ -54,6 +54,9 @@ class GPIOMWService : public ara::exec::AdaptiveApplication {
     uint8_t next_controller_id = 1;  // indeces start from 1
     std::jthread pin_expire_thread;
     std::mutex pin_expire_mutex;
+    // guards subscribed_pins_states, callbacks and next_controller_id: RX thread (RxCallback) vs Run thread
+    // (PollSubscribedPinsLoop)
+    std::mutex subscription_mutex_;
 
     std::chrono::milliseconds CheckPinsExpired();
     void PollSubscribedPinsLoop(const std::stop_token& token);
