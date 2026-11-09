@@ -45,6 +45,10 @@ namespace {
 }  // namespace
 void LoggerService::SaveLoop(const std::stop_token& token,
             std::shared_ptr<core::timestamp::TimestampController> timestamp) {
+  struct DoneGuard {
+    std::atomic<bool>& flag;
+    ~DoneGuard() { flag.store(true); }
+  } done_guard{save_loop_done_};
   csv::CSVDriver writer_;
   writer_.Init(std::make_unique<core::FileHandler>());
 
@@ -65,6 +69,8 @@ void LoggerService::SaveLoop(const std::stop_token& token,
       const auto start = std::chrono::high_resolution_clock::now();
       auto val = timestamp->GetNewTimeStamp();
       if (!val.has_value()) {
+        // brak znacznika czasu: nie krec petli na goraco, ponow po interwale
+        core::condition::wait_for(std::chrono::milliseconds(kSave_interval), token);
         continue;
       }
       if (writer_.WriteLine(this->data.to_string(std::to_string(val.value()))) != 0) {
@@ -164,7 +170,14 @@ LoggerService::LoggerService():
 void LoggerService::start_func_handler(const std::uint8_t status) {
   ara::log::LogWarn() << "LoggerService::start_func_handler: status=" << status
                       << " save_thread_=" << (this->save_thread_ ? "set" : "null");
+  if (status == 1 && this->save_thread_ && this->save_loop_done_.load()) {
+    // poprzednia SaveLoop sie zakonczyla (np. nieudany Open) - posprzataj, zeby dalo sie wystartowac ponownie
+    ara::log::LogWarn() << "LoggerService::start_func_handler: previous save loop ended, restarting";
+    this->save_thread_->join();
+    this->save_thread_.reset();
+  }
   if (status == 1 && !this->save_thread_) {
+    this->save_loop_done_.store(false);
     this->save_thread_ = std::make_shared<std::jthread>(
       [this](std::stop_token token) {
           SaveLoop(token, this->timestamp_);
