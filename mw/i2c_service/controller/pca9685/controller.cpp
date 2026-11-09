@@ -22,6 +22,9 @@ namespace i2c {
 namespace {
     constexpr uint8_t PCA9685_ADDRESS = 0x70;
     constexpr uint8_t MODE1_REG = 0x00;
+    // MODE1 bits: RESTART 0x80, AI (register auto-increment) 0x20, SLEEP 0x10, ALLCALL 0x01
+    constexpr uint8_t MODE1_SLEEP_AI = 0x31;    // sleep (needed to change the prescaler) + AI + ALLCALL
+    constexpr uint8_t MODE1_RESTART_AI = 0xA1;  // restart + AI + ALLCALL
     constexpr uint8_t PRESCALE_REG = 0xFE;
     constexpr uint8_t PRESCALE_50_HZ_VALUE = 0x79;
     constexpr uint8_t LED_ON_L_LOOKUP[16] = {
@@ -55,16 +58,16 @@ core::ErrorCode PCA9685::Init(std::unique_ptr<II2CController> i2c) {
   return core::ErrorCode::kOk;
 }
 core::ErrorCode PCA9685::InitializePCA() {
-    if (this->i2c_->Write(PCA9685_ADDRESS, {MODE1_REG, 0x11}) != core::ErrorCode::kOk) {
-        pac_logger_.LogWarn() << "PCA9685.InitializePCA: failed to write MODE1 wake command";
+    if (this->i2c_->Write(PCA9685_ADDRESS, {MODE1_REG, MODE1_SLEEP_AI}) != core::ErrorCode::kOk) {
+        pac_logger_.LogWarn() << "PCA9685.InitializePCA: failed to write MODE1 (sleep, auto-increment)";
         return core::ErrorCode::kInitializeError;
     }
     if (this->i2c_->Write(PCA9685_ADDRESS, {PRESCALE_REG, PRESCALE_50_HZ_VALUE}) != core::ErrorCode::kOk) {
         pac_logger_.LogWarn() << "PCA9685.InitializePCA: failed to set prescaler";
         return core::ErrorCode::kInitializeError;
     }
-    if (this->i2c_->Write(PCA9685_ADDRESS, {MODE1_REG, 0x81}) != core::ErrorCode::kOk) {
-        pac_logger_.LogWarn() << "PCA9685.InitializePCA: failed to set MODE1 restart";
+    if (this->i2c_->Write(PCA9685_ADDRESS, {MODE1_REG, MODE1_RESTART_AI}) != core::ErrorCode::kOk) {
+        pac_logger_.LogWarn() << "PCA9685.InitializePCA: failed to set MODE1 (restart, auto-increment)";
         return core::ErrorCode::kInitializeError;
     }
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
@@ -82,18 +85,21 @@ core::ErrorCode PCA9685::setI2C(std::unique_ptr<II2CController> i2c) {
   return core::ErrorCode::kOk;
 }
 std::vector<uint8_t> PCA9685::GenerateData(const uint8_t &channel, const uint16_t &pos) const {
+    // one block for the auto-increment write: the first register (ON_L) and then ON_L, ON_H, OFF_L, OFF_H
     return {
-    LED_ON_L_LOOKUP[channel], 0,  // ON LOW REG Val
-    LED_ON_H_LOOKUP[channel], 0,   // ON HIGH REG Val
-    LED_OFF_L_LOOKUP[channel], static_cast<uint8_t>(pos & 0x00FFU),  // OFF LOW REG Val
-    LED_OFF_H_LOOKUP[channel], static_cast<uint8_t>(pos >> 8)};   // OFF HIGH REG Val;
+    LED_ON_L_LOOKUP[channel],  // address of the first register of the channel
+    0,  // ON LOW REG Val
+    0,  // ON HIGH REG Val
+    static_cast<uint8_t>(pos & 0x00FFU),  // OFF LOW REG Val
+    static_cast<uint8_t>(pos >> 8)};  // OFF HIGH REG Val
 }
 
 
 core::ErrorCode PCA9685::SetChannelPosition(uint8_t channel, uint16_t pos) {
   pac_logger_.LogDebug() << "PCA9685.SetChannelPosition: channel " <<
                              channel << " pos " << pos;
-  return this->i2c_->Write(PCA9685_ADDRESS, GenerateData(channel, pos));
+  // one I2C transaction (register auto-increment): the channel is never left half-written by the driver
+  return this->i2c_->PageWrite(PCA9685_ADDRESS, GenerateData(channel, pos));
 }
 
 
