@@ -89,9 +89,15 @@ cc_library(
 cc_library(
     name = "uart_driver",
     hdrs = ["mavlink_uart_driver.hpp"],
-    srcs = ["mavlink_uart_driver.cpp"],
+    srcs = select({
+        "//:sim": ["sim_mavlink_uart_driver.cpp"],
+        "//conditions:default": ["mavlink_uart_driver.cpp"],
+    }),
     deps = [
         "//core/common:common_types",
-    ],
+    ] + select({
+        "//:sim": ["//core/sim:sim_ctl"],
+        "//conditions:default": [],
+    }),
     visibility = ["//visibility:public"],
 )

@@ -34,6 +34,7 @@ cc_library(
         "//mw:__subpackages__",
         "//apps:__subpackages__"],
     deps = [
+        "//core/sim:sim_ctl",
         "//core/temp:temp_interface",
         "//core/common:common_types",
         "@srp_platform//ara/log",

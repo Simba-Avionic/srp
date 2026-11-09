@@ -4,7 +4,7 @@ Sterownik portu szeregowego POSIX (`termios`).
 
 ## TL;DR
 
-Otwiera UART (8N1, bez hardware flow control), czyta i zapisuje bajty. Używany przez radio (MAVLink), GPS (NMEA) i warstwę RS485 (PD-33X).
+Otwiera UART (8N1, bez hardware flow control), czyta i zapisuje bajty. Używany przez radio (MAVLink), GPS (NMEA) i warstwę RS485 (PD-33X). W trybie `--define build_mode=sim` `uart_driver` kompiluje `sim_uart_driver.cpp`: `Open` działa na dowolnej ścieżce, bajty RX wstrzykuje test przez `ctl`, a `Write` ląduje w `events.jsonl` i `state/uart/<port>.tx` (`core/sim/README.md`).
 
 ## Opis funkcjonalności
 
@@ -45,6 +45,6 @@ class MockUartDriver;
 ## BUILD
 
 - `//core/uart:Iuart_driver`
-- `//core/uart:uart_driver`
+- `//core/uart:uart_driver` (w `build_mode=sim` źródło `sim_uart_driver.cpp`)
 - `//core/uart:mock_uart`
 - Test: `//core/uart/ut:uart_test`

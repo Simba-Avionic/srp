@@ -40,7 +40,7 @@ Błędy: `ara::core::Result` (`ara::com::ComErrc::kErroneousFileHandle` przy pro
 
 ## Symulacja
 
-`SIM_temp_driver`: stałe 33.33 °C, rozdzielczość 9, pusta lista czujników, czas odpowiedzi 250 ms.
+`SIM_temp_driver`: tabela czujników id → wartość/błąd/timeout (domyślnie 3 czujniki, 25.0 °C), sterowanie przez `$SRP_SIM_DIR/ctl` — `core/sim/README.md`.
 
 ## BUILD
 
