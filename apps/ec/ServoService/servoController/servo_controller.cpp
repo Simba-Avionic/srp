@@ -42,8 +42,12 @@ void ServoController::closingThreadLoop(const std::stop_token& token) {
           continue;
         }
         if (cfg.value().open_time_end <= now) {
-          servo_ctr_.SetServoPosition(cfg.value(), 0);
-          servo_cfg_mng.SetServoPosition(id, kCloseState);
+          if (servo_ctr_.SetServoPosition(cfg.value(), 0)) {
+            servo_cfg_mng.SetServoPosition(id, kCloseState);
+          } else {
+            // F-18: do not report the actuator as closed; the next loop iteration retries
+            logger_.LogError() << "ServoController.closingThreadLoop: failed to auto-close actuator " << id;
+          }
         } else {
           auto time_until_end = std::chrono::duration_cast<
                   std::chrono::milliseconds>(cfg.value().open_time_end - now);
