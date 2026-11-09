@@ -51,13 +51,14 @@ class GpioMWDID : public ara::diag::GenericDiD {
   }
   ara::core::Result<void> Write(
     const std::vector<uint8_t> &payload) noexcept override {
-  ara::log::LogInfo() << "Receive diag write req with payload size: "
-      << (uint16_t)payload.size() << ",p[0] = " << payload[0] << ",p[1] = " << payload[1];
+  ara::log::LogInfo() << "Receive diag write req with payload size: " << static_cast<uint16_t>(payload.size());
   if (payload.size() != 2) {
     ara::log::LogWarn() << "Invalid payload size ";
     return ara::diag::MakeErrorCode(
       ara::diag::UdsDiagErrc::kInvalidMessageLengthFormat);
   }
+  ara::log::LogInfo() << "p[0] = " << static_cast<uint16_t>(payload[0]) << ",p[1] = "
+      << static_cast<uint16_t>(payload[1]);
   if (payload[0] > 60 || (payload[1] != 0 && payload[1] != 1)) {
     ara::log::LogWarn() << "Invalid data in payload";
     return ara::diag::MakeErrorCode(
