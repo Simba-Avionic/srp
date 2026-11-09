@@ -30,6 +30,8 @@ class TempDriver : public ITempDriver {
  public:
   // TODO(GH): Add Check that sensor exist.
   TempDriver();
+  /// DS18B20: 85.0 C (power-on reset) i -127.0 C (blad odczytu) to nie sa pomiary.
+  static bool IsInvalidReading(double value) noexcept;
   ara::core::Result<double> ReadTemp(const std::string& sensorPhysicalID) override;
   ara::core::Result<bool> SetResolution(const std::string& sensorPhysicalID, uint8_t resolution) override;
   ara::core::Result<uint8_t> ReadResolution(const std::string& sensorPhysicalID) override;
