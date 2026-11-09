@@ -28,7 +28,7 @@ Stany do `LAUNCH` steruje GS (przez radio). `FLIGHT` wywołuje EC. Stany od `APO
 | 7 | SECOND_PARACHUTE | Odrefowanie |
 | 8 | DROP | Opadanie odrefowane |
 | 9 | TOUCHDOWN | Na ziemi |
-| 54 | CONNECTION_LOST | Brak HB z GS (~2 min) |
+| 54 | CONNECTION_LOST | Brak HB z GS (EC ~2 min, FC ~5 min), tylko przed LAUNCH |
 | 64 | ABORT | Zrzut paliwa / wyłączenie silnika |
 
 ## Architektura

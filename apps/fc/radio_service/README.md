@@ -4,7 +4,7 @@
 
 ## TL;DR
 
-`RadioService` (id **530**), UART `/dev/ttyS1` @ 57600. Pełny TX: HB ~990 ms, max alt 100 ms, tank / GPS / computer telem 1 s. RX: heartbeat GS (4 potwierdzenia przed zmianą stanu), RADIO_STATUS. Timeout: **5 min** CONNECTION_LOST, **15 min** ABORT → `Main.setMode` + `Engine.SetMode`.
+`RadioService` (id **530**), UART `/dev/ttyS1` @ 57600. Pełny TX: HB ~990 ms, max alt 100 ms, tank / GPS / computer telem 1 s. RX: heartbeat GS (4 potwierdzenia przed zmianą stanu), RADIO_STATUS. Timeout: **5 min** CONNECTION_LOST, **15 min** ABORT → `Main.setMode` + `Engine.SetMode` (tylko przed LAUNCH; od LAUNCH wzwyż utrata łączności nic nie robi).
 
 ## Opis funkcjonalności
 

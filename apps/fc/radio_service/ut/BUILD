@@ -24,3 +24,12 @@
 #         "//apps/fc/radio_service:radio_app_lib",
 #     ],
 # )
+
+cc_test(
+    name = "gs_hb_guider_test",
+    srcs = ["test_gs_hb_guider.cpp"],
+    deps = [
+        "//apps/fc/radio_service:gs_hb_guider",
+        "@com_google_googletest//:gtest_main",
+    ],
+)

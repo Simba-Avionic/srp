@@ -259,6 +259,11 @@ int RadioApp::Run(const std::stop_token& token) {
     if (main_handler) {
       main_handler->setMode(static_cast<uint8_t>(state));
     }
+  }, [this]() {
+    // the guard is switched off from LAUNCH on: the rocket is in the flight phase if either computer is
+    const auto eb = event_data->GetComputerState(BoardType_e::EB);
+    const auto mb = event_data->GetComputerState(BoardType_e::MB);
+    return radio::GSHeartbeatGuard::IsFlightPhase(eb) ? eb : mb;
   });
   ara::log::LogDebug() << "RadioApp Run starting threads";
   timer_ctr_.Start();

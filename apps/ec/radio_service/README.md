@@ -4,7 +4,7 @@ Most GS ↔ rakieta po MAVLink (UART). Źródła EC; na platformie **w pakiecie 
 
 ## TL;DR
 
-`FcRadioService` (id **545**) na UART `/dev/ttyS1` @ 57600. RX: heartbeat GS (stan + aktuatory, **4 identyczne ramki**), RADIO_STATUS, komendy tankowania (→ FuelService), masa rakiety i ciśnienia zbiorników GSE (→ eventy). TX: HB i max alt co 5 s, GPS co 2 s, status tankowania co 1 s i przy zmianie (tank/computer telem wyłączone). Timeout: 2 min → CONNECTION_LOST, 15 min → ABORT.
+`FcRadioService` (id **545**) na UART `/dev/ttyS1` @ 57600. RX: heartbeat GS (stan + aktuatory, **4 identyczne ramki**), RADIO_STATUS, komendy tankowania (→ FuelService), masa rakiety i ciśnienia zbiorników GSE (→ eventy). TX: HB i max alt co 5 s, GPS co 2 s, status tankowania co 1 s i przy zmianie (tank/computer telem wyłączone). Timeout: 2 min → CONNECTION_LOST, 15 min → ABORT (tylko przed LAUNCH; od LAUNCH wzwyż utrata łączności nic nie robi).
 
 ## Opis funkcjonalności
 
@@ -97,11 +97,14 @@ stateDiagram-v2
   Aktywny --> UtrataLacznosci: 2 min bez HB
   UtrataLacznosci --> Abort: 15 min bez HB
   UtrataLacznosci --> Aktywny: heartbeat GS
+  Aktywny --> Wylaczony: stan LAUNCH lub dalej
+  UtrataLacznosci --> Wylaczony: stan LAUNCH lub dalej
   Abort --> Aktywny: heartbeat GS
 ```
 
 - Do pierwszego heartbeatu GS strażnik nie działa (brak timeoutu po starcie).
-- Pętla co 1 s: `diff ≥ 15 min` → `ABORT`, w przeciwnym razie `diff ≥ 2 min` → `CONNECTION_LOST`; przy trwającej utracie łączności callback jest wołany **co sekundę** (Engine odrzuca powtórzenie tego samego stanu zwracając `false`). Callback to `Engine.SetMode` + `Main.setMode`.
+- **Od stanu LAUNCH wzwyż (LAUNCH … TOUCHDOWN) strażnik jest wyłączony** — utrata łączności z GS w trakcie startu/lotu nic nie robi (jeden wpis Info w logu). Stan odczytywany z `EventData` (komputer EB lub MB w LAUNCH…TOUCHDOWN → bez akcji).
+- Pętla co 1 s (przed LAUNCH): `diff ≥ 15 min` → `ABORT`, w przeciwnym razie `diff ≥ 2 min` → `CONNECTION_LOST`; przy trwającej utracie łączności callback jest wołany **co sekundę** (Engine odrzuca powtórzenie tego samego stanu zwracając `false`). Callback to `Engine.SetMode` + `Main.setMode`.
 - Ostrzeżenie o opóźnieniu heartbeatu (`> 1,1 s`) liczy różnicę po nadpisaniu `last_hb_time_`, więc faktycznie porównuje czas z samym sobą.
 
 ## Obsługa błędów
@@ -112,7 +115,7 @@ stateDiagram-v2
 | brak handlera usługi | `Warn`/`LogError` i pominięcie komendy |
 | zła/niepełna ramka MAVLink | parser ją odrzuca, brak callbacku |
 | brak znacznika czasu | heartbeat TX pomijany |
-| zerwane łącze z GS | patrz watchdog: 2 min CONNECTION_LOST, 15 min ABORT |
+| zerwane łącze z GS | patrz watchdog: 2 min CONNECTION_LOST, 15 min ABORT — tylko przed LAUNCH; od LAUNCH bez akcji |
 
 ## API SOME/IP
 
@@ -134,7 +137,7 @@ Model deklaruje metody `SetGSEOxidizerFillValve` (1) i `SetGSEPFSFillValve` (2) 
 | 2 min | CONNECTION_LOST |
 | 15 min | ABORT |
 
-Oba idą jako `EngineService.SetMode` + `MainService.setMode`.
+Oba idą jako `EngineService.SetMode` + `MainService.setMode`, ale tylko przed stanem LAUNCH (od LAUNCH wzwyż strażnik nic nie robi).
 
 ## Konfiguracja
 

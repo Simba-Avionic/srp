@@ -12,6 +12,7 @@
 #include <chrono>  // NOLINT
 #include <thread>  // NOLINT
 #include <string>
+#include <optional>
 #include "ara/log/log.h"
 #include "core/common/condition.h"
 namespace srp {
@@ -45,8 +46,27 @@ void GSHeartbeatGuard::OnNewHbCallback() {
 GSHeartbeatGuard::GSHeartbeatGuard(): first_hb_received_(false) {
 }
 
-void GSHeartbeatGuard::Init(GsConLossCB cb) {
+bool GSHeartbeatGuard::IsFlightPhase(RocketState_t state) {
+  // the states 3..9 (LAUNCH ... TOUCHDOWN); CONNECTION_LOST (54) and ABORT (64) are outside of this range
+  return state >= RocketState_t::LAUNCH && state <= RocketState_t::TOUCHDOWN;
+}
+
+std::optional<RocketState_t> GSHeartbeatGuard::Evaluate(RocketState_t current, int64_t ms_since_last_hb) {
+  if (IsFlightPhase(current)) {
+    return std::nullopt;  // a lost connection during the flight does nothing
+  }
+  if (ms_since_last_hb >= kDuration_from_last_hb_to_abort_ms) {
+    return RocketState_t::ABORT;
+  }
+  if (ms_since_last_hb >= kDuration_from_last_hb_to_conn_lost_ms) {
+    return RocketState_t::CONNECTION_LOST;
+  }
+  return std::nullopt;
+}
+
+void GSHeartbeatGuard::Init(GsConLossCB cb, RocketStateProviderCB provider) {
   this->callback = cb;
+  this->state_provider = provider;
   guard_thread = std::jthread([this](const std::stop_token& t){
     GSHeartbeatGuardLoop(t);
   });
@@ -59,6 +79,7 @@ void GSHeartbeatGuard::GSHeartbeatGuardLoop(const std::stop_token& t) {
       this->callback(state);
   };
   bool first_hb_received;
+  bool flight_loss_logged = false;
   timepoint last_hb_time;
   while (!t.stop_requested()) {
     core::condition::wait_for(std::chrono::milliseconds(1000), t);
@@ -73,10 +94,23 @@ void GSHeartbeatGuard::GSHeartbeatGuardLoop(const std::stop_token& t) {
     auto now = std::chrono::high_resolution_clock::now();
     auto diff = std::chrono::duration_cast<std::chrono::milliseconds>(now - last_hb_time).count();
 
-    if (diff >= kDuration_from_last_hb_to_abort_ms) {
-        broadcast_state(RocketState_t::ABORT, "Timeout ABORT");
-    } else if (diff >= kDuration_from_last_hb_to_conn_lost_ms) {
-        broadcast_state(RocketState_t::CONNECTION_LOST, "Timeout CONN_LOST");
+    const auto current = state_provider ? state_provider() : RocketState_t::INIT;
+    if (IsFlightPhase(current)) {
+      // from LAUNCH on the mechanism is switched off: nothing is done, only one Info per episode of the lost link
+      if (diff >= kDuration_from_last_hb_to_conn_lost_ms && !flight_loss_logged) {
+        flight_loss_logged = true;
+        ara::log::LogInfo() << "GS Connection Guard: GS heartbeat lost for " << diff << " ms in state "
+                            << core::rocketState::to_string(current)
+                            << ", ignored (the guard works only before LAUNCH)";
+      } else if (diff < kDuration_from_last_hb_to_conn_lost_ms) {
+        flight_loss_logged = false;
+      }
+      continue;
+    }
+    flight_loss_logged = false;
+    const auto target = Evaluate(current, diff);
+    if (target.has_value()) {
+      broadcast_state(target.value(), target.value() == RocketState_t::ABORT ? "Timeout ABORT" : "Timeout CONN_LOST");
     }
   }
 }
