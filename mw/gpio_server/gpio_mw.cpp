@@ -79,6 +79,10 @@ std::vector<uint8_t> GPIOMWService::RxCallback(const std::string& ip, const std:
                                 << " value: " << hdr.value().value
                                 << " active_ms: " << hdr.value().time_period;
             if (hdr.value().value == 0) {
+                // the pin is off: forget the pending auto-disable (an old "infinite" entry would otherwise
+                // survive and make the next timed SET never expire)
+                std::lock_guard<std::mutex> lock(pin_expire_mutex);
+                pin_expire.erase(hdr.value().pin_id);
                 return {core::ErrorCode::kOk};
             }
             {
