@@ -80,7 +80,8 @@ TEST_F(TimestampMasterTest, CorrectStartPointAdjustsStartTime) {
 // }
 TEST(TimestampTest, Error) {
     TimestampController slave;
-    EXPECT_TRUE(slave.Init());
+    // F-45: bez mastera (uslugi timestamp) Init() ma zwrocic false (wczesniej po 6 s zwracal true)
+    EXPECT_FALSE(slave.Init());
     auto t1 = slave.GetNewTimeStamp();
     ASSERT_FALSE(t1.has_value());
 }
