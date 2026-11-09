@@ -8,6 +8,7 @@
  * @copyright Copyright (c) 2024
  * 
  */
+#include <cmath>
 #include <optional>
 #include <vector>
 #include <cstdint>
@@ -29,6 +30,10 @@ namespace {
     constexpr auto kSensorPath = "/sys/bus/w1/devices/";
     constexpr auto kManagerName = "w1_bus_master1";
 }
+bool TempDriver::IsInvalidReading(double value) noexcept {
+    return std::fabs(value - 85.0) < 1e-6 || std::fabs(value + 127.0) < 1e-6;
+}
+
 TempDriver::TempDriver():
     logger_(ara::log::LoggingMenager::GetInstance()->CreateLogger(
         "temp", "", ara::log::LogLevel::kWarn)) {}
@@ -43,8 +48,10 @@ ara::core::Result<double> TempDriver::ReadTemp(const std::string& sensorPhysical
     std::getline(file, line);
     try {
         const double value = std::stod(line) / 1000.0;
-        if (value == 85.0 || value == -127.0) {
-            logger_.LogWarn() << "Sensor " << sensorPhysicalID << " returned power-on reset value (85C)";
+        if (IsInvalidReading(value)) {
+            logger_.LogWarn() << "Sensor " << sensorPhysicalID << " returned invalid value " << value
+                              << " C (power-on reset 85 C or read error -127 C), reading discarded";
+            return ara::com::MakeErrorCode(ara::com::ComErrc::kErroneousFileHandle, "Invalid sensor reading");
         }
         return value;
     } catch (const std::exception& e) {
