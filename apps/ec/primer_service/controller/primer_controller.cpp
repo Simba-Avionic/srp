@@ -26,6 +26,8 @@ namespace srp {
 namespace primer {
 
 namespace {
+  static constexpr uint8_t kIgniter_pin_id = 13;
+  static constexpr uint16_t kIgniter_active_time = 2500;
   static constexpr uint8_t kPrimer_on = 1;
   static constexpr uint8_t kPrimer_off = 0;
   static constexpr bool kRequire_primer_veryfication = true;
@@ -56,6 +58,8 @@ PrimerController::PrimerController():
             prim_logger{ara::log::LoggingMenager::GetInstance()->CreateLogger(
           "CTRL", "", ara::log::LogLevel::kWarn)} {
     prim_logger.LogInfo() << "PrimerController initialized";
+    config_.active_time_ms = kIgniter_active_time;
+    config_.pins.push_back(kIgniter_pin_id);
 }
 
 void PrimerController::VerifyPrimerConection() {
