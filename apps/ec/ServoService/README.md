@@ -127,7 +127,7 @@ Pozycja w eventach i DID-ach to stan zadany, nie odczyt z PCA9685, więc błąd 
 | DumpServoStatus | 18 | status dump |
 | ServoDid | 21 | zapis kalibracji `[id][open_hi][open_lo][close_hi][close_lo]` (kąty jak `on_pos`/`off_pos`) |
 
-Uwaga: klasy handlerów (`servo_service_did.h`, `servo_did.h`) nie są tworzone w `ServoService::Initialize`, więc DID-y są zadeklarowane w modelu, ale w tej aplikacji nie mają implementacji. `ServoController::ChangeConfigPosition` (zmiana kątów w pamięci + zamknięcie zaworu) istnieje, lecz nie jest wołane z `ServoService`.
+DID-y są tworzone w `ServoService::Initialize` i oferowane w `Run` (razem z usługami SOME/IP), zatrzymywane przy zakończeniu.
 
 ## Konfiguracja
 
