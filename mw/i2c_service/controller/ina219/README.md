@@ -24,7 +24,7 @@
 - `Current_LSB = 8 A / 32768 = 244,14 µA`; `R_shunt = 0,01 Ω` (stałe w kodzie, nie w configu).
 - Prąd: `int16_t raw = (b0<<8)|b1; I[A] = raw · Current_LSB` (ze znakiem).
 - Napięcie: `raw16 = (b0<<8)|b1; V = (raw16 >> 3) · 0,004` (LSB 4 mV; bity statusu CNVR/OVF są odrzucane, nie sprawdzane).
-- Komentarz w kodzie opisuje uśrednianie jako „12b, 2 samples”; faktycznie zapisywana jest wartość pola ADC `0b1000`.
+- Pole ADC `0b1000` = 12 bitów, 1 próbka (komentarz w kodzie mówił „2 samples” — poprawiony).
 
 ## Obsługa błędów
 
@@ -36,8 +36,8 @@ sequenceDiagram
   A->>K: InitDriver
   K->>I: Init socket
   A->>K: Initialize addr
-  K->>I: Write 00 hi lo
-  K->>I: Write 05 hi lo
+  K->>I: PageWrite 00 hi lo
+  K->>I: PageWrite 05 hi lo
   A->>K: GetCurrent addr
   K->>I: Read addr 04 n=2
   I-->>K: 2 bajty
@@ -47,10 +47,10 @@ sequenceDiagram
 | Sytuacja | Efekt |
 |----------|-------|
 | `Init` socketu nieudany | `InitDriver` → `kInitializeError` |
-| `Write` konfiguracji lub kalibracji nieudany | `Initialize` → `kConnectionError` (log `Error`), bez ponowień |
+| `PageWrite` konfiguracji lub kalibracji nieudany | `Initialize` → `kConnectionError` (log `Error`), bez ponowień |
 | `Read` zwróci `nullopt` lub <2 B | `GetCurrent`/`GetVoltage` → `std::nullopt` |
 
-Ograniczenie: oba zapisy rejestrów to ramki 3-bajtowe `{reg, hi, lo}` przez `I2CController::Write`; `I2CService` przekazuje `kWrite` do `I2CDriver::Write(vector)`, który przyjmuje tylko parzystą liczbę bajtów (pary `reg,val`) — przy realnym driverze `Initialize` więc zwraca `kConnectionError`.
+Oba zapisy rejestrów to ramki 3-bajtowe `{reg, hi, lo}` wysyłane jako `PageWrite` (jeden `write()`): zwykły `Write` przyjmuje tylko pary `reg,val` (parzystą liczbę bajtów), więc 3-bajtowa ramka była odrzucana i `Initialize` zawsze zwracał `kConnectionError`.
 
 ## Zależności
 

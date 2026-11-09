@@ -70,3 +70,16 @@ cc_test(
         "//mw/i2c_service/controller:i2c_controller",
     ],
 )
+
+cc_test(
+    name = "ina219_init_test",
+    srcs = [
+        "test_ina219_init.cpp",
+        ],
+    visibility = ["//visibility:public"],
+    deps=[
+        "@com_google_googletest//:gtest_main",
+        "//mw/i2c_service/controller/ina219:ina219_controller",
+        "//communication-core/sockets/mock:mock_socket",
+    ],
+)
