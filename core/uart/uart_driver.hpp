@@ -15,7 +15,9 @@
 #include <vector>
 #include <cstdint>
 #include <functional>
+#include <optional>
 #include "core/uart/Iuart_driver.hpp"
+#include "core/uart/uart_config.hpp"
 #include "core/common/error_code.h"
 #include "ara/log/logging_menager.h"
 
@@ -26,11 +28,17 @@ namespace uart {
 class UartDriver: public IUartDriver {
  private:
   int serial_port;
+  UartConfig config_;
   const ara::log::Logger& logger_;
 
  public:
   UartDriver();
+  ~UartDriver() override;
+  UartDriver(const UartDriver&) = delete;  // owns the port descriptor, closed in the destructor
+  UartDriver& operator=(const UartDriver&) = delete;
   bool Open(const std::string& portName, const uint32_t& baudrate = B9600, const uint8_t timeout = 10) override;
+  bool Open(const std::string& portName, const UartConfig& config) override;
+  bool WaitForData(std::chrono::milliseconds timeout, const std::stop_token& stoken) override;
   std::optional<std::vector<uint8_t>> Read(const uint16_t size = 0) override;
   core::ErrorCode Write(const std::vector<uint8_t>& data) override;
   void Close() override;

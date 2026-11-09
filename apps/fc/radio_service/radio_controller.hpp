@@ -14,11 +14,12 @@
 #include <vector>
 #include <cstdint>
 #include <functional>
+#include <memory>
 #include <thread>  // NOLINT
 #include "core/common/error_code.h"
 #include "core/common/wait_queue.h"
 #include "ara/log/logging_menager.h"
-#include "apps/fc/radio_service/mavlink_uart_driver.hpp"
+#include "core/uart/uart_driver.hpp"
 #include "simba/mavlink.h"
 
 namespace srp {
@@ -30,7 +31,7 @@ using RadioMsgCallback = std::function<void(const mavlink_message_t&)>;
 class MavRadioController {
  private:
   const ara::log::Logger& mavl_logger;
-  core::uart::MavUartDriver uart_;
+  std::unique_ptr<core::uart::IUartDriver> uart_;
   core::WaitQueue<std::vector<uint8_t>, 20> UartTxQueue;
   RadioMsgCallback callback;
   std::jthread uart_transmit_thread;
@@ -41,7 +42,7 @@ class MavRadioController {
   void Push(const std::vector<uint8_t>& data);
   void TxLoop();
   void Init(RadioMsgCallback callback, const std::stop_token& t);
-  MavRadioController();
+  explicit MavRadioController(std::unique_ptr<core::uart::IUartDriver> uart = nullptr);
 };
 
 }  // namespace radio

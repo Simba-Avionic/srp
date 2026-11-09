@@ -31,5 +31,15 @@ cc_test(
     deps = [
         "@com_google_googletest//:gtest_main",
         "//apps/ec/radio_service:gs_hb_guider",
+        "//core/uart:mock_uart",
+    ],
+)      
+cc_test(
+    name = "radio_controller_test",
+    srcs = ["radio_controller_test.cc"],
+    deps = [
+        "@com_google_googletest//:gtest_main",
+        "//apps/ec/radio_service:radio_controller",
+        "//core/uart:mock_uart",
     ],
 )
