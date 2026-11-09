@@ -35,6 +35,10 @@ NO_TEST = {
     "F-43": "niska waga: wymaga przechwycenia logu ara::log (LogWarn vs LogDebug)",
     "F-44": "niska waga: wymaga niedostepnego /home/root i czasu SHM (logger_service)",
 }
+# F-xx whose test is green on purpose: the bug is not present on master (a green test is not an "unexpected PASS")
+NOT_APPLICABLE = {
+    "F-15": "nie dotyczy master (blad tylko w lokalnym commicie usera 8813de3, adcsensor/controller.cpp:122)",
+}
 ALL_F = ["F-%02d" % i for i in range(1, 47)]
 
 _ul = os.path.join(res, "bugs.ut.log")
@@ -101,6 +105,8 @@ if os.path.exists(q):
         add_case("tests/audit/" + tc.get("classname", "").split(".")[-1] + ".py", tc.get("name", ""), ftxt,
                  node is None, tc.find("skipped") is not None)
 
+rows = [(fid, test, "N/D: " + NOT_APPLICABLE[fid] if fid in NOT_APPLICABLE and status.startswith("PASS") else status,
+         detail) for fid, test, status, detail in rows]
 print("# Mapowanie F-xx -> test -> wynik (audyt SRP, F3)\n")
 print("RED = test asercjonuje poprawne zachowanie i pada z komunikatem F-xx = znalezisko POTWIERDZONE.\n")
 print("| F-xx | test (plik::nazwa) | wynik | komunikat |")
@@ -120,5 +126,9 @@ for f in ALL_F:
         print("| %s | %s |" % (f, reason))
         unconfirmed.add(f)
 print("\nPotwierdzone (czerwony test): %d - %s" % (len(confirmed), ", ".join(sorted(confirmed))))
-print("Niepotwierdzone (brak testu/zielony): %d - %s" % (len(unconfirmed | (tested - confirmed)),
-                                                           ", ".join(sorted(unconfirmed | (tested - confirmed)))))
+not_applicable = {f for f in NOT_APPLICABLE if f in tested} - confirmed
+unconfirmed = unconfirmed | (tested - confirmed - not_applicable)
+print("Niepotwierdzone (brak testu/zielony): %d - %s" % (len(unconfirmed), ", ".join(sorted(unconfirmed))))
+if not_applicable:
+    print("Nie dotyczy master (zielony test celowo, nie liczony jako nieoczekiwany PASS): %d - %s" % (
+        len(not_applicable), ", ".join(sorted(not_applicable))))

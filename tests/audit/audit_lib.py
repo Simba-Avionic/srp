@@ -160,17 +160,26 @@ def logger_stop():
         pass
 
 
-def csv_rows():
-    out = ssh("cat /home/root/*_log.csv 2>/dev/null", timeout=60).splitlines()
-    if len(out) < 2:
-        return None, []
-    hdr = out[0].split(";")
-    rows = []
-    for line in out[1:]:
-        v = line.split(";")
-        if len(v) == len(hdr):
-            rows.append(dict(zip(hdr, v)))
-    return hdr, rows
+def csv_rows(retries=5):
+    """Rows of the logger CSV. The logger may be writing it right now: an empty/short file is retried and a last
+    line without the terminating newline (partial write) is ignored. Returns (None, []) if nothing readable."""
+    for _ in range(retries):
+        out = ssh("cat /home/root/*_log.csv 2>/dev/null", timeout=60)
+        lines = out.split("\n")
+        if not out.endswith("\n"):
+            lines = lines[:-1]  # partial last line
+        lines = [x.rstrip("\r") for x in lines if x.strip()]
+        if len(lines) >= 2:
+            hdr = lines[0].split(";")
+            rows = []
+            for line in lines[1:]:
+                v = line.split(";")
+                if len(v) == len(hdr):
+                    rows.append(dict(zip(hdr, v)))
+            if rows:
+                return hdr, rows
+        time.sleep(1.0)
+    return None, []
 
 
 def csv_value(col, pred=None, timeout=20):
