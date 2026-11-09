@@ -26,8 +26,6 @@ namespace srp {
 namespace primer {
 
 namespace {
-  static constexpr uint8_t kIgniter_pin_id = 13;
-  static constexpr uint16_t kIgniter_active_time = 2500;
   static constexpr uint8_t kPrimer_on = 1;
   static constexpr uint8_t kPrimer_off = 0;
   static constexpr bool kRequire_primer_veryfication = true;
@@ -92,8 +90,50 @@ void PrimerController::VerifyPrimerConection() {
     }
 }
 
-void PrimerController::Initialize() {
+PrimerConfig PrimerController::ParseConfig(const std::optional<core::json::JsonParser>& parser) {
+    PrimerConfig cfg;
+    if (!parser.has_value()) {
+        ara::log::LogWarn() << "PrimerController: config not available, using defaults (pin 13, 2500 ms)";
+        return cfg;
+    }
+    auto primer = parser->GetObject("primer");
+    if (!primer.has_value()) {
+        ara::log::LogWarn() << "PrimerController: no primer section in config, using defaults (pin 13, 2500 ms)";
+        return cfg;
+    }
+    auto ids = primer->GetArray<int>("primer_ids");
+    bool ids_ok = ids.has_value() && !ids->empty();
+    if (ids_ok) {
+        for (const int id : ids.value()) {
+            if (id < 0 || id > 255) {
+                ids_ok = false;
+            }
+        }
+    }
+    if (ids_ok) {
+        cfg.pins.clear();
+        for (const int id : ids.value()) {
+            cfg.pins.push_back(static_cast<uint8_t>(id));
+        }
+    } else {
+        ara::log::LogWarn() << "PrimerController: invalid or missing primer_ids, using default pin 13";
+    }
+    auto time = primer->GetNumber<int>("active_time");
+    if (time.has_value() && time.value() > 0 && time.value() <= 65535) {
+        cfg.active_time_ms = static_cast<uint16_t>(time.value());
+    } else {
+        ara::log::LogWarn() << "PrimerController: invalid or missing active_time, using default 2500 ms";
+    }
+    return cfg;
+}
+
+void PrimerController::Initialize(const std::string& app_path) {
     prim_logger.LogInfo() << "Initializing PrimerController";
+    if (app_path.empty()) {
+        this->config_ = ParseConfig(std::nullopt);
+    } else {
+        this->config_ = ParseConfig(core::json::JsonParser::Parser(app_path + "etc/config.json"));
+    }
     this->primerState = PrimerState_t::kUNKNOWN;
     auto i2c = std::make_unique<srp::i2c::I2CController>();
     i2c->Init(std::make_unique<com::soc::StreamIpcSocket>());
@@ -107,8 +147,14 @@ bool PrimerController::DisablePrimer() {
                               << PrimerStateToString(primerState.load());
         return false;
     }
-    if (this->gpio_.SetPinValue(kIgniter_pin_id, kPrimer_off, 0) != core::ErrorCode::kOk) {
-        prim_logger.LogError() << "Failed to disable primer";
+    bool ok = true;
+    for (const auto pin : config_.pins) {
+        if (this->gpio_.SetPinValue(pin, kPrimer_off, 0) != core::ErrorCode::kOk) {
+            prim_logger.LogError() << "Failed to disable primer pin " << static_cast<int>(pin);
+            ok = false;
+        }
+    }
+    if (!ok) {
         return false;
     }
     prim_logger.LogInfo() << "Primer output disabled";
@@ -122,12 +168,14 @@ bool PrimerController::EnablePrimer(const bool auto_disable) {
                               << PrimerStateToString(primerState.load());
         return false;
     }
-    if (this->gpio_.SetPinValue(kIgniter_pin_id, kPrimer_on, kIgniter_active_time) != core::ErrorCode::kOk) {
-        prim_logger.LogError() << "Failed to enable primer";
-        return false;
+    for (const auto pin : config_.pins) {
+        if (this->gpio_.SetPinValue(pin, kPrimer_on, config_.active_time_ms) != core::ErrorCode::kOk) {
+            prim_logger.LogError() << "Failed to enable primer pin " << static_cast<int>(pin);
+            return false;
+        }
     }
     // primerState = PrimerState_t::kFIRED;
-    prim_logger.LogInfo() << "Primer fired (active_time_ms=" << kIgniter_active_time << ")";
+    prim_logger.LogInfo() << "Primer fired (active_time_ms=" << config_.active_time_ms << ")";
     return true;
 }
 PrimerState_t PrimerController::GetPrimerState() const noexcept {
