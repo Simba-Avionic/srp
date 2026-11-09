@@ -1,13 +1,13 @@
 {
     "sensors": [
         {
-            "actuator_id": 10,
+            "sensor_id": 10,
             "channel":1,
             "a": 123,
             "b": -12
         },
         {
-            "actuator_id": 11,
+            "sensor_id": 11,
             "channel": 2,
             "R": 150,
             "RES_MIN":0,
