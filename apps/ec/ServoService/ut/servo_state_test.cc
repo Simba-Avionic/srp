@@ -80,3 +80,30 @@ TEST(ServoStateTest, PermanentThenClosedKeepsClosed) {
   ASSERT_TRUE(reader.SetServoPosition(1, ToRaw(ServoState::kClosed)));
   EXPECT_EQ(reader.GetServoConfig(1)->position, 0);
 }
+
+TEST(ServoStateTest, PermanentThenOpenRestoresAutoClosingDeadline) {
+  ConfigReader reader;
+  LoadWithAutoClosing(&reader, 5000);
+  ASSERT_TRUE(reader.SetServoPosition(1, ToRaw(ServoState::kOpenPermanent)));
+  ASSERT_EQ(reader.GetServoConfig(1)->open_time_end, Clock::time_point::min());
+  const auto before = Clock::now();
+  ASSERT_TRUE(reader.SetServoPosition(1, ToRaw(ServoState::kOpen)));
+  const auto cfg = reader.GetServoConfig(1);
+  ASSERT_TRUE(cfg.has_value());
+  EXPECT_EQ(cfg->position, 1);
+  EXPECT_GT(cfg->open_time_end, Clock::time_point::min());
+  EXPECT_GE(cfg->open_time_end, before + std::chrono::milliseconds(5000));
+}
+
+TEST(ServoStateTest, PermanentThenClosedThenOpenRestoresAutoClosingDeadline) {
+  ConfigReader reader;
+  LoadWithAutoClosing(&reader, 5000);
+  ASSERT_TRUE(reader.SetServoPosition(1, ToRaw(ServoState::kOpenPermanent)));
+  ASSERT_TRUE(reader.SetServoPosition(1, ToRaw(ServoState::kClosed)));
+  EXPECT_EQ(reader.GetServoConfig(1)->position, 0);
+  const auto before = Clock::now();
+  ASSERT_TRUE(reader.SetServoPosition(1, ToRaw(ServoState::kOpen)));
+  const auto cfg = reader.GetServoConfig(1);
+  EXPECT_EQ(cfg->position, 1);
+  EXPECT_GE(cfg->open_time_end, before + std::chrono::milliseconds(5000));
+}
