@@ -11,6 +11,7 @@
 
 #include "apps/ec/engine_service/engine_app.hpp"
 
+#include <algorithm>
 #include <utility>
 #include <chrono>  // NOLINT
 
@@ -32,6 +33,11 @@ namespace {
   static constexpr auto kEngine_udp_path_name = "srp/apps/EngineService/EngineService_udp";
   static constexpr auto kLogger_path_name =     "srp/apps/EngineService/FileLoggerApp";
   static constexpr auto kInit_max_intervals =   20;
+  // F-01: StartPrime() is tried kPrime_max_attempts times, kPrime_retry_interval_ms apart (= one primer verification
+  // cycle of PrimerService, so a stale state is refreshed between the attempts)
+  static constexpr auto kPrime_max_attempts =   3;
+  static constexpr auto kPrime_retry_interval_ms = 1000;
+  static constexpr int kLaunch_poll_ms = 50;  // state check period while the launch sequence waits
   static constexpr auto kPrimerDelay =          4000;
   static constexpr auto kPin_off =              0;
   static constexpr auto kPin_on =               1;
@@ -251,16 +257,59 @@ void EngineApp::OnArm() {
 void EngineApp::OnLaunch() {
   ara::log::LogInfo() << "EngineApp::OnLaunch: Launch initiated - starting async launch sequence";
   std::thread([this]() {
-    auto res = this->primer_handler_->StartPrime();
-    // if (!res.HasValue()) {
-    //   ara::log::LogError() << "Invalid request to MW:GPIOService";
-    //   return;
-    // }
-    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    // F-01: DISARM (LAUNCH -> DISARM is allowed) can arrive at any moment; the sequence checks that the state is
+    // still LAUNCH before every step and, if not, stops and closes the valves.
+    auto launch_active = [this]() { return state_ctr->GetState() == RocketState_t::LAUNCH; };
+    // sleeps total_ms in short slices; false when the launch stopped being active meanwhile
+    auto wait_active = [&](int total_ms) {
+      for (int waited = 0; waited < total_ms; waited += kLaunch_poll_ms) {
+        if (!launch_active()) {
+          return false;
+        }
+        std::this_thread::sleep_for(std::chrono::milliseconds(std::min(kLaunch_poll_ms, total_ms - waited)));
+      }
+      return launch_active();
+    };
+    auto cancel = [this](const char* before_step) {
+      ara::log::LogWarn() << "EngineApp::OnLaunch: state is no longer LAUNCH, sequence stopped before "
+                          << before_step << ", closing valves";
+      this->CloseValves();
+    };
+
+    bool primed = false;
+    for (int attempt = 1; attempt <= kPrime_max_attempts && !primed; ++attempt) {
+      if (attempt > 1 && !wait_active(kPrime_retry_interval_ms)) {
+        cancel("StartPrime retry");
+        return;
+      }
+      auto res = this->primer_handler_->StartPrime();
+      primed = res.HasValue() && res.Value();
+      if (!primed) {
+        ara::log::LogWarn() << "EngineApp::OnLaunch: StartPrime failed, attempt " << attempt << " of "
+                            << kPrime_max_attempts;
+      }
+    }
+    if (!primed) {
+      ara::log::LogError() << "EngineApp::OnLaunch: primer did not fire, launch cancelled - going to DISARM";
+      if (!state_ctr->SetState(RocketState_t::DISARM)) {
+        ara::log::LogError() << "EngineApp::OnLaunch: transition to DISARM rejected";
+      }
+      return;
+    }
+    if (!wait_active(1000)) {
+      cancel("PressureFeedVent");
+      return;
+    }
     servo_handler_->SetPressureFeedVentValve(1);
-    std::this_thread::sleep_for(std::chrono::milliseconds(450));
+    if (!wait_active(450)) {
+      cancel("OxidizerMain");
+      return;
+    }
     servo_handler_->SetOxidizerMainValve(1);
-    std::this_thread::sleep_for(std::chrono::milliseconds(7000));
+    if (!wait_active(7000)) {
+      cancel("the end of the sequence");
+      return;
+    }
     // end of the launch sequence: LAUNCH -> FLIGHT; the valves stay open in FLIGHT (closing them is a future state);
     // ABORT is rejected from LAUNCH (F-02)
     if (!state_ctr->SetState(RocketState_t::FLIGHT)) {
