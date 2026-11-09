@@ -38,12 +38,13 @@ void ServoController::closingThreadLoop(const std::stop_token& token) {
         if (cfg.value().auto_closing == 0) {
           continue;
         }
-        if (cfg.value().position == kCloseState) {
+        if (cfg.value().position == ToRaw(ServoState::kClosed) ||
+            cfg.value().position == ToRaw(ServoState::kOpenPermanent)) {
           continue;
         }
         if (cfg.value().open_time_end <= now) {
-          servo_ctr_.SetServoPosition(cfg.value(), 0);
-          servo_cfg_mng.SetServoPosition(id, kCloseState);
+          servo_ctr_.SetServoPosition(cfg.value(), ToRaw(ServoState::kClosed));
+          servo_cfg_mng.SetServoPosition(id, ToRaw(ServoState::kClosed));
         } else {
           auto time_until_end = std::chrono::duration_cast<
                   std::chrono::milliseconds>(cfg.value().open_time_end - now);
@@ -74,9 +75,13 @@ void ServoController::pulsingThreadLoop(const std::stop_token& token) {
         if (pulse_cfg == pulsing_db.end()) {
           continue;
         }
-        if (cfg.value().position == kCloseState) {
+        if (cfg.value().position == ToRaw(ServoState::kClosed)) {
           pulsing_db.erase(id);
-          servo_ctr_.SetServoPosition(cfg.value(), kCloseState);
+          servo_ctr_.SetServoPosition(cfg.value(), ToRaw(ServoState::kClosed));
+          continue;
+        }
+        if (cfg.value().position == ToRaw(ServoState::kOpenPermanent)) {
+          pulsing_db.erase(id);  // otwarcie na stale konczy pulsowanie
           continue;
         }
         auto now = Clock::now();
@@ -122,6 +127,11 @@ bool ServoController::AutoSetServoPosition(const uint8_t actuator_id,
                       << actuator_id;
     return false;
   }
+  if (!ToServoState(state).has_value()) {
+    logger_.LogWarn() << "ServoController.AutoSetServoPosition: invalid state " << static_cast<int>(state)
+                      << " for actuator " << actuator_id << " (expected 0, 1 or 2)";
+    return false;
+  }
   auto& servo = cfg.value();
   logger_.LogInfo() << "ServoController.ExecuteServoMovement: actuator "
                     << actuator_id << " channel " << servo.channel
@@ -136,6 +146,13 @@ bool ServoController::AutoSetServoPosition(const uint8_t actuator_id,
     }
   }
 
+  // stan 2 (otwarcie na stale): trzymaj blokade pulsowania na czas zmiany, zeby watek pulsowania nie
+  // zdazyl ponownie zamknac zaworu miedzy ustawieniem pozycji a usunieciem wpisu pulsowania
+  std::unique_lock<std::mutex> permanent_lock(pulsing_mtx_, std::defer_lock);
+  if (state == ToRaw(ServoState::kOpenPermanent)) {
+    permanent_lock.lock();
+    pulsing_db.erase(actuator_id);
+  }
   if (!servo_ctr_.SetServoPosition(servo, state)) {
     logger_.LogError() << "ServoController.AutoSetServoPosition: failed to move actuator "
                        << actuator_id << " to state " << state;
@@ -146,8 +163,8 @@ bool ServoController::AutoSetServoPosition(const uint8_t actuator_id,
   logger_.LogInfo() << "ServoController.AutoSetServoPosition: actuator "
                     << actuator_id << " moved to state " << state;
 
-  if (state == 2) {
-    return true;
+  if (state == ToRaw(ServoState::kOpenPermanent)) {
+    return true;  // bez pulsowania i bez auto-zamykania
   }
   if (cfg.value().pulsing_time != 0) {
     const auto pulse_deadline = Clock::now() + std::chrono::milliseconds(cfg.value().pulsing_time);
@@ -183,7 +200,7 @@ bool ServoController::ChangeConfigPosition(const uint8_t actuator_id,
                        << actuator_id;
     return false;
   }
-  const auto res = servo_ctr_.SetServoPosition(cfg.value(), kCloseState);
+  const auto res = servo_ctr_.SetServoPosition(cfg.value(), ToRaw(ServoState::kClosed));
   if (!res) {
     logger_.LogError() << "ServoController.ChangeConfigPosition: failed to apply close state for actuator "
                        << actuator_id;
