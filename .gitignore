@@ -3,3 +3,4 @@ bazel-*
 MODULE.bazel.lock
 coverage-report
 
+qemu_test_results
