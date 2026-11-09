@@ -22,6 +22,7 @@
 
 #include "core/json/json_parser.h"
 #include "ara/log/log.h"
+#include "apps/ec/ServoService/servoController/servo_state.hpp"
 
 namespace srp {
 namespace service {
@@ -125,12 +126,17 @@ class ConfigReader {
         }
         it->second.position = state;
         ara::log::LogDebug() << "ConfigReader.SetServoPosition: actuator "
-                        << actuator_id << " state=" << state;
+                        << actuator_id << " state=" << static_cast<int>(state);
+        if (state == ToRaw(ServoState::kOpenPermanent)) {
+            // otwarcie na stale: anuluj termin auto-zamkniecia z wczesniejszego stanu 1
+            it->second.open_time_end = Clock::time_point::min();
+            return true;
+        }
         if (it->second.auto_closing == 0) {
             return true;
         }
 
-        if (state == 1) {
+        if (state == ToRaw(ServoState::kOpen)) {
             auto new_closing_time = Clock::now();
             new_closing_time += std::chrono::milliseconds(it->second.auto_closing);
             it->second.open_time_end = std::max(it->second.open_time_end, new_closing_time);

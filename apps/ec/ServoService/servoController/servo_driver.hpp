@@ -22,6 +22,7 @@
 #include "mw/i2c_service/controller/pca9685/controller.hpp"
 #include "mw/i2c_service/controller/ina219/controller.hpp"
 #include "ara/log/log.h"
+#include "apps/ec/ServoService/servoController/servo_state.hpp"
 #include "ara/log/logging_menager.h"
 #include "mw/i2c_service/controller/24lc32at/eeprom_config/cfg_manager.hpp"
 
@@ -38,8 +39,7 @@ namespace {  // NOLINT
   static constexpr auto kServoCycleUs = 20000;  // 50Hz
   static constexpr auto kPcaResolution = 4096;
   static constexpr auto kDefault_mosfet_active_time_ms = 2000;
-  static constexpr uint8_t kOpenState = 1U;
-  static constexpr uint8_t kCloseState = 0U;
+  static constexpr uint8_t kMosfetOn = 1U;
 }  // namespace
 
 class ServoDriver {
@@ -88,13 +88,14 @@ class ServoDriver {
   bool SetServoPosition(const srp::service::ServoRuntimeConfig& cfg, const uint8_t state) {
     std::unique_lock<std::mutex> lock(operation_mtx);
     if (cfg.mosfet_id != 0) {
-      if (gpio_.SetPinValue(cfg.mosfet_id, kOpenState, 0) != core::ErrorCode::kOk) {
+      if (gpio_.SetPinValue(cfg.mosfet_id, kMosfetOn, 0) != core::ErrorCode::kOk) {
         logger_.LogError() << "ServoController.ExecuteServoMovement: failed to enable MOSFET " <<
                               cfg.mosfet_id;
       }
     }
 
-    const uint16_t target_angle = ((state == kOpenState) ? cfg.on_pos : cfg.off_pos);
+    const bool open = (state == ToRaw(ServoState::kOpen) || state == ToRaw(ServoState::kOpenPermanent));
+    const uint16_t target_angle = open ? cfg.on_pos : cfg.off_pos;
     const uint16_t target_position = AngleToServoTicks(target_angle) * config.pca9685_XO_corelation;
 
     logger_.LogDebug() << "ServoController.ExecuteServoMovement: setting actuator "
