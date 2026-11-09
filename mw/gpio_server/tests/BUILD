@@ -40,3 +40,18 @@ cc_test(
         "//mw/gpio_server/tests/test_data:gpio_test_data",
         ],
 )
+
+cc_test(
+    name = "gpio_poll_initial_state_test",
+    srcs = [
+        "test_poll_initial_state.cpp",
+        ],
+    visibility = ["//visibility:public"],
+    deps=[
+        "@com_google_googletest//:gtest_main",
+        "//mw/gpio_server:gpio_service_lib",
+        "//core/gpio/mock:mock_gpio",
+        "//communication-core/sockets/mock:mock_socket",
+        "//mw/gpio_server/data:gpio_hdr",
+    ],
+)
