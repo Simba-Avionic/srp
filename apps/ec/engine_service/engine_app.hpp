@@ -64,6 +64,12 @@ class EngineApp final : public ara::exec::AdaptiveApplication {
   void OnDisarm();
   void OnApogee();
   void OnAbort();
+  void OnFlight();
+
+  /**
+   * @brief Close the oxidizer main, PF vent and PF main valves (shared by OnAbort and OnFlight, blocking ~0.4 s)
+   */
+  void CloseValves();
 
   /**
    * @brief Update IPC and UDP state of State

@@ -44,10 +44,8 @@ stateDiagram-v2
   ARM --> DISARM
   ARM --> CONNECTION_LOST
   LAUNCH --> FLIGHT
-  LAUNCH --> ABORT
-  LAUNCH --> ARM
   FLIGHT --> APOGEE
-  FLIGHT --> ABORT
+  FLIGHT --> ARM
   APOGEE --> FIRST_PARACHUTE
   FIRST_PARACHUTE --> SECOND_PARACHUTE
   SECOND_PARACHUTE --> DROP
@@ -56,6 +54,8 @@ stateDiagram-v2
   CONNECTION_LOST --> ABORT
   ABORT --> DISARM
 ```
+
+Od `LAUNCH` (i w `FLIGHT`) przejście do `ABORT` jest odrzucane: start jest niewrażliwy na ABORT (decyzja usera, F-02); `SetState(ABORT)` zwraca `false`, `OnAbort` się nie wykonuje, odrzucenie jest logowane. `LAUNCH` przechodzi tylko do `FLIGHT` (koniec sekwencji startu, EngineApp zamyka wtedy zawory); `FLIGHT → ARM` jest tylko do testów statycznych (hamownia).
 
 ## API
 
