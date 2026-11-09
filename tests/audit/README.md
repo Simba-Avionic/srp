@@ -47,6 +47,10 @@ Etap sprawdza, czy poprzedni zostawił artefakty (np. `run` bez `build` kończy 
 
 Decyzja usera 2026-11-09: **F-07, F-13, F-24** (DID-y diagnostyczne działają w każdym stanie) i **F-16** (ciśnienie nigdy > 250 bar, `int16`×100 wystarcza) są celowe. Ich testy usunięto z grupy `bugs`; w `mapping.md` figurują jako „zamierzone”.
 
+## Nieaktualne
+
+- **F-19** (`off_pos` 190° aktuatora 63): nieaktualne na bazie — od #397 w `deployment/apps/servo_service/config.json` jest `off_pos` 177. Test usunięty.
+
 ## Zawartość
 
 - `test_functional.py`, `test_bugs.py` — testy pytest (`audit_lib.py`: ssh do gościa, sterowanie driverami sim przez `$SRP_SIM_DIR/ctl`, UDS/DoIP, wywołania SOME/IP).

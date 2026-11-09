@@ -81,20 +81,3 @@ TEST(AuditBugs, F23_InvalidXoCorrelationProducesInvalidPwm) {
   }
 }
 
-/**
- * F-19 (srednia) deployment/apps/servo_service/config.json:32 vs servo_driver.hpp (kMax_angle=180).
- * The shipped config contains off_pos=190 deg (actuator 63) which the driver silently clamps to 180.
- * Expected: every on_pos/off_pos in the shipped servo config is within 0..180 deg.
- */
-TEST(AuditBugs, F19_ShippedConfigHasAngleAbove180) {
-  srp::service::ConfigReader r;
-  r.LoadServoConfig("deployment/apps/servo_service/config.json");
-  auto ids = r.GetServosID();
-  ASSERT_FALSE(ids.empty()) << "harness: config not loaded";
-  for (auto id : ids) {
-    auto c = r.GetServoConfig(id).value();
-    EXPECT_LE(c.on_pos, 180) << "F-19: actuator " << int(id) << " on_pos=" << c.on_pos << " > 180 deg";
-    EXPECT_LE(c.off_pos, 180) << "F-19: actuator " << int(id) << " off_pos=" << c.off_pos
-                              << " > 180 deg (config.json:32, silently clamped by servo_driver.hpp)";
-  }
-}

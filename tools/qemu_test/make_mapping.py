@@ -19,6 +19,7 @@ NO_TEST = {
     "F-10": "wyscig callbacks/subscribed_pins_states: deterministyczny test wymaga TSAN (brak tsan w toolchainie)",
     "F-11": "niska waga, pominiete",
     "F-17": "brak specyfikacji jednostki w naglowku CSV",
+    "F-19": "nieaktualne na bazie (off_pos 177 od #397), test usuniety",
     "F-20": "niska waga, pominiete", "F-21": "niska waga, pominiete",
     "F-25": "niska waga, pominiete",
     "F-27": "TempDriver czyta stala sciezke /sys/bus/w1/devices/ - nietestowalne w UT bez zmiany kodu; w sim parser nie jest wykonywany",
