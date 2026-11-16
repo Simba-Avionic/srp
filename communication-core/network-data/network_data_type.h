@@ -45,7 +45,7 @@ class NetworkDataType : public interface::IFrame {
   T GetForNetwork() {
     return srp::core::converter::EndianessConverter::Convert(this->value_);
   }
-  __attribute_noinline__ std::vector<std::uint8_t> GetBuffor() const override {
+  [[gnu::noinline]] std::vector<std::uint8_t> GetBuffor() const override {
     T value_temp =
         srp::core::converter::EndianessConverter::Convert(this->value_);
     std::array<uint8_t, size> help_buf;

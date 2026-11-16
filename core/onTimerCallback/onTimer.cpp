@@ -62,7 +62,7 @@ void TimerController::Loop(const std::stop_token& token) {
     }
 }
 
-void TimerController::AddOnTimerCallback(OnTimerCallback callback, u_int32_t Interval_ms) {
+void TimerController::AddOnTimerCallback(OnTimerCallback callback, uint32_t Interval_ms) {
     std::lock_guard<std::mutex> lock(timer_mtx_);
     OnTimerCallback_t cb = {
         .callback = callback,
