@@ -189,7 +189,7 @@ void SecEnvService::GenericPressureLoop(
             auto& eventIpc,
             auto& eventUdp) {
     while (!token.stop_requested()) {
-        auto start = std::chrono::high_resolution_clock::now();
+        auto start = std::chrono::steady_clock::now();
         std::optional<float> pressValue;
         {
             std::lock_guard<std::mutex> lock(press_mtx_);
@@ -212,7 +212,7 @@ void SecEnvService::GenericPressureLoop(
             ara::log::LogWarn() << "SecEnvService: no new " << label;
         }
 
-        auto end = std::chrono::high_resolution_clock::now();
+        auto end = std::chrono::steady_clock::now();
         auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
 
         if (duration < delay) {

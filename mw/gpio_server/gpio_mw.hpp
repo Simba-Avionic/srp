@@ -28,7 +28,7 @@
 #include "mw/gpio_server/gpio_mw_did.h"
 #include "ara/log/log.h"
 
-using timepoint = std::chrono::_V2::system_clock::time_point;
+using timepoint = std::chrono::steady_clock::time_point;
 typedef uint8_t CallbackId;
 typedef uint8_t PinId;
 

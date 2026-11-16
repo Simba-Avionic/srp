@@ -95,7 +95,7 @@ std::optional<GPSDataVariant> GPSApp::ParseGPSData(const std::vector<uint8_t>& d
 }
 
 int64_t GPSApp::GetTimeDelata(const timepoint last_frame_time) const {
-  auto now = std::chrono::high_resolution_clock::now();
+  auto now = std::chrono::steady_clock::now();
   return std::chrono::duration_cast<std::chrono::milliseconds>(now - last_frame_time).count();
 }
 
@@ -152,7 +152,7 @@ int GPSApp::Run(const std::stop_token& token) {
 
         delta = GetTimeDelata(last_frame);
 
-        last_frame = std::chrono::high_resolution_clock::now();
+        last_frame = std::chrono::steady_clock::now();
         warn_num = 0;
       }
 
@@ -180,7 +180,7 @@ int GPSApp::Initialize(const std::map<ara::core::StringView, ara::core::StringVi
   service_ipc.StartOffer();
   service_udp.StartOffer();
   ara::log::LogDebug() << "End initialization";
-  last_frame = std::chrono::high_resolution_clock::now();
+  last_frame = std::chrono::steady_clock::now();
   return 0;
 }
 

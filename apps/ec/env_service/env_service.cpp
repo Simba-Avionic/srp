@@ -212,7 +212,7 @@ void EnvService::GenericPressureLoop(
             auto& eventIpc,
             auto& eventUdp) {
     while (!token.stop_requested()) {
-        auto start = std::chrono::high_resolution_clock::now();
+        auto start = std::chrono::steady_clock::now();
         std::optional<float> pressValue;
         {
             std::lock_guard<std::mutex> lock(press_mtx_);
@@ -237,7 +237,7 @@ void EnvService::GenericPressureLoop(
             ara::log::LogWarn() << "Don't receive new " << label;
         }
 
-        auto end = std::chrono::high_resolution_clock::now();
+        auto end = std::chrono::steady_clock::now();
         auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
 
         ara::log::LogDebug() << label << " loop taken: " << duration.count() << "ms";

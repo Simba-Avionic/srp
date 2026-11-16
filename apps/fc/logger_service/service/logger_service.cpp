@@ -123,13 +123,13 @@ void LoggerService::SaveLoop(const std::stop_token& token) {
 
   save_state_.store(kLogsOn);
   while (!token.stop_requested()) {
-    const auto start = std::chrono::high_resolution_clock::now();
+    const auto start = std::chrono::steady_clock::now();
     auto ts = timestamp_->GetNewTimeStamp();
     if (ts.has_value() && writer.WriteLine(data_.to_string(std::to_string(ts.value()))) != 0) {
       ara::log::LogWarn() << "LoggerService::SaveLoop: failed to write line";
     }
 
-    const auto now = std::chrono::high_resolution_clock::now();
+    const auto now = std::chrono::steady_clock::now();
     const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - start);
     if (elapsed < std::chrono::milliseconds(kSaveIntervalMs)) {
       core::condition::wait_for(std::chrono::milliseconds(kSaveIntervalMs) - elapsed, token);

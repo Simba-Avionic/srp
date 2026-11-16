@@ -19,7 +19,7 @@
 namespace srp {
 namespace apps {
 namespace radio {
-using timepoint = std::chrono::_V2::high_resolution_clock::time_point;
+using timepoint = std::chrono::steady_clock::time_point;
 using RocketState_t = core::rocketState::RocketState_t;
 using GsConLossCB = std::function<void(const RocketState_t)>;
 class GSHeartbeatGuard {

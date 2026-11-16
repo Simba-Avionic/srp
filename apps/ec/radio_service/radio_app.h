@@ -33,7 +33,7 @@
 namespace srp {
 namespace apps {
 using RocketState_t = core::rocketState::RocketState_t;
-using timepoint = std::chrono::_V2::system_clock::time_point;
+using timepoint = std::chrono::steady_clock::time_point;
 
 class RadioApp : public ara::exec::AdaptiveApplication {
  private:
