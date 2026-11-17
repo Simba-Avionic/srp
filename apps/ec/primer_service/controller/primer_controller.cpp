@@ -10,6 +10,7 @@
  */
 
 
+#include <algorithm>
 #include <string>
 #include <vector>
 #include <utility>
@@ -34,6 +35,8 @@ namespace {
   static constexpr auto kIgniter_measureme_adc_channel = 3;
   static constexpr auto kIgniter_measurement_adc_samples = 5;
   static constexpr auto kIgniter_connected_treshold_mV = 1500;
+  // F-05: a single failed ADC read does not change the state, this many consecutive ones do (-> kUNKNOWN)
+  static constexpr uint8_t kMax_consecutive_read_errors = 3;
 
 const std::string PrimerStateToString(const PrimerState_t state) {
     switch (state) {
@@ -74,8 +77,19 @@ void PrimerController::VerifyPrimerConection() {
     }
     auto voltage = adc_.GetAdcVoltage(kIgniter_measureme_adc_channel);
     if (!voltage.has_value()) {
+        const auto errors = static_cast<uint8_t>(std::min<int>(consecutive_read_errors_.load() + 1,
+                                                               kMax_consecutive_read_errors));
+        consecutive_read_errors_.store(errors);
+        prim_logger.LogWarn() << "Primer ADC read failed (" << static_cast<int>(errors) << " in a row)";
+        if (errors >= kMax_consecutive_read_errors && primerState.load() != PrimerState_t::kUNKNOWN) {
+            prim_logger.LogError() << "Primer state changed from " << PrimerStateToString(primerState.load())
+                                   << " to UNKNOWN (" << static_cast<int>(kMax_consecutive_read_errors)
+                                   << " consecutive ADC read errors)";
+            primerState.store(PrimerState_t::kUNKNOWN);
+        }
         return;
     }
+    consecutive_read_errors_.store(0);
     const auto previous_state = primerState.load();
     auto next_state = previous_state;
     if (voltage.value() >= kIgniter_connected_treshold_mV / 1000.0f) {
@@ -93,10 +107,15 @@ void PrimerController::VerifyPrimerConection() {
 }
 
 void PrimerController::Initialize() {
-    prim_logger.LogInfo() << "Initializing PrimerController";
-    this->primerState = PrimerState_t::kUNKNOWN;
     auto i2c = std::make_unique<srp::i2c::I2CController>();
     i2c->Init(std::make_unique<com::soc::StreamIpcSocket>());
+    Initialize(std::move(i2c));
+}
+
+void PrimerController::Initialize(std::unique_ptr<i2c::II2CController> i2c) {
+    prim_logger.LogInfo() << "Initializing PrimerController";
+    this->primerState = PrimerState_t::kUNKNOWN;
+    this->consecutive_read_errors_ = 0;
     this->adc_.Init(std::move(i2c));
     prim_logger.LogInfo() << "PrimerController initialization complete";
 }
