@@ -139,3 +139,16 @@ cc_test(
         "//communication-core/sockets/mock:mock_socket",
     ],
 )
+
+cc_test(
+    name = "pca9685_block_write_test",
+    srcs = [
+        "test_pca9685_block_write.cpp",
+        ],
+    visibility = ["//visibility:public"],
+    deps=[
+        "@com_google_googletest//:gtest_main",
+        "//mw/i2c_service/controller/pca9685:pca9685_controller",
+        "//mw/i2c_service/controller/mock:mock_i2c_controller",
+    ],
+)
