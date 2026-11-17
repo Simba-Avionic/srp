@@ -83,7 +83,7 @@ Przykład (heartbeat MAVLink v1 w kolejce RX radia): `uart /dev/ttyS1 rx fe 09 0
 
 1. `bazel run @srp_platform//tools/qemu -- --console` (sieć `tap0` wg `@srp_platform//tools/qemu`).
 2. Gość na świeżym obrazie ma IP `192.168.10.101`, a `flash_ec` celuje w `192.168.10.51` (to IP ustawia też konfiguracja EC po flashu) — przed pierwszym flashem dodaj na gościu alias: `ip addr add 192.168.10.51/24 dev eth0`.
-3. `bazel run //deployment/tools/ecu:flash_ec --config=bbb-platform --define build_mode=sim`.
+3. `bazel run //deployment/tools/ecu:flash_ec --config=bbb-EB_V2 --define build_mode=sim`.
 4. `flash_ec` restartuje gościa — przed testami poczekaj, aż znowu odpowie na ssh (np. `until ssh root@192.168.10.51 true; do sleep 3; done`).
 
 ## BUILD
