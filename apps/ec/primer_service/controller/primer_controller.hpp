@@ -17,7 +17,6 @@
 #include <utility>
 #include <memory>
 #include <optional>
-#include <atomic>
 
 #include "mw/gpio_server/controller/gpio_controller.hpp"
 #include "ara/log/log.h"
@@ -56,6 +55,10 @@ class PrimerController {
  public:
   PrimerController();
   void Initialize(const std::string& app_path = "");
+  /**
+   * @brief Initialize with the given I2C controller (used by Initialize() and by unit tests)
+   */
+  void Initialize(std::unique_ptr<i2c::II2CController> i2c);
   /// Parsuje konfiguracje; brak/zly plik lub pole -> wartosci domyslne (13, 2500 ms) + LogWarn.
   static PrimerConfig ParseConfig(const std::optional<core::json::JsonParser>& parser);
 
