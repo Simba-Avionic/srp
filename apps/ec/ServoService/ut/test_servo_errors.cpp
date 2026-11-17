@@ -34,6 +34,7 @@ ServoDriver* DriverWithI2c(srp::core::ErrorCode write_result) {
   auto* d = new ServoDriver;
   auto mock = std::make_unique<srp::mock::MockI2CController>();
   EXPECT_CALL(*mock, Write(_, _)).WillRepeatedly(Return(write_result));
+  EXPECT_CALL(*mock, PageWrite(_, _)).WillRepeatedly(Return(write_result));  // F-32: channel write
   ::testing::Mock::AllowLeak(mock.get());
   EXPECT_EQ(d->driver_.setI2C(std::move(mock)), srp::core::ErrorCode::kOk);
   return d;
@@ -46,6 +47,7 @@ ServoController* ControllerWithI2c(srp::core::ErrorCode write_result) {
   c->servo_cfg_mng.LoadServoConfig(path);
   auto mock = std::make_unique<srp::mock::MockI2CController>();
   EXPECT_CALL(*mock, Write(_, _)).WillRepeatedly(Return(write_result));
+  EXPECT_CALL(*mock, PageWrite(_, _)).WillRepeatedly(Return(write_result));  // F-32: channel write
   ::testing::Mock::AllowLeak(mock.get());
   EXPECT_EQ(c->servo_ctr_.driver_.setI2C(std::move(mock)), srp::core::ErrorCode::kOk);
   return c;

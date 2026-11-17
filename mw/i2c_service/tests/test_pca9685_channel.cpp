@@ -32,12 +32,14 @@ class Pca9685ChannelTest : public ::testing::Test {
 
 TEST_F(Pca9685ChannelTest, SetChannelOutOfRangeIsRejectedWithoutBusAccess) {
   EXPECT_CALL(*i2c_, Write(_, _)).Times(0);
+  EXPECT_CALL(*i2c_, PageWrite(_, _)).Times(0);
   EXPECT_EQ(pca_.SetChannelPosition(16, 100), srp::core::ErrorCode::kBadVariableSize);
   EXPECT_EQ(pca_.SetChannelPosition(255, 100), srp::core::ErrorCode::kBadVariableSize);
 }
 
 TEST_F(Pca9685ChannelTest, SetLastValidChannelWorks) {
-  EXPECT_CALL(*i2c_, Write(0x70, _)).WillOnce(Return(srp::core::ErrorCode::kOk));
+  // F-32: the channel registers are written in one PageWrite (register auto-increment)
+  EXPECT_CALL(*i2c_, PageWrite(0x70, _)).WillOnce(Return(srp::core::ErrorCode::kOk));
   EXPECT_EQ(pca_.SetChannelPosition(15, 100), srp::core::ErrorCode::kOk);
 }
 
