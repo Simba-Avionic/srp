@@ -114,7 +114,7 @@ std::optional<uint16_t> PCA9685::ReadChannelPosition(const uint8_t &channel) {
         return std::nullopt;
     }
     auto val_opt = i2c_->Read(PCA9685_ADDRESS, LED_ON_L_LOOKUP[channel], 4);
-    if (!val_opt.has_value()) {
+    if (!val_opt.has_value() || val_opt->size() < 4) {
         pac_logger_.LogWarn() << "PCA9685.ReadChannelPosition: failed to read channel " <<
                                   channel;
         return std::nullopt;
