@@ -17,7 +17,9 @@
 #include <limits>
 #include <map>
 #include <mutex>  // NOLINT
+#include <string>
 #include <thread>  // NOLINT
+#include <utility>
 
 #include "ara/log/log.h"
 #include "core/i2c/i2c_driver.hpp"
@@ -255,9 +257,10 @@ core::ErrorCode FaultToError(Fault f, core::ErrorCode code = core::ErrorCode::kC
 
 }  // namespace
 
-I2CDriver::I2CDriver(): i2c_logger_ {
+// bus_path nieuzywany w sim: stan magistrali pochodzi z $SRP_SIM_DIR
+I2CDriver::I2CDriver(std::string bus_path): i2c_logger_ {
   ara::log::LoggingMenager::GetInstance()->CreateLogger("I2C-",
-  "", ara::log::LogLevel::kWarn)} {
+  "", ara::log::LogLevel::kWarn)}, bus_path_(std::move(bus_path)) {
 }
 
 I2CDriver::~I2CDriver() {}

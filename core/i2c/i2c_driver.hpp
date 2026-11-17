@@ -37,8 +37,11 @@ class I2CDriver : public II2CDriver {
   int i2cFile{-1};
   uint8_t current_address_{0};
   const ara::log::Logger& i2c_logger_;
+  std::string bus_path_;
+
  public:
-  I2CDriver();
+  /// @param bus_path urzadzenie magistrali, np. "/dev/i2c-2" (z configu plytki w MW i2c_service)
+  explicit I2CDriver(std::string bus_path);
   ~I2CDriver();
   core::ErrorCode Init() override;
   core::ErrorCode Ioctl(const uint8_t address, const uint16_t type = I2C_SLAVE) override;

@@ -11,18 +11,16 @@
 
 #include "core/i2c/i2c_driver.hpp"
 #include <cstdint>
+#include <string>
+#include <utility>
 
 namespace srp {
 namespace core {
 namespace i2c {
 
-namespace {
-  const constexpr auto kPath = "/dev/i2c-2";
-}
-
-I2CDriver::I2CDriver(): i2c_logger_ {
+I2CDriver::I2CDriver(std::string bus_path): i2c_logger_ {
   ara::log::LoggingMenager::GetInstance()->CreateLogger("i2c-",
-  "", ara::log::LogLevel::kInfo)} {
+  "", ara::log::LogLevel::kInfo)}, bus_path_(std::move(bus_path)) {
 }
 
 I2CDriver::~I2CDriver() {
@@ -31,7 +29,7 @@ I2CDriver::~I2CDriver() {
   }
 }
 core::ErrorCode I2CDriver::Init() {
-  if ((this->i2cFile = open(kPath, O_RDWR)) < 0) {
+  if ((this->i2cFile = open(bus_path_.c_str(), O_RDWR)) < 0) {
     return core::ErrorCode::kInitializeError;
   }
   return core::ErrorCode::kOk;
