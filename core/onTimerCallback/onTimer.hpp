@@ -24,7 +24,7 @@ namespace srp {
 namespace core {
 
 using OnTimerCallback = std::function<void()>;
-using time_t =  std::chrono::time_point<std::chrono::high_resolution_clock>;
+using time_t =  std::chrono::time_point<std::chrono::steady_clock>;
 
 struct OnTimerCallback_t {
     const OnTimerCallback callback;

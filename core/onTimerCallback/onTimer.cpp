@@ -26,7 +26,7 @@ namespace {
 void TimerController::Loop(const std::stop_token& token) {
     while (!token.stop_requested()) {
         uint32_t can_sleep_for_ms = kMax_sleep_time_ms;
-        auto now = std::chrono::high_resolution_clock::now();
+        auto now = std::chrono::steady_clock::now();
         std::vector<OnTimerCallback> callbacks_to_run;
         {
             std::lock_guard<std::mutex> lock(timer_mtx_);
@@ -49,11 +49,11 @@ void TimerController::Loop(const std::stop_token& token) {
                 }
             }
         }
-        const auto start_cb = std::chrono::high_resolution_clock::now();
+        const auto start_cb = std::chrono::steady_clock::now();
         for (auto& cb : callbacks_to_run) {
             cb();
         }
-        const auto end_cb = std::chrono::high_resolution_clock::now();
+        const auto end_cb = std::chrono::steady_clock::now();
         const auto elapsed = std::chrono::duration_cast<
                 std::chrono::milliseconds>(end_cb - start_cb).count();
         if (elapsed < can_sleep_for_ms) {
@@ -66,7 +66,7 @@ void TimerController::AddOnTimerCallback(OnTimerCallback callback, uint32_t Inte
     std::lock_guard<std::mutex> lock(timer_mtx_);
     OnTimerCallback_t cb = {
         .callback = callback,
-        .last_call = std::chrono::high_resolution_clock::now(),
+        .last_call = std::chrono::steady_clock::now(),
         .Interval_ms = Interval_ms};
     timers.push_back(cb);
 }

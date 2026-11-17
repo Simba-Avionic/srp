@@ -24,7 +24,7 @@ namespace {
 }
 
 void GSHeartbeatGuard::OnNewHbCallback() {
-  auto now = std::chrono::high_resolution_clock::now();
+  auto now = std::chrono::steady_clock::now();
   {
     std::lock_guard lock(hb_guard_mtx_);
     if (!first_hb_received_) {
@@ -70,7 +70,7 @@ void GSHeartbeatGuard::GSHeartbeatGuardLoop(const std::stop_token& t) {
     if (!first_hb_received) {
       continue;
     }
-    auto now = std::chrono::high_resolution_clock::now();
+    auto now = std::chrono::steady_clock::now();
     auto diff = std::chrono::duration_cast<std::chrono::milliseconds>(now - last_hb_time).count();
 
     if (diff >= kDuration_from_last_hb_to_abort_ms) {

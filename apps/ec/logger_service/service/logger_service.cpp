@@ -62,7 +62,7 @@ void LoggerService::SaveLoop(const std::stop_token& token,
 
   try {
     while (!token.stop_requested()) {
-      const auto start = std::chrono::high_resolution_clock::now();
+      const auto start = std::chrono::steady_clock::now();
       auto val = timestamp->GetNewTimeStamp();
       if (!val.has_value()) {
         continue;
@@ -71,7 +71,7 @@ void LoggerService::SaveLoop(const std::stop_token& token,
         ara::log::LogWarn() << "LoggerService::SaveLoop: Failed to write line";
       }
 
-      const auto now = std::chrono::high_resolution_clock::now();
+      const auto now = std::chrono::steady_clock::now();
       const auto elapsed = std::chrono::duration_cast<
                   std::chrono::milliseconds>(now - start).count();
       if (elapsed < kSave_interval) {
