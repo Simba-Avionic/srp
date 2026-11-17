@@ -28,15 +28,17 @@ int64_t GetNow() {
 
 bool TimestampController::Init() {
   uint8_t i = 0;
+  bool found = false;
   do {
     std::this_thread::sleep_for(std::chrono::seconds(1));
     i += 1;
-  } while (!proxy_.FindService().HasValue() && i <= kMax_Wait);
-  // error
-  if (i == kMax_Wait) {
-    return false;
+    found = proxy_.FindService().HasValue();
+  } while (!found && i <= kMax_Wait);
+  if (!found) {
+    logger_.LogError() << "TimestampController::Init: timestamp service not found after "
+                       << static_cast<int>(i) << " s";
   }
-  return true;
+  return found;
 }
 TimestampController::TimestampController():
     instance_(kTimestamp_instance),
