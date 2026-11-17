@@ -131,7 +131,7 @@ Uwaga: klasy handlerów (`servo_service_did.h`, `servo_did.h`) nie są tworzone 
 
 ## Konfiguracja
 
-`deployment/apps/servo_service/config.json` (w runtime `etc/config.json`): tablica `servos`; model w `app_config.json`.
+`deployment/apps/servo_service/config_<Plytka>.json` (w runtime `etc/config.json`): tablica `servos`; model w `app_config.json`.
 
 | Pole | Typ | Jednostka | Domyślnie | Opis |
 |------|-----|-----------|-----------|------|

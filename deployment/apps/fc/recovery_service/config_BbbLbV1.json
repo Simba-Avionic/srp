@@ -1,0 +1,24 @@
+{
+    "servos" : [
+        {
+        "actuator_id":62,
+        "channel": 0,
+        "on_pos" : 3000,
+        "off_pos" : 3,
+        "todo": "Set correct on_pos and off_pos values from 0-180 degrees range"
+        }
+    ],
+    "parachute": {
+        "mosfet_id": 1,
+        "mosfet_delay": 100,
+        "linecutter_pin_id" : 1,
+        "recovery_servo_id": 62,
+        "servo_move_time": 500,
+        "servo_seq_num": 3,
+        "linecutter_sequence_num" : 2,
+        "linecutter_active_time": 3000,
+        "linecutter_inactive_time": 1000,
+        "backup_linecutter_activation_time": 12,
+        "linecutter_active_height": 450
+    }
+}

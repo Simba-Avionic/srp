@@ -90,7 +90,7 @@ def test_fn06_servo_move_via_someip():
 
 
 SERVO_CONFIG = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "deployment", "apps",
-                            "servo_service", "config.json")
+                            "servo_service", "config_BbbEbV2.json")
 
 
 def _pulsing_channels():
