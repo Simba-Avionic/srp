@@ -23,7 +23,10 @@ cc_library(
 
 cc_library(
     name = "servo_config",
-    hdrs = ["servo_config_reader.hpp"],
+    hdrs = [
+        "servo_config_reader.hpp",
+        "servo_state.hpp",
+    ],
     deps = [
         "//core/json:simba_json",
         "@srp_platform//ara/log",
