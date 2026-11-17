@@ -34,3 +34,12 @@ cc_test(
         "//core/uart:mock_uart",
     ],
 )
+
+cc_test(
+    name = "gs_hb_guider_test",
+    srcs = ["gs_hb_guider_test.cc"],
+    deps = [
+        "@com_google_googletest//:gtest_main",
+        "//apps/fc/radio_service:gs_hb_guider",
+    ],
+)
