@@ -88,7 +88,7 @@ Temperatury: `TempRxCallback` odwzorowuje `actuator_id` na nazwę (`sensor_temp_
 
 ## Konfiguracja
 
-`deployment/apps/env_service/config_<Plytka>.json` (w runtime `etc/config.json`):
+`deployment/apps/env_service/config_<Rakieta>.json` (w runtime `etc/config.json`):
 
 | Pole | Typ | Jednostka | Opis |
 |------|-----|-----------|------|
