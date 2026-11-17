@@ -11,6 +11,17 @@
 # )
 
 cc_test(
+    name = "temp_register_test",
+    srcs = ["test_temp_register.cc"],
+    deps = [
+        "@com_google_googletest//:gtest_main",
+        "//mw/temp/controller:temp_controller_mw",
+        "@srp_platform//ara/log",
+        "//communication-core/sockets:socket_ipc",
+    ]
+)
+
+cc_test(
     name = "temp_audit_bugs_test",
     srcs = ["test_audit_bugs.cc"],
     tags = ["audit_bugs"],
