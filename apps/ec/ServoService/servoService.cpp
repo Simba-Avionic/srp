@@ -36,6 +36,7 @@ namespace {
   static constexpr auto kDiagMainValveInstance = "/srp/apps/servoService/MainServoStatus";
   static constexpr auto kDiagVentValveInstance = "/srp/apps/servoService/VentServoStatus";
   static constexpr auto kDiagDumpValveInstance = "/srp/apps/servoService/DumpServoStatus";
+  static constexpr auto kDiagServoInstance = "/srp/apps/servoService/ServoDID";
 
   static constexpr auto kIpcInstanceSpecifier = "srp/apps/servoService/ServoService_ipc";
   static constexpr auto kUdpInstanceSpecifier = "srp/apps/servoService/ServoService_udp";
@@ -46,11 +47,16 @@ ServoService::ServoService() {}
 
 int ServoService::Run(const std::stop_token& token) {
   ara::log::LogInfo() << "ServoService.Run: offering services";
-  if (!servo_controller || !service_ipc || !service_udp) {
+  if (!servo_controller || !service_ipc || !service_udp || !main_servo_did_ || !vent_servo_did_ ||
+      !dump_servo_did_ || !servo_did_) {
     ara::log::LogError() << "ServoService.Run: service components are not initialized";
     return 1;
   }
 
+  main_servo_did_->Offer();
+  vent_servo_did_->Offer();
+  dump_servo_did_->Offer();
+  servo_did_->Offer();
   service_ipc->StartOffer();
   service_udp->StartOffer();
 
@@ -100,6 +106,10 @@ int ServoService::Run(const std::stop_token& token) {
 
   service_ipc->StopOffer();
   service_udp->StopOffer();
+  servo_did_->StopOffer();
+  dump_servo_did_->StopOffer();
+  vent_servo_did_->StopOffer();
+  main_servo_did_->StopOffer();
 
   ara::log::LogInfo() << "ServoService.Run: stopped";
   return 0;
@@ -125,6 +135,18 @@ int ServoService::Initialize(const std::map<ara::core::StringView, ara::core::St
 
   service_udp = std::make_unique<apps::MyServoService>(
                 ara::core::InstanceSpecifier(kUdpInstanceSpecifier), this->servo_controller);
+
+  main_servo_did_ = std::make_unique<ServoServiceDiD>(
+                ara::core::InstanceSpecifier(kDiagMainValveInstance), this->servo_controller,
+                kOxidizerMainValveID);
+  vent_servo_did_ = std::make_unique<ServoServiceDiD>(
+                ara::core::InstanceSpecifier(kDiagVentValveInstance), this->servo_controller,
+                kOxidizerVentValveID);
+  dump_servo_did_ = std::make_unique<ServoServiceDiD>(
+                ara::core::InstanceSpecifier(kDiagDumpValveInstance), this->servo_controller,
+                kOxidizerDumpValveID);
+  servo_did_ = std::make_unique<ServoSecondDid>(
+                ara::core::InstanceSpecifier(kDiagServoInstance), this->servo_controller);
 
   ara::log::LogInfo() << "ServoService.Initialize: completed";
   return 0;
