@@ -4,7 +4,7 @@ Middleware dostępu do magistrali I2C oraz biblioteki kontrolerów konkretnych c
 
 ## TL;DR
 
-Serwis `i2cMWService` jest jedynym procesem trzymającym `/dev/i2c-2`. Aplikacje używają `I2CController` (IPC `SRP.I2C`) albo wrapperów: INA219, ADS7828, PCA9685, 24LC32AT, BME280, LSM6DSOX.
+Serwis `i2cMWService` jest jedynym procesem trzymającym magistralę I2C (`i2c_bus` z configu płytki, np. `/dev/i2c-2`). Aplikacje używają `I2CController` (IPC `SRP.I2C`) albo wrapperów: INA219, ADS7828, PCA9685, 24LC32AT, BME280, LSM6DSOX.
 
 ## Opis funkcjonalności
 
@@ -44,7 +44,7 @@ flowchart TB
 
 ## Cykl życia
 
-1. `Initialize`: tworzy `I2CDriver` i `StreamIpcSocket`; `i2c_->Init()` otwiera `/dev/i2c-2` (`O_RDWR`) — błąd → `kInitializeError` (`Warn`); bind `/run/SRP.I2C` — błąd → `kInitializeError`; rejestruje `RxCallback` i startuje wątek RX gniazda. Brak pliku konfiguracyjnego — serwis nie zna urządzeń.
+1. `Initialize`: czyta `i2c_bus` z `etc/config.json` (brak → `kInitializeError`), tworzy `I2CDriver(i2c_bus)` i `StreamIpcSocket`; `i2c_->Init()` otwiera magistralę (`O_RDWR`) — błąd → `kInitializeError` (`Warn`); bind `/run/SRP.I2C` — błąd → `kInitializeError`; rejestruje `RxCallback` i startuje wątek RX gniazda. Serwis nie zna urządzeń.
 2. `Run`: tylko czeka na stop token; po nim `StopRXThread`.
 3. Obsługa żądań: pętla wątku RX gniazda (`accept` → `read` do 4096 B → `RxCallback` → `write` odpowiedzi → `close`). Połączenia są obsługiwane po kolei, a `RxCallback` dodatkowo trzyma `i2c_mtx`, więc w danej chwili wykonywana jest jedna transakcja I2C.
 
@@ -133,7 +133,7 @@ Każdy kontroler ma własny README w `controller/<chip>/` (rejestry, konwersje, 
 
 ## Konfiguracja
 
-Serwis I2C nie ma listy urządzeń ani pliku konfiguracyjnego (stałe: magistrala `/dev/i2c-2`, endpoint `SRP.I2C`). ADCSensor: `etc/config.json` z tablicą `sensors` (`sensor_id`, `channel`, `a`/`b` albo rezystancyjny model `R/RES_MIN/…`).
+Serwis I2C nie ma listy urządzeń; `deployment/mw/i2c/config_<Plytka>.json` (w runtime `etc/config.json`) podaje tylko magistralę: `{"i2c_bus": "/dev/i2c-2"}`. Stała: endpoint `SRP.I2C`. ADCSensor: `etc/config.json` z tablicą `sensors` (`sensor_id`, `channel`, `a`/`b` albo rezystancyjny model `R/RES_MIN/…`).
 
 ## Diagnostyka
 

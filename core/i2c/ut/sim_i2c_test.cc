@@ -52,7 +52,7 @@ class SimI2cTest : public ::testing::Test {
     return r ? (((*r)[0] << 8) | (*r)[1]) : -1;
   }
 
-  srp::core::i2c::I2CDriver drv_;
+  srp::core::i2c::I2CDriver drv_{"/dev/i2c-sim"};  // sciezka nieuzywana w sim
   std::string dir_;
   int n_{0};
 };
