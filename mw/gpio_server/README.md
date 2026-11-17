@@ -122,7 +122,7 @@ Zachowanie klienta: brak gniazda → `kInitializeError`; błąd transportu (serw
 
 ## Konfiguracja
 
-`deployment/mw/gpio/config.json` (instalowane jako `etc/config.json`):
+`deployment/mw/gpio/config_<Plytka>.json` (instalowane jako `etc/config.json`):
 
 ```json
 { "gpio": [ { "id": 1, "num": 533, "direction": "out", "desc": "..." } ] }
