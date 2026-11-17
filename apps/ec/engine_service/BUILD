@@ -1,13 +1,14 @@
 
+load("//rockets:rocket.bzl", "rocket_file")
+
 cc_binary(
     name = "engine_service",
     srcs = [
         "main.cpp",
-        "engine_app.cpp",
         "engine_app.hpp",
         "service.hpp",
         "service.cpp",
-    ],
+    ] + rocket_file("engine_app.cpp"),  # engine_app_R8.cpp / engine_app_Rurku.cpp
     visibility = [
         "//deployment/apps:__subpackages__"
         ],

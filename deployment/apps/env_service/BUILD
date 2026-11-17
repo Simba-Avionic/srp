@@ -1,5 +1,5 @@
 load("@srp_platform//tools/model_generator/ara:adaptive_application.bzl", "adaptive_application", "ara_runtime_lib", "ara_someip_lib")
-load("//platforms:board.bzl", "board_config")
+load("//rockets:rocket.bzl", "rocket_config")
 
 ara_runtime_lib(
     name = "ara",
@@ -28,12 +28,12 @@ filegroup(
     ],
 )
 
-board_config(name = "board_config")
+rocket_config(name = "rocket_config")
 
 adaptive_application(
     name = "EnvApp",
     bin = "//apps/ec/env_service",
-    etcs = [":board_config"],
+    etcs = [":rocket_config"],
     model_src = ["//deployment/apps/env_service:instance"],
     visibility = ["//deployment/cpu/ec:__subpackages__"],
 )
