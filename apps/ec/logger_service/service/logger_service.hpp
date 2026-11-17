@@ -67,6 +67,7 @@ class LoggerService final : public ara::exec::AdaptiveApplication {
   std::atomic<uint8_t> save_state{0};
 
   std::shared_ptr<std::jthread> save_thread_;
+  std::atomic<bool> save_loop_done_{false};  // SaveLoop zakonczyla sie (np. blad Open) - watek mozna zastapic
   void SaveLoop(const std::stop_token& token, std::shared_ptr<core::timestamp::TimestampController> timestamp);
   void start_func_handler(const std::uint8_t status);
 
