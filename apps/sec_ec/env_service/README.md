@@ -34,7 +34,7 @@ Eventy ciśnienia i temperatur analogiczne do EnvApp, inne sensory. Brak metod.
 
 ## Konfiguracja
 
-`deployment/apps/sec_ec/env_service/config.json`.
+`deployment/apps/sec_ec/env_service/config_<Plytka>.json`.
 
 ## Zależności
 
