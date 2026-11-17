@@ -286,8 +286,14 @@ void EngineApp::OnApogee() {
 void EngineApp::OnAbort() {
   ara::log::LogWarn() << "EngineApp::OnAbort: ABORT sequence initiated";
 
-  if (servo_handler_ == nullptr || sec_servo_handler_ == nullptr) {
-      return;
+  // F-03: the EC valves are closed even when the sec_ec servo service is missing (it is not used here at all)
+  if (sec_servo_handler_ == nullptr) {
+    ara::log::LogError() << "EngineApp::OnAbort: SecServoService handler is nullptr (no sec_ec?), "
+                            "executing the EC part of the ABORT only";
+  }
+  if (servo_handler_ == nullptr) {
+    ara::log::LogError() << "EngineApp::OnAbort: ServoService handler is nullptr, ABORT valves not closed";
+    return;
   }
   std::thread([this]() {
     servo_handler_->SetOxidizerMainValve(0);

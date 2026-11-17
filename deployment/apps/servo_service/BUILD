@@ -1,6 +1,5 @@
 load("@srp_platform//tools/model_generator/ara:adaptive_application.bzl", "adaptive_application", "ara_runtime_lib", "ara_someip_lib")
 
-
 filegroup(
     name = "instance",
     srcs = [
@@ -42,3 +41,4 @@ adaptive_application(
     visibility = ["//deployment/cpu/ec:__subpackages__"],
 )
 
+exports_files(["config.json"])

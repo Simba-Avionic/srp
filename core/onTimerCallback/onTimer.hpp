@@ -10,6 +10,7 @@
  */
 #ifndef CORE_ONTIMERCALLBACK_ONTIMER_HPP_
 #define CORE_ONTIMERCALLBACK_ONTIMER_HPP_
+#include <cstdint>
 #include <chrono>  // NOLINT
 #include <mutex>  // NOLINT
 #include <thread>  // NOLINT
@@ -47,7 +48,7 @@ class TimerController {
     TimerController& operator=(TimerController&&) = delete;
     TimerController();
 
-    void AddOnTimerCallback(OnTimerCallback callback, u_int32_t Interval_ms);
+    void AddOnTimerCallback(OnTimerCallback callback, uint32_t Interval_ms);
     void Start();
     void Stop();
 };

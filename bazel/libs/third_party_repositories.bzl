@@ -20,14 +20,17 @@ def include_simdjson(ver, sha256):
         sha256 = sha256,
     )
 
-def include_srp_platform(ver):
-        http_archive(
+SRP_PLATFORM_ARTIFACTORY = "https://artifactory.srp-platform.com/artifactory/srp-oss-platform/release-2503/"
+
+def include_srp_platform(package, sha256 = ""):
+    http_archive(
         name = "srp_platform",
         strip_prefix = "srp_platform",
-        urls = ["https://artifactory.srp-platform.com/artifactory/srp-oss-platform/"+ ver + "/srp_platform.zip"],
+        urls = [SRP_PLATFORM_ARTIFACTORY + package + "/srp_platform.zip"],
         type = "zip",
+        sha256 = sha256,
     )
-    
+
 def include_srp_mavlink(ver):
         http_archive(
         name = "srp_mavlink",

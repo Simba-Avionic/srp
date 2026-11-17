@@ -15,14 +15,8 @@
 
 namespace srp {
 namespace apps {
-namespace {
-    static std::shared_ptr<EventData> event_data = nullptr;
-}
-
 std::shared_ptr<EventData> EventData::GetInstance() {
-    if (event_data == nullptr) {
-        event_data = std::make_shared<EventData>();
-    }
+    static std::shared_ptr<EventData> event_data = std::make_shared<EventData>();
     return event_data;
 }
 
