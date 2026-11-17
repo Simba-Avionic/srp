@@ -4,13 +4,13 @@ Sterownik czujników temperatury 1-Wire (typ DS18B20) przez sysfs w1.
 
 ## TL;DR
 
-Czyta temperaturę z `/sys/bus/w1/devices/<id>/`, ustawia rozdzielczość i listuje dostępne czujniki. Middleware `mw/temp` serializuje dostęp i pushuje odczyty do aplikacji.
+Czyta temperaturę z `<devices_path>/<id>/` (katalog i master magistrali podaje MW `temp` z configu płytki, np. `/sys/bus/w1/devices/`), ustawia rozdzielczość i listuje dostępne czujniki. Middleware `mw/temp` serializuje dostęp i pushuje odczyty do aplikacji.
 
 ## Opis funkcjonalności
 
 - `ReadTemp` — wartość w °C (millicelsius / 1000). Ostrzega przy 85 °C i −127 °C (wartości power-on).
 - `SetResolution` / `ReadResolution` — 9–12 bitów.
-- `GetAllAccessibleSensor` — lista ID, pomija `w1_bus_master1`.
+- `GetAllAccessibleSensor` — lista ID, pomija katalog mastera magistrali (`bus_master`, np. `w1_bus_master1`).
 - `GetResponseTime` — czas konwersji (`conv_time`).
 
 ## Architektura

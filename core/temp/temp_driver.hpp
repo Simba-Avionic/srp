@@ -26,10 +26,14 @@ namespace temp {
 class TempDriver : public ITempDriver {
  private:
   const ara::log::Logger& logger_;
+  std::string devices_path_;  ///< katalog czujnikow 1-Wire (sysfs), zawsze z '/' na koncu
+  std::string bus_master_;    ///< katalog mastera magistrali w devices_path_ (nie jest czujnikiem)
 
  public:
   // TODO(GH): Add Check that sensor exist.
-  TempDriver();
+  /// @param devices_path katalog czujnikow 1-Wire, np. "/sys/bus/w1/devices/" (z configu plytki w MW temp)
+  /// @param bus_master   nazwa katalogu mastera magistrali, np. "w1_bus_master1"
+  TempDriver(std::string devices_path, std::string bus_master);
   ara::core::Result<double> ReadTemp(const std::string& sensorPhysicalID) override;
   ara::core::Result<bool> SetResolution(const std::string& sensorPhysicalID, uint8_t resolution) override;
   ara::core::Result<uint8_t> ReadResolution(const std::string& sensorPhysicalID) override;

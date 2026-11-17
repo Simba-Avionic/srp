@@ -1,0 +1,4 @@
+{
+    "w1_devices_path": "/sys/bus/w1/devices/",
+    "w1_bus_master": "w1_bus_master1"
+}
