@@ -13,7 +13,7 @@ Stany `PrimerState_t`: `kUNKNOWN`(0), `kNOT_CONNECTED`(1), `kCONNECTED`(2), `kSH
 - `EnablePrimer()` — wymaga `kCONNECTED`; GPIO 13 HIGH z `active_time=2500` (parametr `auto_disable` jest ignorowany).
 - `VerifyPrimerConection` — odczyt ADC kanał 3 (co 1 s).
 - DID 23: pusty write = `EnablePrimer()` (te same warunki); read nieobsługiwany.
-- Pin (13) i czas (2500 ms) są stałymi w kodzie; `deployment/apps/prim_service/config.json` nie jest czytany.
+- Pin (13) i czas (2500 ms) są stałymi w kodzie; `deployment/apps/prim_service/config_<Plytka>.json` nie jest czytany.
 
 ## Cykl życia
 

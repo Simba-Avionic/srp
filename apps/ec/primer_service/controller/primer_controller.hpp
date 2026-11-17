@@ -36,7 +36,7 @@ enum PrimerState_t {
   kFIRED,
 };
 
-/// Konfiguracja zapalnika (deployment/apps/prim_service/config.json, sekcja "primer").
+/// Konfiguracja zapalnika (deployment/apps/prim_service/config_<Plytka>.json, sekcja "primer").
 struct PrimerConfig {
   std::vector<uint8_t> pins;
   uint16_t active_time_ms{0};
