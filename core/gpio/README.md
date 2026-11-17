@@ -4,7 +4,7 @@ Sterownik cyfrowych pinów GPIO przez Linux sysfs (`/sys/class/gpio`).
 
 ## TL;DR
 
-Eksportuje pin, ustawia kierunek IN/OUT, czyta i zapisuje wartość. Wariant `sim_gpio_drivers` loguje operacje i nie rusza sprzętu.
+Eksportuje pin, ustawia kierunek IN/OUT, czyta i zapisuje wartość. Wariant `sim_gpio_drivers` nie rusza sprzętu: trzyma stan pinów, wstrzykuje usterki i jest sterowany z testów (`core/sim/README.md`).
 
 ## Opis funkcjonalności
 
@@ -61,7 +61,7 @@ class GpioDriver : public IGpioDriver {
 | Target | Zachowanie |
 |--------|------------|
 | `gpio_drivers` | prawdziwy sysfs |
-| `sim_gpio_drivers` | loguje; `getValue` → 1, `getDirection` → IN |
+| `sim_gpio_drivers` | stan pinów (domyślnie 0, IN), usterki/opóźnienia, sterowanie przez `$SRP_SIM_DIR/ctl` — `core/sim/README.md` |
 
 ## Zależności
 

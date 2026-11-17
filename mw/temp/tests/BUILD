@@ -9,3 +9,15 @@
 #         "//communication-core/sockets/mock:mock_socket",
 #     ]
 # )
+
+cc_test(
+    name = "temp_audit_bugs_test",
+    srcs = ["test_audit_bugs.cc"],
+    tags = ["audit_bugs"],
+    deps = [
+        "@com_google_googletest//:gtest_main",
+        "//mw/temp/controller:temp_controller_mw",
+        "//communication-core/sockets:socket_ipc",
+        "@srp_platform//ara/log",
+    ],
+)

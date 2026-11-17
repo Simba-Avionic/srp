@@ -11,6 +11,7 @@
 #ifndef APPS_EC_PRIMER_SERVICE_CONTROLLER_PRIMER_CONTROLLER_HPP_
 #define APPS_EC_PRIMER_SERVICE_CONTROLLER_PRIMER_CONTROLLER_HPP_
 
+#include <atomic>
 #include <string>
 #include <vector>
 #include <utility>
@@ -49,6 +50,8 @@ class PrimerController {
   gpio::GPIOController gpio_;
   std::atomic<PrimerState_t> primerState;
   i2c::ADS7828 adc_;
+  // consecutive failed ADC reads (F-05); reset by the first successful read
+  std::atomic<uint8_t> consecutive_read_errors_{0};
 
  public:
   PrimerController();
