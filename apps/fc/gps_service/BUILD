@@ -7,6 +7,7 @@ cc_library(
         "//deployment/apps/fc/gps_app:ara",
         "//core/gps:gps_data_parser",
         "//core/uart:uart_driver",
+        "//core/json:simba_json",
         "//mw/gpio_server/controller:gpio_controller",
     ],
     srcs = [

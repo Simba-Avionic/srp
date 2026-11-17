@@ -4,7 +4,7 @@ Odczyt GNSS z UART i publikacja zdań NMEA jako eventy SOME/IP.
 
 ## TL;DR
 
-`GPSService` (id **519**): `/dev/ttyS4` @ 230400 → parser `core::Nmea` → eventy GGA / RMC / VTG.
+`GPSService` (id **519**): UART z `deployment/apps/fc/gps_app/config_<Plytka>.json` (`uart_path` / `uart_baudrate`, dziś `/dev/ttyS4` @ 230400) → parser `core::Nmea` → eventy GGA / RMC / VTG.
 
 ## Opis funkcjonalności
 
