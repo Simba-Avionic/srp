@@ -28,7 +28,9 @@ cpu_def(
         "//deployment/apps/system_stat_service:SysStatService",
         "//deployment/apps/prim_service:PrimerService",
         "//deployment/apps/fuel_service:FuelService",
-        "//deployment/apps/radio_app:RadioApp"
+        "//deployment/apps/radio_app:RadioApp",
+        "//deployment/platform/mavlink_daemon:mavlink_daemon",
+        "//deployment/platform/mavlink_daemon:mavlink_daemon_driver",
     ],
 )
 

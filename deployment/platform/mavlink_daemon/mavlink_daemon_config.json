@@ -1,0 +1,13 @@
+{
+    "system_id": 1,
+    "component_id": 1,
+    "driver_dir": "/srp/opt/mavlink_daemon/drivers",
+    "links": {
+        "lora": {
+            "driver": "ebyte_e220",
+            "driver_config": "/srp/opt/mavlink_daemon/ebyte_e220_lora.json",
+            "version": 2,
+            "heartbeat_hz": 1
+        }
+    }
+}
