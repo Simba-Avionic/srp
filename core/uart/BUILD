@@ -1,3 +1,5 @@
+exports_files(["uart_driver.cpp"])  # real termios driver, also used by tests independent of build_mode
+
 
 cc_library(
     name = "Iuart_driver",

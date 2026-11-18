@@ -1,0 +1,17 @@
+{
+    "uart": "/dev/ttyS1",
+    "pins": {
+        "m0": 17,
+        "m1": 27,
+        "aux": 22
+    },
+    "e220": {
+        "address": 0,
+        "channel": 23,
+        "air_rate": 2400,
+        "power_dbm": 30,
+        "uart_baudrate": 9600,
+        "parity": "8N1",
+        "packet_length": 200
+    }
+}
