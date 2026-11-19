@@ -11,9 +11,11 @@
 #include <termios.h>
 #include <unistd.h>
 
+#include <atomic>
 #include <chrono>  // NOLINT
 #include <cstdlib>
 #include <fstream>
+#include <stop_token>  // NOLINT
 #include <string>
 #include <thread>  // NOLINT
 #include <tuple>
@@ -106,6 +108,61 @@ TEST(SerialPortUart, WaitForDataTimesOutAndStopTokenWakesIt) {
   EXPECT_FALSE(u.WaitForData(milliseconds(5000), src.get_token()));
   stopper.join();
   EXPECT_LT(std::chrono::steady_clock::now() - t0, milliseconds(1000));
+}
+
+// TX thread writes into a full output buffer while the RX thread waits for data: the write must not
+// share SerialPort::Poll() with the wait (one thread at a time), so Stop reaches the RX wait at once.
+TEST(SerialPortUart, WriteToAFullBufferDoesNotDisturbTheReadWait) {
+  Pty pty;
+  SerialPortUart u;
+  ASSERT_TRUE(u.Open(pty.path, uart::UartConfig::Mavlink(57600)));
+  std::stop_source stop;
+  std::atomic<bool> rx_done{false};
+  std::thread rx([&] {
+    u.WaitForData(milliseconds(10000), stop.get_token());
+    rx_done = true;
+  });
+  // Nobody reads the master side: the pty buffer fills and Write() gives up at its 1 s deadline.
+  const auto t0 = std::chrono::steady_clock::now();
+  EXPECT_EQ(u.Write(std::vector<std::uint8_t>(512 * 1024, 0x55)), core::ErrorCode::kError);
+  const auto write_time = std::chrono::steady_clock::now() - t0;
+  EXPECT_GE(write_time, milliseconds(900));
+  EXPECT_LT(write_time, milliseconds(3000));
+  EXPECT_FALSE(rx_done);  // the wait was not woken by the blocked Write()
+  const auto t1 = std::chrono::steady_clock::now();
+  stop.request_stop();
+  rx.join();
+  EXPECT_TRUE(rx_done);
+  EXPECT_LT(std::chrono::steady_clock::now() - t1, milliseconds(200));
+}
+
+TEST(SerialPortUart, WriteToAFullBufferCompletesWhenThePeerDrains) {
+  Pty pty;
+  SerialPortUart u;
+  ASSERT_TRUE(u.Open(pty.path, uart::UartConfig::Mavlink(57600)));
+  ASSERT_EQ(::fcntl(pty.master, F_SETFL, O_NONBLOCK), 0);
+  const std::size_t total = 256 * 1024;  // more than the pty buffer: Write() has to wait for room
+  std::atomic<std::size_t> drained{0};
+  std::atomic<bool> done{false};
+  std::thread peer([&] {
+    std::uint8_t buf[4096];
+    while (!done) {
+      const ssize_t n = ::read(pty.master, buf, sizeof(buf));
+      if (n > 0) {
+        drained += static_cast<std::size_t>(n);
+      } else {
+        std::this_thread::sleep_for(milliseconds(2));
+      }
+    }
+  });
+  EXPECT_EQ(u.Write(std::vector<std::uint8_t>(total, 0x55)), core::ErrorCode::kOk);
+  const auto limit = std::chrono::steady_clock::now() + milliseconds(2000);
+  while (drained < total && std::chrono::steady_clock::now() < limit) {
+    std::this_thread::sleep_for(milliseconds(5));
+  }
+  done = true;
+  peer.join();
+  EXPECT_EQ(drained, total);
 }
 
 TEST(SerialPortUart, ClosedPortAndLostDeviceAreReportedAsErrors) {

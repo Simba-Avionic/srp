@@ -8,6 +8,10 @@
  *
  * Limits of SerialPort: 8N1 only (Open() with another parity returns false) and the port is opened
  * exclusively (TIOCEXCL + flock), so a second user of the same device fails to open it.
+ *
+ * Threads: WaitForData() (RX thread) uses SerialPort::Poll(), which is for one thread at a time, so
+ * Write() (TX thread) never calls Poll(): when the output buffer is full it retries TryWrite() every
+ * 1 ms until its 1 s deadline (kError), a lost or closed port ends it at once (kConnectionError).
  */
 #ifndef CORE_RADIO_E220_SERIAL_PORT_UART_HPP_
 #define CORE_RADIO_E220_SERIAL_PORT_UART_HPP_

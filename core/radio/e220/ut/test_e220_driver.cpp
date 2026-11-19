@@ -203,6 +203,8 @@ TEST_F(E220Test, Baud9600DoesNotReopenTheUart) {
   EXPECT_EQ(module_->uart_opens.size(), 1U);
 }
 
+// Covers the driver API (E220Config.parity -> IUartDriver::Open), not the JSON path: the config parser
+// accepts 8N1 only, so no model produces a non-default parity yet.
 TEST_F(E220Test, ParityFromConfigIsAppliedWhenReopening) {
   E220Config cfg;
   cfg.parity = UartParity::k8E1;
