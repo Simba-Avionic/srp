@@ -76,7 +76,7 @@ def desc(cls, tsys=None, tcomp=None, status=None):
 
 
 class Svc:
-    """The Example service from the mav_helpers fixture: the Status event + the SetMode method."""
+    """The Example service of the dialect in ut/e220_dialect.py: the Status event + the SetMode method."""
 
     def __init__(self, mod):
         self.mod = mod
