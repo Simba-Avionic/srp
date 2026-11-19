@@ -5,12 +5,15 @@
  */
 #include "core/radio/e220/serial_port_uart.hpp"
 
+#include <thread>  // NOLINT
+
 namespace srp {
 namespace core {
 namespace radio {
 namespace e220 {
 namespace {
 constexpr std::uint32_t kWriteTimeoutMs = 1000;
+constexpr std::chrono::milliseconds kWriteRetryPause{1};  // about one byte at 9600 baud
 
 /// Speed in bit/s for a termios constant; 0 = not an E220 UART speed.
 std::uint32_t BaudBps(speed_t speed) {
@@ -71,16 +74,12 @@ core::ErrorCode SerialPortUart::Write(const std::vector<uint8_t>& data) {
     if (r.status != serial::IoStatus::kTimeout) {
       return core::ErrorCode::kConnectionError;
     }
-    // Output buffer full: wait for room until the write deadline.
-    const auto now = std::chrono::steady_clock::now();  // NOLINT
-    const auto left = std::chrono::duration_cast<std::chrono::milliseconds>(deadline - now);
-    if (left.count() <= 0) {
+    // Output buffer full: retry until the write deadline. Not SerialPort::Poll(): the RX thread sits in
+    // Poll() (WaitForData) and Poll() is for one thread at a time (shared stop eventfd).
+    if (std::chrono::steady_clock::now() >= deadline) {  // NOLINT
       return core::ErrorCode::kError;
     }
-    const auto p = port_.Poll(true, static_cast<std::uint32_t>(left.count()), {});
-    if (p.status == serial::IoStatus::kClosed || p.status == serial::IoStatus::kError) {
-      return core::ErrorCode::kConnectionError;
-    }
+    std::this_thread::sleep_for(kWriteRetryPause);
   }
   return core::ErrorCode::kOk;
 }
