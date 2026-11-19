@@ -103,9 +103,18 @@ def _impl(ctx):
         ],
     )
 
+    # Bez tej cechy Bazel nie buduje wariantu PIC zależności, więc cc_binary(linkshared = True)
+    # (np. plugin ebyte_e220 z mavlink_driver_plugin) nie linkuje się ("recompile with -fPIC").
+    # Zwykłe binarki zostają bez -fPIC.
+    supports_pic = feature(
+        name = "supports_pic",
+        enabled = True,
+    )
+
     features = [
         default_compiler_flags,
         default_linker_flags,
+        supports_pic,
     ]
 
     return cc_common.create_cc_toolchain_config_info(
