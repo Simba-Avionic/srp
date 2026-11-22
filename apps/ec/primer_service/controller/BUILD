@@ -16,3 +16,13 @@ cc_library(
     ],
     visibility = ["//visibility:public"],
 )
+
+cc_test(
+    name = "primer_controller_test",
+    srcs = ["primer_controller_test.cpp"],
+    deps = [
+        ":primer_controller",
+        "//mw/i2c_service/controller/mock:mock_i2c_controller",
+        "@com_google_googletest//:gtest_main",
+    ],
+)

@@ -57,12 +57,19 @@ std::vector<uint8_t> GPIOMWService::RxCallback(const std::string& ip, const std:
     std::optional<srp::mw::gpio::GpioHdr> hdr = srp::data::Convert<srp::mw::gpio::GpioHdr>::Conv(data);
     if (!hdr.has_value()) {
         ara::log::LogWarn() << "RxCallback: failed to parse GPIO header";
-        return {0};
+        // F-08: 0 == kOk, the client would read a garbled frame as success
+        return {core::ErrorCode::kError};
     }
     auto it = this->config.find(hdr.value().pin_id);
     if (it == this->config.end()) {
         ara::log::LogWarn() << "Unknown pin with ID: " << hdr.value().pin_id;
-        return {0};
+        // F-08: SET/GET answers are error codes (0 == kOk), so an unknown pin must not answer 0 there.
+        // SUBSCRIBE/UNSUBSCRIBE keep their own convention: 0 == failure (any other byte is a controller ID / success).
+        if (hdr.value().action == srp::gpio::ACTION::SUBSCRIBE ||
+            hdr.value().action == srp::gpio::ACTION::UNSUBSCRIBE) {
+            return {0};
+        }
+        return {core::ErrorCode::kNotDefine};
     }
     auto action = hdr.value().action;
     switch (action) {
@@ -79,6 +86,10 @@ std::vector<uint8_t> GPIOMWService::RxCallback(const std::string& ip, const std:
                                 << " value: " << hdr.value().value
                                 << " active_ms: " << hdr.value().time_period;
             if (hdr.value().value == 0) {
+                // the pin is off: forget the pending auto-disable (an old "infinite" entry would otherwise
+                // survive and make the next timed SET never expire)
+                std::lock_guard<std::mutex> lock(pin_expire_mutex);
+                pin_expire.erase(hdr.value().pin_id);
                 return {core::ErrorCode::kOk};
             }
             {
@@ -86,13 +97,13 @@ std::vector<uint8_t> GPIOMWService::RxCallback(const std::string& ip, const std:
                 auto expire_it = pin_expire.find(hdr.value().pin_id);
                 if (expire_it == pin_expire.end()) {
                     ExpiredPinCB cfg;
-                    cfg.disable_tp = std::chrono::high_resolution_clock::now()
+                    cfg.disable_tp = std::chrono::steady_clock::now()
                                             + std::chrono::milliseconds(hdr.value().time_period);
                     cfg.infinite_active = (hdr.value().time_period == 0);
                     pin_expire[hdr.value().pin_id] = cfg;
                     return {core::ErrorCode::kOk};
                 }
-                auto new_time = std::chrono::high_resolution_clock::now()
+                auto new_time = std::chrono::steady_clock::now()
                                         + std::chrono::milliseconds(hdr.value().time_period);
                 expire_it->second.disable_tp = std::max(expire_it->second.disable_tp, new_time);
                 if (hdr.value().time_period == 0) {
@@ -112,6 +123,7 @@ std::vector<uint8_t> GPIOMWService::RxCallback(const std::string& ip, const std:
         }
 
         case srp::gpio::ACTION::SUBSCRIBE: {
+            std::lock_guard<std::mutex> lock(subscription_mutex_);
             auto controller_id = hdr.value().value;
             auto pin_id = hdr.value().pin_id;
             ara::log::LogDebug() << "subscription request from controller ID: " << controller_id
@@ -133,6 +145,7 @@ std::vector<uint8_t> GPIOMWService::RxCallback(const std::string& ip, const std:
         }
 
         case srp::gpio::ACTION::UNSUBSCRIBE: {
+            std::lock_guard<std::mutex> lock(subscription_mutex_);
             auto controller_id = hdr.value().value;
             auto pin_id = hdr.value().pin_id;
             if (subscribed_pins_states.find(pin_id) == subscribed_pins_states.end() ||
@@ -166,21 +179,41 @@ std::vector<uint8_t> GPIOMWService::RxCallback(const std::string& ip, const std:
 
 void GPIOMWService::PollSubscribedPinsLoop(const std::stop_token& token) {
     ara::log::LogInfo() << "Starting subscribed pins polling loop";
-    for (auto pair : subscribed_pins_states) {
-        // subscribed pins are checked for existence before being added to the set
-        pair.second = this->gpio_driver_->getValue(config[pair.first].pinNum);
-    }
-    while (!token.stop_requested()) {
+    {
+        std::lock_guard<std::mutex> lock(subscription_mutex_);
         for (auto& pair : subscribed_pins_states) {
-            auto state = this->gpio_driver_->getValue(config[pair.first].pinNum);
-            if (state == pair.second) {
-                continue;
+            // subscribed pins are checked for existence before being added to the set
+            pair.second = this->gpio_driver_->getValue(config[pair.first].pinNum);
+        }
+    }
+    struct Notification {
+        PinId pin_id;
+        uint8_t state;
+        std::vector<CallbackId> controllers;
+    };
+    while (!token.stop_requested()) {
+        std::vector<Notification> to_notify;
+        {
+            // the RX thread (RxCallback) changes the subscriptions: look for the changes under the lock, but
+            // transmit the callbacks outside of it (a slow receiver must not block (un)subscribing)
+            std::lock_guard<std::mutex> lock(subscription_mutex_);
+            for (auto& pair : subscribed_pins_states) {
+                auto state = this->gpio_driver_->getValue(config[pair.first].pinNum);
+                if (state == pair.second) {
+                    continue;
+                }
+                ara::log::LogDebug() << "subscribed pin ID: " << pair.first
+                                     << " changed state to: " << state;
+                pair.second = state;
+                auto it = callbacks.find(pair.first);
+                if (it != callbacks.end()) {
+                    to_notify.push_back({pair.first, state, it->second});
+                }
             }
-            ara::log::LogDebug() << "subscribed pin ID: " << pair.first
-                                 << " changed state to: " << state;
-            pair.second = state;
-            for (auto controller_id : callbacks[pair.first]) {
-                srp::mw::gpio::GpioHdr hdr{srp::gpio::ACTION::CALLBACK, pair.first, state};
+        }
+        for (const auto& notification : to_notify) {
+            for (auto controller_id : notification.controllers) {
+                srp::mw::gpio::GpioHdr hdr{srp::gpio::ACTION::CALLBACK, notification.pin_id, notification.state};
                 auto buf = srp::data::Convert2Vector<srp::mw::gpio::GpioHdr>::Conv(hdr);
                 std::string callback_path = CALLBACK_PATH_PREFIX + std::to_string(controller_id);
                 auto res = this->sock_->Transmit(callback_path, 0, buf);
@@ -193,13 +226,12 @@ void GPIOMWService::PollSubscribedPinsLoop(const std::stop_token& token) {
     }
 }
 
-GPIOMWService::~GPIOMWService() {
-    this->sock_->~ISocketStream();
-}
+// sock_ (unique_ptr) destroys the socket itself; destroying it by hand here made it die twice
+GPIOMWService::~GPIOMWService() {}
 
 std::chrono::milliseconds GPIOMWService::CheckPinsExpired() {
     auto allowed_sleep = std::chrono::milliseconds(1000);
-    auto now = std::chrono::high_resolution_clock::now();
+    auto now = std::chrono::steady_clock::now();
     std::vector<uint8_t> pins_to_disable;
     {
         std::lock_guard<std::mutex> lock(pin_expire_mutex);

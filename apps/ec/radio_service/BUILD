@@ -6,6 +6,7 @@ cc_binary(
         ":someip_controller",
         "//deployment/apps/radio_app:ara",
         ":radio_controller",
+        ":gs_hb_guider",
         "//core/timestamp:timestamp_controller",
         "@srp_platform//ara/log",
         "//apps/fc/main_service:MainService",
@@ -14,11 +15,21 @@ cc_binary(
     srcs = [
         "radio_app.cc",
         "main.cc",
-        "gs_hb_guider.cpp",
         "radio_app.h",
-        "gs_hb_guider.hpp",
     ],
     visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "gs_hb_guider",
+    srcs = ["gs_hb_guider.cpp"],
+    hdrs = ["gs_hb_guider.hpp"],
+    visibility = ["//visibility:public"],
+    deps = [
+        "//core/common:condition_lib",
+        "//core/rocket_machine_state:rocket_state_base",
+        "@srp_platform//ara/log",
+    ],
 )
 
 cc_library(
@@ -52,7 +63,7 @@ cc_library(
         "@srp_platform//ara/log",
         ":event_data",
         "@srp_mavlink//:simba_mavlink",
-        ":uart_driver",
+        "//core/uart:uart_driver",
         "//core/common:wait_queue",
     ],
 )
@@ -82,16 +93,6 @@ cc_library(
     deps = [
         "@srp_mavlink//:simba_mavlink",
         "//core/rocket_machine_state:rocket_state_base",
-    ],
-    visibility = ["//visibility:public"],
-)
-
-cc_library(
-    name = "uart_driver",
-    hdrs = ["mavlink_uart_driver.hpp"],
-    srcs = ["mavlink_uart_driver.cpp"],
-    deps = [
-        "//core/common:common_types",
     ],
     visibility = ["//visibility:public"],
 )

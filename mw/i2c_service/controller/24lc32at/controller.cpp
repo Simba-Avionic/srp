@@ -109,7 +109,8 @@ core::ErrorCode EEPROM24LC32AT::WriteByte(uint16_t address, uint8_t data) {
   auto address_bytes = GenerateAddressBytes(address);
   std::vector<uint8_t> write_data = {address_bytes[0], address_bytes[1], data};
 
-  if (this->i2c_->Write(device_address_, write_data) != core::ErrorCode::kOk) {
+  // PageWrite = jeden write() z adresem i danymi; Write(vector) w I2CDriver odrzuca nieparzysta liczbe bajtow
+  if (this->i2c_->PageWrite(device_address_, write_data) != core::ErrorCode::kOk) {
     eeprom_logger_.LogWarn() << "EEPROM24LC32AT.WriteByte: failed to write byte";
     return core::ErrorCode::kConnectionError;
   }

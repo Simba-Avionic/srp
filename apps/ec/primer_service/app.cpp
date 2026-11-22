@@ -65,7 +65,14 @@ PrimerService::PrimerService() :
   int PrimerService::Initialize(const std::map<ara::core::StringView, ara::core::StringView>
                       parms) {
   ara::log::LogInfo() << "PrimerService::Initialize: starting";
-  controller->Initialize();
+  std::string app_path;
+  const auto app_path_it = parms.find("app_path");
+  if (app_path_it != parms.end()) {
+    app_path = std::string(app_path_it->second.data(), app_path_it->second.size());
+  } else {
+    ara::log::LogWarn() << "PrimerService::Initialize: missing app_path, primer config defaults will be used";
+  }
+  controller->Initialize(app_path);
   primer_did_->Offer();
   service_ipc.StartOffer();
   service_udp.StartOffer();

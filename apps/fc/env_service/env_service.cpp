@@ -238,7 +238,7 @@ int EnvServiceFc::Run(const std::stop_token& token) {
     }
 
     while (!token.stop_requested()) {
-        const auto start = std::chrono::high_resolution_clock::now();
+        const auto start = std::chrono::steady_clock::now();
         const auto pressValue = this->bme->getPressure();
         const auto tempValue = this->bme->getTemperature();
         const auto humValue = this->bme->getHumidity();
@@ -250,7 +250,7 @@ int EnvServiceFc::Run(const std::stop_token& token) {
         } else {
             ara::log::LogWarn() << "dont receive new data";
         }
-        auto end = std::chrono::high_resolution_clock::now();
+        auto end = std::chrono::steady_clock::now();
         auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
         ara::log::LogDebug() << "loop taken:" << duration.count() << "ms";
         if (duration < std::chrono::milliseconds(kBME280_delay_ms)) {

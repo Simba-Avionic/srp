@@ -5,11 +5,21 @@ Dokumentacja modułów (nazwa, TL;DR, funkcje, diagramy, API):
 - [mw](mw/README.md) — middleware GPIO / I2C / temp / czas
 - [apps](apps/README.md) — aplikacje EC / FC / SEC_EC
 
-Konfigi do budowania:
-- BBB
+Konfigi do budowania (platforma + wersja plytki, definicje w `platforms/BUILD`):
+- BBB + EB_V2
     ```
-    --config=bbb-platform
+    --config=bbb-EB_V2
     ```
+- BBB + LB_V1
+    ```
+    --config=bbb-LB_V1
+    ```
+- RPi Zero 2 W + NG_V1
+    ```
+    --config=rpi-NG_V1
+    ```
+
+Kod zalezny od plytki: `select({"//platforms:is_eb_v2": [...], "//conditions:default": [...]})`.
 
 ostatnie zbudowane obrazy dostępne do pobrania pod adresem:
 - [EC](https://simbaj.toadres.pl/job/srp-master-build/lastSuccessfulBuild/artifact/bazel-bin/deployment/cpu/ec/pkg.tar)

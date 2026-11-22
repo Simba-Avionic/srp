@@ -46,7 +46,7 @@ class I2CDriver : public II2CDriver;
 
 ## Symulacja
 
-`SIMi2cdriver`: Init/Ioctl/Write zwracają `kOk`; Read/ReadWrite → `nullopt`.
+`SIMi2cdriver`: model magistrali z urządzeniami (EEPROM 0x50, ADS7828 0x48, PCA9685 0x70, LSM6DSOX 0x6A, BME280 0x76), inny adres = NACK; wstrzykiwanie NACK/timeout; sterowanie przez `$SRP_SIM_DIR/ctl` — `core/sim/README.md`.
 
 ## Zależności
 

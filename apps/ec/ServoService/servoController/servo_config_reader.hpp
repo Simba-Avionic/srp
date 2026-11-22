@@ -22,10 +22,11 @@
 
 #include "core/json/json_parser.h"
 #include "ara/log/log.h"
+#include "apps/ec/ServoService/servoController/servo_state.hpp"
 
 namespace srp {
 namespace service {
-using Clock = std::chrono::high_resolution_clock;
+using Clock = std::chrono::steady_clock;
 
 struct ServoRuntimeConfig {
   using timepoint = Clock::time_point;
@@ -51,12 +52,15 @@ struct servo_cfg {
 
 class ConfigReader {
  private:
+    // number of PCA9685 outputs (PCA9685::kChannel_count; not included here to keep this header light)
+    static constexpr int64_t kPca9685_channel_count = 16;
     std::unordered_map<uint8_t, ServoRuntimeConfig> db;
     mutable std::mutex db_mtx_;
 
     std::optional<servo_cfg> ReadServoConfig(core::json::JsonParser entry) const {
         auto actuator_id = entry.GetNumber<uint8_t>("actuator_id");
-        auto channel = entry.GetNumber<uint8_t>("channel");
+        // read wider than uint8_t: GetNumber<uint8_t> wraps (e.g. 257 -> 1) and would hide a wrong channel
+        auto channel = entry.GetNumber<int64_t>("channel");
         auto on_pos = entry.GetNumber<uint16_t>("on_pos");
         auto off_pos = entry.GetNumber<uint16_t>("off_pos");
         if (!(actuator_id.has_value() && channel.has_value() && on_pos.has_value() &&
@@ -64,7 +68,13 @@ class ConfigReader {
             ara::log::LogWarn() << "ServoController.LoadConfig: incomplete servo description";
             return std::nullopt;
         }
-        ServoRuntimeConfig cfg{on_pos.value(), off_pos.value(), channel.value()};
+        if (channel.value() < 0 || channel.value() >= kPca9685_channel_count) {
+            ara::log::LogError() << "ServoController.LoadConfig: actuator " << actuator_id.value()
+                                 << " has channel out of range (0-" << (kPca9685_channel_count - 1)
+                                 << "): " << channel.value();
+            return std::nullopt;
+        }
+        ServoRuntimeConfig cfg{on_pos.value(), off_pos.value(), static_cast<uint8_t>(channel.value())};
 
         cfg.mosfet_id = entry.GetNumber<uint8_t>("mosfet_id").value_or(0);
         cfg.ina219_i2c_address = entry.GetNumber<uint8_t>("ina219_address").value_or(0);
@@ -125,12 +135,17 @@ class ConfigReader {
         }
         it->second.position = state;
         ara::log::LogDebug() << "ConfigReader.SetServoPosition: actuator "
-                        << actuator_id << " state=" << state;
+                        << actuator_id << " state=" << static_cast<int>(state);
+        if (state == ToRaw(ServoState::kOpenPermanent)) {
+            // otwarcie na stale: anuluj termin auto-zamkniecia z wczesniejszego stanu 1
+            it->second.open_time_end = Clock::time_point::min();
+            return true;
+        }
         if (it->second.auto_closing == 0) {
             return true;
         }
 
-        if (state == 1) {
+        if (state == ToRaw(ServoState::kOpen)) {
             auto new_closing_time = Clock::now();
             new_closing_time += std::chrono::milliseconds(it->second.auto_closing);
             it->second.open_time_end = std::max(it->second.open_time_end, new_closing_time);

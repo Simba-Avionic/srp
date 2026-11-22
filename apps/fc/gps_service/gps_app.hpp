@@ -29,7 +29,7 @@
 
 namespace srp {
 namespace apps {
-using timepoint = std::chrono::high_resolution_clock::time_point;
+using timepoint = std::chrono::steady_clock::time_point;
 using GPSDataVariant = std::variant<GPSDataStructure, GPSRMCDataStructure, GPSVTGDataStructure>;
 
 class GPSApp final : public ara::exec::AdaptiveApplication {

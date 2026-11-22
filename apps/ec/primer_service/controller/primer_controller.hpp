@@ -11,10 +11,12 @@
 #ifndef APPS_EC_PRIMER_SERVICE_CONTROLLER_PRIMER_CONTROLLER_HPP_
 #define APPS_EC_PRIMER_SERVICE_CONTROLLER_PRIMER_CONTROLLER_HPP_
 
+#include <atomic>
 #include <string>
 #include <vector>
 #include <utility>
 #include <memory>
+#include <optional>
 
 #include "mw/gpio_server/controller/gpio_controller.hpp"
 #include "ara/log/log.h"
@@ -34,16 +36,31 @@ enum PrimerState_t {
   kFIRED,
 };
 
+/// Konfiguracja zapalnika (deployment/apps/prim_service/config.json, sekcja "primer").
+struct PrimerConfig {
+  std::vector<uint8_t> pins;
+  uint16_t active_time_ms{0};
+};
+
 class PrimerController {
  private:
+  PrimerConfig config_;
   const ara::log::Logger& prim_logger;
   gpio::GPIOController gpio_;
   std::atomic<PrimerState_t> primerState;
   i2c::ADS7828 adc_;
+  // consecutive failed ADC reads (F-05); reset by the first successful read
+  std::atomic<uint8_t> consecutive_read_errors_{0};
 
  public:
   PrimerController();
-  void Initialize();
+  void Initialize(const std::string& app_path = "");
+  /**
+   * @brief Initialize with the given I2C controller (used by Initialize() and by unit tests)
+   */
+  void Initialize(std::unique_ptr<i2c::II2CController> i2c);
+  /// Parsuje konfiguracje; brak/zly plik lub pole -> wartosci domyslne (13, 2500 ms) + LogWarn.
+  static PrimerConfig ParseConfig(const std::optional<core::json::JsonParser>& parser);
 
   bool EnablePrimer(const bool auto_disable = true);
   bool DisablePrimer();

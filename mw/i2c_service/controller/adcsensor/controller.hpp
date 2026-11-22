@@ -17,6 +17,7 @@
 #include <vector>
 #include <future> // NOLINT
 #include <memory>
+#include <mutex>  // NOLINT
 #include <utility>
 
 #include "mw/i2c_service/controller/ads7828/Iads7828.h"
@@ -40,6 +41,7 @@ class ADCSensorController {
    * 
    */
   std::unordered_map<uint8_t, SensorConfig> db_;
+  mutable std::mutex db_mtx_;  // chroni db_ (MakeCalibration modyfikuje, GetValue czyta)
 
  protected:
   std::unordered_map<uint8_t, SensorConfig> ReadConfig(core::json::JsonParser parser) const;

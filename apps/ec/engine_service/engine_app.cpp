@@ -206,7 +206,8 @@ int EngineApp::Initialize(const std::map<ara::core::StringView, ara::core::Strin
     ara::log::LogWarn() << "Retry setting servo handler or primer_handler i: " << i-1;
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
   }
-  if (i >= kInit_max_intervals) {
+  // check the handlers, not the counter: handlers found exactly in the last iteration are fine
+  if (servo_handler_ == nullptr || primer_handler_ == nullptr) {
     ara::log::LogFatal() << "Cant initialize servo handler or primer handler, closing app";
     return 1;
   }
@@ -261,7 +262,15 @@ void EngineApp::OnLaunch() {
     std::this_thread::sleep_for(std::chrono::milliseconds(450));
     servo_handler_->SetOxidizerMainValve(1);
     std::this_thread::sleep_for(std::chrono::milliseconds(7000));
-    state_ctr->SetState(RocketState_t::ABORT);
+    // end of the launch sequence: LAUNCH -> FLIGHT; the valves stay open in FLIGHT (closing them is a future state);
+    // ABORT is rejected from LAUNCH (F-02)
+    if (!state_ctr->SetState(RocketState_t::FLIGHT)) {
+      // e.g. an external SetMode(FLIGHT) during the first 1.45 s already moved the state: the valves opened later
+      // by this thread would stay open
+      ara::log::LogError() << "EngineApp::OnLaunch: FLIGHT rejected at the end of the launch sequence, "
+                              "closing valves directly";
+      this->CloseValves();
+    }
   }).detach();
 }
 
@@ -283,18 +292,28 @@ void EngineApp::OnApogee() {
   }
 }
 
+void EngineApp::CloseValves() {
+  servo_handler_->SetOxidizerMainValve(0);
+  std::this_thread::sleep_for(std::chrono::milliseconds(200));
+  servo_handler_->SetPressureFeedVentValve(0);
+  std::this_thread::sleep_for(std::chrono::milliseconds(200));
+  servo_handler_->SetPressureFeedMainValve(0);
+}
+
 void EngineApp::OnAbort() {
   ara::log::LogWarn() << "EngineApp::OnAbort: ABORT sequence initiated";
 
-  if (servo_handler_ == nullptr || sec_servo_handler_ == nullptr) {
-      return;
+  // F-03: the EC valves are closed even when the sec_ec servo service is missing (it is not used here at all)
+  if (sec_servo_handler_ == nullptr) {
+    ara::log::LogError() << "EngineApp::OnAbort: SecServoService handler is nullptr (no sec_ec?), "
+                            "executing the EC part of the ABORT only";
+  }
+  if (servo_handler_ == nullptr) {
+    ara::log::LogError() << "EngineApp::OnAbort: ServoService handler is nullptr, ABORT valves not closed";
+    return;
   }
   std::thread([this]() {
-    servo_handler_->SetOxidizerMainValve(0);
-    std::this_thread::sleep_for(std::chrono::milliseconds(200));
-    servo_handler_->SetPressureFeedVentValve(0);
-    std::this_thread::sleep_for(std::chrono::milliseconds(200));
-    servo_handler_->SetPressureFeedMainValve(0);
+    this->CloseValves();
     std::this_thread::sleep_for(std::chrono::milliseconds(5000));
     servo_handler_->SetOxidizerMainValve(1);
     std::this_thread::sleep_for(std::chrono::milliseconds(200));

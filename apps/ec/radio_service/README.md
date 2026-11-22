@@ -142,7 +142,7 @@ Brak pliku. Stałe: `/dev/ttyS1`, 57600 bd, 4 wymagane ramki zmiany stanu, okres
 
 ## Zależności
 
-`core/uart`, `core/onTimerCallback`, GPIO, MAVLink dialect `simba`.
+`core/uart` (preset `UartConfig::Mavlink(57600)`, driver wstrzykiwany do `MavRadioController` jako `IUartDriver`), `core/onTimerCallback`, GPIO, MAVLink dialect `simba`.
 
 ## BUILD
 

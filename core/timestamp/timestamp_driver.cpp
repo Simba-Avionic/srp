@@ -22,21 +22,23 @@ namespace {
 }
 int64_t GetNow() {
   return std::chrono::duration_cast<std::chrono::milliseconds>(
-    std::chrono::high_resolution_clock::now().time_since_epoch())
+    std::chrono::steady_clock::now().time_since_epoch())
     .count();
 }
 
 bool TimestampController::Init() {
   uint8_t i = 0;
+  bool found = false;
   do {
     std::this_thread::sleep_for(std::chrono::seconds(1));
     i += 1;
-  } while (!proxy_.FindService().HasValue() && i <= kMax_Wait);
-  // error
-  if (i == kMax_Wait) {
-    return false;
+    found = proxy_.FindService().HasValue();
+  } while (!found && i <= kMax_Wait);
+  if (!found) {
+    logger_.LogError() << "TimestampController::Init: timestamp service not found after "
+                       << static_cast<int>(i) << " s";
   }
-  return true;
+  return found;
 }
 TimestampController::TimestampController():
     instance_(kTimestamp_instance),

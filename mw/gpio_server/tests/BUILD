@@ -40,3 +40,88 @@ cc_test(
         "//mw/gpio_server/tests/test_data:gpio_test_data",
         ],
 )
+
+cc_test(
+    name = "gpio_server_audit_bugs_test",
+    srcs = ["test_audit_bugs.cc"],
+    tags = ["audit_bugs"],
+    copts = ["-D_GLIBCXX_ASSERTIONS"],
+    deps = [
+        "@com_google_googletest//:gtest_main",
+        "//mw/gpio_server:gpio_service_lib",
+        "//core/gpio/mock:mock_gpio",
+        "//communication-core/sockets/mock:mock_socket",
+        "//mw/gpio_server/data:gpio_hdr",
+    ],
+)
+
+cc_test(
+    name = "gpio_did_write_test",
+    srcs = [
+        "test_did_write.cpp",
+        ],
+    copts = ["-D_GLIBCXX_ASSERTIONS"],  # payload[0] on an empty vector aborts instead of silent UB
+    visibility = ["//visibility:public"],
+    deps=[
+        "@com_google_googletest//:gtest_main",
+        "//mw/gpio_server:gpio_service_lib",
+        "//core/gpio/mock:mock_gpio",
+    ],
+)
+
+cc_test(
+    name = "gpio_subscription_race_test",
+    srcs = [
+        "test_subscription_race.cpp",
+        ],
+    visibility = ["//visibility:public"],
+    deps=[
+        "@com_google_googletest//:gtest_main",
+        "//mw/gpio_server:gpio_service_lib",
+        "//core/gpio/mock:mock_gpio",
+        "//communication-core/sockets/mock:mock_socket",
+        "//mw/gpio_server/data:gpio_hdr",
+    ],
+)
+
+cc_test(
+    name = "gpio_errors_test",
+    srcs = ["test_gpio_errors.cc"],
+    deps = [
+        "@com_google_googletest//:gtest_main",
+        "//mw/gpio_server:gpio_service_lib",
+        "//core/gpio/mock:mock_gpio",
+        "//communication-core/sockets/mock:mock_socket",
+        "//mw/gpio_server/data:gpio_hdr",
+    ],
+)
+
+cc_test(
+    name = "gpio_poll_initial_state_test",
+    srcs = [
+        "test_poll_initial_state.cpp",
+        ],
+    visibility = ["//visibility:public"],
+    deps=[
+        "@com_google_googletest//:gtest_main",
+        "//mw/gpio_server:gpio_service_lib",
+        "//core/gpio/mock:mock_gpio",
+        "//communication-core/sockets/mock:mock_socket",
+        "//mw/gpio_server/data:gpio_hdr",
+    ],
+)
+
+cc_test(
+    name = "gpio_set_expire_test",
+    srcs = [
+        "test_set_expire.cpp",
+        ],
+    visibility = ["//visibility:public"],
+    deps=[
+        "@com_google_googletest//:gtest_main",
+        "//mw/gpio_server:gpio_service_lib",
+        "//core/gpio/mock:mock_gpio",
+        "//communication-core/sockets/mock:mock_socket",
+        "//mw/gpio_server/data:gpio_hdr",
+    ],
+)

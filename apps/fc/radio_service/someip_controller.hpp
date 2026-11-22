@@ -34,7 +34,7 @@ namespace radio {
 
 using RocketState_t = core::rocketState::RocketState_t;
 using PrimerState_t = srp::primer::PrimerState_t;
-using timepoint = std::chrono::_V2::system_clock::time_point;
+using timepoint = std::chrono::steady_clock::time_point;
 
 class SomeIPController {
  private:
