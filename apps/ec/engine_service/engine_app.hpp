@@ -59,6 +59,10 @@ class EngineApp final : public ara::exec::AdaptiveApplication {
   service::MyEngineServiceSkeleton service_udp;
 
  protected:
+  static constexpr int8_t kPin_off = 0;
+  static constexpr int8_t kPin_on = 1;
+
+  // reakcje na zmiany stanu (zalezne od rakiety): engine_reactions_<Rakieta>.cpp (//rockets:rocket.bzl)
   void OnLaunch();
   void OnArm();
   void OnDisarm();

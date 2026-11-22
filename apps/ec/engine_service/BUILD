@@ -5,10 +5,11 @@ cc_binary(
     name = "engine_service",
     srcs = [
         "main.cpp",
+        "engine_app.cpp",
         "engine_app.hpp",
         "service.hpp",
         "service.cpp",
-    ] + rocket_file("engine_app.cpp"),  # engine_app_R8.cpp / engine_app_Rurku.cpp
+    ] + rocket_file("engine_reactions.cpp"),  # reakcje na stany: engine_reactions_R8.cpp / _Rurku.cpp
     visibility = [
         "//deployment/apps:__subpackages__"
         ],

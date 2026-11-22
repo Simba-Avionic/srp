@@ -28,7 +28,7 @@ jako `config.json` (bez wybranej plytki - `BbbEbV2`).
 Rakieta (flaga builda, niezalezna od plytki): `--config=r8` / `--config=rurku`, np.
 `bazel build --config=bbb-EB_V2 --config=rurku //deployment/cpu/ec:pkg`. Pliki zalezne od rakiety leza obok BUILD
 jako `<nazwa>_R8.<ext>` / `<nazwa>_Rurku.<ext>` i wybiera je `//rockets:rocket.bzl`: `rocket_file()` w `srcs`
-(np. `engine_app_R8.cpp`), `rocket_config()` dla configu (np. EnvApp `config_R8.json` -> `config.json`).
+(np. reakcje silnika `engine_reactions_R8.cpp`), `rocket_config()` dla configu (np. EnvApp `config_R8.json` -> `config.json`).
 Bez flagi rakiety - `R8`.
 
 ostatnie zbudowane obrazy dostępne do pobrania pod adresem:

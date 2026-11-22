@@ -2,8 +2,8 @@
 
 Rakieta to flaga builda (nie platforma): --config=r8 / --config=rurku (.bazelrc: --define rocket=...).
 W pakiecie lezy jeden plik na rakiete, np.:
-    engine_app_R8.cpp, engine_app_Rurku.cpp      - rocket_file("engine_app.cpp") w srcs
-    config_R8.json,    config_Rurku.json         - rocket_config() -> config.json
+    engine_reactions_R8.cpp, engine_reactions_Rurku.cpp  - rocket_file("engine_reactions.cpp") w srcs
+    config_R8.json,          config_Rurku.json           - rocket_config() -> config.json
 Bez flagi rakiety (build hosta, UT, build_all) brany jest R8.
 """
 
@@ -16,14 +16,14 @@ ROCKETS = {
 DEFAULT_ROCKET = "R8"
 
 def rocket_src(out, rocket):
-    """Nazwa pliku zrodlowego rakiety: engine_app.cpp -> engine_app_R8.cpp."""
+    """Nazwa pliku zrodlowego rakiety: engine_reactions.cpp -> engine_reactions_R8.cpp."""
     stem, dot, ext = out.rpartition(".")
     if not dot:
         return out + "_" + rocket
     return stem + "_" + rocket + "." + ext
 
 def rocket_file(out):
-    """select() pliku zrodlowego wybranej rakiety, np. srcs = [...] + rocket_file("engine_app.cpp")."""
+    """select() pliku zrodlowego wybranej rakiety, np. srcs = [...] + rocket_file("engine_reactions.cpp")."""
     branches = {setting: [rocket_src(out, rocket)] for setting, rocket in ROCKETS.items()}
     branches["//conditions:default"] = [rocket_src(out, DEFAULT_ROCKET)]
     return select(branches)
