@@ -105,6 +105,8 @@ Env EC i SEC_EC używają `service_id` 514, env FC — 529.
 | Sytuacja | Zachowanie |
 |----------|------------|
 | `Initialize` z `sock == nullptr` | `kInitializeError` |
+| `Initialize` bez parametru `app_path` | `kInitializeError` (`LogError`), aplikacja nie startuje |
+| brak / nieparsowalny `etc/config.json` albo brak `w1_devices_path` lub `w1_bus_master` | `kInitializeError` (`LogError` z ścieżką configu), aplikacja nie startuje |
 | bind `SRP.TEMP.<service_id>` nieudany | kod błędu z `IpcSocket::Init` |
 | `Register` z ID o długości ≠ 15 | `Subscribe` zwraca ramkę z kodem `kError` zamiast `nullopt` (nie sprawdza się dalej długości odpowiedzi) |
 | serwis niedostępny przy subskrypcji | `Subscribe` → `nullopt` → `Register` → `nullopt` (`LogError`) |
