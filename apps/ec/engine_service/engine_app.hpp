@@ -59,11 +59,23 @@ class EngineApp final : public ara::exec::AdaptiveApplication {
   service::MyEngineServiceSkeleton service_udp;
 
  protected:
+  static constexpr int8_t kPin_off = 0;
+  static constexpr int8_t kPin_on = 1;
+
+  // reakcje na zmiany stanu (zalezne od rakiety): engine_reactions_<Rakieta>.cpp (//rockets:rocket.bzl)
   void OnLaunch();
   void OnArm();
   void OnDisarm();
   void OnApogee();
   void OnAbort();
+  void OnConnectionLost();
+  // stany bez reakcji EC - puste callbacki
+  void OnInit();
+  void OnFlight();
+  void OnFirstParachute();
+  void OnSecondParachute();
+  void OnDrop();
+  void OnTouchdown();
 
   /**
    * @brief Close the oxidizer main, PF vent and PF main valves (used by OnAbort and by the launch sequence safeguard, blocking ~0.4 s)

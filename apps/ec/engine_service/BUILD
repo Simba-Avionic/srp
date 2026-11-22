@@ -1,4 +1,6 @@
 
+load("//rockets:rocket.bzl", "rocket_file")
+
 cc_binary(
     name = "engine_service",
     srcs = [
@@ -7,7 +9,7 @@ cc_binary(
         "engine_app.hpp",
         "service.hpp",
         "service.cpp",
-    ],
+    ] + rocket_file("engine_reactions.cpp"),  # reakcje na stany: engine_reactions_R8.cpp / _Rurku.cpp
     visibility = [
         "//deployment/apps:__subpackages__"
         ],
