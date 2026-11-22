@@ -73,8 +73,8 @@ Wszystkie cztery aplikacje wchodzą w grupy funkcjonalne `MW`, `Running`, `Safet
 |--------|--------------------|--------|
 | gpio_server | brak/uszkodzony `etc/config.json` | `exit(1)` |
 | gpio_server | bind gniazda | `kInitializeError` |
-| i2c_service | otwarcie `/dev/i2c-2` lub bind | `kInitializeError` |
-| temp | bind `SRP.TEMP.SERVICE` | kod błędu, usługa nie startuje |
+| i2c_service | brak `i2c_bus` w `etc/config.json`, otwarcie magistrali (np. `/dev/i2c-2`) lub bind | `kInitializeError` |
+| temp | brak / niepełny `etc/config.json` (`w1_devices_path`, `w1_bus_master`) lub bind `SRP.TEMP.SERVICE` | kod błędu, usługa nie startuje |
 | timestamp_mw | brak `ntp_config.json` | −1; błąd bindu UDP/multicast tylko logowany |
 
 ## Obsługa błędów — konwencja odpowiedzi

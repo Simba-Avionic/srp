@@ -78,6 +78,8 @@ sequenceDiagram
 
 | Sytuacja | Odpowiedź / efekt |
 |----------|-------------------|
+| `Initialize`: brak `app_path`, brak / nieparsowalny `etc/config.json` albo brak `i2c_bus` | `kInitializeError` (`LogError`), serwis nie startuje |
+| `Initialize`: nie da się otworzyć magistrali `i2c_bus` | `kInitializeError` (`Warn`), serwis nie startuje |
 | ramka < 3 B | `Warn "invalid header"`, pusta odpowiedź |
 | `Ioctl` adresu nieudany | `Warn`, pusta odpowiedź (transakcja nie jest wykonywana) |
 | ramka bez payloadu (dokładnie 3 B) | `Warn`, pusta odpowiedź |
