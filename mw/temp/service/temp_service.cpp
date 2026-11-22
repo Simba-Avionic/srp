@@ -45,8 +45,22 @@ namespace {
 }  // namespace
 
 TempService::TempService(): did_instance{"/srp/mw/temp_service/temp_status_did"} {
-    temp_driver_ = std::make_unique<core::temp::TempDriver>();
     ara::log::LogInfo() << "TempService created";
+}
+
+std::optional<TempService::W1Config> TempService::ReadW1Config(const std::string& path) {
+    auto parser = core::json::JsonParser::Parser(path);
+    if (!parser.has_value()) {
+        ara::log::LogError() << "TempService: cannot parse config " << path;
+        return std::nullopt;
+    }
+    auto devices_path = parser->GetString("w1_devices_path");
+    auto bus_master = parser->GetString("w1_bus_master");
+    if (!devices_path.has_value() || !bus_master.has_value()) {
+        ara::log::LogError() << "TempService: missing w1_devices_path / w1_bus_master in " << path;
+        return std::nullopt;
+    }
+    return W1Config{devices_path.value(), bus_master.value()};
 }
 
 int TempService::Run(const std::stop_token& token) {
@@ -101,6 +115,18 @@ int TempService::Initialize(const std::map<ara::core::StringView, ara::core::Str
                       parms) {
     nextSensorId = 1;
     ara::log::LogInfo() << "Starting TempService Initialization";
+    // magistrala 1-Wire zalezy od plytki: deployment/mw/temp/config_<Plytka>.json
+    const auto app_path = parms.find("app_path");
+    if (app_path == parms.end()) {
+        ara::log::LogError() << "TempService: missing app_path";
+        return srp::core::ErrorCode::kInitializeError;
+    }
+    const auto w1 = ReadW1Config(std::string(app_path->second.data(), app_path->second.size()) +
+                                 "etc/config.json");
+    if (!w1.has_value()) {
+        return srp::core::ErrorCode::kInitializeError;
+    }
+    temp_driver_ = std::make_unique<core::temp::TempDriver>(w1->devices_path, w1->bus_master);
     this->sub_sock_ = std::move(std::make_unique<com::soc::StreamIpcSocket>());
     this->sock = std::move(std::make_unique<com::soc::IpcSocket>());
     if (auto ret = this->sub_sock_->Init(

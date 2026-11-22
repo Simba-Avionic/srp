@@ -16,6 +16,7 @@
 #include <string>
 
 #include <memory>
+#include <optional>
 #include <vector>
 #include <map>
 #include <unordered_map>
@@ -57,6 +58,12 @@ class TempService final : public ara::exec::AdaptiveApplication {
 
 
   int ConfigSensor(std::string sensorId);
+
+  struct W1Config {
+    std::string devices_path;
+    std::string bus_master;
+  };
+  static std::optional<W1Config> ReadW1Config(const std::string& path);
 
   /**
    * @brief This function is called to launch the application

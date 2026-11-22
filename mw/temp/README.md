@@ -36,7 +36,7 @@ sequenceDiagram
 
 **Serwis** (`TempService`):
 
-1. `Initialize`: `nextSensorId = 1`; bind `SRP.TEMP.SERVICE` (błąd → zwraca kod błędu, aplikacja nie startuje); start wątku RX; `GetAllAccessibleSensor()` (lista katalogów w `/sys/bus/w1/devices/` poza `w1_bus_master1`) tylko do logu — brak czujników to `Warn`, nie błąd; oferta DID.
+1. `Initialize`: `nextSensorId = 1`; config `etc/config.json` (`w1_devices_path`, `w1_bus_master`) → `TempDriver` (brak/niepełny config → błąd, aplikacja nie startuje); bind `SRP.TEMP.SERVICE` (błąd → zwraca kod błędu, aplikacja nie startuje); start wątku RX; `GetAllAccessibleSensor()` (lista katalogów w `w1_devices_path` poza `w1_bus_master`) tylko do logu — brak czujników to `Warn`, nie błąd; oferta DID.
 2. `Run`: pętla: `wait_for(188 ms)` → migawka zarejestrowanych czujników (pusta lista = kolejny obrót) → dla każdego `std::async` z `ReadTemp` → `future.get()` → `UpdateTemp` w DID + `SendTempReading`. Faktyczny okres to 188 ms + czas najwolniejszego odczytu (sysfs).
 3. Zatrzymanie: `StopRXThread`, `StopOffer` DID.
 
@@ -105,6 +105,8 @@ Env EC i SEC_EC używają `service_id` 514, env FC — 529.
 | Sytuacja | Zachowanie |
 |----------|------------|
 | `Initialize` z `sock == nullptr` | `kInitializeError` |
+| `Initialize` bez parametru `app_path` | `kInitializeError` (`LogError`), aplikacja nie startuje |
+| brak / nieparsowalny `etc/config.json` albo brak `w1_devices_path` lub `w1_bus_master` | `kInitializeError` (`LogError` z ścieżką configu), aplikacja nie startuje |
 | bind `SRP.TEMP.<service_id>` nieudany | kod błędu z `IpcSocket::Init` |
 | `Register` z ID o długości ≠ 15 | `Subscribe` zwraca ramkę z kodem `kError` zamiast `nullopt` (nie sprawdza się dalej długości odpowiedzi) |
 | serwis niedostępny przy subskrypcji | `Subscribe` → `nullopt` → `Register` → `nullopt` (`LogError`) |
@@ -125,7 +127,7 @@ Env EC i SEC_EC używają `service_id` 514, env FC — 529.
 
 ## Konfiguracja
 
-Brak pliku konfiguracyjnego. Stałe w kodzie: `kSensor_resolution = 10` bit, `SRP.TEMP.SERVICE`, prefiks `SRP.TEMP.`, ścieżka sysfs `/sys/bus/w1/devices/`. Lista czujników pochodzi z rejestracji klientów (config aplikacji: `sensors-temp`, EEPROM).
+`deployment/mw/temp/config_<Plytka>.json` (w runtime `etc/config.json`): `w1_devices_path` (katalog czujników 1-Wire, np. `/sys/bus/w1/devices/`) i `w1_bus_master` (katalog mastera magistrali, np. `w1_bus_master1`). Stałe w kodzie: `kSensor_resolution = 10` bit, `SRP.TEMP.SERVICE`, prefiks `SRP.TEMP.`. Lista czujników pochodzi z rejestracji klientów (config aplikacji: `sensors-temp`, EEPROM).
 
 ## Zależności
 

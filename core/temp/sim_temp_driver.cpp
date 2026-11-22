@@ -14,6 +14,7 @@
 #include <optional>
 #include <string>
 #include <thread>  // NOLINT
+#include <utility>
 #include <vector>
 
 #include "ara/com/com_error_domain.h"
@@ -92,8 +93,10 @@ auto Missing(const char* what) {
 }
 }  // namespace
 
-TempDriver::TempDriver(): logger_(ara::log::LoggingMenager::GetInstance()
-        ->CreateLogger("Dtem", "", ara::log::LogLevel::kWarn)) {
+// devices_path / bus_master nieuzywane w sim: stan czujnikow pochodzi z $SRP_SIM_DIR
+TempDriver::TempDriver(std::string devices_path, std::string bus_master):
+        logger_(ara::log::LoggingMenager::GetInstance()->CreateLogger("Dtem", "", ara::log::LogLevel::kWarn)),
+        devices_path_(std::move(devices_path)), bus_master_(std::move(bus_master)) {
 }
 
 ara::core::Result<double> TempDriver::ReadTemp(const std::string& sensorPhysicalID) {

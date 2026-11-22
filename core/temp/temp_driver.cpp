@@ -15,6 +15,7 @@
 #include <string>
 #include <fstream>
 #include <stdexcept>
+#include <utility>
 #include "ara/log/log.h"
 #include "ara/core/result.h"
 #include "core/temp/temp_driver.hpp"
@@ -25,15 +26,17 @@ namespace srp {
 namespace core {
 namespace temp {
 
-namespace {
-    constexpr auto kSensorPath = "/sys/bus/w1/devices/";
-    constexpr auto kManagerName = "w1_bus_master1";
-}
-TempDriver::TempDriver():
+TempDriver::TempDriver(std::string devices_path, std::string bus_master):
     logger_(ara::log::LoggingMenager::GetInstance()->CreateLogger(
-        "temp", "", ara::log::LogLevel::kWarn)) {}
+        "temp", "", ara::log::LogLevel::kWarn)),
+    devices_path_(std::move(devices_path)),
+    bus_master_(std::move(bus_master)) {
+    if (!devices_path_.empty() && devices_path_.back() != '/') {
+        devices_path_ += '/';
+    }
+}
 ara::core::Result<double> TempDriver::ReadTemp(const std::string& sensorPhysicalID) {
-    std::ifstream file(kSensorPath + sensorPhysicalID + "/temperature");
+    std::ifstream file(devices_path_ + sensorPhysicalID + "/temperature");
     if (!file) {
         logger_.LogDebug() << "Sensor " << sensorPhysicalID << " not available!";
         return ara::com::MakeErrorCode(
@@ -55,7 +58,7 @@ ara::core::Result<double> TempDriver::ReadTemp(const std::string& sensorPhysical
 
 
 ara::core::Result<bool> TempDriver::SetResolution(const std::string& sensorPhysicalID, uint8_t resolution) {
-    std::ofstream file(kSensorPath + sensorPhysicalID + "/resolution");
+    std::ofstream file(devices_path_ + sensorPhysicalID + "/resolution");
     if (!file) {
         logger_.LogWarn() << "Sensor " << sensorPhysicalID << " not available!";
         return ara::com::MakeErrorCode(
@@ -66,7 +69,7 @@ ara::core::Result<bool> TempDriver::SetResolution(const std::string& sensorPhysi
 }
 
 ara::core::Result<uint8_t> TempDriver::ReadResolution(const std::string& sensorPhysicalID) {
-    std::ifstream file(kSensorPath + sensorPhysicalID + "/resolution");
+    std::ifstream file(devices_path_ + sensorPhysicalID + "/resolution");
     if (!file) {
         logger_.LogWarn() << "Sensor " << sensorPhysicalID << " not available!";
         return ara::com::MakeErrorCode(
@@ -88,9 +91,9 @@ ara::core::Result<uint8_t> TempDriver::ReadResolution(const std::string& sensorP
 ara::core::Result<std::vector<std::string>> TempDriver::GetAllAccessibleSensor() {
     std::vector<std::string> res;
     try {
-        for (const auto& entry : std::filesystem::directory_iterator(kSensorPath)) {
+        for (const auto& entry : std::filesystem::directory_iterator(devices_path_)) {
             std::string name = entry.path().filename().string();
-            if (entry.is_directory() && name != kManagerName) {
+            if (entry.is_directory() && name != bus_master_) {
                 res.push_back(name);
             }
         }
@@ -101,7 +104,7 @@ ara::core::Result<std::vector<std::string>> TempDriver::GetAllAccessibleSensor()
     }
 }
 ara::core::Result<uint16_t> TempDriver::GetResponseTime(const std::string& sensorPhysicalID) {
-    std::ifstream file(kSensorPath + sensorPhysicalID + "/conv_time");
+    std::ifstream file(devices_path_ + sensorPhysicalID + "/conv_time");
     if (!file) {
         logger_.LogWarn() << "Sensor " << sensorPhysicalID << " not available!";
         return ara::com::MakeErrorCode(
