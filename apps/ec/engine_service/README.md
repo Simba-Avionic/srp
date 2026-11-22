@@ -24,7 +24,8 @@ Publikuje `CurrentMode` co 1 s i na zmianie stanu. Heartbeat GPIO pin **1** (imp
 
 Wymaganie ARM: muszą istnieć handlery Primer i Servo.
 
-Reakcje na zmiany stanu (`OnArm`, `OnDisarm`, `OnLaunch`, `OnApogee`, `OnAbort` + `CloseValves`) zależą od rakiety: `engine_reactions_R8.cpp` / `engine_reactions_Rurku.cpp` (wybór flagą `--config=r8|rurku`, `//rockets:rocket.bzl`; Rurku na razie = R8). Reszta aplikacji (konfig, `Initialize` z rejestracją callbacków, `Run`, `OnStateChange`) jest wspólna w `engine_app.cpp`.
+Reakcje na zmiany stanu (`OnArm`, `OnDisarm`, `OnConnectionLost`, `OnLaunch`, `OnApogee`, `OnAbort` + `CloseValves`) zależą od rakiety: `engine_reactions_R8.cpp` / `engine_reactions_Rurku.cpp` (wybór flagą `--config=r8|rurku`, `//rockets:rocket.bzl`; Rurku na razie = R8). Reszta aplikacji (konfig, `Initialize` z rejestracją callbacków, `Run`, `OnStateChange`) jest wspólna w `engine_app.cpp`.
+Callback jest zarejestrowany dla każdego stanu `RocketState_t`; stany bez reakcji EC (INIT, FLIGHT, FIRST_PARACHUTE, SECOND_PARACHUTE, DROP, TOUCHDOWN) mają puste reakcje w plikach rakiet.
 
 ## Cykl życia
 

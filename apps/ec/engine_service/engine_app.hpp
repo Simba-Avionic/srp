@@ -68,6 +68,14 @@ class EngineApp final : public ara::exec::AdaptiveApplication {
   void OnDisarm();
   void OnApogee();
   void OnAbort();
+  void OnConnectionLost();
+  // stany bez reakcji EC - puste callbacki
+  void OnInit();
+  void OnFlight();
+  void OnFirstParachute();
+  void OnSecondParachute();
+  void OnDrop();
+  void OnTouchdown();
 
   /**
    * @brief Close the oxidizer main, PF vent and PF main valves (used by OnAbort and by the launch sequence safeguard, blocking ~0.4 s)

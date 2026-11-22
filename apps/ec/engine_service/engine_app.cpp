@@ -147,7 +147,7 @@ int EngineApp::Initialize(const std::map<ara::core::StringView, ara::core::Strin
   });
   state_ctr->RegisterCallback(RocketState_t::CONNECTION_LOST, [this]() {
     ara::log::LogDebug() << "EngineApp::RegisterCallback: CONNECTION_LOST callback triggered";
-    this->OnDisarm();
+    this->OnConnectionLost();
   });
 
   state_ctr->RegisterCallback(RocketState_t::LAUNCH, [this]() {
@@ -169,6 +169,30 @@ int EngineApp::Initialize(const std::map<ara::core::StringView, ara::core::Strin
   state_ctr->RegisterCallback(RocketState_t::ABORT, [this]() {
     ara::log::LogDebug() << "EngineApp::RegisterCallback: ABORT callback triggered";
     this->OnAbort();
+  });
+  state_ctr->RegisterCallback(RocketState_t::INIT, [this]() {
+    ara::log::LogDebug() << "EngineApp::RegisterCallback: INIT callback triggered";
+    this->OnInit();
+  });
+  state_ctr->RegisterCallback(RocketState_t::FLIGHT, [this]() {
+    ara::log::LogDebug() << "EngineApp::RegisterCallback: FLIGHT callback triggered";
+    this->OnFlight();
+  });
+  state_ctr->RegisterCallback(RocketState_t::FIRST_PARACHUTE, [this]() {
+    ara::log::LogDebug() << "EngineApp::RegisterCallback: FIRST_PARACHUTE callback triggered";
+    this->OnFirstParachute();
+  });
+  state_ctr->RegisterCallback(RocketState_t::SECOND_PARACHUTE, [this]() {
+    ara::log::LogDebug() << "EngineApp::RegisterCallback: SECOND_PARACHUTE callback triggered";
+    this->OnSecondParachute();
+  });
+  state_ctr->RegisterCallback(RocketState_t::DROP, [this]() {
+    ara::log::LogDebug() << "EngineApp::RegisterCallback: DROP callback triggered";
+    this->OnDrop();
+  });
+  state_ctr->RegisterCallback(RocketState_t::TOUCHDOWN, [this]() {
+    ara::log::LogDebug() << "EngineApp::RegisterCallback: TOUCHDOWN callback triggered";
+    this->OnTouchdown();
   });
   ara::log::LogDebug() << "EngineApp::Initialize: All state callbacks registered";
 

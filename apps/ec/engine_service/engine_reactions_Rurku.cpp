@@ -100,6 +100,23 @@ void EngineApp::OnAbort() {
   }).detach();
 }
 
+void EngineApp::OnConnectionLost() {
+  this->OnDisarm();
+}
+
+// stany bez reakcji EC: puste callbacki
+void EngineApp::OnInit() {}
+
+void EngineApp::OnFlight() {}
+
+void EngineApp::OnFirstParachute() {}
+
+void EngineApp::OnSecondParachute() {}
+
+void EngineApp::OnDrop() {}
+
+void EngineApp::OnTouchdown() {}
+
 void EngineApp::CloseValves() {
   servo_handler_->SetOxidizerMainValve(0);
   std::this_thread::sleep_for(std::chrono::milliseconds(200));
