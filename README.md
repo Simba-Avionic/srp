@@ -21,6 +21,10 @@ Konfigi do budowania (platforma + wersja plytki, definicje w `platforms/BUILD`):
 
 Kod zalezny od plytki: `select({"//platforms:is_eb_v2": [...], "//conditions:default": [...]})`.
 
+Pliki zalezne od plytki (mapowanie pinow, kanaly, sciezki urzadzen) leza obok BUILD jako `config_BbbEbV2.json`,
+`config_BbbLbV1.json`; `board_config()` z `//platforms:board.bzl` wybiera plik wg `--config` i wydaje go
+jako `config.json` (bez wybranej plytki - `BbbEbV2`).
+
 ostatnie zbudowane obrazy dostępne do pobrania pod adresem:
 - [EC](https://simbaj.toadres.pl/job/srp-master-build/lastSuccessfulBuild/artifact/bazel-bin/deployment/cpu/ec/pkg.tar)
 - [FC](https://simbaj.toadres.pl/job/srp-master-build/lastSuccessfulBuild/artifact/bazel-bin/deployment/cpu/fc/pkg.tar)
