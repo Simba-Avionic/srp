@@ -34,7 +34,7 @@ flowchart LR
 
 ## Cykl życia
 
-1. `Initialize`: pobiera `EventData` (singleton z ostatnimi stanami z SOME/IP), rejestruje cztery timery TX i callbacki `SomeIPController` (zmiana stanu tankowania → natychmiastowy status, komenda zaworu GS → ramka `GS_VALVE_CMD`). Zawsze `kOk`.
+1. `Initialize`: pobiera `EventData` (singleton z ostatnimi stanami z SOME/IP), rejestruje cztery timery TX i callbacki `SomeIPController` (zmiana stanu tankowania → natychmiastowy status, komenda zaworu GS → ramka `GS_VALVE_CMD`). Wcześniej czyta `uart_path` / `uart_baudrate` z `etc/config.json`: brak albo nieobsługiwana prędkość → `kInitializeError`, inaczej `kOk`.
 2. `Run`: `MavRadioController::Init` otwiera port z configu (`uart_path`, `uart_baudrate`; `Initialize` bez poprawnego configu albo z nieobsługiwaną prędkością → `kInitializeError`) — **błąd otwarcia → `LogError` i `exit(1)`**; startuje wątki RX i TX. Następnie `GSHeartbeatGuard::Init`, `timer_ctr_.Start()`, `StartOffer` IPC/UDP. Pętla: heartbeat GPIO pin 2 (impuls 500 ms co 1 s).
 3. Zatrzymanie: `timer_ctr_.Stop()`, `StopOffer`.
 
