@@ -13,7 +13,7 @@ Stany `PrimerState_t`: `kUNKNOWN`(0), `kNOT_CONNECTED`(1), `kCONNECTED`(2), `kSH
 - `EnablePrimer()` — wymaga `kCONNECTED`; GPIO 13 HIGH z `active_time=2500` (parametr `auto_disable` jest ignorowany).
 - `VerifyPrimerConection` — odczyt ADC kanał 3 (co 1 s).
 - DID 23: pusty write = `EnablePrimer()` (te same warunki); read nieobsługiwany.
-- Pin (13) i czas (2500 ms) są stałymi w kodzie; `deployment/apps/prim_service/config.json` nie jest czytany.
+- Piny i czas impulsu: `PrimerController::Initialize` czyta `etc/config.json` (`deployment/apps/prim_service/config_<Plytka>.json`, sekcja `primer`: `primer_ids`, `active_time`); pin 13 i 2500 ms to tylko fallback, gdy brak configu/sekcji albo wartość jest niepoprawna (`Warn` w logu).
 
 ## Cykl życia
 
@@ -83,12 +83,19 @@ PrimerDid `/srp/apps/PrimerService/primer_did`, `sub_service_id` **23**: write b
 
 ## Konfiguracja
 
-Brak pliku konfiguracyjnego. Stałe w kodzie:
+`deployment/apps/prim_service/config_<Plytka>.json` (w runtime `etc/config.json`), sekcja `primer`:
+
+| Pole | Opis |
+|------|------|
+| `primer_ids` | piny igniterów w `gpio_server` (niepusta lista 0–255; inaczej fallback `kIgniter_pin_id`) |
+| `active_time` | czas impulsu w ms (1–65535; inaczej fallback `kIgniter_active_time`) |
+
+Stałe w kodzie:
 
 | Stała | Wartość | Opis |
 |-------|--------:|------|
-| `kIgniter_pin_id` | 13 | pin igniter w `gpio_server` |
-| `kIgniter_active_time` | 2500 ms | czas impulsu |
+| `kIgniter_pin_id` | 13 | fallback `primer_ids` |
+| `kIgniter_active_time` | 2500 ms | fallback `active_time` |
 | `kIgniter_measureme_adc_channel` | 3 | kanał ADS7828 |
 | `kIgniter_connected_treshold_mV` | 1500 | próg ciągłości |
 | `kRequire_primer_veryfication` | true | wymóg `kCONNECTED` przed odpaleniem |

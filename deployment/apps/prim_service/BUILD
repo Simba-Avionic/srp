@@ -1,5 +1,5 @@
 load("@srp_platform//tools/model_generator/ara:adaptive_application.bzl", "adaptive_application", "ara_runtime_lib", "ara_someip_lib")
-
+load("//platforms:board.bzl", "board_config")
 
 filegroup(
     name = "instance",
@@ -29,11 +29,12 @@ ara_runtime_lib(
     visibility = ["//apps/ec/primer_service:__subpackages__"],
 )
 
+board_config(name = "board_config")
+
 adaptive_application(
     name = "PrimerService",
     bin = "//apps/ec/primer_service:primer",
     model_src = ["//deployment/apps/prim_service:instance"],
-    etcs = ["config.json"],
+    etcs = [":board_config"],
     visibility = ["//deployment/cpu/ec:__subpackages__"],
 )
-
