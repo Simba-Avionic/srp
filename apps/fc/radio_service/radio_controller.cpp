@@ -15,6 +15,11 @@
 namespace srp {
 namespace apps {
 namespace radio {
+namespace {
+    static constexpr auto KRadio_UART_path =     "/dev/ttyS1";
+    static constexpr uint32_t KRadio_UART_baudrate = 57600;
+}
+
 void MavRadioController::Push(const std::vector<uint8_t>& data) {
     UartTxQueue.Push(data);
 }
@@ -51,10 +56,9 @@ void MavRadioController::TxThreadLoop(const std::stop_token& t) {
     }
 }
 
-void MavRadioController::Init(const RadioUartConfig& uart_cfg, RadioMsgCallback callback,
-                             const std::stop_token& t) {
-    if (!this->uart_->Open(uart_cfg.path, core::uart::UartConfig::Mavlink(uart_cfg.baudrate))) {
-        ara::log::LogError() << "Failed to open UART: " << uart_cfg.path;
+void MavRadioController::Init(RadioMsgCallback callback, const std::stop_token& t) {
+    if (!this->uart_->Open(KRadio_UART_path, core::uart::UartConfig::Mavlink(KRadio_UART_baudrate))) {
+        ara::log::LogError() << "Failed to open UART: " <<  KRadio_UART_path;
         exit(1);
     }
     this->callback = callback;

@@ -1,4 +1,0 @@
-{
-    "uart_path": "/dev/ttyS4",
-    "uart_baudrate": 230400
-}

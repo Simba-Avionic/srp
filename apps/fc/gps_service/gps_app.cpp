@@ -8,20 +8,18 @@
  * @copyright Copyright (c) 2024
  * 
  */
-#include <optional>
-#include <string>
 #include <utility>
 #include "apps/fc/gps_service/gps_app.hpp"
 #include "ara/exec/adaptive_application.h"
 #include "core/common/condition.h"
 #include "ara/log/log.h"
-#include "core/json/json_parser.h"
-#include "core/uart/uart_config.hpp"
 namespace srp {
 namespace apps {
 namespace {
   static constexpr auto kService_ipc_instance =       "srp/apps/GPSApp/GPSService_ipc";
   static constexpr auto kService_udp_instance =       "srp/apps/GPSApp/GPSService_udp";
+  static constexpr auto KGPS_UART_path =              "/dev/ttyS4";
+  static constexpr auto KGPS_UART_baudrate =          B230400;
   static constexpr uint16_t KGps_expected_interval =  1000;
   static constexpr auto kGps_freq_tolerance =         100;
   static constexpr auto kHeartBeatPinID = 3;
@@ -176,23 +174,7 @@ int GPSApp::Initialize(const std::map<ara::core::StringView, ara::core::StringVi
     auto uart_d = std::make_unique<core::uart::UartDriver>();
     Init(std::move(uart_d));
   }
-  // port GPS zalezy od plytki: deployment/apps/fc/gps_app/config_<Plytka>.json
-  const auto app_path = parms.find("app_path");
-  if (app_path == parms.end()) {
-    ara::log::LogError() << "GPSApp: missing app_path";
-    return 1;
-  }
-  const std::string config_path =
-      std::string(app_path->second.data(), app_path->second.size()) + "etc/config.json";
-  const auto parser = core::json::JsonParser::Parser(config_path);
-  const auto uart_path = parser.has_value() ? parser->GetString("uart_path") : std::nullopt;
-  const auto uart_baudrate = parser.has_value() ? parser->GetNumber<uint32_t>("uart_baudrate") : std::nullopt;
-  const speed_t speed = uart_baudrate.has_value() ? core::uart::GetBaudrateConstant(uart_baudrate.value()) : 0;
-  if (!uart_path.has_value() || speed == 0) {
-    ara::log::LogError() << "GPSApp: no uart_path / valid uart_baudrate in " << config_path;
-    return 1;
-  }
-  if (!this->uart_->Open(uart_path.value(), speed)) {
+  if (!this->uart_->Open(KGPS_UART_path, KGPS_UART_baudrate)) {
     return 1;
   }
   service_ipc.StartOffer();

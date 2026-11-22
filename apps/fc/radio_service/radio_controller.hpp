@@ -28,12 +28,6 @@ namespace radio {
 
 using RadioMsgCallback = std::function<void(const mavlink_message_t&)>;
 
-/// Port radia z configu plytki (deployment/apps/fc/radio_app/config_<Plytka>.json).
-struct RadioUartConfig {
-  std::string path;
-  uint32_t baudrate;
-};
-
 class MavRadioController {
  private:
   const ara::log::Logger& mavl_logger;
@@ -47,7 +41,7 @@ class MavRadioController {
  public:
   void Push(const std::vector<uint8_t>& data);
   void TxLoop();
-  void Init(const RadioUartConfig& uart_cfg, RadioMsgCallback callback, const std::stop_token& t);
+  void Init(RadioMsgCallback callback, const std::stop_token& t);
   explicit MavRadioController(std::unique_ptr<core::uart::IUartDriver> uart = nullptr);
 };
 

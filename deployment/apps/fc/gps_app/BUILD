@@ -1,5 +1,4 @@
 load("@srp_platform//tools/model_generator/ara:adaptive_application.bzl", "adaptive_application", "ara_runtime_lib", "ara_someip_lib")
-load("//platforms:board.bzl", "board_config")
 
 
 filegroup(
@@ -28,13 +27,10 @@ ara_runtime_lib(
     visibility = ["//apps/fc/gps_service:__subpackages__"],
 )
 
-board_config(name = "board_config")
-
 adaptive_application(
     name = "GPSApp",
     bin = "//apps/fc/gps_service",
     model_src = ["//deployment/apps/fc/gps_app:instance"],
-    etcs = [":board_config"],
     visibility = ["//deployment/cpu/fc:__subpackages__"],
 )
 

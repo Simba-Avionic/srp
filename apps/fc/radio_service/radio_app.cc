@@ -9,7 +9,6 @@
  * 
  */
 #include "apps/fc/radio_service/radio_app.h"
-#include <optional>
 #include <utility>
 #include <vector>
 #include <string>
@@ -18,7 +17,6 @@
 #include "simba/simba.h"
 #include "ara/log/log.h"
 #include "core/common/condition.h"
-#include "core/json/json_parser.h"
 
 namespace srp {
 namespace apps {
@@ -191,7 +189,7 @@ void RadioApp::RxMsgCallback(const mavlink_message_t& msg) {
 }
 
 int RadioApp::Run(const std::stop_token& token) {
-  radio_controller.Init(uart_cfg_, [this](const mavlink_message_t& msg) { RxMsgCallback(msg); }, token);
+  radio_controller.Init([this](const mavlink_message_t& msg) { RxMsgCallback(msg); }, token);
   heartbeat_controller.Init([this](const RocketState_t state) {
     auto engine_handler = someip_controller.GetEngineServiceHandler();
     auto main_handler = someip_controller.GetMainServiceHandler();
@@ -221,22 +219,6 @@ int RadioApp::Run(const std::stop_token& token) {
 
 int RadioApp::Initialize(const std::map<ara::core::StringView,
   ara::core::StringView> parms) {
-  // port radia zalezy od plytki: deployment/apps/fc/radio_app/config_<Plytka>.json
-  const auto app_path = parms.find("app_path");
-  if (app_path == parms.end()) {
-    ara::log::LogError() << "RadioApp: missing app_path";
-    return core::ErrorCode::kInitializeError;
-  }
-  const std::string config_path =
-      std::string(app_path->second.data(), app_path->second.size()) + "etc/config.json";
-  const auto parser = core::json::JsonParser::Parser(config_path);
-  const auto uart_path = parser.has_value() ? parser->GetString("uart_path") : std::nullopt;
-  const auto uart_baudrate = parser.has_value() ? parser->GetNumber<uint32_t>("uart_baudrate") : std::nullopt;
-  if (!uart_path.has_value() || !uart_baudrate.has_value()) {
-    ara::log::LogError() << "RadioApp: no uart_path / uart_baudrate in " << config_path;
-    return core::ErrorCode::kInitializeError;
-  }
-  uart_cfg_ = radio::RadioUartConfig{uart_path.value(), uart_baudrate.value()};
   event_data = EventData::GetInstance();
   timer_ctr_.AddOnTimerCallback([this](){
     auto hb = telemetry_provider.GetHeartbeatMsg();

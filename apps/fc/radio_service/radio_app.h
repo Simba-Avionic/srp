@@ -40,7 +40,6 @@ class RadioApp : public ara::exec::AdaptiveApplication {
   radio::TelemetryProvider telemetry_provider;
   radio::SomeIPController someip_controller;
   radio::MavRadioController radio_controller;
-  radio::RadioUartConfig uart_cfg_{};
   gpio::GPIOController gpio_;
   radio::GSHeartbeatGuard heartbeat_controller;
   core::TimerController timer_ctr_;

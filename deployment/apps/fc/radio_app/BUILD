@@ -1,5 +1,4 @@
 load("@srp_platform//tools/model_generator/ara:adaptive_application.bzl", "adaptive_application", "ara_runtime_lib", "ara_someip_lib")
-load("//platforms:board.bzl", "board_config")
 
 
 filegroup(
@@ -37,13 +36,10 @@ ara_runtime_lib(
     visibility = ["//apps/fc/radio_service:__subpackages__"],
 )
 
-board_config(name = "board_config")
-
 adaptive_application(
     name = "RadioApp",
     bin = "//apps/fc/radio_service",
     model_src = ["//deployment/apps/fc/radio_app:instance"],
-    etcs = [":board_config"],
     visibility = [
         "//deployment/cpu/fc:__subpackages__",
         "//deployment/cpu/ec:__subpackages__"
