@@ -1,5 +1,5 @@
 load("@srp_platform//tools/model_generator/ara:adaptive_application.bzl", "adaptive_application", "ara_runtime_lib", "ara_someip_lib")
-load("//platforms:board.bzl", "board_config")
+
 
 filegroup(
     name = "instance",
@@ -29,15 +29,14 @@ ara_runtime_lib(
     visibility = ["//apps/fc/recovery_service:__subpackages__"],
 )
 
-board_config(name = "board_config")
-
 adaptive_application(
     name = "RecoveryService",
     bin = "//apps/fc/recovery_service:RecoveryService",
     model_src = ["//deployment/apps/fc/recovery_service:instance"],
-    etcs = [":board_config"],
+    etcs = ["config.json"],
     visibility = [
         "//apps/fc/recovery_service:__subpackages__",
         "//deployment/cpu/fc:__subpackages__",
         ],
 )
+
