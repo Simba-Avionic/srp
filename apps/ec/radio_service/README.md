@@ -4,7 +4,7 @@ Most GS ↔ rakieta po MAVLink (UART). Źródła EC; na platformie **w pakiecie 
 
 ## TL;DR
 
-`FcRadioService` (id **545**) na UART `/dev/ttyS1` @ 57600. RX: heartbeat GS (stan + aktuatory, **4 identyczne ramki**), RADIO_STATUS, komendy tankowania (→ FuelService), masa rakiety i ciśnienia zbiorników GSE (→ eventy). TX: HB i max alt co 5 s, GPS co 2 s, status tankowania co 1 s i przy zmianie (tank/computer telem wyłączone). Timeout: 2 min → CONNECTION_LOST, 15 min → ABORT.
+`FcRadioService` (id **545**) na UART z configu płytki (`uart_path` / `uart_baudrate`, dziś `/dev/ttyS1` @ 57600). RX: heartbeat GS (stan + aktuatory, **4 identyczne ramki**), RADIO_STATUS, komendy tankowania (→ FuelService), masa rakiety i ciśnienia zbiorników GSE (→ eventy). TX: HB i max alt co 5 s, GPS co 2 s, status tankowania co 1 s i przy zmianie (tank/computer telem wyłączone). Timeout: 2 min → CONNECTION_LOST, 15 min → ABORT.
 
 ## Opis funkcjonalności
 
@@ -34,8 +34,8 @@ flowchart LR
 
 ## Cykl życia
 
-1. `Initialize`: pobiera `EventData` (singleton z ostatnimi stanami z SOME/IP), rejestruje cztery timery TX i callbacki `SomeIPController` (zmiana stanu tankowania → natychmiastowy status, komenda zaworu GS → ramka `GS_VALVE_CMD`). Zawsze `kOk`.
-2. `Run`: `MavRadioController::Init` otwiera `/dev/ttyS1` (57600, timeout 10) — **błąd otwarcia → `LogError` i `exit(1)`**; startuje wątki RX i TX. Następnie `GSHeartbeatGuard::Init`, `timer_ctr_.Start()`, `StartOffer` IPC/UDP. Pętla: heartbeat GPIO pin 2 (impuls 500 ms co 1 s).
+1. `Initialize`: pobiera `EventData` (singleton z ostatnimi stanami z SOME/IP), rejestruje cztery timery TX i callbacki `SomeIPController` (zmiana stanu tankowania → natychmiastowy status, komenda zaworu GS → ramka `GS_VALVE_CMD`). Wcześniej czyta `uart_path` / `uart_baudrate` z `etc/config.json`: brak albo nieobsługiwana prędkość → `kInitializeError`, inaczej `kOk`.
+2. `Run`: `MavRadioController::Init` otwiera port z configu (`uart_path`, `uart_baudrate`; `Initialize` bez poprawnego configu albo z nieobsługiwaną prędkością → `kInitializeError`) — **błąd otwarcia → `LogError` i `exit(1)`**; startuje wątki RX i TX. Następnie `GSHeartbeatGuard::Init`, `timer_ctr_.Start()`, `StartOffer` IPC/UDP. Pętla: heartbeat GPIO pin 2 (impuls 500 ms co 1 s).
 3. Zatrzymanie: `timer_ctr_.Stop()`, `StopOffer`.
 
 Wątki: **RX** (`WaitForData(250 ms)` → `mavlink_parse_char` → `RxMsgCallback`), **TX** (blokujące `Get` z kolejki → `uart_.Write`), **guard** (co 1 s), wątek timera.
@@ -108,6 +108,7 @@ stateDiagram-v2
 
 | Sytuacja | Zachowanie |
 |----------|------------|
+| brak `uart_path` / `uart_baudrate` w configu albo nieobsługiwana prędkość (`GetBaudrateConstant` = 0) | `Initialize` → `kInitializeError` (`LogError`), aplikacja nie startuje |
 | UART nie otwiera się | `exit(1)` (w QEMU/środowisku bez `/dev/ttyS1`) |
 | brak handlera usługi | `Warn`/`LogError` i pominięcie komendy |
 | zła/niepełna ramka MAVLink | parser ją odrzuca, brak callbacku |
@@ -138,7 +139,7 @@ Oba idą jako `EngineService.SetMode` + `MainService.setMode`.
 
 ## Konfiguracja
 
-Brak pliku. Stałe: `/dev/ttyS1`, 57600 bd, 4 wymagane ramki zmiany stanu, okresy TX jak w tabeli, heartbeat pin 2.
+`deployment/apps/radio_app/config_<Plytka>.json` (w runtime `etc/config.json`): `{"uart_path": "/dev/ttyS1", "uart_baudrate": 57600}`. Stałe: 4 wymagane ramki zmiany stanu, okresy TX jak w tabeli, heartbeat pin 2.
 
 ## Zależności
 

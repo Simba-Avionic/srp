@@ -11,6 +11,8 @@ cc_binary(
         "@srp_platform//ara/log",
         "//apps/fc/main_service:MainService",
         "//core/onTimerCallback:on_timer_callback_lib",
+        "//core/json:simba_json",
+        "//core/uart:Iuart_driver",
     ],
     srcs = [
         "radio_app.cc",

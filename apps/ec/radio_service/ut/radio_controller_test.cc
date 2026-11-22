@@ -64,7 +64,7 @@ TEST(RadioControllerTest, OpensWithMavlinkPresetAndDeliversReceivedFrame) {
   std::stop_source stop;
   {
     srp::apps::radio::MavRadioController controller(std::move(mock));
-    controller.Init([&got](const mavlink_message_t& msg) {
+    controller.Init({"/dev/ttyS1", 57600}, [&got](const mavlink_message_t& msg) {
       try {
         got.set_value(msg.msgid);
       } catch (const std::future_error&) {
@@ -93,7 +93,7 @@ TEST(RadioControllerTest, TransmitsQueuedPackageThroughDriver) {
   std::stop_source stop;
   {
     srp::apps::radio::MavRadioController controller(std::move(mock));
-    controller.Init([](const mavlink_message_t&) {}, stop.get_token());
+    controller.Init({"/dev/ttyS1", 57600}, [](const mavlink_message_t&) {}, stop.get_token());
     controller.Push(kHeartbeat);
     ASSERT_EQ(fut.wait_for(std::chrono::seconds(3)), std::future_status::ready);
     EXPECT_EQ(fut.get(), kHeartbeat);
@@ -116,7 +116,7 @@ TEST(RadioControllerTest, StopInterruptsWaitForDataImmediately) {
   std::chrono::steady_clock::time_point t_stop;
   {
     srp::apps::radio::MavRadioController controller(std::move(mock));
-    controller.Init([](const mavlink_message_t&) {}, stop.get_token());
+    controller.Init({"/dev/ttyS1", 57600}, [](const mavlink_message_t&) {}, stop.get_token());
     std::this_thread::sleep_for(std::chrono::milliseconds(120));  // watek RX siedzi w WaitForData
     t_stop = std::chrono::steady_clock::now();
     stop.request_stop();
