@@ -11,10 +11,13 @@
 #include <utility>
 #include <algorithm>
 #include <map>
+#include <optional>
+#include <string>
 #include "mw/i2c_service/service/i2c_service.h"
 #include "mw/i2c_service/data/i2c_factory.h"
 #include "ara/log/log.h"
 #include "core/common/condition.h"
+#include "core/json/json_parser.h"
 namespace srp {
 namespace mw {
 
@@ -158,7 +161,21 @@ int I2CService::Run(const std::stop_token& token) {
 int I2CService::Initialize(
     const std::map<ara::core::StringView, ara::core::StringView> parms) {
     i2c_logger_.LogInfo() << "I2CService::Initialize started";
-    this->Init(std::make_shared<core::i2c::I2CDriver>(), std::make_unique<com::soc::StreamIpcSocket>());
+    // magistrala zalezy od plytki: deployment/mw/i2c/config_<Plytka>.json
+    const auto app_path = parms.find("app_path");
+    if (app_path == parms.end()) {
+      i2c_logger_.LogError() << "Initialize failed: missing app_path";
+      return core::ErrorCode::kInitializeError;
+    }
+    const std::string config_path =
+        std::string(app_path->second.data(), app_path->second.size()) + "etc/config.json";
+    auto parser = core::json::JsonParser::Parser(config_path);
+    const auto bus = parser.has_value() ? parser->GetString("i2c_bus") : std::nullopt;
+    if (!bus.has_value()) {
+      i2c_logger_.LogError() << "Initialize failed: no i2c_bus in " << config_path;
+      return core::ErrorCode::kInitializeError;
+    }
+    this->Init(std::make_shared<core::i2c::I2CDriver>(bus.value()), std::make_unique<com::soc::StreamIpcSocket>());
     if (this->i2c_->Init() != core::ErrorCode::kOk) {
       i2c_logger_.LogWarn() << "Initialize failed: can't init i2c driver";
       return core::ErrorCode::kInitializeError;

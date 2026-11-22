@@ -1,6 +1,6 @@
 # i2c
 
-Sterownik magistrali I2C w userspace (`/dev/i2c-2`).
+Sterownik magistrali I2C w userspace (urządzenie magistrali, np. `/dev/i2c-2`, podaje MW `i2c_service` z configu płytki).
 
 ## TL;DR
 
@@ -8,7 +8,7 @@ Master I2C: wybór slave (`ioctl I2C_SLAVE`), zapis, odczyt i transakcja połąc
 
 ## Opis funkcjonalności
 
-- `Init` — otwarcie `/dev/i2c-2`.
+- `Init` — otwarcie magistrali z konstruktora (`bus_path`).
 - `Ioctl(address)` — ustawienie adresu slave.
 - `Write` — para `[reg, data]` albo pojedynczy bajt.
 - `Read` — odczyt N bajtów z bieżącego slave.
@@ -21,7 +21,7 @@ Master I2C: wybór slave (`ioctl I2C_SLAVE`), zapis, odczyt i transakcja połąc
 ```mermaid
 flowchart LR
   MW[mw::I2CService] --> D[I2CDriver]
-  D -->|open| Dev["/dev/i2c-2"]
+  D -->|open| Dev["bus_path (np. /dev/i2c-2)"]
   D -->|ioctl I2C_SLAVE| Chip[INA219 / BME280 / PCA9685 / LSM6DSOX / ADS7828]
   D <-->|I2C_RDWR| Chip
 ```

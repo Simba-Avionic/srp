@@ -13,5 +13,6 @@ cc_library(
         "//mw/i2c_service/data:i2c_factory",
         "@srp_platform//ara/exec:adaptive_application_lib",
         "//core/common:condition_lib",
+        "//core/json:simba_json",
     ] + i2c_drivers_deps,
 )
