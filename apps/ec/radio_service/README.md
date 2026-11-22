@@ -35,7 +35,7 @@ flowchart LR
 ## Cykl życia
 
 1. `Initialize`: pobiera `EventData` (singleton z ostatnimi stanami z SOME/IP), rejestruje cztery timery TX i callbacki `SomeIPController` (zmiana stanu tankowania → natychmiastowy status, komenda zaworu GS → ramka `GS_VALVE_CMD`). Zawsze `kOk`.
-2. `Run`: `MavRadioController::Init` otwiera port z configu (`uart_path`, `uart_baudrate`; `Initialize` bez poprawnego configu → `kInitializeError`) — **błąd otwarcia → `LogError` i `exit(1)`**; startuje wątki RX i TX. Następnie `GSHeartbeatGuard::Init`, `timer_ctr_.Start()`, `StartOffer` IPC/UDP. Pętla: heartbeat GPIO pin 2 (impuls 500 ms co 1 s).
+2. `Run`: `MavRadioController::Init` otwiera port z configu (`uart_path`, `uart_baudrate`; `Initialize` bez poprawnego configu albo z nieobsługiwaną prędkością → `kInitializeError`) — **błąd otwarcia → `LogError` i `exit(1)`**; startuje wątki RX i TX. Następnie `GSHeartbeatGuard::Init`, `timer_ctr_.Start()`, `StartOffer` IPC/UDP. Pętla: heartbeat GPIO pin 2 (impuls 500 ms co 1 s).
 3. Zatrzymanie: `timer_ctr_.Stop()`, `StopOffer`.
 
 Wątki: **RX** (`WaitForData(250 ms)` → `mavlink_parse_char` → `RxMsgCallback`), **TX** (blokujące `Get` z kolejki → `uart_.Write`), **guard** (co 1 s), wątek timera.
@@ -108,6 +108,7 @@ stateDiagram-v2
 
 | Sytuacja | Zachowanie |
 |----------|------------|
+| brak `uart_path` / `uart_baudrate` w configu albo nieobsługiwana prędkość (`GetBaudrateConstant` = 0) | `Initialize` → `kInitializeError` (`LogError`), aplikacja nie startuje |
 | UART nie otwiera się | `exit(1)` (w QEMU/środowisku bez `/dev/ttyS1`) |
 | brak handlera usługi | `Warn`/`LogError` i pominięcie komendy |
 | zła/niepełna ramka MAVLink | parser ją odrzuca, brak callbacku |

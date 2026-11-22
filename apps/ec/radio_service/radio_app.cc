@@ -19,6 +19,7 @@
 #include "ara/log/log.h"
 #include "core/common/condition.h"
 #include "core/json/json_parser.h"
+#include "core/uart/uart_config.hpp"
 
 namespace srp {
 namespace apps {
@@ -294,6 +295,11 @@ int RadioApp::Initialize(const std::map<ara::core::StringView,
   const auto uart_baudrate = parser.has_value() ? parser->GetNumber<uint32_t>("uart_baudrate") : std::nullopt;
   if (!uart_path.has_value() || !uart_baudrate.has_value()) {
     ara::log::LogError() << "RadioApp: no uart_path / uart_baudrate in " << config_path;
+    return core::ErrorCode::kInitializeError;
+  }
+  // nieobslugiwana predkosc wywalilaby dopiero Open w Run (exit) - odrzuc ja juz tutaj
+  if (core::uart::GetBaudrateConstant(uart_baudrate.value()) == 0) {
+    ara::log::LogError() << "RadioApp: unsupported uart_baudrate " << uart_baudrate.value() << " in " << config_path;
     return core::ErrorCode::kInitializeError;
   }
   uart_cfg_ = radio::RadioUartConfig{uart_path.value(), uart_baudrate.value()};
