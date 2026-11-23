@@ -1,0 +1,33 @@
+{
+    "system_id": 1,
+    "component_id": 1,
+    "restart_backoff": {
+        "min_ms": 500,
+        "max_ms": 30000
+    },
+    "stats_period_ms": 1000,
+    "links": {
+        "radio_a": {
+            "driver": "serial_radio",
+            "driver_config": "/srp/opt/mavlink_daemon/serial_radio_a.json",
+            "air_rate_bps": 9600,
+            "max_utilization": 0.8,
+            "mtu": 200,
+            "method_timeout_ms": 1000,
+            "signing": {
+                "enabled": false
+            }
+        },
+        "radio_b": {
+            "driver": "serial_radio",
+            "driver_config": "/srp/opt/mavlink_daemon/serial_radio_b.json",
+            "air_rate_bps": 2400,
+            "max_utilization": 0.8,
+            "mtu": 64,
+            "method_timeout_ms": 4000,
+            "signing": {
+                "enabled": false
+            }
+        }
+    }
+}

@@ -28,7 +28,11 @@ cpu_def(
         "//deployment/apps/system_stat_service:SysStatService",
         "//deployment/apps/prim_service:PrimerService",
         "//deployment/apps/fuel_service:FuelService",
-        "//deployment/apps/radio_app:RadioApp"
+        # RadioApp (apps/ec/radio_service, /dev/ttyS1 at 57600) is off the EC package: the MavlinkDaemon replaces it as the
+        # owner of the radio links, and two owners of one UART are not possible. The code stays; the radio driver for
+        # /dev/ttyS1 comes in srp later. Re-enable only together with a daemon config that does not use /dev/ttyS1.
+        # "//deployment/apps/radio_app:RadioApp",
+        "//deployment/platform/mavlink_daemon:mavlink_daemon",
     ],
 )
 
