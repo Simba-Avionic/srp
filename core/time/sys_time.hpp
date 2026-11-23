@@ -12,6 +12,7 @@
 #ifndef CORE_TIME_SYS_TIME_HPP_
 #define CORE_TIME_SYS_TIME_HPP_
 
+#include <cstdint>
 #include <cstdlib>
 #include <string>
 #include <optional>

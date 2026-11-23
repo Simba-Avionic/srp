@@ -1,12 +1,8 @@
 workspace(name="srp")
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
-load("//bazel/toolchain:toolchain.bzl", "register_all_toolchains")
-register_all_toolchains()
 
-load("//third_party:deps.bzl", "deps")
-deps()
-
+# Toolchainy (BBB armv7, RPi aarch64 musl) rejestruje i pobiera srp_platform: install() ponizej.
 
 load("//bazel/libs:third_party_repositories.bzl", "include_srp_platform", "include_srp_mavlink",
      "include_gtest_mock", "include_simdjson", "include_json", "include_simulation_data")
