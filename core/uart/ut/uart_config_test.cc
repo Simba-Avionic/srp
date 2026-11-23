@@ -136,6 +136,10 @@ TEST(UartConfigTest, PresetsKeepDriverLevelBehaviour) {
 TEST(UartConfigTest, BaudrateTable) {
   EXPECT_EQ(GetBaudrateConstant(57600), static_cast<speed_t>(B57600));
   EXPECT_EQ(GetBaudrateConstant(115200), static_cast<speed_t>(B115200));
+  EXPECT_EQ(GetBaudrateConstant(1200), static_cast<speed_t>(B1200));
+  EXPECT_EQ(GetBaudrateConstant(2400), static_cast<speed_t>(B2400));
+  EXPECT_EQ(GetBaudrateConstant(4800), static_cast<speed_t>(B4800));
+  EXPECT_EQ(GetBaudrateConstant(9600), static_cast<speed_t>(B9600));
   EXPECT_EQ(GetBaudrateConstant(12345), static_cast<speed_t>(0));
 }
 
