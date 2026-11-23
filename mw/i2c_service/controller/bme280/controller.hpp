@@ -71,6 +71,10 @@ class BME280 {
 
  public:
   BME280();
+  /// dig_H4 = signed 12 bit z rejestrow 0xE4 (MSB, signed) i 0xE5[3:0] (datasheet BME280, 4.2.2)
+  static int16_t ComposeDigH4(uint8_t reg_e4, uint8_t reg_e5) noexcept;
+  /// dig_H5 = signed 12 bit z rejestrow 0xE6 (MSB, signed) i 0xE5[7:4]
+  static int16_t ComposeDigH5(uint8_t reg_e5, uint8_t reg_e6) noexcept;
   core::ErrorCode Init(std::unique_ptr<II2CController> i2c = std::make_unique<I2CController>());
   std::optional<float> getPressure();
   std::optional<float> getTemperature();

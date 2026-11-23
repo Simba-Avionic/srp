@@ -256,6 +256,14 @@ std::optional<std::vector<uint8_t>> BME280::readOutputData() {
 }
 
 
+int16_t BME280::ComposeDigH4(uint8_t reg_e4, uint8_t reg_e5) noexcept {
+    return static_cast<int16_t>((static_cast<int16_t>(static_cast<int8_t>(reg_e4)) * 16) | (reg_e5 & 0x0F));
+}
+
+int16_t BME280::ComposeDigH5(uint8_t reg_e5, uint8_t reg_e6) noexcept {
+    return static_cast<int16_t>((static_cast<int16_t>(static_cast<int8_t>(reg_e6)) * 16) | (reg_e5 >> 4));
+}
+
 core::ErrorCode BME280::readTrimmingParameters() {
     auto temp = this->i2c_->Read(BME280_ADDRESS, TRIMMING_REGISTER_1, SIZE_OF_TRIMMING_REGISTER_1);
     if (!temp.has_value() || temp->size() != SIZE_OF_TRIMMING_REGISTER_1) {
@@ -290,9 +298,9 @@ core::ErrorCode BME280::readTrimmingParameters() {
     }
     param.dig_H2 = static_cast<int16_t>((static_cast<uint16_t>(temp.value()[1]) << 8) | temp.value()[0]);
     param.dig_H3 = temp.value()[2];
-    param.dig_H4 = static_cast<int16_t>((static_cast<uint16_t>(temp.value()[3]) << 4) | (temp.value()[4] & 0x0F));
-    param.dig_H5 = static_cast<int16_t>((static_cast<uint16_t>(temp.value()[6]) << 4) | (temp.value()[5] >> 4));
-    param.dig_H6 = temp.value()[7];
+    param.dig_H4 = ComposeDigH4(temp.value()[3], temp.value()[4]);
+    param.dig_H5 = ComposeDigH5(temp.value()[4], temp.value()[5]);
+    param.dig_H6 = static_cast<int8_t>(temp.value()[6]);
 
     return core::ErrorCode::kOk;
 }
