@@ -90,3 +90,10 @@ with `on: ipc`:
 and uses `MavlinkLinkServiceProxy` from `srp/platform/mavlink/MavlinkLinkService/MavlinkLinkServiceHandler.h`: the
 event `LinkStats` (per link, every `stats_period_ms`) and the method `GetLinkStats(link)`. `ipc` is local to the CPU:
 the application sees the links of the daemon on its own CPU. See `docs/mavlink/README.md` in `srp_platform`.
+
+## Known gap: FuelService and FcRadioService
+
+`FuelService` (`deployment/apps/fuel_service/app_config.json`) requires `FcRadioService` (ipc, instance 2), whose
+only provider is `RadioApp`; `RadioApp` is off the EC package (see `deployment/cpu/ec/BUILD`). Until `FcRadioService`
+is moved to MAVLink (`on: mavlink`, planned S5), the `FuelService` controllers get neither the rocket mass
+(`GSERocketMassEvent`) nor the oxidizer tank pressure (`GSEOxidizerTankPressEvent`) from the FC.
