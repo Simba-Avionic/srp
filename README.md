@@ -8,15 +8,15 @@ Dokumentacja modułów (nazwa, TL;DR, funkcje, diagramy, API):
 Konfigi do budowania (platforma + wersja plytki, definicje w `platforms/BUILD`):
 - BBB + EB_V2
     ```
-    --config=bbb-EB_V2
+    --config=EB_V2
     ```
 - BBB + LB_V1
     ```
-    --config=bbb-LB_V1
+    --config=LB_V1
     ```
-- RPi Zero 2 W + NG_V1
+- RPi Zero 2 W + UB_V1
     ```
-    --config=rpi-NG_V1
+    --config=UB_V1
     ```
 
 Kod zalezny od plytki: `select({"//platforms:is_eb_v2": [...], "//conditions:default": [...]})`.

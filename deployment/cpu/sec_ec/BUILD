@@ -17,6 +17,7 @@ cpu_def(
     ],
     platform_etcs = [
         "//deployment/cpu/sec_ec:sm_config",
+        "machine_states.json",
         "platform_config.json",
     ],
     srp_components = SIMBA_COMPUTER_BASE_APPS + [

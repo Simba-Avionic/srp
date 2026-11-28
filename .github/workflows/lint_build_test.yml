@@ -2,6 +2,8 @@
 name: Lint, build and test SRP
 on:
   pull_request:
+    # ready_for_review: wyjscie z draftu uruchamia workflow ponownie (wtedy startuja tez testy QEMU)
+    types: [opened, synchronize, reopened, ready_for_review]
     branches:
       - master
   merge_group:
@@ -42,18 +44,19 @@ jobs:
 
       - name: Build bbb-EB_V2
         run: |
-          bazel build --config=bbb-EB_V2 --config=r8 //deployment/cpu/ec:pkg //deployment/cpu/fc:pkg
-          bazel build --config=bbb-EB_V2 --config=rurku //deployment/cpu/ec:pkg
+          bazel build --config=EB_V2 --config=r8    //deployment/cpu/ec:pkg
+          bazel build --config=EB_V2 --config=rurku //deployment/cpu/ec:pkg
 
       - name: Build bbb-LB_V1
         run: |
-          bazel build --config=bbb-LB_V1 --config=r8 //deployment/cpu/ec:pkg //deployment/cpu/fc:pkg
-          bazel build --config=bbb-LB_V1 --config=rurku //deployment/cpu/ec:pkg
+          bazel build --config=LB_V1 --config=r8    //deployment/cpu/ec:pkg
+          bazel build --config=LB_V1 --config=rurku //deployment/cpu/ec:pkg
 
       # TODO: wlaczyc, gdy plytka bedzie wspierana
-      # - name: Build rpi-NG_V1
+      # - name: Build rpi-UB_V1
       #   run: |
-      #     bazel build --config=rpi-NG_V1 //deployment/cpu/ec:pkg //deployment/cpu/fc:pkg
+      #     bazel build --config=UB_V1 --config=r8    //deployment/cpu/ec:pkg 
+      #     bazel build --config=UB_V1 --config=rurku //deployment/cpu/ec:pkg
 
       - name: Test
         run: |
@@ -62,3 +65,52 @@ jobs:
       - name: Build all
         run: |
           ./tools/build_all/build_all.sh
+
+  qemu-functional:
+    name: QEMU functional (PR)
+
+    needs: [cpplint, build-and-test]
+    if: github.event_name == 'pull_request' && !github.event.pull_request.draft
+    runs-on: ubuntu-latest
+    timeout-minutes: 70
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          submodules: recursive
+
+      - name: Setup Bazel
+        uses: bazel-contrib/setup-bazel@0.14.0
+        with:
+          bazelisk-cache: true
+          disk-cache: qemu-tests
+          repository-cache: true
+
+      - name: Build EC sim package and QEMU image
+        timeout-minutes: 20
+        run: tools/qemu_test/qemu_test.sh build
+
+      - name: Build test container image
+        timeout-minutes: 10
+        run: tools/qemu_test/qemu_test.sh image
+
+      - name: Run functional tests
+        timeout-minutes: 30
+        run: tools/qemu_test/qemu_test.sh run functional --no-build
+
+      - name: Summary
+        if: always()
+        run: tools/qemu_test/qemu_test.sh report >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: qemu-functional-results
+          path: qemu_test_results/
+          retention-days: 7
+          if-no-files-found: warn
+
+      - name: Cleanup
+        if: always()
+        run: tools/qemu_test/qemu_test.sh cleanup

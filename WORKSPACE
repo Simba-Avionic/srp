@@ -7,7 +7,7 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 load("//bazel/libs:third_party_repositories.bzl", "include_srp_platform", "include_srp_mavlink",
      "include_gtest_mock", "include_simdjson", "include_json", "include_simulation_data")
 
-include_srp_platform("20261116-212020")
+include_srp_platform("20261128-112043")
 
 load("@srp_platform//:download.bzl", "download")
 download()

@@ -13,7 +13,7 @@ ROCKETS = {
     "//rockets:is_rurku": "Rurku",
 }
 
-DEFAULT_ROCKET = "R8"
+DEFAULT_ROCKET = "Rurku"
 
 def rocket_src(out, rocket):
     """Nazwa pliku zrodlowego rakiety: engine_reactions.cpp -> engine_reactions_R8.cpp."""

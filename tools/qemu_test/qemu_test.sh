@@ -100,13 +100,13 @@ do_build() {
   rm -f "$OUT"/*.status   # a stale result from an earlier run must not appear in report
   echo "== build: EC package (sim) + QEMU image =="
   # shellcheck disable=SC2086
-  bazel build $BZFLAGS --config=bbb-EB_V2 --define build_mode=sim \
+  bazel build $BZFLAGS --config=EB_V2 --define build_mode=sim \
     //deployment/cpu/ec:pkg //deployment/tools/ecu:flash_ec @srp_platform//tools/qemu || die "bazel build failed"
   # sim and sprzet builds share one bazel-bin dir (the --define does not change it), so another bazel command could
   # overwrite pkg.tar between the build and the guest start: stage the artifacts right after the build
   local bin
   # shellcheck disable=SC2086
-  bin="$(bazel info $BZFLAGS --config=bbb-EB_V2 --define build_mode=sim bazel-bin 2> /dev/null)" ||
+  bin="$(bazel info $BZFLAGS --config=EB_V2 --define build_mode=sim bazel-bin 2> /dev/null)" ||
     die "bazel info bazel-bin failed"
   rm -rf "$STAGE"
   mkdir -p "$STAGE/deployment/cpu/ec" "$STAGE/deployment/tools/ecu" "$STAGE/$(dirname "$QIMG")"
