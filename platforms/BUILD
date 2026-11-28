@@ -19,7 +19,7 @@ constraint_value(
 )
 
 constraint_value(
-    name = "ng_v1",
+    name = "ub_v1",
     constraint_setting = ":board",
 )
 
@@ -37,10 +37,10 @@ platform(
     parents = ["@srp_platform//bazel/platforms:bbb"],
 )
 
-# --config=rpi-NG_V1
+# --config=UB_v1
 platform(
-    name = "rpi_ng_v1",
-    constraint_values = [":ng_v1"],
+    name = "rpi_UB_v1",
+    constraint_values = [":ub_v1"],
     parents = ["@srp_platform//bazel/platforms:rpi_zero2w"],
 )
 
@@ -55,6 +55,6 @@ config_setting(
 )
 
 config_setting(
-    name = "is_ng_v1",
-    constraint_values = [":ng_v1"],
+    name = "is_ub_v1",
+    constraint_values = [":ub_v1"],
 )

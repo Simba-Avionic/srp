@@ -1,9 +1,9 @@
 build:bbb --crosstool_top=@srp_platform//bazel/toolchain/arm-cortex_a8-linux-gnueabihf:gcc_toolchain --cpu=armv7
 
 build:platform_build --incompatible_enable_cc_toolchain_resolution
-build:bbb-EB_V2 --config=platform_build --platforms=//platforms:bbb_eb_v2
-build:bbb-LB_V1 --config=platform_build --platforms=//platforms:bbb_lb_v1
-build:rpi-NG_V1 --config=platform_build --platforms=//platforms:rpi_ng_v1
+build:EB_V2 --config=platform_build --platforms=//platforms:bbb_eb_v2
+build:LB_V1 --config=platform_build --platforms=//platforms:bbb_lb_v1
+build:UB_V1 --config=platform_build --platforms=//platforms:rpi_ub_v1
 build:r8 --define rocket=r8
 build:rurku --define rocket=rurku
 build:adaptive -c opt --copt=-O3
