@@ -42,18 +42,19 @@ jobs:
 
       - name: Build bbb-EB_V2
         run: |
-          bazel build --config=bbb-EB_V2 --config=r8 //deployment/cpu/ec:pkg //deployment/cpu/fc:pkg
-          bazel build --config=bbb-EB_V2 --config=rurku //deployment/cpu/ec:pkg
+          bazel build --config=EB_V2 --config=r8    //deployment/cpu/ec:pkg
+          bazel build --config=EB_V2 --config=rurku //deployment/cpu/ec:pkg
 
       - name: Build bbb-LB_V1
         run: |
-          bazel build --config=bbb-LB_V1 --config=r8 //deployment/cpu/ec:pkg //deployment/cpu/fc:pkg
-          bazel build --config=bbb-LB_V1 --config=rurku //deployment/cpu/ec:pkg
+          bazel build --config=LB_V1 --config=r8    //deployment/cpu/ec:pkg
+          bazel build --config=LB_V1 --config=rurku //deployment/cpu/ec:pkg
 
       # TODO: wlaczyc, gdy plytka bedzie wspierana
-      # - name: Build rpi-NG_V1
+      # - name: Build rpi-UB_V1
       #   run: |
-      #     bazel build --config=rpi-NG_V1 //deployment/cpu/ec:pkg //deployment/cpu/fc:pkg
+      #     bazel build --config=UB_V1 --config=r8    //deployment/cpu/ec:pkg 
+      #     bazel build --config=UB_V1 --config=rurku //deployment/cpu/ec:pkg
 
       - name: Test
         run: |
