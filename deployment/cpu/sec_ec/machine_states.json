@@ -1,0 +1,10 @@
+{
+    "machine_state": [
+        "Startup",
+        "Startup2",
+        "MW",
+        "Platform",
+        "Running",
+        "SafetyMode"
+    ]
+}
